@@ -30,3 +30,26 @@
 *.exe
 *.out
 *.app
+*.x
+*.elf
+*.hex
+*.zip
+
+# e2studio junk
+.metadata
+
+# more stuff
+make.log
+*.gcda
+*.gcno
+*.idb
+*.pdb
+*.ilk
+*.lst
+*.map
+*.nvram
+*.jdebug.user
+
+myMediaFile
+_compiler_.txt
+.vs
