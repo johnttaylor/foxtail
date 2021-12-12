@@ -18,22 +18,6 @@
         }
       },
       {
-        "pkgname": "catch",
-        "pkgtype": "overlay",
-        "adoptedDate": "Sun Dec 12 16:48:32 2021",
-        "parentDir": null,
-        "version": {
-          "semanticVersion": "2.13.7",
-          "branch": null,
-          "tag": "OUTCAST2-main-2.13.7"
-        },
-        "repo": {
-          "name": "catch",
-          "type": "git",
-          "origin": "https://github.com/johnttaylor"
-        }
-      },
-      {
         "pkgname": "colony.core",
         "pkgtype": "overlay",
         "adoptedDate": "Sun Dec 12 16:48:50 2021",
@@ -66,7 +50,40 @@
         }
       }
     ],
-    "weak": []
+    "weak": [
+      {
+        "pkgname": "catch",
+        "pkgtype": "overlay",
+        "adoptedDate": "Sun Dec 12 16:48:32 2021",
+        "parentDir": null,
+        "version": {
+          "semanticVersion": "2.13.7",
+          "branch": null,
+          "tag": "OUTCAST2-main-2.13.7"
+        },
+        "repo": {
+          "name": "catch",
+          "type": "git",
+          "origin": "https://github.com/johnttaylor"
+        }
+      },
+      {
+        "pkgname": "nqbp",
+        "pkgtype": "foreign",
+        "adoptedDate": "Sun Dec 12 16:51:28 2021",
+        "parentDir": "xsrc",
+        "version": {
+          "semanticVersion": "2.2.0",
+          "branch": null,
+          "tag": "OUTCAST2-main-2.2.0"
+        },
+        "repo": {
+          "name": "nqbp",
+          "type": "git",
+          "origin": "https://github.com/johnttaylor"
+        }
+      }
+    ]
   },
   "directories": {
     "primary": [
@@ -80,15 +97,15 @@
     ]
   },
   "info": {
-    "pkgname": null,
-    "desc": null,
-    "owner": null,
-    "email": null,
-    "url": null,
+    "pkgname": "foxtail",
+    "desc": "Experiments, sandbox, etc. for process control...",
+    "owner": "John Taylor",
+    "email": "john.t.taylor@gmail.com",
+    "url": "url",
     "repo": {
-      "name": null,
-      "type": null,
-      "origin": null
+      "name": "foxtail",
+      "type": "git",
+      "origin": "https://github.com/johnttaylor"
     }
   },
   "publish": {
