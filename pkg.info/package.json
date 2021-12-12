@@ -1,0 +1,50 @@
+{
+  "dependencies": {
+    "strong": [
+      {
+        "pkgname": "colony.apps",
+        "pkgtype": "overlay",
+        "adoptedDate": "Sun Dec 12 16:43:11 2021",
+        "parentDir": null,
+        "version": {
+          "semanticVersion": "1.0.0",
+          "branch": null,
+          "tag": "OUTCAST2-main-1.0.0"
+        },
+        "repo": {
+          "name": "colony.apps",
+          "type": "git",
+          "origin": "https://github.com/johnttaylor"
+        }
+      }
+    ],
+    "weak": []
+  },
+  "directories": {
+    "primary": [
+      "src",
+      "tests",
+      "projects"
+    ],
+    "adoptedExtras": [
+      "docs",
+      "top"
+    ]
+  },
+  "info": {
+    "pkgname": null,
+    "desc": null,
+    "owner": null,
+    "email": null,
+    "url": null,
+    "repo": {
+      "name": null,
+      "type": null,
+      "origin": null
+    }
+  },
+  "publish": {
+    "current": null,
+    "history": []
+  }
+}
