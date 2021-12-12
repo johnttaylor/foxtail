@@ -16,6 +16,54 @@
           "type": "git",
           "origin": "https://github.com/johnttaylor"
         }
+      },
+      {
+        "pkgname": "catch",
+        "pkgtype": "overlay",
+        "adoptedDate": "Sun Dec 12 16:48:32 2021",
+        "parentDir": null,
+        "version": {
+          "semanticVersion": "2.13.7",
+          "branch": null,
+          "tag": "OUTCAST2-main-2.13.7"
+        },
+        "repo": {
+          "name": "catch",
+          "type": "git",
+          "origin": "https://github.com/johnttaylor"
+        }
+      },
+      {
+        "pkgname": "colony.core",
+        "pkgtype": "overlay",
+        "adoptedDate": "Sun Dec 12 16:48:50 2021",
+        "parentDir": null,
+        "version": {
+          "semanticVersion": "2.0.2",
+          "branch": null,
+          "tag": "OUTCAST2-main-2.0.2"
+        },
+        "repo": {
+          "name": "colony.core",
+          "type": "git",
+          "origin": "https://github.com/johnttaylor"
+        }
+      },
+      {
+        "pkgname": "colony.arduino",
+        "pkgtype": "overlay",
+        "adoptedDate": "Sun Dec 12 16:49:15 2021",
+        "parentDir": null,
+        "version": {
+          "semanticVersion": "1.0.1",
+          "branch": null,
+          "tag": "OUTCAST2-main-1.0.1"
+        },
+        "repo": {
+          "name": "colony.arduino",
+          "type": "git",
+          "origin": "https://github.com/johnttaylor"
+        }
       }
     ],
     "weak": []
