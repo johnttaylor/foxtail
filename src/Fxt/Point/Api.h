@@ -16,6 +16,7 @@
 #include "Cpl/Text/String.h"
 #include "Cpl/Json/Arduino.h"
 #include <stdint.h>
+#include <stdlib.h>
 
 ///
 namespace Fxt {
@@ -28,9 +29,14 @@ namespace Point {
     data.  In addition to the data - a point has meta data and state. A Point 
     has the following features:
 
-        o Read/write operations from/to a Point's data are atomic operations 
-          and are thread safe.
-          A Point has inherit valid/invalid state respect to its data.  The
+        o Read/write operations from/to a Point's data are atomic operations,
+          HOWEVER most child Point classes are not thread safe. This is because
+          the intended use is for Points to be accessed by a single thread.  That 
+          said, a Point child class can be extended to provide thread safe
+          operation.  The shorter version is from the application perspective
+          the semantics of the read/write are that of atomic/thread-safe 
+          operations.
+        o A Point has inherit valid/invalid state respect to its data.  The
           valid/invalid state is meta data and not associated with a specific
           value of its data
         o A Point can be locked.  Any write operations to a locked point will
@@ -47,7 +53,7 @@ namespace Point {
 
     
  */
-class Point
+class Api
 {
 public:
     /// Options related to the Point's locked state
@@ -57,39 +63,6 @@ public:
         eLOCK,                  //!< Request to lock the Point.  If the Point is already lock - the request is ignored and the update operation silent fails
         eUNLOCK,                //!< Request to unlock the Point.  If the Point is already unlocked - the request is ignored and the update operation is completed
     };
-
-    /// Base class for Identifiers
-    class Identifier_T
-    {
-    protected:
-        /// Default constructor
-        constexpr Identifier_T() :val( 0 ) {}
-
-        /// Copy constructor
-        constexpr Identifier_T( uint32_t x ) : val( x ) {}
-
-    public:
-
-        /// Short hand for casting/returning my value as unsigned integer
-        constexpr uint32_t operator+() const { return val; }
-
-        /// Cast to integer
-        constexpr operator int() const { return val; }
-
-        /// Cast to unsigned integer
-        constexpr operator unsigned() const { return val; }
-
-        /// Cast to long integer
-        constexpr operator long() const { return val; }
-
-        /// Cast to un signed long integer
-        constexpr operator unsigned long() const { return val; }
-
-    protected:
-        /// Actual value;
-        uint32_t val;
-    };
-
 
 public:
     /// TODO: Move to child class
@@ -129,7 +102,7 @@ public:
               the new lock state is applied
 
      */
-    virtual bool setInvalid( LockRequest_T lockRequest = eNO_REQUEST ) noexcept = 0;
+    virtual void setInvalid( LockRequest_T lockRequest = eNO_REQUEST ) noexcept = 0;
 
     /// This method returns true when the Point data is invalid.
     virtual bool isNotValid() const noexcept = 0;
@@ -176,7 +149,6 @@ public:
      */
     virtual bool fromJSON_( JsonVariant&        src,
                             LockRequest_T       lockRequest,
-                            uint16_t&           retSequenceNumber,
                             Cpl::Text::String*  errorMsg ) noexcept = 0;
 
 
@@ -281,7 +253,7 @@ public:
 
 public:
     /// Virtual destructor to make the compiler happy
-    virtual ~Point() {}
+    virtual ~Api() {}
 };
 
 

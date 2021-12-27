@@ -9,12 +9,12 @@ namespace Pts
     protected:
         constexpr Identifier() :val(0) {}
         constexpr Identifier(int x) : val(x) {}
-        uint32_t val;
+        const uint32_t val;
     public:
-        constexpr int operator+() const { return val; }
-        constexpr operator int() const { return val; }
-        constexpr operator long() const { return val; }
-        constexpr operator unsigned long() const { return val; }
+        constexpr uint32_t operator+() const { return val; }
+        //constexpr operator int() const { return val; }
+        //constexpr operator long() const { return val; }
+        constexpr operator uint32_t() const { return val; }
     };
 
     class InputId_T : public Identifier
