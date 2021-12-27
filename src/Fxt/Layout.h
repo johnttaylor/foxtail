@@ -39,6 +39,23 @@
    - getType()? Probably
    - import/export? NO
 */
+
+/* 
+Point Database is populate in a single thread environment
+Single CPU -->all 'Virtual Chassis' execute in a single thread
+fromJSON/toJSON method can only be called during 'idle time'
+  lock/unlock db at the start/end of FER/execute cycle
+    tshell commands block for idle time
+Multi CPU
+    1-to-1 mapping of Cores to number of parallel threads
+        requires an assignment of Virtual chassis to threads
+    problem: global Node data/ aka inter-chassis data sharing
+        could be done through loop-back/bridge IO registers
+
+IO Registers have to be thread safe
+    Question is this at individual instance level - or done via 'block/scan updates'
+
+*/
 class VirtualChassis;
 class TimeMsec_T;
 
