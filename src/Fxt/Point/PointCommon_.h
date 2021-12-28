@@ -70,20 +70,12 @@ protected:
     virtual bool testAndUpdateLock( LockRequest_T lockRequest ) noexcept;
 
 
-
-protected:
-    /// Helper method when converting Point to a JSON string
-    virtual JsonDocument& beginJSON( bool validState, bool locked, bool verbose=true ) noexcept;
-
-    /// Helper method when converting Point to a JSON string
-    virtual void endJSON( char* dst, size_t dstSize, bool& truncated, bool verbose=true ) noexcept;
-
 protected:
     /// Locked state
-    bool                                    m_locked;
+    bool    m_locked;
 
     /// Internal valid/invalid state
-    bool                                    m_valid;
+    bool    m_valid;
 };
 
 };      // end namespaces

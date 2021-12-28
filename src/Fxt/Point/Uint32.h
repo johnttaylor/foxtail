@@ -23,93 +23,47 @@ namespace Point {
 
 
 /** This class provides a concrete implementation for a Point who's data is a
-	uint32_t.
+    uint32_t.
 
-	The toJSON()/fromJSON format is:
-		\code
+    The toJSON()/fromJSON format is:
+        \code
 
-		{ name:"<mpname>", type:"<mptypestring>", valid:true|false, locked:true|false, val:<numvalue> }
+        { name:"<mpname>", type:"<mptypestring>", valid:true|false, locked:true|false, val:"hex-value" }
 
-		where <numvalue> is decimal numeric OR a quoted HEX string (when the Point
-		instance was constructed with 'decimalFormat':=false).  For example:
-
-			val:1234  or val:"4D2"
-
-		\endcode
+        \endcode
 
  */
-class Uint32 : public BasicInteger<uint32_t>
+class Uint32 : public BasicInteger_<uint32_t>
 {
 public:
-	/// Type safe Point Identifier
-	class Id_T : public Identifier_T
-	{
-	public:
-		constexpr Id_T() :Identifier_T() {}
-		constexpr Id_T( int x ) : Identifier_T( x ) {}
-	};
+    /// Type safe Point Identifier
+    class Id_T : public Identifier_T
+    {
+    public:
+        constexpr Id_T() : Identifier_T() {}
+        constexpr Id_T( uint32_t x ) : Identifier_T( x ) {}
+    };
 
 
 public:
-	/** Constructor. Invalid Point.  Note: the 'decimalFormat' argument applies to the
-		toString()/fromString() methods.   When set to true, the input/output
-		values must be decimal numbers; else hexadecimal numbers (as defined
-		by standard C library strtol() function).
-	 */
-	Uint32(Cpl::Dm::ModelDatabase& myModelBase, Cpl::Dm::StaticInfo& staticInfo, bool decimalFormat = true)
-		:BasicInteger<uint32_t>(myModelBase, staticInfo, decimalFormat)
-	{
-	}
-
-	/// Constructor. Valid Point.  Requires an initial value
-	Uint32(Cpl::Dm::ModelDatabase& myModelBase, Cpl::Dm::StaticInfo& staticInfo, uint32_t initialValue, bool decimalFormat = true)
-		: BasicInteger<uint32_t>(myModelBase, staticInfo, initialValue, decimalFormat)
-	{
-	}
+    /// Returns the Point's Identifier
+    inline Uint32::Id_T getId() const noexcept { return m_id; }
 
 public:
-	/// Type safe read-modify-write client callback interface
-	typedef Cpl::Dm::ModelPointRmwCallback<uint32_t> Client;
+    /** Constructor. Invalid Point.
+     */
+    Uint32( const Id_T myIdentifier ) : BasicInteger_<uint32_t>(), m_id( myIdentifier ) {}
 
-	/** Type safe read-modify-write. See Cpl::Dm::ModelPoint
-
-	   NOTE: THE USE OF THIS METHOD IS STRONGLY DISCOURAGED because it has
-			 potential to lockout access to the ENTIRE Model Base for an
-			 indeterminate amount of time.  And alternative is to have the
-			 concrete Model Point leaf classes provide the application
-			 specific read, write, read-modify-write methods in addition or in
-			 lieu of the read/write methods in this interface.
-	 */
-	virtual uint16_t readModifyWrite(Client& callbackClient, LockRequest_T lockRequest = eNO_REQUEST)
-	{
-		return ModelPointCommon_::readModifyWrite(callbackClient, lockRequest);
-	}
-
-
+    /// Constructor. Valid Point.  Requires an initial value
+    Uint32( const Id_T myIdentifier, uint32_t initialValue ) : BasicInteger_<uint32_t>( initialValue ), m_id( myIdentifier ) {}
 
 public:
-	/// Type safe subscriber
-	typedef Cpl::Dm::Subscriber<Uint32> Observer;
+    ///  See Cpl::Dm::ModelPoint.
+    const char* getTypeAsText() const noexcept { return "Fxt::Point::Uint32"; }
 
-	/// Type safe register observer
-	virtual void attach(Observer& observer, uint16_t initialSeqNumber = SEQUENCE_NUMBER_UNKNOWN) noexcept
-	{
-		ModelPointCommon_::attach(observer, initialSeqNumber);
-	}
-
-	/// Type safe un-register observer
-	virtual void detach(Observer& observer) noexcept
-	{
-		ModelPointCommon_::detach(observer);
-	}
-
-
-public:
-	///  See Cpl::Dm::ModelPoint.
-	const char* getTypeAsText() const noexcept
-	{
-		return m_decimal ? "Cpl::Dm::Mp::Uint32-dec" : "Cpl::Dm::Mp::Uint32-hex";
-	}
+protected:
+    /// The points numeric identifier
+    Id_T m_id;
 };
 
 

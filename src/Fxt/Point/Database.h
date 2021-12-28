@@ -14,9 +14,8 @@
 
 #include "colony_config.h"
 #include "Fxt/Point/DatabaseApi.h"
-#include "Cpl/System/Mutex.h"
-#include "Cpl/Container/Map.h"
 #include "Cpl/Json/Arduino.h"
+#include "Cpl/Memory/LeanHeap.h"
 
 
 /** This symbol defines the size, in bytes, of a single/global JSON document
@@ -35,7 +34,7 @@
 #endif
 
 
-///
+ ///
 namespace Fxt {
 ///
 namespace Point {
@@ -47,47 +46,30 @@ class Database : public DatabaseApi
 {
 public:
     /// Constructor
-    Database() noexcept;
+    Database( size_t maxNumPoints ) noexcept;
+
+    /// Destructor
+    ~Database();
 
 public:
     /// See Fxt::Point::DatabaseApi
     Fxt::Point::Api* lookupById( const Identifier_T pointIdToFind, bool fatalOnNotFound=true ) const noexcept;
 
     /// See Fxt::Point::DatabaseApi
-    //ModelPoint* getFirstByName() noexcept;
+    const char* getSymbolicName( const Identifier_T pointIdToFind ) const noexcept;
 
-    ///// See Fxt::Point::DatabaseApi
-    //ModelPoint* getNextByName( ModelPoint& currentModelPoint ) noexcept;
+    /// See Fxt::Point::DatabaseApi
+    bool toJSON( const Identifier_T srcPoint,
+                 char*              dst,
+                 size_t             dstSize,
+                 bool&              truncated,
+                 bool               verbose = true ) noexcept) noexcept;
 
     /// See Fxt::Point::DatabaseApi
     bool fromJSON( const char* src, Cpl::Text::String* errorMsg=0 ) noexcept;
-
-public:
-   // /** This method has 'PACKAGE Scope' in that is should only be called by
-   //    other classes in the Fxt::Point namespace.  It is ONLY public to avoid
-   //    the tight coupling of C++ friend mechanism.
-
-   //    This method inserts a new Model Point into the Point Database.
-   //*/
-   // void insert_( ModelPoint& mpToAdd ) noexcept;
-
-   // /** This method has 'PACKAGE Scope' in that is should only be called by
-   //     other classes in the Fxt::Point namespace.  It is ONLY public to avoid
-   //     the tight coupling of C++ friend mechanism.
-
-   //     This method locks the Point Database.  For every call to lock() there must
-   //     be corresponding call to unlock();
-   // */
-   // void lock_() noexcept;
-
-   // /** This method has 'PACKAGE Scope' in that is should only be called by
-   //     other classes in the Fxt::Point namespace.  It is ONLY public to avoid
-   //     the tight coupling of C++ friend mechanism.
-
-   //     This method unlocks the Point Database.
-   // */
-   // void unlock_() noexcept;
-
+                 
+    /// See Fxt::Point::DatabaseApi
+    bool add( const Identifier_T numericId, void* pointInstanceToAdd, Info_T& pointInfo ) noexcept;
 
 
 public:
@@ -125,15 +107,18 @@ public:
         other classes in the Fxt::Point namespace.  It is ONLY public to avoid
         the tight coupling of C++ friend mechanism.
 
-        Global temporary buffer. Model Point's need to have acquired the global 
+        Global temporary buffer. Model Point's need to have acquired the global
         lock before using this buffer
      */
     static uint8_t   g_tempBuffer_[OPTION_FXT_POINT_DATABASE_TEMP_STORAGE_SIZE];
 
 
 protected:
-    /// Helper method to create the database lock
-    bool createLock();
+    /// Helper method when converting Point to a JSON string
+    virtual JsonDocument& beginJSON( bool validState, bool locked, bool verbose=true ) noexcept;
+
+    /// Helper method when converting Point to a JSON string
+    virtual void endJSON( char* dst, size_t dstSize, bool& truncated, bool verbose=true ) noexcept;
 
 
 private:
@@ -142,6 +127,13 @@ private:
 
     /// Prevent access to the assignment operator -->Point Databases can not be copied!
     const Database& operator=( const Database& m );
+
+protected:
+    /// Memory for Point table
+    Info_T* m_points;
+
+    /// Maximum of points that I can store/hold
+    size_t  m_maxNumPoints;
 };
 
 

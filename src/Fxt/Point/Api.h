@@ -30,12 +30,6 @@ namespace Point {
     has the following features:
 
         o Read/write operations from/to a Point's data are atomic operations,
-          HOWEVER most child Point classes are not thread safe. This is because
-          the intended use is for Points to be accessed by a single thread.  That 
-          said, a Point child class can be extended to provide thread safe
-          operation.  The shorter version is from the application perspective
-          the semantics of the read/write are that of atomic/thread-safe 
-          operations.
         o A Point has inherit valid/invalid state respect to its data.  The
           valid/invalid state is meta data and not associated with a specific
           value of its data
@@ -50,6 +44,8 @@ namespace Point {
           'named' look-up is also supported.  Instances of the numeric identifier
           are 'managed types', i.e. each Point child class defines a unique
           leaf type for its identifier.
+        o Points are NOT THREAD SAFE (see the namespace README.txt file for 
+          details on the threading model).
 
     
  */
@@ -65,14 +61,6 @@ public:
     };
 
 public:
-    /// TODO: Move to child class
-    /** This method returns the Point numeric identifier
-
-        Note: Point identifiers are required to be unique within the context of
-              a single Application.
-     */
-    Identifier_T getId() const noexcept;
-
     /** This method returns the RAM size, in bytes, of the Point's data.
       */
     virtual size_t getSize() const noexcept = 0;
@@ -88,6 +76,9 @@ public:
               "Fxt::Point::Uint32-hex"
      */
     virtual const char* getTypeAsText() const noexcept = 0;
+
+    /// This method returns the Point's meta-data
+    virtual void getMetadata( bool& isValid, bool& isLocked ) const noexcept = 0;
 
 
 public:
@@ -106,52 +97,6 @@ public:
 
     /// This method returns true when the Point data is invalid.
     virtual bool isNotValid() const noexcept = 0;
-
-
-public:
-    /** This method converts the Point's data to JSON string and
-        copies the resultant string into 'dst'.  If the Point's data
-        cannot be represented as a JSON object then the contents of 'dst' is
-        set to an empty string and the method returns false; else the method
-        returns true. The format of the string is specific to the concrete leaf class.
-        However, it is strongly recommended that the output of this method be
-        the same format that is expected for the fromJSON() method.
-
-        NOTE: If the converted string is larger than the memory allocated by
-              'dst' then the string result in 'dst' will be truncated. The
-              caller is required to check 'truncated' flag for the truncated
-              scenario.
-
-
-        The general output format:
-        \code
-
-        { name:"<mpname>", type:"<mptypestring>", valid:true|false, locked:true|false, val:<value> }
-
-        Notes:
-            - The 'val' key/value pair is omitted if the Point is in the invalid state
-            - The 'val' key/value pair can be a single element, an object, or
-              array. etc. -- it is specific to the concrete Point type/class.
-
-        \endcode
-     */
-    virtual bool toJSON( char*  dst,
-                         size_t dstSize,
-                         bool&  truncated,
-                         bool   verbose = true ) noexcept = 0;
-
-
-    /** This method attempts to convert JSON object 'src' to its binary format
-        and copies the result to the Point's internal data. The expected
-        format of the JSON string is specific to the concrete leaf class.
-
-        See Fxt::Point::ModelDatabaseApi::fromJSON() method for JSON format.
-     */
-    virtual bool fromJSON_( JsonVariant&        src,
-                            LockRequest_T       lockRequest,
-                            Cpl::Text::String*  errorMsg ) noexcept = 0;
-
-
 
 public:
     /** This method returns true if the Point is in the locked state.
@@ -250,6 +195,34 @@ public:
     */
     virtual void copyDataTo_( void* dstData, size_t dstSize ) const noexcept = 0;
 
+
+    /** This method has PACKAGE Scope, i.e. it is intended to be ONLY accessible
+        by other classes in the Fxt::Point namespace.  The Application should
+        NEVER call this method.
+
+        This method attempts to convert JSON object 'src' to its binary format
+        and copies the result to the Point's internal data. The expected
+        format of the JSON string is specific to the concrete leaf class.
+
+        See Fxt::Point::ModelDatabaseApi::fromJSON() method for JSON format.
+     */
+    virtual bool fromJSON_( JsonVariant&        src,
+                            LockRequest_T       lockRequest,
+                            Cpl::Text::String*  errorMsg ) noexcept = 0;
+
+
+    /** This method has PACKAGE Scope, i.e. it is intended to be ONLY accessible
+        by other classes in the Fxt::Point namespace.  The Application should
+        NEVER call this method.
+
+        This method converts the Points data to a JSON object.  If the point
+        does not support serializing to a JSON object then false is returned;
+        else true is returned.  This method is ONLY called if the Point is in
+        the valid state.
+
+        See Fxt::Point::ModelDatabaseApi::fromJSON() method for JSON format.
+     */   
+    virtual bool toJSON_( JsonDocument& doc, bool verbose = true ) noexcept = 0;
 
 public:
     /// Virtual destructor to make the compiler happy

@@ -10,9 +10,6 @@
 *----------------------------------------------------------------------------*/
 
 #include "PointCommon_.h"
-#include "Database.h"
-#include "Cpl/Text/strip.h"
-#include "Cpl/Text/atob.h"
 
 ///
 using namespace Fxt::Point;
@@ -98,32 +95,4 @@ bool PointCommon_::testAndUpdateLock( LockRequest_T lockRequest ) noexcept
     }
 
     return result;
-}
-
-/////////////////
-JsonDocument& PointCommon_::beginJSON( bool valid, bool locked, bool verbose ) noexcept
-{
-    // Get access to the Global JSON document
-    Database::globalLock_();
-    Database::g_doc_.clear();  // Make sure the JSON document is starting "empty"
-
-    // Construct the JSON
-    Database::g_doc_["name"]  = getName();
-    Database::g_doc_["valid"] = valid;
-    if ( verbose )
-    {
-        Database::g_doc_["type"] = getTypeAsText();
-        Database::g_doc_["locked"] = locked;
-    }
-    return Database::g_doc_;
-}
-
-void PointCommon_::endJSON( char* dst, size_t dstSize, bool& truncated, bool verbose ) noexcept
-{
-    // Generate the actual output string 
-    size_t num = serializeJson( Database::g_doc_, dst, dstSize );
-    truncated = num == dstSize ? true : false;
-
-    // Release the Global JSON document
-    Database::globalUnlock_();
 }
