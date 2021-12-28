@@ -31,7 +31,7 @@ namespace Point {
     Point who's data is a C primitive type of type: 'ELEMTYPE'.
  */
 template<class ELEMTYPE>
-class Basic_ : public Fxt::Point::PointCommon_
+class Basic_ : public PointCommon_
 {
 protected:
     /// The element's value
@@ -96,7 +96,7 @@ protected:
     pair - the value is displayed in Hexadecimal.
  */
 template<class ELEMTYPE>
-class BasicInteger_ : public Fxt::Point::Basic_<ELEMTYPE>
+class BasicInteger_ : public Basic_<ELEMTYPE>
 {
 public:
     /// Constructor: Invalid MP
@@ -136,7 +136,7 @@ public:
     {
         // Construct the 'val' key/value pair (as a HEX string)
         Cpl::Text::FString<20> tmp;
-        tmp.format( "0x%llX", (unsigned long long) value );
+        tmp.format( "0x%llX", (unsigned long long) m_data );
         doc["val"] = (char*)tmp.getString();
         return true;
     }
@@ -160,7 +160,7 @@ public:
 
         newValue = (ELEMTYPE)value;
 
-        retSequenceNumber = Basic_<ELEMTYPE>::write( newValue, lockRequest );
+        write( newValue, lockRequest );
         return true;
     }
 };
@@ -173,7 +173,7 @@ public:
     documented otherwise.
  */
 template<class ELEMTYPE>
-class BasicReal_ : public Fxt::Mp::Basic_<ELEMTYPE>
+class BasicReal_ : public Basic_<ELEMTYPE>
 {
 public:
     /// Constructor: Invalid MP
@@ -190,6 +190,12 @@ public:
 
 
 public:
+    /// Type safe write. See Fxt::Point::Api
+    virtual void write( ELEMTYPE newValue, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
+    {
+        return Fxt::Point::PointCommon_::write( &newValue, sizeof( ELEMTYPE ), lockRequest );
+    }
+
     /// Atomic increment
     virtual void increment( ELEMTYPE incSize = 1.0, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
@@ -232,6 +238,5 @@ public:
 };
 
 };      // end namespaces
-};
 };
 #endif  // end header latch

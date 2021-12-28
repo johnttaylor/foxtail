@@ -53,7 +53,7 @@ public:
 
 public:
     /// See Fxt::Point::DatabaseApi
-    Fxt::Point::Api* lookupById( const Identifier_T pointIdToFind, bool fatalOnNotFound=true ) const noexcept;
+    Fxt::Point::Api* lookupById( const Identifier_T pointIdToFind, bool fatalOnNotFound=false ) const noexcept;
 
     /// See Fxt::Point::DatabaseApi
     const char* getSymbolicName( const Identifier_T pointIdToFind ) const noexcept;
@@ -63,13 +63,13 @@ public:
                  char*              dst,
                  size_t             dstSize,
                  bool&              truncated,
-                 bool               verbose = true ) noexcept) noexcept;
+                 bool               verbose = true ) noexcept;
 
     /// See Fxt::Point::DatabaseApi
     bool fromJSON( const char* src, Cpl::Text::String* errorMsg=0 ) noexcept;
                  
     /// See Fxt::Point::DatabaseApi
-    bool add( const Identifier_T numericId, void* pointInstanceToAdd, Info_T& pointInfo ) noexcept;
+    bool add( const Identifier_T numericId, Info_T& pointInfo ) noexcept;
 
 
 public:
@@ -111,14 +111,6 @@ public:
         lock before using this buffer
      */
     static uint8_t   g_tempBuffer_[OPTION_FXT_POINT_DATABASE_TEMP_STORAGE_SIZE];
-
-
-protected:
-    /// Helper method when converting Point to a JSON string
-    virtual JsonDocument& beginJSON( bool validState, bool locked, bool verbose=true ) noexcept;
-
-    /// Helper method when converting Point to a JSON string
-    virtual void endJSON( char* dst, size_t dstSize, bool& truncated, bool verbose=true ) noexcept;
 
 
 private:

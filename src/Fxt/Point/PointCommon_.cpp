@@ -23,6 +23,12 @@ PointCommon_::PointCommon_( bool isValid )
 }
 
 /////////////////
+void PointCommon_::getMetadata( bool& isValid, bool& isLocked ) const noexcept
+{
+    isValid  = m_valid;
+    isLocked = m_locked;
+}
+
 bool PointCommon_::isNotValid( void ) const noexcept
 {
     return !m_valid;

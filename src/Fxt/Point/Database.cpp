@@ -12,8 +12,10 @@
 
 #include "Database.h"
 #include "Cpl/System/FatalError.h"
+#include "Cpl/System/Mutex.h"
 #include <new>
 
+#define VALID_IDX(numId)        (m_points && numId < m_maxNumPoints && m_points[numId].pointInstance)
 ///
 using namespace Fxt::Point;
 
@@ -27,6 +29,7 @@ Database::Database( size_t maxNumPoints ) noexcept
     :m_maxNumPoints( maxNumPoints )
 {
     m_points = new(std::nothrow) Info_T[maxNumPoints];
+    memset( m_points, 0, sizeof( Info_T ) * maxNumPoints );
 }
 
 Database::~Database()
@@ -38,7 +41,7 @@ Database::~Database()
 Fxt::Point::Api* Database::lookupById( const Identifier_T pointIdToFind, bool fatalOnNotFound ) const noexcept
 {
     // Look-up point
-    if ( m_points && pointIdToFind < m_maxNumPoints )
+    if ( VALID_IDX( pointIdToFind ) )
     {
         return m_points[pointIdToFind].pointInstance;
     }
@@ -53,7 +56,7 @@ Fxt::Point::Api* Database::lookupById( const Identifier_T pointIdToFind, bool fa
 
 const char* Database::getSymbolicName( const Identifier_T pointIdToFind ) const noexcept
 {
-    if ( m_points && pointIdToFind < m_maxNumPoints )
+    if ( VALID_IDX( pointIdToFind ) )
     {
         return m_points[pointIdToFind].symbolicName;
     }

@@ -43,6 +43,8 @@ public:
     /// See Fxt::Point::Api
     void setLockState( LockRequest_T lockRequest ) noexcept;
 
+    /// See Fxt::Point::Api
+    void getMetadata( bool& isValid, bool& isLocked ) const noexcept;
 
 protected:
     /// See Fxt::Point::Api

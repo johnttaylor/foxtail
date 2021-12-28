@@ -35,10 +35,9 @@
 *.hex
 *.zip
 
-# e2studio junk
-.metadata
 
 # more stuff
+__pycache__
 make.log
 *.gcda
 *.gcno
