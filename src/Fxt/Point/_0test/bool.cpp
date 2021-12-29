@@ -12,9 +12,8 @@
 #include "Catch/catch.hpp"
 #include "Cpl/System/_testsupport/Shutdown_TS.h"
 #include "Fxt/Point/Database.h"
-#include "Fxt/Point/Float.h"
+#include "Fxt/Point/Bool.h"
 #include "Cpl/System/Trace.h"
-#include "Cpl/Math/real.h"
 #include <string.h>
 
 #define SECT_   "_0test"
@@ -24,16 +23,16 @@ using namespace Fxt::Point;
 
 #define MAX_POINTS  2
 
-constexpr Float::Id_T  appleId  = 0;
-constexpr Float::Id_T  orangeId = 1;
+constexpr Bool::Id_T  appleId  = 0;
+constexpr Bool::Id_T  orangeId = 1;
 
-#define ORANGE_INIT_VAL 7
+#define ORANGE_INIT_VAL true
 
-static Float apple_( appleId );
-static Float orange_( orangeId, ORANGE_INIT_VAL );
+static Bool apple_( appleId );
+static Bool orange_( orangeId, ORANGE_INIT_VAL );
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE( "Float" )
+TEST_CASE( "Bool" )
 {
     Cpl::System::Shutdown_TS::clearAndUseCounter();
     Database db( MAX_POINTS );
@@ -41,8 +40,8 @@ TEST_CASE( "Float" )
     REQUIRE( db.add( appleId, info ) );
     info ={ &orange_, "ORANGE" };
     REQUIRE( db.add( orangeId, info ) );
-    bool  valid;
-    float value;
+    bool     valid;
+    bool value;
 
     SECTION( "read" )
     {
@@ -52,39 +51,34 @@ TEST_CASE( "Float" )
 
         valid = apple_.read( value );
         REQUIRE( valid == false );
-        apple_.write( 1 );
+        apple_.set();
         valid = apple_.read( value );
         REQUIRE( valid );
-        REQUIRE( Cpl::Math::areFloatsEqual(value,1.0) );
+        REQUIRE( value == true );
 
         apple_.setInvalid();
         valid = apple_.read( value );
         REQUIRE( valid == false );
 
-        REQUIRE( apple_.getSize() == sizeof( float ) );
+        REQUIRE( apple_.getSize() == sizeof( bool ) );
     }
 
     SECTION( "write" )
     {
-        value = apple_.write( 2 );
-        REQUIRE( Cpl::Math::areFloatsEqual( value, 2.0 ) );
-        value = apple_.increment();
-        REQUIRE( Cpl::Math::areFloatsEqual( value, 3.0 ) );
-        value = apple_.increment( 3 );
-        REQUIRE( Cpl::Math::areFloatsEqual( value, 3.0+3.0 ) );
-        value = apple_.decrement();
-        REQUIRE( Cpl::Math::areFloatsEqual( value, 3.0 + 3.0 -1.0) );
-        REQUIRE( value == 3 + 3 - 1 );
-        value = apple_.decrement( 3 );
-        REQUIRE( Cpl::Math::areFloatsEqual( value, 2.0 ) );
-        REQUIRE( value == 2 );
+        value = apple_.clear();
+        REQUIRE( value == false );
+        value = apple_.set();
+        REQUIRE( value == true );
+        value = apple_.clear();
+        REQUIRE( value == false );
     }
+
 
     SECTION( "json" )
     {
         char buffer[256];
         bool truncated;
-        apple_.write( 127 );
+        apple_.write( true );
         bool result = db.toJSON( appleId, buffer, sizeof( buffer ), truncated );
         CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s]", buffer) );
         REQUIRE( result );
@@ -92,14 +86,13 @@ TEST_CASE( "Float" )
         StaticJsonDocument<1024> doc;
         DeserializationError err = deserializeJson( doc, buffer );
         REQUIRE( err == DeserializationError::Ok );
-        value = doc["val"];
-        REQUIRE( Cpl::Math::areFloatsEqual( value, 127 ) );
+        REQUIRE( doc["val"] == true );
 
-        result = db.fromJSON( "{\"id\":0,\"val\":3.14}" );
+        result = db.fromJSON( "{\"id\":0,\"val\":false}" );
         valid  = apple_.read( value );
         REQUIRE( valid );
-        REQUIRE( Cpl::Math::areFloatsEqual( value, 3.14F ) );
+        REQUIRE( value == false );
     }
-    
+
     REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );
 }

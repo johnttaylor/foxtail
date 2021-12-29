@@ -1,26 +1,25 @@
-#ifndef Cpl_Dm_Mp_Bool_h_
-#define Cpl_Dm_Mp_Bool_h_
+#ifndef Fxt_Point_Bool_h_
+#define Fxt_Point_Bool_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
 * agreement (license.txt) in the top/ directory or on the Internet at
 * http://integerfox.com/colony.core/license.txt
 *
-* Copyright (c) 2014-2020  John T. Taylor
+* Copyright (c) 2014-2022  John T. Taylor
 *
 * Redistributions of the source code must retain the above copyright notice.
 *----------------------------------------------------------------------------*/
 /** @file */
 
 
-#include "Cpl/Dm/Mp/Basic.h"
+#include "Fxt/Point/Basic_.h"
+#include "Fxt/Point/Identifier.h"
 
 ///
-namespace Cpl {
+namespace Fxt {
 ///
-namespace Dm {
-///
-namespace Mp {
+namespace Point {
 
 
 /** This class provides a concrete implementation for a Point who's data is a
@@ -29,70 +28,68 @@ namespace Mp {
  	The toJSON()/fromJSON format is:
 	\code
 	
-	{ name:"<mpname>", type:"<mptypestring>", invalid:nn, seqnum:nnnn, locked:true|false, val:true|false }
+	{ name:"<mpname>", type:"<mptypestring>", valid:true|false, locked:true|false, val:true|false }
 	
 	\endcode
 	
 	NOTE: All methods in this class ARE thread Safe unless explicitly
           documented otherwise.
  */
-class Bool : public Basic<bool>
+class Bool : public Basic_<bool>
 {
 public:
-    /// Constructor. Invalid MP. 
-    Bool( Cpl::Dm::ModelDatabase& myModelBase, StaticInfo& staticInfo );
+    /// Type safe Point Identifier
+    class Id_T : public Identifier_T
+    {
+    public:
+        constexpr Id_T() : Identifier_T() {}
+        constexpr Id_T( uint32_t x ) : Identifier_T( x ) {}
+    };
 
-    /// Constructor. Valid MP.  Requires an initial value
-    Bool( Cpl::Dm::ModelDatabase& myModelBase, StaticInfo& staticInfo, bool initialValue );
 
 public:
-    /// Type safe read. See Cpl::Dm::ModelPoint
-    virtual int8_t read( bool& dstData, uint16_t* seqNumPtr=0 ) const noexcept;
+    /// Returns the Point's Identifier
+    inline Bool::Id_T getId() const noexcept { return m_id; }
 
-    /// Type safe write. See Cpl::Dm::ModelPoint
-    virtual uint16_t write( bool newValue, LockRequest_T lockRequest = eNO_REQUEST ) noexcept;
-
-    /// Type safe read-modify-write client callback interface
-    typedef Cpl::Dm::ModelPointRmwCallback<bool> Client;
-
-    /** Type safe read-modify-write. See Cpl::Dm::ModelPoint
-
-       NOTE: THE USE OF THIS METHOD IS STRONGLY DISCOURAGED because it has
-             potential to lockout access to the ENTIRE Model Base for an
-             indeterminate amount of time.  And alternative is to have the
-             concrete Model Point leaf classes provide the application
-             specific read, write, read-modify-write methods in addition or in
-             lieu of the read/write methods in this interface.
+public:
+    /** Constructor. Invalid Point.
      */
-    virtual uint16_t readModifyWrite( Client& callbackClient, LockRequest_T lockRequest = eNO_REQUEST );
+    Bool( const Id_T myIdentifier );
+
+    /// Constructor. Valid Point.  Requires an initial value
+    Bool( const Id_T myIdentifier, bool initialValue );
+
+public:
+    /// Type safe write. See Fxt::Point::Api
+    virtual bool write( bool newValue, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept;
+
+    /// Short-cut for writing true
+    inline bool set( Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept { return write( true, lockRequest ); }
+
+    /// Short-cut for writing false
+    inline bool clear( Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept { return write( false, lockRequest ); }
 
 
 public:
-    /// Type safe subscriber
-    typedef Cpl::Dm::Subscriber<Bool> Observer;
+    /// See Fxt::Point::Api.  
+    bool toJSON_( JsonDocument& doc, bool verbose = true ) noexcept;
 
-    /// Type safe register observer
-    virtual void attach( Observer& observer, uint16_t initialSeqNumber=SEQUENCE_NUMBER_UNKNOWN ) noexcept;
+    /// See Fxt::Point::Api.  
+    bool fromJSON_( JsonVariant& src, Fxt::Point::Api::LockRequest_T lockRequest, Cpl::Text::String* errorMsg=0 ) noexcept;
 
-    /// Type safe un-register observer
-    virtual void detach( Observer& observer ) noexcept;
 
 public:
-	/// See Cpl::Dm::Point.  
-	bool toJSON( char* dst, size_t dstSize, bool& truncated, bool verbose=true ) noexcept;
-
-public:
-    /// See Cpl::Dm::Point.  
-    bool fromJSON_( JsonVariant& src, LockRequest_T lockRequest, uint16_t& retSequenceNumber, Cpl::Text::String* errorMsg ) noexcept;
-
     ///  See Cpl::Dm::ModelPoint.
     const char* getTypeAsText() const noexcept;
+
+protected:
+    /// The points numeric identifier
+    Id_T m_id;
 
 };
 
 
 
 };      // end namespaces
-};
 };
 #endif  // end header latch

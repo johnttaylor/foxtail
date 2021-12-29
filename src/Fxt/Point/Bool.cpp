@@ -4,7 +4,7 @@
 * agreement (license.txt) in the top/ directory or on the Internet at
 * http://integerfox.com/colony.core/license.txt
 *
-* Copyright (c) 2014-2020  John T. Taylor
+* Copyright (c) 2014-2022  John T. Taylor
 *
 * Redistributions of the source code must retain the above copyright notice.
 *----------------------------------------------------------------------------*/
@@ -14,92 +14,56 @@
 #include "Bool.h"
 
 ///
-using namespace Cpl::Dm::Mp;
+using namespace Fxt::Point;
 
 ///////////////////////////////////////////////////////////////////////////////
-Bool::Bool( Cpl::Dm::ModelDatabase& myModelBase, Cpl::Dm::StaticInfo& staticInfo )
-	:Basic<bool>( myModelBase, staticInfo )
+Bool::Bool( const Id_T myIdentifier )
+    : Basic_<bool>()
+    , m_id( myIdentifier )
 {
 }
 
-
-Bool::Bool( Cpl::Dm::ModelDatabase& myModelBase, Cpl::Dm::StaticInfo& staticInfo, bool initialValue )
-	: Basic<bool>( myModelBase, staticInfo, initialValue )
+/// Constructor. Valid Point.  Requires an initial value
+Bool::Bool( const Id_T myIdentifier, bool initialValue )
+    : Basic_<bool>( initialValue )
+    , m_id( myIdentifier )
 {
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-int8_t Bool::read( bool& dstData, uint16_t* seqNumPtr ) const noexcept
-{
-	return ModelPointCommon_::read( &dstData, sizeof( bool ), seqNumPtr );
-}
-
-uint16_t Bool::write( bool newValue, LockRequest_T lockRequest ) noexcept
-{
-	return ModelPointCommon_::write( &newValue, sizeof( bool ), lockRequest );
-}
-
-uint16_t Bool::readModifyWrite( Client& callbackClient, LockRequest_T lockRequest )
-{
-	return ModelPointCommon_::readModifyWrite( callbackClient, lockRequest );
-}
-
-void Bool::attach( Observer& observer, uint16_t initialSeqNumber ) noexcept
-{
-	ModelPointCommon_::attach( observer, initialSeqNumber );
-}
-
-void Bool::detach( Observer& observer ) noexcept
-{
-	ModelPointCommon_::detach( observer );
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
+bool Bool::write( bool newValue, Fxt::Point::Api::LockRequest_T lockRequest ) noexcept
+{
+    Fxt::Point::PointCommon_::write( &newValue, sizeof( bool ), lockRequest );
+    return m_data;
+}
+
 const char* Bool::getTypeAsText() const noexcept
 {
-	return "Cpl::Dm::Mp::Bool";
+    return "Fxt::Point::Bool";
 }
 
-bool Bool::toJSON( char* dst, size_t dstSize, bool& truncated, bool verbose ) noexcept
+bool Bool::toJSON_( JsonDocument& doc, bool verbose ) noexcept
 {
-	// Get a snapshot of the my data and state
-	m_modelDatabase.lock_();
-	bool     value  = m_data;
-	uint16_t seqnum = m_seqNum;
-	int8_t   valid  = m_validState;
-	bool     locked = m_locked;
-	m_modelDatabase.unlock_();
-
-	// Start the conversion
-	JsonDocument& doc = beginJSON( valid, locked, seqnum, verbose );
-
-	// Construct the 'val' key/value pair (as a simple numeric)
-	if ( IS_VALID( valid ) )
-	{
-		doc["val"] = value;
-	}
-
-	// End the conversion
-	endJSON( dst, dstSize, truncated, verbose );
-	return true;
+    // Construct the 'val' key/value pair (as a HEX string)
+    doc["val"] = m_data;
+    return true;
 }
 
-bool Bool::fromJSON_( JsonVariant& src, LockRequest_T lockRequest, uint16_t& retSequenceNumber, Cpl::Text::String* errorMsg ) noexcept
+bool Bool::fromJSON_( JsonVariant& src, Fxt::Point::Api::LockRequest_T lockRequest, Cpl::Text::String* errorMsg ) noexcept
 {
-	// Attempt to parse the value key/value pair
-	bool checkForError = src | false;
-	bool newValue      = src | true;
-	if ( newValue == true && checkForError == false )
-	{
-		if ( errorMsg )
-		{
-			*errorMsg = "Invalid syntax for the 'val' key/value pair";
-		}
-		return false;
-	}
+    // Attempt to parse the value key/value pair
+    bool checkForError = src | false;
+    bool newValue      = src | true;
+    if ( newValue == true && checkForError == false )
+    {
+        if ( errorMsg )
+        {
+            *errorMsg = "Invalid syntax for the 'val' key/value pair";
+        }
+        return false;
+    }
 
-	retSequenceNumber = write( newValue, lockRequest );
-	return true;
+    write( newValue, lockRequest );
+    return true;
 }

@@ -166,20 +166,20 @@ public:
     /// Atomic bit toggle.  'bitNum==0' is the Least significant bit
     virtual ELEMTYPE bitToggle( unsigned bitNum, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
-        write( Basic_<ELEMTYPE>::m_data ^ (1<<bitNum), lockRequest );
+        write( Basic_<ELEMTYPE>::m_data ^ (((ELEMTYPE)1) << bitNum), lockRequest );
         return Basic_<ELEMTYPE>::m_data;
     }
     /// Atomic bit clear.  'bitNum==0' is the Least significant bit
     virtual ELEMTYPE bitClear( unsigned bitNum, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
-        write( Basic_<ELEMTYPE>::m_data & (~(1 << bitNum)), lockRequest );
+        write( Basic_<ELEMTYPE>::m_data & (~(((ELEMTYPE)1) << bitNum)), lockRequest );
         return Basic_<ELEMTYPE>::m_data;
     }
 
     /// Atomic bit set.  'bitNum==0' is the Least significant bit
     virtual ELEMTYPE bitSet( unsigned bitNum, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
-        write( Basic_<ELEMTYPE>::m_data | (1 << bitNum), lockRequest );
+        write( Basic_<ELEMTYPE>::m_data | (((ELEMTYPE)1) << bitNum), lockRequest );
         return Basic_<ELEMTYPE>::m_data;
     }
 
@@ -195,7 +195,7 @@ public:
     }
 
     /// See Fxt::Point::Api.  
-    bool fromJSON_( JsonVariant& src, Fxt::Point::Api::LockRequest_T lockRequest, Cpl::Text::String* errorMsg ) noexcept
+    bool fromJSON_( JsonVariant& src, Fxt::Point::Api::LockRequest_T lockRequest, Cpl::Text::String* errorMsg=0 ) noexcept
     {
         ELEMTYPE newValue = 0;
 
@@ -275,7 +275,7 @@ public:
     }
 
     /// See Fxt::Point.  
-    bool fromJSON_( JsonVariant& src, Fxt::Point::Api::LockRequest_T lockRequest, Cpl::Text::String* errorMsg ) noexcept
+    bool fromJSON_( JsonVariant& src, Fxt::Point::Api::LockRequest_T lockRequest, Cpl::Text::String* errorMsg=0 ) noexcept
     {
         ELEMTYPE checkForError = src | (ELEMTYPE)2;
         ELEMTYPE newValue      = src | (ELEMTYPE)1;
