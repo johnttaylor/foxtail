@@ -1,109 +1,73 @@
-#ifndef Cpl_Dm_Mp_Uint64_h_
-#define Cpl_Dm_Mp_Uint64_h_
+#ifndef Fxt_Point_Uint64_h_
+#define Fxt_Point_Uint64_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
 * agreement (license.txt) in the top/ directory or on the Internet at
 * http://integerfox.com/colony.core/license.txt
 *
-* Copyright (c) 2014-2020  John T. Taylor
+* Copyright (c) 2014-2022  John T. Taylor
 *
 * Redistributions of the source code must retain the above copyright notice.
 *----------------------------------------------------------------------------*/
 /** @file */
 
 
-#include "Cpl/Dm/Mp/Basic.h"
+#include "Fxt/Point/Basic_.h"
+#include "Fxt/Point/Identifier.h"
 
 ///
-namespace Cpl {
+namespace Fxt {
 ///
-namespace Dm {
-///
-namespace Mp {
+namespace Point {
 
 
 /** This class provides a concrete implementation for a Point who's data is a
-	uint64_t.
+    uint64_t.
 
-	The toJSON()/fromJSON format is:
-	\code
+    The toJSON()/fromJSON format is:
+        \code
 
-	{ name:"<mpname>", type:"<mptypestring>", invalid:nn, seqnum:nnnn, locked:true|false, val:<numvalue> }
+        { name:"<mpname>", type:"<mptypestring>", valid:true|false, locked:true|false, val:"hex-value" }
 
-	where <numvalue> is decimal numeric OR a quoted HEX string (when the MP
-	instance was constructed with 'decimalFormat':=false).  For example:
+        \endcode
 
-	val:1234  or val:"4D2"
-
-	\endcode
-
-	NOTE: All methods in this class ARE thread Safe unless explicitly
-		  documented otherwise.
  */
-class Uint64 : public BasicInteger<uint64_t>
+class Uint64 : public BasicInteger_<uint64_t>
 {
 public:
-	/** Constructor. Invalid MP.  Note: the 'decimalFormat' argument applies to the
-		toString()/fromString() methods.   When set to true, the input/output
-		values must be decimal numbers; else hexadecimal numbers.
-	 */
-	Uint64( Cpl::Dm::ModelDatabase& myModelBase, StaticInfo& staticInfo, bool decimalFormat=true )
-		:BasicInteger<uint64_t>( myModelBase, staticInfo, decimalFormat )
-	{
-	}
+    /// Type safe Point Identifier
+    class Id_T : public Identifier_T
+    {
+    public:
+        constexpr Id_T() : Identifier_T() {}
+        constexpr Id_T( uint32_t x ) : Identifier_T( x ) {}
+    };
 
-	/// Constructor. Valid MP.  Requires an initial value
-	Uint64( Cpl::Dm::ModelDatabase& myModelBase, StaticInfo& staticInfo, uint64_t initialValue, bool decimalFormat=true )
-		:BasicInteger<uint64_t>( myModelBase, staticInfo, initialValue, decimalFormat )
-	{
-	}
 
 public:
-	/// Type safe read-modify-write client callback interface
-	typedef Cpl::Dm::ModelPointRmwCallback<uint64_t> Client;
-
-	/** Type safe read-modify-write. See Cpl::Dm::ModelPoint
-
-	   NOTE: THE USE OF THIS METHOD IS STRONGLY DISCOURAGED because it has
-			 potential to lockout access to the ENTIRE Model Base for an
-			 indeterminate amount of time.  And alternative is to have the
-			 concrete Model Point leaf classes provide the application
-			 specific read, write, read-modify-write methods in addition or in
-			 lieu of the read/write methods in this interface.
-	 */
-	virtual uint16_t readModifyWrite( Client& callbackClient, LockRequest_T lockRequest = eNO_REQUEST )
-	{
-		return ModelPointCommon_::readModifyWrite( callbackClient, lockRequest );
-	}
+    /// Returns the Point's Identifier
+    inline Uint64::Id_T getId() const noexcept { return m_id; }
 
 public:
-	/// Type safe subscriber
-	typedef Cpl::Dm::Subscriber<Uint64> Observer;
+    /** Constructor. Invalid Point.
+     */
+    Uint64( const Id_T myIdentifier ) : BasicInteger_<uint64_t>(), m_id( myIdentifier ) {}
 
-	/// Type safe register observer
-	virtual void attach( Observer& observer, uint16_t initialSeqNumber=SEQUENCE_NUMBER_UNKNOWN ) noexcept
-	{
-		ModelPointCommon_::attach( observer, initialSeqNumber );
-	}
-
-	/// Type safe un-register observer
-	virtual void detach( Observer& observer ) noexcept
-	{
-		ModelPointCommon_::detach( observer );
-	}
+    /// Constructor. Valid Point.  Requires an initial value
+    Uint64( const Id_T myIdentifier, uint64_t initialValue ) : BasicInteger_<uint64_t>( initialValue ), m_id( myIdentifier ) {}
 
 public:
-	///  See Cpl::Dm::ModelPoint.
-	const char* getTypeAsText() const noexcept
-	{
-		return m_decimal ? "Cpl::Dm::Mp::Uint64-dec" : "Cpl::Dm::Mp::Uint64-hex";
-	}
+    ///  See Cpl::Dm::ModelPoint.
+    const char* getTypeAsText() const noexcept { return "Fxt::Point::Uint64"; }
+
+protected:
+    /// The points numeric identifier
+    Id_T m_id;
 };
 
 
 
 };      // end namespaces
-};
 };
 #endif  // end header latch

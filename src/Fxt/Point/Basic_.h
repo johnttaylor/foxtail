@@ -42,6 +42,7 @@ public:
     Basic_()
         :Fxt::Point::PointCommon_( false )
     {
+        m_data = 0;
     }
 
     /// Constructor: Valid MP (requires initial value)
@@ -72,6 +73,15 @@ public:
     {
         return sizeof( ELEMTYPE );
     }
+
+public:
+    /// See Fxt::Point::Api. Sets the value to zero - for deterministic behavior of the increment/decrement methods
+    void setInvalid( LockRequest_T lockRequest = eNO_REQUEST ) noexcept
+    {
+        PointCommon_::setInvalid( lockRequest );
+        m_data = 0;
+    }
+
 
 protected:
     /// See Fxt::Point::Api
@@ -112,23 +122,66 @@ public:
     }
 
     /// Type safe write. See Fxt::Point::Api
-    virtual void write( ELEMTYPE newValue, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
+    virtual ELEMTYPE write( ELEMTYPE newValue, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
-        return Fxt::Point::PointCommon_::write( &newValue, sizeof( ELEMTYPE ), lockRequest );
+        Fxt::Point::PointCommon_::write( &newValue, sizeof( ELEMTYPE ), lockRequest );
+        return Basic_<ELEMTYPE>::m_data;
     }
 
     /// Atomic increment
-    virtual void increment( ELEMTYPE incSize = 1, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
+    virtual ELEMTYPE increment( ELEMTYPE incSize = 1, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
         write( Basic_<ELEMTYPE>::m_data + incSize, lockRequest );
+        return Basic_<ELEMTYPE>::m_data;
     }
 
     /// Atomic decrement
-    virtual void decrement( ELEMTYPE decSize = 1, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
+    virtual ELEMTYPE decrement( ELEMTYPE decSize = 1, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
         write( Basic_<ELEMTYPE>::m_data - decSize, lockRequest );
+        return Basic_<ELEMTYPE>::m_data;
     }
 
+    /// Atomic 'word' AND
+    virtual ELEMTYPE maskAnd(ELEMTYPE mask, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST) noexcept
+    {
+        write( Basic_<ELEMTYPE>::m_data & mask, lockRequest );
+        return Basic_<ELEMTYPE>::m_data;
+    }
+
+    /// Atomic 'word' OR
+    virtual ELEMTYPE maskOr(ELEMTYPE mask, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST) noexcept
+    {
+        write( Basic_<ELEMTYPE>::m_data | mask, lockRequest );
+        return Basic_<ELEMTYPE>::m_data;
+    }
+
+    /// Atomic 'word' XOR
+    virtual ELEMTYPE maskXor(ELEMTYPE mask, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST) noexcept
+    {
+        write( Basic_<ELEMTYPE>::m_data ^ mask, lockRequest );
+        return Basic_<ELEMTYPE>::m_data;
+    }
+
+    /// Atomic bit toggle.  'bitNum==0' is the Least significant bit
+    virtual ELEMTYPE bitToggle( unsigned bitNum, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
+    {
+        write( Basic_<ELEMTYPE>::m_data ^ (1<<bitNum), lockRequest );
+        return Basic_<ELEMTYPE>::m_data;
+    }
+    /// Atomic bit clear.  'bitNum==0' is the Least significant bit
+    virtual ELEMTYPE bitClear( unsigned bitNum, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
+    {
+        write( Basic_<ELEMTYPE>::m_data & (~(1 << bitNum)), lockRequest );
+        return Basic_<ELEMTYPE>::m_data;
+    }
+
+    /// Atomic bit set.  'bitNum==0' is the Least significant bit
+    virtual ELEMTYPE bitSet( unsigned bitNum, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
+    {
+        write( Basic_<ELEMTYPE>::m_data | (1 << bitNum), lockRequest );
+        return Basic_<ELEMTYPE>::m_data;
+    }
 
 public:
     /// See Fxt::Point::Api.  
@@ -136,7 +189,7 @@ public:
     {
         // Construct the 'val' key/value pair (as a HEX string)
         Cpl::Text::FString<20> tmp;
-        tmp.format( "0x%llX", (unsigned long long) m_data );
+        tmp.format( "0x%llX", (unsigned long long) Basic_<ELEMTYPE>::m_data );
         doc["val"] = (char*)tmp.getString();
         return true;
     }
@@ -191,21 +244,24 @@ public:
 
 public:
     /// Type safe write. See Fxt::Point::Api
-    virtual void write( ELEMTYPE newValue, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
+    virtual ELEMTYPE write( ELEMTYPE newValue, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
-        return Fxt::Point::PointCommon_::write( &newValue, sizeof( ELEMTYPE ), lockRequest );
+        Fxt::Point::PointCommon_::write( &newValue, sizeof( ELEMTYPE ), lockRequest );
+        return Basic_<ELEMTYPE>::m_data;
     }
 
     /// Atomic increment
-    virtual void increment( ELEMTYPE incSize = 1.0, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
+    virtual ELEMTYPE increment( ELEMTYPE incSize = 1.0, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
-        Basic_<ELEMTYPE>::write( Basic_<ELEMTYPE>::m_data + incSize, lockRequest );
+        write( Basic_<ELEMTYPE>::m_data + incSize, lockRequest );
+        return Basic_<ELEMTYPE>::m_data;
     }
 
     /// Atomic decrement
-    virtual void decrement( ELEMTYPE decSize = 1.0, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
+    virtual ELEMTYPE decrement( ELEMTYPE decSize = 1.0, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
-        Basic_<ELEMTYPE>::write( Basic_<ELEMTYPE>::m_data - decSize, lockRequest );
+        write( Basic_<ELEMTYPE>::m_data - decSize, lockRequest );
+        return Basic_<ELEMTYPE>::m_data;
     }
 
 
@@ -214,7 +270,7 @@ public:
     bool toJSON_( JsonDocument& doc, bool verbose = true ) noexcept
     {
         // Construct the 'val' key/value pair 
-        doc["val"] = m_data;
+        doc["val"] = Basic_<ELEMTYPE>::m_data;
         return true;
     }
 
@@ -232,7 +288,7 @@ public:
             return false;
         }
 
-        Basic_<ELEMTYPE>::write( newValue, lockRequest );
+        write( newValue, lockRequest );
         return true;
     }
 };

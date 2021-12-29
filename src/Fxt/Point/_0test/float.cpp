@@ -12,8 +12,9 @@
 #include "Catch/catch.hpp"
 #include "Cpl/System/_testsupport/Shutdown_TS.h"
 #include "Fxt/Point/Database.h"
-#include "Fxt/Point/Uint32.h"
+#include "Fxt/Point/Float.h"
 #include "Cpl/System/Trace.h"
+#include "Cpl/Math/real.h"
 #include <string.h>
 
 #define SECT_   "_0test"
@@ -23,16 +24,16 @@ using namespace Fxt::Point;
 
 #define MAX_POINTS  2
 
-constexpr Uint32::Id_T  appleId  = 0;
-constexpr Uint32::Id_T  orangeId = 1;
+constexpr Float::Id_T  appleId  = 0;
+constexpr Float::Id_T  orangeId = 1;
 
 #define ORANGE_INIT_VAL 7
 
-static Uint32 apple_( appleId );
-static Uint32 orange_( orangeId, ORANGE_INIT_VAL );
+static Float apple_( appleId );
+static Float orange_( orangeId, ORANGE_INIT_VAL );
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE( "Uint32" )
+TEST_CASE( "Float" )
 {
     Cpl::System::Shutdown_TS::clearAndUseCounter();
     Database db( MAX_POINTS );
@@ -40,8 +41,8 @@ TEST_CASE( "Uint32" )
     REQUIRE( db.add( appleId, info ) );
     info ={ &orange_, "ORANGE" };
     REQUIRE( db.add( orangeId, info ) );
-    bool     valid;
-    uint32_t value;
+    bool  valid;
+    float value;
 
     SECTION( "read" )
     {
@@ -54,45 +55,29 @@ TEST_CASE( "Uint32" )
         apple_.write( 1 );
         valid = apple_.read( value );
         REQUIRE( valid );
-        REQUIRE( value == 1 );
+        REQUIRE( Cpl::Math::areFloatsEqual(value,1.0) );
 
         apple_.setInvalid();
         valid = apple_.read( value );
         REQUIRE( valid == false );
 
-        REQUIRE( apple_.getSize() == sizeof( uint32_t ) );
+        REQUIRE( apple_.getSize() == sizeof( float ) );
     }
 
     SECTION( "write" )
     {
         value = apple_.write( 2 );
-        REQUIRE( value == 2 );
+        REQUIRE( Cpl::Math::areFloatsEqual( value, 2.0 ) );
         value = apple_.increment();
-        REQUIRE( value == 3 );
+        REQUIRE( Cpl::Math::areFloatsEqual( value, 3.0 ) );
         value = apple_.increment( 3 );
-        REQUIRE( value == 3 + 3 );
+        REQUIRE( Cpl::Math::areFloatsEqual( value, 3.0+3.0 ) );
         value = apple_.decrement();
+        REQUIRE( Cpl::Math::areFloatsEqual( value, 3.0 + 3.0 -1.0) );
         REQUIRE( value == 3 + 3 - 1 );
         value = apple_.decrement( 3 );
+        REQUIRE( Cpl::Math::areFloatsEqual( value, 2.0 ) );
         REQUIRE( value == 2 );
-    }
-
-    SECTION( "bitOpertions" )
-    {
-        apple_.setInvalid();
-        value = apple_.maskOr( 0xA5 );
-        REQUIRE( value == 0xA5 );
-        value = apple_.maskAnd( 0xF0 );
-        REQUIRE( value == 0xA0 );
-        value = apple_.maskXor( 0x8A );
-        REQUIRE( value == 0x2A );
-
-        value = apple_.bitClear( 5 );
-        REQUIRE( value == 0x0A );
-        value = apple_.bitToggle( 3 );
-        REQUIRE( value == 0x02 );
-        value = apple_.bitSet( 4 );
-        REQUIRE( value == 0x12 );
     }
 
     SECTION( "json" )
@@ -107,12 +92,13 @@ TEST_CASE( "Uint32" )
         StaticJsonDocument<1024> doc;
         DeserializationError err = deserializeJson( doc, buffer );
         REQUIRE( err == DeserializationError::Ok );
-        REQUIRE( strcmp( doc["val"], "0x7F" ) == 0  );
+        value = doc["val"];
+        REQUIRE( Cpl::Math::areFloatsEqual( value, 127 ) );
 
-        result = db.fromJSON( "{\"id\":0,\"val\":\"0xA\"}" );
+        result = db.fromJSON( "{\"id\":0,\"val\":3.14}" );
         valid  = apple_.read( value );
         REQUIRE( valid );
-        REQUIRE( value == 0xA );
+        REQUIRE( Cpl::Math::areFloatsEqual( value, 3.14 ) );
     }
     
     REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );

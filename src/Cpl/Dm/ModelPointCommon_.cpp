@@ -561,8 +561,9 @@ JsonDocument& ModelPointCommon_::beginJSON( int8_t validState, bool locked, uint
 void ModelPointCommon_::endJSON( char* dst, size_t dstSize, bool& truncated, bool verbose ) noexcept
 {
     // Generate the actual output string 
-    size_t num = serializeJson( ModelDatabase::g_doc_, dst, dstSize );
-    truncated = num == dstSize ? true : false;
+    size_t jsonLen   = measureJson( ModelDatabase::g_doc_ );
+    size_t outputLen = serializeJson( ModelDatabase::g_doc_, dst, dstSize );
+    truncated        = outputLen == jsonLen ? false : true;
 
     // Release the Global JSON document
     ModelDatabase::globalUnlock_();

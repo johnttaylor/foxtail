@@ -1,5 +1,5 @@
-#ifndef Fxt_Point_Int32_h_
-#define Fxt_Point_Int32_h_
+#ifndef Fxt_Point_Double_h_
+#define Fxt_Point_Double_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -13,8 +13,8 @@
 /** @file */
 
 
-#include "Fxt/Point/Basic_.h"
 #include "Fxt/Point/Identifier.h"
+#include "Fxt/Point/Basic_.h"
 
 ///
 namespace Fxt {
@@ -23,17 +23,16 @@ namespace Point {
 
 
 /** This class provides a concrete implementation for a Point who's data is a
-    int32_t.
+    double.
 
     The toJSON()/fromJSON format is:
-        \code
+    \code
 
-        { name:"<mpname>", type:"<mptypestring>", valid:true|false, locked:true|false, val:"hex-value" }
+    { name:"<mpname>", type:"<mptypestring>", valid:true|false, locked:true|false, val:<numvalue> }
 
-        \endcode
-
+    \endcode
  */
-class Int32 : public BasicInteger_<int32_t>
+class Double : public BasicReal_<double>
 {
 public:
     /// Type safe Point Identifier
@@ -47,19 +46,20 @@ public:
 
 public:
     /// Returns the Point's Identifier
-    inline Int32::Id_T getId() const noexcept { return m_id; }
+    inline Double::Id_T getId() const noexcept { return m_id; }
 
 public:
-    /** Constructor. Invalid Point.
-     */
-    Int32( const Id_T myIdentifier ) : BasicInteger_<int32_t>(), m_id( myIdentifier ) {}
+    /// Constructor. Invalid MP. 
+    Double( const Id_T myIdentifier ) :BasicReal_<double>(), m_id( myIdentifier ){}
 
-    /// Constructor. Valid Point.  Requires an initial value
-    Int32( const Id_T myIdentifier, int32_t initialValue ) : BasicInteger_<int32_t>( initialValue ), m_id( myIdentifier ) {}
+    /// Constructor. Valid MP.  Requires an initial value
+    Double( const Id_T myIdentifier, double initialValue ) :BasicReal_<double>( initialValue ), m_id( myIdentifier ){}
+
 
 public:
-    ///  See Cpl::Dm::ModelPoint.
-    const char* getTypeAsText() const noexcept { return "Fxt::Point::Int32"; }
+    ///  See Fxt::Point::Api.
+    const char* getTypeAsText() const noexcept { return "Fxt::Point:Double"; }
+
 
 protected:
     /// The points numeric identifier

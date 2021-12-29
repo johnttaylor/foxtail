@@ -106,18 +106,17 @@ bool Database::toJSON( const Identifier_T srcPoint,
 
     // Have the Point instance fill in the 'val' details
     bool result = true;
-    if ( isValid )
+    if ( isValid && !pt->toJSON_( g_doc_, verbose ) )
     {
-        if ( pt->toJSON_( g_doc_, verbose ) )
-        {
-            // Generate the actual output string 
-            size_t num = serializeJson( Database::g_doc_, dst, dstSize );
-            truncated  = num == dstSize ? true : false;
-        }
-        else
-        {
-            result = false;
-        }
+        result = false;
+    }
+
+    // Generate the actual output string 
+    if ( result )
+    {
+        size_t jsonLen   = measureJson( Database::g_doc_ );
+        size_t outputLen = serializeJson( Database::g_doc_, dst, dstSize );
+        truncated  = outputLen == jsonLen ? false : true;
     }
 
     // Release the Global JSON document

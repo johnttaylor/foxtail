@@ -12,6 +12,9 @@
 #include "Catch/catch.hpp"
 #include "Cpl/System/_testsupport/Shutdown_TS.h"
 #include "Fxt/Point/Database.h"
+#include "Fxt/Point/Uint32.h"
+#include "Cpl/System/Trace.h"
+#include <string.h>
 
 #define SECT_   "_0test"
 
@@ -60,6 +63,166 @@ TEST_CASE( "Database" )
         REQUIRE( pt == &cherry_ );
         pt = uut.lookupById( limeId );
         REQUIRE( pt == 0 );
+    }
+
+    SECTION( "toJson" )
+    {
+#define EXPECTED1 "{\"id\":0,\"valid\":true,\"type\":\"Fxt::Point::Uint32\",\"locked\":false,\"val\":\"0xA\"}"
+#define EXPECTED4 "{\"id\":0,\"valid\":true,\"type\":\"Fxt::Point::Uint32\",\"locked\":true,\"val\":\"0xB\"}"
+#define EXPECTED5 "{\"id\":0,\"valid\":true,\"type\":\"Fxt::Point::Uint32\",\"locked\":false,\"val\":\"0x3\"}"
+#define EXPECTED3 "{\"id\":0,\"valid\":true,\"val\":\"0xA\"}"
+#define EXPECTED2 "{\"id\":0,\"valid\":false,\"type\":\"Fxt::Point::Uint32\",\"locked\":false}"
+
+        Info_T info ={ &apple_, "APPLE" };
+        REQUIRE( uut.add( appleId, info ) );
+
+        char buffer[256];
+        bool truncated;
+        apple_.write( 10 );
+        REQUIRE( uut.toJSON( appleId, buffer, sizeof( buffer ), truncated ) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s]", buffer) );
+        REQUIRE( truncated == false );
+        REQUIRE( strcmp( buffer, EXPECTED1 ) == 0 );
+
+        REQUIRE( uut.toJSON( appleId, buffer, sizeof( buffer ), truncated, false ) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s]", buffer) );
+        REQUIRE( truncated == false );
+        REQUIRE( strcmp( buffer, EXPECTED3 ) == 0 );
+
+        apple_.setInvalid();
+        REQUIRE( uut.toJSON( appleId, buffer, sizeof( buffer ), truncated ) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s]", buffer) );
+        REQUIRE( truncated == false );
+        REQUIRE( strcmp( buffer, EXPECTED2 ) == 0 );
+
+        apple_.write( 11, Fxt::Point::Api::eLOCK );
+        REQUIRE( uut.toJSON( appleId, buffer, sizeof( buffer ), truncated ) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s]", buffer) );
+        REQUIRE( truncated == false );
+        REQUIRE( strcmp( buffer, EXPECTED4 ) == 0 );
+
+        apple_.write( 111 );
+        REQUIRE( uut.toJSON( appleId, buffer, sizeof( buffer ), truncated ) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s]", buffer) );
+        REQUIRE( truncated == false );
+        REQUIRE( strcmp( buffer, EXPECTED4 ) == 0 );
+
+        apple_.write( 3, Fxt::Point::Api::eUNLOCK );
+        REQUIRE( uut.toJSON( appleId, buffer, sizeof( buffer ), truncated ) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s]", buffer) );
+        REQUIRE( truncated == false );
+        REQUIRE( strcmp( buffer, EXPECTED5 ) == 0 );
+
+        REQUIRE( uut.toJSON( appleId, buffer, 50, truncated ) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s]", buffer) );
+        REQUIRE( truncated == true );
+        REQUIRE( strncmp( buffer, EXPECTED5, 50-1 ) == 0 );
+
+        REQUIRE( uut.toJSON( orangeId, buffer, sizeof( buffer ), truncated ) == false );
+    }
+
+    SECTION( "fromJson" )
+    {
+        Info_T info ={ &apple_, "APPLE" };
+        REQUIRE( uut.add( appleId, info ) );
+        apple_.write( 0xFFFFFFFF );
+        apple_.setInvalid();
+
+        Cpl::Text::FString<256> errorMsg = "<noerror>";
+        bool result = uut.fromJSON( "{\"id\":0,\"val\":\"0xA\"}", &errorMsg );
+        REQUIRE( result );
+        bool valid;
+        bool locked;
+        uint32_t val;
+        REQUIRE( apple_.get( val, valid, locked ) );
+        REQUIRE( val == 10 );
+        REQUIRE( valid );
+        REQUIRE( locked == false );
+        REQUIRE( errorMsg == "<noerror>" );
+
+        result = uut.fromJSON( "{\"id\":0,\"val\":\"0xB\",valid:false}", &errorMsg );
+        REQUIRE( result );
+        REQUIRE( !apple_.get( val, valid, locked ) );
+        REQUIRE( !valid );
+        REQUIRE( locked == false );
+        REQUIRE( errorMsg == "<noerror>" );
+
+        result = uut.fromJSON( "{\"id\":0,\"val\":\"0xB\",locked:true}", &errorMsg );
+        REQUIRE( result );
+        REQUIRE( apple_.get( val, valid, locked ) );
+        REQUIRE( val == 11 );
+        REQUIRE( valid );
+        REQUIRE( locked );
+        REQUIRE( errorMsg == "<noerror>" );
+
+        result = uut.fromJSON( "{\"id\":0,\"val\":\"0xBB\"}" );
+        REQUIRE( result );
+        REQUIRE( apple_.get( val, valid, locked ) );
+        REQUIRE( val == 11 );
+        REQUIRE( valid );
+        REQUIRE( locked );
+
+        result = uut.fromJSON( "{\"id\":0,\"val\":\"0xBB\",locked:false}");
+        REQUIRE( result );
+        REQUIRE( apple_.get( val, valid, locked ) );
+        REQUIRE( val == 0xBB );
+        REQUIRE( valid );
+        REQUIRE( !locked );
+
+        errorMsg = "<noerror>";
+        result   = uut.fromJSON( "{\"id\":0,\"val\":true}", &errorMsg );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("errorMsg=[%s]", errorMsg.getString()) );
+        REQUIRE( !result );
+        REQUIRE( apple_.get( val, valid, locked ) );
+        REQUIRE( val == 0xBB );
+        REQUIRE( valid );
+        REQUIRE( !locked );
+        REQUIRE( errorMsg != "<noerror>" );
+
+        errorMsg = "<noerror>";
+        result   = uut.fromJSON( "{\"id\":0,\"val\":\"0x10", &errorMsg );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("errorMsg=[%s]", errorMsg.getString()) );
+        REQUIRE( !result );
+        REQUIRE( apple_.get( val, valid, locked ) );
+        REQUIRE( val == 0xBB );
+        REQUIRE( valid );
+        REQUIRE( !locked );
+        REQUIRE( errorMsg != "<noerror>" );
+
+        errorMsg = "<noerror>";
+        result   = uut.fromJSON( "{\"id\":\"bob\",\"val\":\"0x10\"}", &errorMsg );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("errorMsg=[%s]", errorMsg.getString()) );
+        REQUIRE( !result );
+        REQUIRE( apple_.get( val, valid, locked ) );
+        REQUIRE( val == 0xBB );
+        REQUIRE( valid );
+        REQUIRE( !locked );
+        REQUIRE( errorMsg != "<noerror>" );
+
+        errorMsg = "<noerror>";
+        result   = uut.fromJSON( "{\"id\":4,\"val\":\"0x10\"}", &errorMsg );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("errorMsg=[%s]", errorMsg.getString()) );
+        REQUIRE( !result );
+        REQUIRE( apple_.get( val, valid, locked ) );
+        REQUIRE( val == 0xBB );
+        REQUIRE( valid );
+        REQUIRE( !locked );
+        REQUIRE( errorMsg != "<noerror>" );
+    }
+
+    SECTION( "other" )
+    {
+        Info_T info ={ &apple_, "APPLE" };
+        REQUIRE( uut.add( appleId, info ) );
+        info ={ &orange_, "ORANGE" };
+        REQUIRE( uut.add( orangeId, info ) );
+        info ={ &cherry_, "CHERRY" };
+        REQUIRE( uut.add( cherryId, info ) );
+
+        REQUIRE( strcmp( uut.getSymbolicName( appleId ), "APPLE" ) == 0 );
+        REQUIRE( strcmp( uut.getSymbolicName( orangeId ), "ORANGE" ) == 0 );
+        REQUIRE( strcmp( uut.getSymbolicName( cherryId ), "CHERRY" ) == 0 );
+        REQUIRE( uut.getSymbolicName( limeId ) == nullptr );
     }
 
     REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );

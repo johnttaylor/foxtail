@@ -13,9 +13,8 @@
 /** @file */
 
 #include "Cpl/Text/String.h"
-#include "Fxt/Point/Uint32.h"
 #include "Fxt/Point/Info.h"
-
+#include "Fxt/Point/Identifier.h"
 
 ///
 namespace Fxt {
@@ -46,17 +45,17 @@ public:
     virtual Fxt::Point::Api* lookupById( const Identifier_T pointIdToFind, bool fatalOnNotFound=false ) const noexcept = 0;
 
 
-    /** FIXME: TODO -->The typesafe look-up methods should go SOMEWHERE ELSE.
+    ///** FIXME: TODO -->The typesafe look-up methods should go SOMEWHERE ELSE.
 
-        This method performs a type-safe look-up of a Point instance by its numeric
-        Identifier and returns a reference to the instance.  If the Point
-        identifier cannot be found, a fatal error is generated
+    //    This method performs a type-safe look-up of a Point instance by its numeric
+    //    Identifier and returns a reference to the instance.  If the Point
+    //    identifier cannot be found, a fatal error is generated
 
-        This method is ONLY okay to call from ANY thread if the associated
-        virtual Chassis is IN service (or ready for service).  If the Chassis 
-        is out-of-service the state of the database is unknown.
-     */
-    inline Uint32& operator() ( const Uint32::Id_T numericId ) const noexcept { return *((Uint32 *)lookupById( numericId, true )); }
+    //    This method is ONLY okay to call from ANY thread if the associated
+    //    virtual Chassis is IN service (or ready for service).  If the Chassis 
+    //    is out-of-service the state of the database is unknown.
+    // */
+    //inline Uint32& operator() ( const Uint32::Id_T numericId ) const noexcept { return *((Uint32 *)lookupById( numericId, true )); }
 
 
 public:

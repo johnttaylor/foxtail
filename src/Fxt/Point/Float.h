@@ -1,112 +1,73 @@
-#ifndef Cpl_Dm_Mp_Float_h_
-#define Cpl_Dm_Mp_Float_h_
+#ifndef Fxt_Point_Float_h_
+#define Fxt_Point_Float_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
 * agreement (license.txt) in the top/ directory or on the Internet at
 * http://integerfox.com/colony.core/license.txt
 *
-* Copyright (c) 2014-2020  John T. Taylor
+* Copyright (c) 2014-2022  John T. Taylor
 *
 * Redistributions of the source code must retain the above copyright notice.
 *----------------------------------------------------------------------------*/
 /** @file */
 
 
-#include "Cpl/Dm/Mp/Basic.h"
-#include "Cpl/Math/real.h"
+#include "Fxt/Point/Identifier.h"
+#include "Fxt/Point/Basic_.h"
 
 ///
-namespace Cpl {
+namespace Fxt {
 ///
-namespace Dm {
-///
-namespace Mp {
+namespace Point {
 
 
 /** This class provides a concrete implementation for a Point who's data is a
-	float.
+    float.
 
-	The toJSON()/fromJSON format is:
-	\code
+    The toJSON()/fromJSON format is:
+    \code
 
-	{ name:"<mpname>", type:"<mptypestring>", invalid:nn, seqnum:nnnn, locked:true|false, val:<numvalue> }
+    { name:"<mpname>", type:"<mptypestring>", valid:true|false, locked:true|false, val:<numvalue> }
 
-	\endcode
-
-	NOTE: All methods in this class ARE thread Safe unless explicitly
-		  documented otherwise.
+    \endcode
  */
-class Float : public BasicReal<float>
+class Float : public BasicReal_<float>
 {
 public:
-	/// Constructor. Invalid MP. 
-	Float( Cpl::Dm::ModelDatabase& myModelBase, StaticInfo& staticInfo )
-		:BasicReal<float>( myModelBase, staticInfo )
-	{
-	}
-
-	/// Constructor. Valid MP.  Requires an initial value
-	Float( Cpl::Dm::ModelDatabase& myModelBase, StaticInfo& staticInfo, float initialValue )
-		:BasicReal<float>( myModelBase, staticInfo, initialValue )
-	{
-	}
-
-public:
-	/// Type safe read-modify-write client callback interface
-	typedef Cpl::Dm::ModelPointRmwCallback<float> Client;
-
-	/** Type safe read-modify-write. See Cpl::Dm::ModelPoint
-
-	   NOTE: THE USE OF THIS METHOD IS STRONGLY DISCOURAGED because it has
-			 potential to lockout access to the ENTIRE Model Base for an
-			 indeterminate amount of time.  And alternative is to have the
-			 concrete Model Point leaf classes provide the application
-			 specific read, write, read-modify-write methods in addition or in
-			 lieu of the read/write methods in this interface.
-	 */
-	virtual uint16_t readModifyWrite( Client& callbackClient, LockRequest_T lockRequest = eNO_REQUEST )
-	{
-		return ModelPointCommon_::readModifyWrite( callbackClient, lockRequest );
-	}
+    /// Type safe Point Identifier
+    class Id_T : public Identifier_T
+    {
+    public:
+        constexpr Id_T() : Identifier_T() {}
+        constexpr Id_T( uint32_t x ) : Identifier_T( x ) {}
+    };
 
 
 public:
-	/// Type safe subscriber
-	typedef Cpl::Dm::Subscriber<Float> Observer;
+    /// Returns the Point's Identifier
+    inline Float::Id_T getId() const noexcept { return m_id; }
 
-	/// Type safe register observer
-	virtual void attach( Observer& observer, uint16_t initialSeqNumber=SEQUENCE_NUMBER_UNKNOWN ) noexcept
-	{
-		ModelPointCommon_::attach( observer, initialSeqNumber );
-	}
+public:
+    /// Constructor. Invalid MP. 
+    Float( const Id_T myIdentifier ) :BasicReal_<float>(), m_id( myIdentifier ){}
 
-	/// Type safe un-register observer
-	virtual void detach( Observer& observer ) noexcept
-	{
-		ModelPointCommon_::detach( observer );
-	}
+    /// Constructor. Valid MP.  Requires an initial value
+    Float( const Id_T myIdentifier, float initialValue ) :BasicReal_<float>( initialValue ), m_id( myIdentifier ){}
 
 
 public:
-	///  See Cpl::Dm::ModelPoint.
-	const char* getTypeAsText() const noexcept
-	{
-		return "Cpl::Dm::Mp::Float";
-	}
+    ///  See Fxt::Point::Api.
+    const char* getTypeAsText() const noexcept { return "Fxt::Point:Float"; }
+
 
 protected:
-	/// See Cpl::Dm::ModelPoint.  Note: Use the system wide default epsilon of CPL_MATH_REAL_FLOAT_EPSILON when testing for equality
-	bool isDataEqual_( const void* otherData ) const noexcept
-	{
-		float left = *( (float*) otherData );
-		return Cpl::Math::areFloatsEqual( m_data, left );
-	}
+    /// The points numeric identifier
+    Id_T m_id;
 };
 
 
 
 };      // end namespaces
-};
 };
 #endif  // end header latch

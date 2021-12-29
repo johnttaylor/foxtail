@@ -12,7 +12,7 @@
 #include "Catch/catch.hpp"
 #include "Cpl/System/_testsupport/Shutdown_TS.h"
 #include "Fxt/Point/Database.h"
-#include "Fxt/Point/Uint32.h"
+#include "Fxt/Point/Int32.h"
 #include "Cpl/System/Trace.h"
 #include <string.h>
 
@@ -23,16 +23,16 @@ using namespace Fxt::Point;
 
 #define MAX_POINTS  2
 
-constexpr Uint32::Id_T  appleId  = 0;
-constexpr Uint32::Id_T  orangeId = 1;
+constexpr Int32::Id_T  appleId  = 0;
+constexpr Int32::Id_T  orangeId = 1;
 
 #define ORANGE_INIT_VAL 7
 
-static Uint32 apple_( appleId );
-static Uint32 orange_( orangeId, ORANGE_INIT_VAL );
+static Int32 apple_( appleId );
+static Int32 orange_( orangeId, ORANGE_INIT_VAL );
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE( "Uint32" )
+TEST_CASE( "Int32" )
 {
     Cpl::System::Shutdown_TS::clearAndUseCounter();
     Database db( MAX_POINTS );
@@ -41,7 +41,7 @@ TEST_CASE( "Uint32" )
     info ={ &orange_, "ORANGE" };
     REQUIRE( db.add( orangeId, info ) );
     bool     valid;
-    uint32_t value;
+    int32_t value;
 
     SECTION( "read" )
     {
@@ -60,7 +60,7 @@ TEST_CASE( "Uint32" )
         valid = apple_.read( value );
         REQUIRE( valid == false );
 
-        REQUIRE( apple_.getSize() == sizeof( uint32_t ) );
+        REQUIRE( apple_.getSize() == sizeof( int32_t ) );
     }
 
     SECTION( "write" )
