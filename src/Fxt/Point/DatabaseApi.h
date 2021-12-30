@@ -1,5 +1,5 @@
-#ifndef Fxt_Point_DatabaseApi_h_
-#define Fxt_Point_DatabaseApi_h_
+#ifndef Cpl_Point_DatabaseApi_h_
+#define Cpl_Point_DatabaseApi_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -13,11 +13,11 @@
 /** @file */
 
 #include "Cpl/Text/String.h"
-#include "Fxt/Point/Info.h"
-#include "Fxt/Point/Identifier.h"
+#include "Cpl/Point/Info.h"
+#include "Cpl/Point/Identifier.h"
 
 ///
-namespace Fxt {
+namespace Cpl {
 ///
 namespace Point {
 
@@ -42,7 +42,7 @@ public:
         virtual Chassis is IN service (or ready for service).  If the Chassis
         is out-of-service the state of the database is unknown.
      */
-    virtual Fxt::Point::Api* lookupById( const Identifier_T pointIdToFind, bool fatalOnNotFound=false ) const noexcept = 0;
+    virtual Cpl::Point::Api* lookupById( const Identifier_T pointIdToFind, bool fatalOnNotFound=false ) const noexcept = 0;
 
 
     ///** FIXME: TODO -->The typesafe look-up methods should go SOMEWHERE ELSE.
@@ -130,11 +130,11 @@ public:
         The general input format:
         \code
 
-        { id=12, locked:true|false }              // Locks/unlocks the MP
-        { id=12, valid=0 }                        // Invalidates the MP
-        { id=12, valid=0, locked=true }           // Invalidates the MP and locks the MP
-        { id=12, val:<value> }                    // Writes a new (valid) value to the MP
-        { id=12, val:<value>, locked=true }       // Writes a new (valid) value to the MP and locks the MP
+        { id=12, locked:true|false }              // Locks/unlocks the Point
+        { id=12, valid:false }                    // Invalidates the Point
+        { id=12, valid:false, locked:true }       // Invalidates the Point and locks the Point
+        { id=12, val:<value> }                    // Writes a new (valid) value to the Point
+        { id=12, val:<value>, locked:true }       // Writes a new (valid) value to the Point and locks the Point
 
         \endcode
      */

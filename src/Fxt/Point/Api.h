@@ -1,5 +1,5 @@
-#ifndef Fxt_Point_Api_h_
-#define Fxt_Point_Api_h_
+#ifndef Cpl_Point_Api_h_
+#define Cpl_Point_Api_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -19,7 +19,7 @@
 #include <stdlib.h>
 
 ///
-namespace Fxt {
+namespace Cpl {
 ///
 namespace Point {
 
@@ -68,12 +68,12 @@ public:
     /** This method returns a string identifier for the Point's data type.
         This value IS GUARANTEED to be unique (within an Application).  The
         format of the string is the Point's fully qualified namespace and
-        class type as a string. For example, the for Fxt::Point::Uint32 Model
-        the function would return "Fxt::Point::Uint32"
+        class type as a string. For example, the for Cpl::Point::Uint32 Model
+        the function would return "Cpl::Point::Uint32"
 
         Note: The type string can contain additional information, but adding
               a '-' character followed by the extra info.  For example:
-              "Fxt::Point::Uint32-hex"
+              "Cpl::Point::Uint32-hex"
      */
     virtual const char* getTypeAsText() const noexcept = 0;
 
@@ -160,7 +160,7 @@ protected:
 
 public:
     /** This method has PACKAGE Scope, i.e. it is intended to be ONLY accessible
-        by other classes in the Fxt::Point namespace.  The Application should
+        by other classes in the Cpl::Point namespace.  The Application should
         NEVER call this method.
 
         This method is used to unconditionally update the Point's data.
@@ -178,7 +178,7 @@ public:
 
 
     /** This method has PACKAGE Scope, i.e. it is intended to be ONLY accessible
-        by other classes in the Fxt::Point namespace.  The Application should
+        by other classes in the Cpl::Point namespace.  The Application should
         NEVER call this method.
 
         This method is used update's the caller's 'Point Data' with the Model
@@ -197,14 +197,14 @@ public:
 
 
     /** This method has PACKAGE Scope, i.e. it is intended to be ONLY accessible
-        by other classes in the Fxt::Point namespace.  The Application should
+        by other classes in the Cpl::Point namespace.  The Application should
         NEVER call this method.
 
         This method attempts to convert JSON object 'src' to its binary format
         and copies the result to the Point's internal data. The expected
         format of the JSON string is specific to the concrete leaf class.
 
-        See Fxt::Point::ModelDatabaseApi::fromJSON() method for JSON format.
+        See Cpl::Point::ModelDatabaseApi::fromJSON() method for JSON format.
      */
     virtual bool fromJSON_( JsonVariant&        src,
                             LockRequest_T       lockRequest,
@@ -212,7 +212,7 @@ public:
 
 
     /** This method has PACKAGE Scope, i.e. it is intended to be ONLY accessible
-        by other classes in the Fxt::Point namespace.  The Application should
+        by other classes in the Cpl::Point namespace.  The Application should
         NEVER call this method.
 
         This method converts the Points data to a JSON object.  If the point
@@ -220,7 +220,7 @@ public:
         else true is returned.  This method is ONLY called if the Point is in
         the valid state.
 
-        See Fxt::Point::ModelDatabaseApi::fromJSON() method for JSON format.
+        See Cpl::Point::ModelDatabaseApi::fromJSON() method for JSON format.
      */   
     virtual bool toJSON_( JsonDocument& doc, bool verbose = true ) noexcept = 0;
 

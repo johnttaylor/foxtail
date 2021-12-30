@@ -1,5 +1,5 @@
-#ifndef Fxt_Layout_h_
-#define Fxt_Layout_h_
+#ifndef Cpl_Layout_h_
+#define Cpl_Layout_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -101,7 +101,7 @@ MyIO_T pid1 = { { VINPUT_P0.1, VINPUT_P0_2 }, {VOUTPUT_P0_1, VOUTPUT_P0_1} };
 
 /// 
 ///
-namespace Fxt {
+namespace Cpl {
 
     typedef struct
     {

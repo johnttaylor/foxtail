@@ -1,4 +1,4 @@
-/** @namespace Fxt::Point
+/** @namespace Cpl::Point
 
 The 'Point' namespace is the root namespace for the Point and Point database
 infrastructure.  Points are used the principal interface between Components

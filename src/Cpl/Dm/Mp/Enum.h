@@ -70,13 +70,13 @@ public:
 	/// Type safe read. See Cpl::Dm::ModelPoint
 	virtual int8_t read( BETTERENUM_TYPE& dstData, uint16_t* seqNumPtr=0 ) const noexcept
 	{
-		return ModelPointCommon_::read( &dstData, sizeof( int ), seqNumPtr );
+		return ModelPointCommon_::read( &dstData, sizeof( BETTERENUM_TYPE ), seqNumPtr );
 	}
 
 	/// Type safe write. See Cpl::Dm::ModelPoint
 	virtual uint16_t write( BETTERENUM_TYPE newValue, LockRequest_T lockRequest = eNO_REQUEST ) noexcept
 	{
-		return ModelPointCommon_::write( &newValue, sizeof( int ), lockRequest );
+		return ModelPointCommon_::write( &newValue, sizeof( BETTERENUM_TYPE ), lockRequest );
 	}
 
 	/// Type safe read-modify-write client callback interface

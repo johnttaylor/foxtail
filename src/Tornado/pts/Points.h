@@ -23,7 +23,7 @@
 #include <stdint.h>
 
 
-FXT_POINT_DEFINE(MyAbc, Fxt::Point::Int32)
+FXT_POINT_DEFINE(MyAbc, Cpl::Point::Int32)
 FXT_POINT_DEFINE(MyJkl, Uint8)
 FXT_POINT_DEFINE(MyXyz, Uint8)
 
