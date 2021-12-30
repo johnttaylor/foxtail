@@ -82,8 +82,8 @@ public:
     /// See Cpl::Dm::Point.  
     bool toJSON_( JsonDocument & doc, bool verbose = true ) noexcept
     {
-        // Construct the 'val' key/value pair (as a HEX string)
-        doc["val"] = m_data._to_string();
+        // Construct the 'val' key/value pair 
+        doc["val"] = (char*) m_data._to_string();
         return true;
     }
 
