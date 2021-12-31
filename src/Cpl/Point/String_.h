@@ -77,6 +77,9 @@ protected:
     /// Returns a pointer to the point's string storage
     virtual char* getDataPtr() noexcept = 0;
 
+    /// Returns a CONST pointer to the point's string storage
+    virtual const char* getConstDataPtr() const noexcept  = 0; 
+
     /// See Cpl::Point::Api
     void copyDataTo_( void* dstData, size_t dstSize ) const noexcept;
 
@@ -102,10 +105,10 @@ class String_ : public StringBase_
 protected:
     /** Constructor. Invalid Point.
      */
-    String_() : StringBase_(){}
+    String_() : StringBase_(){ m_data[0] = '\0';  }
 
     /// Constructor. Valid Point.  Requires an initial value
-    String_( const char* initialValue ) : StringBase_( initialValue ){}
+    String_( const char* initialValue ) : StringBase_( initialValue ){ copyDataFrom_( initialValue, strlen( initialValue ) ); }
 
 public:
     /// Returns the size WITHOUT the null terminator of the string storage
@@ -115,6 +118,9 @@ protected:
     /// Returns a pointer to the point's string storage
     char* getDataPtr() noexcept { return m_data; }
 
+    /// Returns a CONST pointer to the point's string storage
+    const char* getConstDataPtr() const noexcept { return m_data; }
+
 protected:
     /// Storage for the Point data
     char m_data[S + 1];
@@ -123,6 +129,5 @@ protected:
 
 
 };      // end namespaces
-};
 };
 #endif  // end header latch

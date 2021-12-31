@@ -12,8 +12,9 @@
 #include "Catch/catch.hpp"
 #include "Cpl/System/_testsupport/Shutdown_TS.h"
 #include "Cpl/Point/Database.h"
-#include "Cpl/Point/Bool.h"
+#include "Cpl/Point/String_.h"
 #include "Cpl/System/Trace.h"
+#include "Cpl/Text/FString.h"
 #include <string.h>
 
 #define SECT_   "_0test"
@@ -21,18 +22,53 @@
 /// 
 using namespace Cpl::Point;
 
+#define STR_LEN     10
+
+// Test Class
+class MyString : public String_<STR_LEN>
+{
+public:
+    /// Type safe Point Identifier
+    class Id_T : public Identifier_T
+    {
+    public:
+        constexpr Id_T() : Identifier_T() {}
+        constexpr Id_T( uint32_t x ) : Identifier_T( x ) {}
+    };
+
+
+public:
+    /// Returns the Point's Identifier
+    inline MyString::Id_T getId() const noexcept { return m_id; }
+
+public:
+    /** Constructor. Invalid Point.
+     */
+    MyString( const Id_T myIdentifier ) : String_<STR_LEN>(), m_id( myIdentifier ) {}
+
+    /// Constructor. Valid Point.  Requires an initial value
+    MyString( const Id_T myIdentifier, const char* initialValue ) :String_<STR_LEN>( initialValue ), m_id( myIdentifier ) {}
+
+public:
+    ///  See Cpl::Dm::ModelPoint.
+    const char* getTypeAsText() const noexcept { return "Cpl::Point::MyString::10"; }
+
+protected:
+    /// The points numeric identifier
+    Id_T m_id;
+};
 #define MAX_POINTS  2
 
-constexpr Bool::Id_T  appleId  = 0;
-constexpr Bool::Id_T  orangeId = 1;
+constexpr MyString::Id_T  appleId  = 0;
+constexpr MyString::Id_T  orangeId = 1;
 
-#define ORANGE_INIT_VAL true
+#define ORANGE_INIT_VAL "Hello Bob"
 
-static Bool apple_( appleId );
-static Bool orange_( orangeId, ORANGE_INIT_VAL );
+static MyString apple_( appleId );
+static MyString orange_( orangeId, ORANGE_INIT_VAL );
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE( "Bool" )
+TEST_CASE( "MyString" )
 {
     Cpl::System::Shutdown_TS::clearAndUseCounter();
     Database db( MAX_POINTS );
@@ -40,45 +76,61 @@ TEST_CASE( "Bool" )
     REQUIRE( db.add( appleId, info ) );
     info ={ &orange_, "ORANGE" };
     REQUIRE( db.add( orangeId, info ) );
-    bool     valid;
-    bool value;
+    bool valid;
+    char value[STR_LEN+1];
+    Cpl::Text::FString<20> valStr;
 
     SECTION( "read" )
     {
-        valid = orange_.read( value );
+        valid = orange_.read( value, STR_LEN );
         REQUIRE( valid == true );
-        REQUIRE( value == ORANGE_INIT_VAL );
+        REQUIRE( strcmp( value, ORANGE_INIT_VAL ) == 0 );
 
-        valid = apple_.read( value );
+        valid = apple_.read( valStr );
         REQUIRE( valid == false );
-        apple_.set();
-        valid = apple_.read( value );
+        apple_.write( "Hello World" );
+        valid = apple_.read( valStr );
         REQUIRE( valid );
-        REQUIRE( value == true );
+        REQUIRE( valStr == "Hello Worl" );
 
         apple_.setInvalid();
-        valid = apple_.read( value );
+        valid = apple_.read( valStr );
         REQUIRE( valid == false );
 
-        REQUIRE( apple_.getSize() == sizeof( bool ) );
+        REQUIRE( apple_.getSize() == STR_LEN+1 );
     }
 
     SECTION( "write" )
     {
-        value = apple_.clear();
-        REQUIRE( value == false );
-        value = apple_.set();
-        REQUIRE( value == true );
-        value = apple_.clear();
-        REQUIRE( value == false );
+        valStr = apple_.write( "Bob was here, or maybe not", Api::eLOCK );
+        REQUIRE( valStr == "Bob was he" );
+        valStr = apple_.write( "Hello" );
+        REQUIRE( valStr == "Bob was he" );
+        valStr = apple_.write( "Hello", Api::eUNLOCK );
+        REQUIRE( valStr == "Hello" );
     }
 
+    SECTION( "other" )
+    {
+        apple_.write( "Hi" );
+        bool isValid;
+        bool locked;
+        valid = apple_.get( valStr, isValid, locked );
+        REQUIRE( valStr == "Hi" );
+        REQUIRE( valid == true );
+        REQUIRE( locked == false );
+        apple_.setInvalid( Api::eLOCK );
+        valid = apple_.get( value, STR_LEN, isValid, locked );
+        REQUIRE( valid == false );
+        REQUIRE( locked == true );
+        apple_.setLockState( Api::eUNLOCK );
+    }
 
     SECTION( "json" )
     {
         char buffer[256];
         bool truncated;
-        apple_.write( true );
+        apple_.write( "Bobby" );
         bool result = db.toJSON( appleId, buffer, sizeof( buffer ), truncated );
         CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s]", buffer) );
         REQUIRE( result );
@@ -86,12 +138,19 @@ TEST_CASE( "Bool" )
         StaticJsonDocument<1024> doc;
         DeserializationError err = deserializeJson( doc, buffer );
         REQUIRE( err == DeserializationError::Ok );
-        REQUIRE( doc["val"] == true );
+        REQUIRE( strcmp( doc["val"], "Bobby" ) == 0 );
 
-        result = db.fromJSON( "{\"id\":0,\"val\":false}" );
-        valid  = apple_.read( value );
+        result = db.fromJSON( "{\"id\":0,\"val\":\" hi there \"}" );
+        REQUIRE( result );
+        valid  = apple_.read( valStr );
         REQUIRE( valid );
-        REQUIRE( value == false );
+        REQUIRE( valStr == " hi there "  );
+
+        result = db.fromJSON( "{\"id\":0,\"val\":123}" );
+        REQUIRE( result == false );
+        valid  = apple_.read( valStr );
+        REQUIRE( valid );
+        REQUIRE( valStr == " hi there " );
     }
 
     REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );

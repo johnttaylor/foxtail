@@ -12,6 +12,8 @@
 
 
 #include "String_.h"
+#include <string.h>
+
 
 ///
 using namespace Cpl::Point;
@@ -20,14 +22,12 @@ using namespace Cpl::Point;
 StringBase_::StringBase_()
     : PointCommon_( false )
 {
-    copyDataFrom_( "", 1 );
 }
 
 /// Constructor. Valid Point.  Requires an initial value
 StringBase_::StringBase_( const char* initialValue )
     : PointCommon_( true )
 {
-    copyDataFrom_( initialValue, strlen( initialValue ) );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -70,7 +70,7 @@ size_t StringBase_::getSize() const noexcept
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-bool StringBase_::toJSON_( JsonDocument& doc, bool verbose = true ) noexcept
+bool StringBase_::toJSON_( JsonDocument& doc, bool verbose ) noexcept
 {
     // Construct the 'val' key/value pair 
     doc["val"] = (char*)getDataPtr();
@@ -99,7 +99,7 @@ void StringBase_::copyDataTo_( void* dstData, size_t dstSize ) const noexcept
 {
     char* dstPtr = (char*)dstData;
     dstPtr[0]    = '\0';
-    strncat( dstPtr, (const char*)getDataPtr(), dstSize );
+    strncat( dstPtr, getConstDataPtr(), dstSize );
 }
 
 void StringBase_::copyDataFrom_( const void* srcData, size_t srcSize ) noexcept
