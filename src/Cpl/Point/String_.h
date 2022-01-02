@@ -24,7 +24,7 @@ namespace Point {
 /** This partially concrete class provide common, non-size dependent implemenation
     for a Point who's data is a null terminated string
 
-        The toJSON()/fromJSON format is:
+    The toJSON()/fromJSON format is:
     \code
 
     { name:"<mpname>", type:"<mptypestring>", valid:true|false, locked:true|false, val:"<newvalue>" }

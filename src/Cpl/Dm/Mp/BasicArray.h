@@ -373,7 +373,7 @@ public:
         }
 
         // Get starting index (note: if not present a default of '0' will be returned)
-        size_t startIdx = src["start"];
+        size_t startIdx = src["start"] | 0;
 
         // Check for exceeding array limits
         size_t numElements = elems.size();
