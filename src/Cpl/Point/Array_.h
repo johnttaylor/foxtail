@@ -339,7 +339,7 @@ public:
                 }
                 return false;
             }
-            tempArray[i] = newValue[i];
+            tempArray[i] = (ELEMTYPE)newValue;
         }
 
         Array_<N, ELEMTYPE>::write( tempArray, numElements, lockRequest, startIdx );
