@@ -14,8 +14,11 @@
 
 
 #include "Cpl/Point/PointCommon_.h"
+#include "Cpl/Point/Database.h"
 #include "Cpl/System/Assert.h"
 #include "Cpl/System/FatalError.h"
+#include "Cpl/Text/atob.h"
+#include "Cpl/Text/FString.h"
 #include <string.h>
 #include <type_traits>
 
@@ -56,8 +59,8 @@ protected:
     }
 
     /// Constructor. Valid Point.  
-    ArrayBase_( const ELEMTYPE* initialSrcData )
-        : PointCommon_( false )
+    Array_( const ELEMTYPE* initialSrcData )
+        : PointCommon_( true )
     {
         // Do not allow empty arrays
         static_assert(N > 0, "Cannot create zero element array");
@@ -85,7 +88,7 @@ public:
     virtual bool read( ELEMTYPE* dstData, size_t dstNumElements, size_t srcIndex = 0 ) const noexcept
     {
         InternalData dst ={ dstData, dstNumElements, srcIndex };
-        return PointCommon_::read( &dst, sizeof( dst ), seqNumPtr );
+        return PointCommon_::read( &dst, sizeof( dst ) );
     }
 
     /// Returns the Point's value and its meta-data.  'dstData' has no meaning when the method returns false.
@@ -200,9 +203,10 @@ public:
         for ( size_t i = 0; i < N; i++ )
         {
             Cpl::Text::FString<20> s;
-            s.format( "0x%llX", (unsigned long long) m_array[i] );
+            s.format( "0x%llX", (unsigned long long)  Array_<N, ELEMTYPE>::m_array[i] );
             arr.add( (char*)s.getString() );
         }
+        return true;
     }
 
     /// See Cpl::Point::Api.  
@@ -234,7 +238,7 @@ public:
         }
 
         // Attempt to parse the value key/value pair (as a simple numeric)
-        ELEMTYPE* tempArray = (ELEMTYPE*)ModelDatabase::g_tempBuffer_;
+        ELEMTYPE* tempArray = (ELEMTYPE*)Database::g_tempBuffer_;
         for ( size_t i = 0; i < numElements; i++ )
         {
             // Attempt to parse the value as HEX string
@@ -251,7 +255,7 @@ public:
             tempArray[i] = (ELEMTYPE)value;
         }
 
-        write( tempArray, numElements, lockRequest, startIdx );
+        Array_<N, ELEMTYPE>::write( tempArray, numElements, lockRequest, startIdx );
         return true;
     }
 };
@@ -288,8 +292,9 @@ public:
         JsonArray arr   = obj.createNestedArray( "elems" );
         for ( size_t i = 0; i < N; i++ )
         {
-            arr.add( m_array[i] );
+            arr.add( Array_<N, ELEMTYPE>::m_array[i] );
         }
+        return true;
     }
 
     /// See Cpl::Point::Api.  
@@ -321,7 +326,7 @@ public:
         }
 
         // Attempt to parse the value key/value pair (as a simple numeric)
-        ELEMTYPE* tempArray = (ELEMTYPE*)ModelDatabase::g_tempBuffer_;
+        ELEMTYPE* tempArray = (ELEMTYPE*)Database::g_tempBuffer_;
         for ( size_t i = 0; i < numElements; i++ )
         {
             ELEMTYPE checkForError = elems[i] | (ELEMTYPE)2;
@@ -337,7 +342,7 @@ public:
             tempArray[i] = newValue[i];
         }
 
-        write( tempArray, numElements, lockRequest, startIdx );
+        Array_<N, ELEMTYPE>::write( tempArray, numElements, lockRequest, startIdx );
         return true;
     }
 };

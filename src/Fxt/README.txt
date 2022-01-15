@@ -1,6 +1,6 @@
-/** @namespace Cpl
+/** @namespace Fxt
 
-The 'Cpl' namespace is the root namespace for the Foxtail package
+The 'Fxt' namespace is the root namespace for the Foxtail package
 
 Foxtail is an attempt at a Distributed Control System (DCS).  Given that is
 is extremely ambition scope and this is not my day job - its going to be a
@@ -56,7 +56,6 @@ o External or debug access to Points is allowed - but only when no Logic chain
 
 o The Point database is created/populated in a single threaded environment
 
-*/ 
 
 */ 
 

@@ -12,7 +12,7 @@
 #include "Catch/catch.hpp"
 #include "Cpl/System/_testsupport/Shutdown_TS.h"
 #include "Cpl/Point/Database.h"
-#include "Cpl/Point/String_.h"
+#include "Cpl/Point/Array_.h"
 #include "Cpl/System/Trace.h"
 #include "Cpl/Text/FString.h"
 #include <string.h>
@@ -22,10 +22,10 @@
 /// 
 using namespace Cpl::Point;
 
-#define STR_LEN     10
+#define NUM_ELEM    5
 
 // Test Class
-class MyString : public String_<STR_LEN>
+class MyInt16Array : public IntegerArray_<NUM_ELEM, int16_t>
 {
 public:
     /// Type safe Point Identifier
@@ -39,36 +39,37 @@ public:
 
 public:
     /// Returns the Point's Identifier
-    inline MyString::Id_T getId() const noexcept { return m_id; }
+    inline MyInt16Array::Id_T getId() const noexcept { return m_id; }
 
 public:
     /** Constructor. Invalid Point.
      */
-    MyString( const Id_T myIdentifier ) : String_<STR_LEN>(), m_id( myIdentifier ) {}
+    MyInt16Array( const Id_T myIdentifier ) : IntegerArray_<NUM_ELEM, int16_t>(), m_id( myIdentifier ) {}
 
     /// Constructor. Valid Point.  Requires an initial value
-    MyString( const Id_T myIdentifier, const char* initialValue ) :String_<STR_LEN>( initialValue ), m_id( myIdentifier ) {}
+    MyInt16Array( const Id_T myIdentifier, const int16_t initialSrcData[NUM_ELEM] ) :IntegerArray_<NUM_ELEM, int16_t>( initialSrcData ), m_id( myIdentifier ) {}
 
 public:
     ///  See Cpl::Dm::ModelPoint.
-    const char* getTypeAsText() const noexcept { return "Cpl::Point::MyString::10"; }
+    const char* getTypeAsText() const noexcept { return "Cpl::Point::MyInt16Array::5"; }
 
 protected:
     /// The points numeric identifier
     Id_T m_id;
 };
+
 #define MAX_POINTS  2
 
-constexpr MyString::Id_T  appleId  = 0;
-constexpr MyString::Id_T  orangeId = 1;
+constexpr MyInt16Array::Id_T  appleId  = 0;
+constexpr MyInt16Array::Id_T  orangeId = 1;
 
-#define ORANGE_INIT_VAL "Hello Bob"
+static const int16_t orangeInitVal_[NUM_ELEM] = { 1, 2, 3, 4, 5 };
 
-static MyString apple_( appleId );
-static MyString orange_( orangeId, ORANGE_INIT_VAL );
+static MyInt16Array apple_( appleId );
+static MyInt16Array orange_( orangeId, orangeInitVal_ );
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE( "MyString" )
+TEST_CASE( "MyInt16Array" )
 {
     Cpl::System::Shutdown_TS::clearAndUseCounter();
     Database db( MAX_POINTS );
@@ -77,39 +78,39 @@ TEST_CASE( "MyString" )
     info ={ &orange_, "ORANGE" };
     REQUIRE( db.add( orangeId, info ) );
     bool valid;
-    char value[STR_LEN+1];
-    Cpl::Text::FString<20> valStr;
+    int16_t value[NUM_ELEM];
 
     SECTION( "read" )
     {
-        valid = orange_.read( value, STR_LEN );
+        valid = orange_.read( value, NUM_ELEM  );
         REQUIRE( valid == true );
-        REQUIRE( strcmp( value, ORANGE_INIT_VAL ) == 0 );
+        REQUIRE( memcmp( value, orangeInitVal_, sizeof( value ) ) == 0 );
 
-        valid = apple_.read( valStr );
+        valid = apple_.read( value, sizeof(value) );
         REQUIRE( valid == false );
-        apple_.write( "Hello World" );
-        valid = apple_.read( valStr );
+        int16_t writeVal[NUM_ELEM] ={ 1, };
+        apple_.write( writeVal, sizeof(writeVal)  );
+        valid = apple_.read( value, sizeof( value ) );
         REQUIRE( valid );
-        REQUIRE( valStr == "Hello Worl" );
+        REQUIRE( memcmp( value, writeVal, sizeof( value ) ) == 0 );
 
         apple_.setInvalid();
-        valid = apple_.read( valStr );
+        valid = apple_.read( value, sizeof( value ) );
         REQUIRE( valid == false );
 
-        REQUIRE( apple_.getSize() == STR_LEN+1 );
+        REQUIRE( apple_.getSize() == sizeof(int16_t) * NUM_ELEM);
     }
 
     SECTION( "write" )
     {
-        valStr = apple_.write( "Bob was here, or maybe not", Api::eLOCK );
-        REQUIRE( valStr == "Bob was he" );
-        valStr = apple_.write( "Hello" );
-        REQUIRE( valStr == "Bob was he" );
-        valStr = apple_.write( "Hello", Api::eUNLOCK );
-        REQUIRE( valStr == "Hello" );
+        int16_t writeVal[NUM_ELEM] = { 2,3,4,5,6 };
+        apple_.write( writeVal, sizeof(writeVal), Api::eLOCK );
+        valid = apple_.read( value, sizeof( value ) );
+        REQUIRE( valid );
+        REQUIRE( memcmp( value, writeVal, sizeof(value) ) == 0 );
     }
 
+#if 0
     SECTION( "other" )
     {
         apple_.write( "Hi" );
@@ -120,7 +121,7 @@ TEST_CASE( "MyString" )
         REQUIRE( valid == true );
         REQUIRE( locked == false );
         apple_.setInvalid( Api::eLOCK );
-        valid = apple_.get( value, STR_LEN, isValid, locked );
+        valid = apple_.get( value, NUM_ELEM , isValid, locked );
         REQUIRE( valid == false );
         REQUIRE( locked == true );
         apple_.setLockState( Api::eUNLOCK );
@@ -152,6 +153,7 @@ TEST_CASE( "MyString" )
         REQUIRE( valid );
         REQUIRE( valStr == " hi there " );
     }
+#endif
 
     REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );
 }
