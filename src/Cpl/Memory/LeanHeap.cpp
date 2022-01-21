@@ -50,6 +50,11 @@ void* LeanHeap::allocate( size_t numbytes )
     return result;
 }
 
+void LeanHeap::release( void *ptr )
+{
+    // Do nothing since this is an allocate ONLY heap!
+}
+
 void LeanHeap::reset() noexcept
 {
     m_wordsRemaining = m_staringHeapSize;

@@ -12,7 +12,7 @@
 *----------------------------------------------------------------------------*/
 /** @file */
 
-#include <stdlib.h>
+#include "Cpl/Memory/Allocator.h"
 
 
 ///
@@ -30,7 +30,7 @@ namespace Memory {
           method is used (i.e. that is okay to 'free everything')
  */
 
-class LeanHeap
+class LeanHeap: public Cpl::Memory::Allocator
 {
 
 public:
@@ -41,11 +41,15 @@ public:
 
 
 public:
-    /** Allocates a block of memory that is 'numbytes' in since. If there is not
-        sufficient available free memory, zero is returned.
-     */
+    /// See Cpl::Memory::Allocator
     void* allocate( size_t numbytes );
 
+
+    /// See Cpl::Memory::Allocator. Note: this method DOES NOTHING 
+    void release( void *ptr );
+
+
+public:
     /** Reset the heap, i.e. effectively frees all allocated memory.  It is the
         caller's RESPONSIBILTY to ensure that it is kosher to free all of the
         memory.

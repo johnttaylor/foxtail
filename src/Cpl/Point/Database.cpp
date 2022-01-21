@@ -23,7 +23,7 @@ using namespace Cpl::Point;
 static Cpl::System::Mutex globalMutex_;
 StaticJsonDocument<OPTION_FXT_POINT_DATABASE_MAX_CAPACITY_JSON> Database::g_doc_;
 uint8_t                                                         Database::g_tempBuffer_[OPTION_FXT_POINT_DATABASE_TEMP_STORAGE_SIZE];
-
+       
 //////////////////////////////////////////////
 Database::Database( size_t maxNumPoints ) noexcept
     :m_maxNumPoints( maxNumPoints )

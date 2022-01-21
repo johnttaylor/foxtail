@@ -101,7 +101,49 @@ MyIO_T pid1 = { { VINPUT_P0.1, VINPUT_P0_2 }, {VOUTPUT_P0_1, VOUTPUT_P0_1} };
 
 /// 
 ///
-namespace Cpl {
+typedef enum {
+    UINT8,
+    UINT16
+} PointType_T;
+typedef uint32_t Identifier_T;
+
+#include "Cpl/Container/MapItem.h"
+#include "Cpl/Container/Dictionary.h"
+#include "Cpl/Memory/Allocator.h"
+#include "Cpl/Point/DatabaseApi.h"
+
+// Create Function
+typedef MyConcretePoint* (*CreatePointFunc)(Cpl::Memory::Allocator& allocatorForPoints, uint32_t pointId);
+
+
+class PointDescriptor : public Cpl::Container::DictItem
+{
+protected:
+    CreatePointFunc m_createMethod;          // 'Factory' method to create the point of the correct type
+
+    uint32_t        m_localId;               // Is the 'key' for the Dictionary.. The local ID is assigned/created by the 'user' (in theory at run time).
+                                             // The dictionary is used to map the user defined ID to actual Point ID.  
+                                             // The construction and look-up of Points is done will the control is in the offline mode (i.e. not executing Logic chains)
+
+    void*        m_initialScalarVal;         // If zero -->not used -->mutually exclusive
+    const char*  m_initialComplexJsonVal;    // If zero -->not used -->mutually exclusive
+    bool         m_initialInvalid;           // If false ignored, else auto-initial value is invalid -->mutually exclusive. 
+    
+    Identifier_T m_pointId;                  // 'output': Is assigned when the Point is created
+};
+
+
+class PointBank : public Cpl::Container::Dictionary<PointDescriptor>
+{
+public:
+    /// Allocates a Point for every descriptor
+    bool createPoints( PointDescriptor* listOfDescriptors, Cpl::Memory::Allocator& allocatorForPoints, Cpl::Point::DatabaseApi& dbForPoints, uint32_t initialPointIdValu=0 );
+}
+
+
+// An IO Card will contain one more PointBank and for each Point bank there is private Database instance
+// The IO card logic accesses Point instances (where are really its IO Registers) via its Point Database(s)
+
 
     typedef struct
     {
