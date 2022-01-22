@@ -15,6 +15,7 @@
 #include "Cpl/Point/String_.h"
 #include "Cpl/System/Trace.h"
 #include "Cpl/Text/FString.h"
+#include "Cpl/Memory/HPool.h"
 #include <string.h>
 
 #define SECT_   "_0test"
@@ -53,6 +54,9 @@ public:
     ///  See Cpl::Dm::ModelPoint.
     const char* getTypeAsText() const noexcept { return "Cpl::Point::MyString::10"; }
 
+    /// Creates a concrete instance in the invalid state
+    static Api* create( Cpl::Memory::Allocator& allocatorForPoints, uint32_t pointId ) { return new(allocatorForPoints.allocate( sizeof( MyString ) )) MyString( pointId ); }
+
 protected:
     /// The points numeric identifier
     Id_T m_id;
@@ -79,6 +83,14 @@ TEST_CASE( "MyString" )
     bool valid;
     char value[STR_LEN+1];
     Cpl::Text::FString<20> valStr;
+
+    SECTION( "create" )
+    {
+        Cpl::Memory::HPool<MyString> heap( 1 );
+        Api* pt = MyString::create( heap, 0 );
+        REQUIRE( pt );
+        REQUIRE( strcmp( pt->getTypeAsText(), apple_.getTypeAsText() ) == 0 );
+    }
 
     SECTION( "read" )
     {

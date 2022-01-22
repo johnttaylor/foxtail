@@ -16,6 +16,7 @@
 #include "Cpl/System/Trace.h"
 #include "Cpl/Math/real.h"
 #include <string.h>
+#include "Cpl/Memory/HPool.h"
 
 #define SECT_   "_0test"
 
@@ -43,6 +44,14 @@ TEST_CASE( "Float" )
     REQUIRE( db.add( orangeId, info ) );
     bool  valid;
     float value;
+
+    SECTION( "create" )
+    {
+        Cpl::Memory::HPool<Float> heap( 1 );
+        Api* pt = Float::create( heap, 0 );
+        REQUIRE( pt );
+        REQUIRE( strcmp( pt->getTypeAsText(), apple_.getTypeAsText() ) == 0 );
+    }
 
     SECTION( "read" )
     {

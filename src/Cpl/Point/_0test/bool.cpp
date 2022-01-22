@@ -14,6 +14,7 @@
 #include "Cpl/Point/Database.h"
 #include "Cpl/Point/Bool.h"
 #include "Cpl/System/Trace.h"
+#include "Cpl/Memory/HPool.h"
 #include <string.h>
 
 #define SECT_   "_0test"
@@ -43,6 +44,14 @@ TEST_CASE( "Bool" )
     bool     valid;
     bool value;
 
+    SECTION( "create" )
+    {
+        Cpl::Memory::HPool<Bool> heap( 1 );
+        Api* pt = Bool::create( heap, 0 );
+        REQUIRE( pt );
+        REQUIRE( strcmp( pt->getTypeAsText(), apple_.getTypeAsText() ) == 0 );
+    }
+    
     SECTION( "read" )
     {
         valid = orange_.read( value );

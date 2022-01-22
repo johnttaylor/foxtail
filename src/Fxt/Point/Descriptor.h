@@ -1,5 +1,5 @@
-#ifndef Cpl_Point_Api_h_
-#define Cpl_Point_Api_h_
+#ifndef Fxt_Point_Descriptor_h_
+#define Fxt_Point_Descriptor_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -12,11 +12,8 @@
 *----------------------------------------------------------------------------*/
 /** @file */
 
-#include "colony_config.h"
-#include "Cpl/Text/String.h"
-#include "Cpl/Json/Arduino.h"
+#include "Cpl/Container/DictItem.h"
 #include <stdint.h>
-#include <stdlib.h>
 
 ///
 namespace Cpl {
@@ -24,6 +21,22 @@ namespace Cpl {
 namespace Point {
 
 
+class PointDescriptor : public Cpl::Container::DictItem
+{
+protected:
+    CreatePointFunc m_createMethod;          // 'Factory' method to create the point of the correct type
+
+    uint32_t        m_localId;               // Is the 'key' for the Dictionary.. The local ID is assigned/created by the 'user' (in theory at run time).
+                                             // The dictionary is used to map the user defined ID to actual Point ID.  
+                                             // The construction and look-up of Points is done while the control is in the offline mode (i.e. not executing Logic chains)
+                                             //   -->the 'look-up' is for/when wiring components within the logic chains
+
+    void*        m_initialScalarVal;         // If zero -->not used -->mutually exclusive
+    const char*  m_initialComplexJsonVal;    // If zero -->not used -->mutually exclusive.  String must stay in scope from time of point creation till tear-down for new logic chains
+    bool         m_initialInvalid;           // If false ignored, else auto-initial value is invalid -->mutually exclusive. 
+
+    Identifier_T m_pointId;                  // 'output': Is assigned when the Point is created
+};
 /** This mostly abstract class defines the interface for a Point.  A
     Point contains an atomic (i.e. thread-safe), managed, type-safe 'chunk' of 
     data.  In addition to the data - a point has meta data and state. A Point 
@@ -74,6 +87,7 @@ public:
 
     /// This method returns the Point's meta-data
     virtual void getMetadata( bool& isValid, bool& isLocked ) const noexcept = 0;
+
 
 public:
     /** This method sets the Point to the invalid state.

@@ -16,6 +16,7 @@
 #include "Cpl/System/Trace.h"
 #include "Cpl/Text/FString.h"
 #include "Cpl/Math/real.h"
+#include "Cpl/Memory/HPool.h"
 #include <string.h>
 
 #define SECT_   "_0test"
@@ -53,6 +54,9 @@ public:
 public:
     ///  See Cpl::Dm::ModelPoint.
     const char* getTypeAsText() const noexcept { return "Cpl::Point::MyRealArray::5"; }
+
+    /// Creates a concrete instance in the invalid state
+    static Api* create( Cpl::Memory::Allocator& allocatorForPoints, uint32_t pointId ) { return new(allocatorForPoints.allocate( sizeof( MyRealArray ) )) MyRealArray( pointId ); }
 
 protected:
     /// The points numeric identifier
@@ -92,6 +96,15 @@ TEST_CASE( "MyRealArray" )
     REQUIRE( db.add( orangeId, info ) );
     bool valid;
     double value[NUM_ELEM];
+
+
+    SECTION( "create" )
+    {
+        Cpl::Memory::HPool<MyRealArray> heap( 1 );
+        Api* pt = MyRealArray::create( heap, 0 );
+        REQUIRE( pt );
+        REQUIRE( strcmp( pt->getTypeAsText(), apple_.getTypeAsText() ) == 0 );
+    }
 
     SECTION( "read" )
     {

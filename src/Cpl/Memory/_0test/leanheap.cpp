@@ -32,16 +32,27 @@ TEST_CASE( "allocateOnly" )
     Cpl::System::Shutdown_TS::clearAndUseCounter();
     LeanHeap uut( memoryBlock_, sizeof( memoryBlock_ ) );
 
+    size_t   allocated;
+    uint8_t* start = uut.getMemoryStart( allocated );
+    REQUIRE( start == (uint8_t*) memoryBlock_ );
+    REQUIRE( allocated == 0 );
+
     // Allocate...
     uint8_t* ptr = (uint8_t*)uut.allocate( 1 );
     size_t   ptrInt = (size_t)ptr;
     REQUIRE( ptr != 0 );
     REQUIRE( (ptrInt % WORD_SIZE) == 0 );
+    start = uut.getMemoryStart( allocated );
+    REQUIRE( start == (uint8_t*) memoryBlock_ );
+    REQUIRE( allocated == 1* sizeof(size_t) );
+
     uint8_t* ptr2 = (uint8_t*)uut.allocate( 2 );
     REQUIRE( ptr2 != 0 );
     ptrInt = (size_t)ptr2;
     REQUIRE( (ptrInt % WORD_SIZE) == 0 );
     REQUIRE( (ptr + WORD_SIZE) == ptr2 );
+    uut.getMemoryStart( allocated );
+    REQUIRE( allocated == (1+1) * sizeof( size_t ) );
 
     // Over allocate
     ptr = (uint8_t*)uut.allocate( (NUM_WORDS * WORD_SIZE) );
@@ -55,6 +66,9 @@ TEST_CASE( "allocateOnly" )
     ptr = (uint8_t*)uut.allocate( WORD_SIZE );
     REQUIRE( ptr == 0 );
     uut.reset();
+    start = uut.getMemoryStart( allocated );
+    REQUIRE( start == (uint8_t*) memoryBlock_ );
+    REQUIRE( allocated == 0 );
     ptr = (uint8_t*) uut.allocate( (NUM_WORDS * WORD_SIZE) );
     REQUIRE( ptr != 0 );
 

@@ -15,6 +15,7 @@
 #include "Cpl/Point/Double.h"
 #include "Cpl/System/Trace.h"
 #include "Cpl/Math/real.h"
+#include "Cpl/Memory/HPool.h"
 #include <string.h>
 
 #define SECT_   "_0test"
@@ -43,6 +44,14 @@ TEST_CASE( "Double" )
     REQUIRE( db.add( orangeId, info ) );
     bool  valid;
     double value;
+
+    SECTION( "create" )
+    {
+        Cpl::Memory::HPool<Double> heap( 1 );
+        Api* pt = Double::create( heap, 0 );
+        REQUIRE( pt );
+        REQUIRE( strcmp( pt->getTypeAsText(), apple_.getTypeAsText() ) == 0 );
+    }
 
     SECTION( "read" )
     {

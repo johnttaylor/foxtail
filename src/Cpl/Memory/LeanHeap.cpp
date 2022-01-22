@@ -50,14 +50,15 @@ void* LeanHeap::allocate( size_t numbytes )
     return result;
 }
 
-void LeanHeap::release( void *ptr )
-{
-    // Do nothing since this is an allocate ONLY heap!
-}
-
 void LeanHeap::reset() noexcept
 {
     m_wordsRemaining = m_staringHeapSize;
     m_ptr            = m_ptrBase;
     memset( m_ptr, 0, m_staringHeapSize * sizeof( size_t ) );
+}
+
+uint8_t* LeanHeap::getMemoryStart( size_t& dstAllocatedLenInBytes ) noexcept
+{
+    dstAllocatedLenInBytes = (m_staringHeapSize - m_wordsRemaining) * sizeof( size_t );
+    return (uint8_t*) m_ptrBase;
 }

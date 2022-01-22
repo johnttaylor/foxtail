@@ -15,6 +15,7 @@
 
 #include "Cpl/Point/Basic_.h"
 #include "Cpl/Point/Identifier.h"
+#include "Cpl/Memory/Allocator.h"
 
 ///
 namespace Cpl {
@@ -60,6 +61,10 @@ public:
 public:
     ///  See Cpl::Dm::ModelPoint.
     const char* getTypeAsText() const noexcept { return "Cpl::Point::Uint8"; }
+
+public:
+    /// Creates a concrete instance in the invalid state
+    static Api* create( Cpl::Memory::Allocator& allocatorForPoints, uint32_t pointId ) { return new(allocatorForPoints.allocate( sizeof( Uint8 ) )) Uint8( pointId ); }
 
 protected:
     /// The points numeric identifier

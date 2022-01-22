@@ -112,8 +112,8 @@ typedef uint32_t Identifier_T;
 #include "Cpl/Memory/Allocator.h"
 #include "Cpl/Point/DatabaseApi.h"
 
-// Create Function
-typedef MyConcretePoint* (*CreatePointFunc)(Cpl::Memory::Allocator& allocatorForPoints, uint32_t pointId);
+// Generic Create Function. Child class have a
+typedef Point* (*CreatePointFunc)(Cpl::Memory::Allocator& allocatorForPoints, uint32_t pointId);
 
 
 class PointDescriptor : public Cpl::Container::DictItem
@@ -123,10 +123,11 @@ protected:
 
     uint32_t        m_localId;               // Is the 'key' for the Dictionary.. The local ID is assigned/created by the 'user' (in theory at run time).
                                              // The dictionary is used to map the user defined ID to actual Point ID.  
-                                             // The construction and look-up of Points is done will the control is in the offline mode (i.e. not executing Logic chains)
+                                             // The construction and look-up of Points is done while the control is in the offline mode (i.e. not executing Logic chains)
+                                             //   -->the 'look-up' is for/when wiring components within the logic chains
 
     void*        m_initialScalarVal;         // If zero -->not used -->mutually exclusive
-    const char*  m_initialComplexJsonVal;    // If zero -->not used -->mutually exclusive
+    const char*  m_initialComplexJsonVal;    // If zero -->not used -->mutually exclusive.  String must stay in scope from time of point creation till tear-down for new logic chains
     bool         m_initialInvalid;           // If false ignored, else auto-initial value is invalid -->mutually exclusive. 
     
     Identifier_T m_pointId;                  // 'output': Is assigned when the Point is created
@@ -136,8 +137,8 @@ protected:
 class PointBank : public Cpl::Container::Dictionary<PointDescriptor>
 {
 public:
-    /// Allocates a Point for every descriptor
-    bool createPoints( PointDescriptor* listOfDescriptors, Cpl::Memory::Allocator& allocatorForPoints, Cpl::Point::DatabaseApi& dbForPoints, uint32_t initialPointIdValu=0 );
+    /// Allocates a Point for every descriptor.  list of descriptors must stay in scope from time of point creation till tear-down for new logic chains
+    bool createPoints( PointDescriptor* listOfDescriptors, Cpl::Memory::Allocator& allocatorForPoints, Cpl::Point::DatabaseApi& dbForPoints, uint32_t initialPointIdValue=0 );
 }
 
 

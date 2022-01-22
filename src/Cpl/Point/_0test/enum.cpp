@@ -16,6 +16,7 @@
 #include "Cpl/System/Trace.h"
 #include "Cpl/Type/enum.h"
 #include "Cpl/Text/FString.h"
+#include "Cpl/Memory/HPool.h"
 #include <string.h>
 
 #define SECT_   "_0test"
@@ -54,6 +55,9 @@ public:
     ///  See Cpl::Dm::ModelPoint.
     const char* getTypeAsText() const noexcept { return "Cpl::Point::MyEnum"; }
 
+    /// Creates a concrete instance in the invalid state
+    static Api* create( Cpl::Memory::Allocator& allocatorForPoints, uint32_t pointId ) { return new(allocatorForPoints.allocate( sizeof( MyEnum ) )) MyEnum( pointId ); }
+
 protected:
     /// The points numeric identifier
     Id_T m_id;
@@ -81,6 +85,15 @@ TEST_CASE( "Enum" )
     REQUIRE( db.add( orangeId, info ) );
     bool     valid;
     MyColors value = MyColors::eBLUE;
+
+
+    SECTION( "create" )
+    {
+        Cpl::Memory::HPool<MyEnum> heap( 1 );
+        Api* pt = MyEnum::create( heap, 0 );
+        REQUIRE( pt );
+        REQUIRE( strcmp( pt->getTypeAsText(), apple_.getTypeAsText() ) == 0 );
+    }
 
     SECTION( "read" )
     {

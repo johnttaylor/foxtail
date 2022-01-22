@@ -12,7 +12,7 @@
 *----------------------------------------------------------------------------*/
 /** @file */
 
-#include "Cpl/Memory/Allocator.h"
+#include "Cpl/Memory/ContiguousAllocator.h"
 
 
 ///
@@ -30,7 +30,7 @@ namespace Memory {
           method is used (i.e. that is okay to 'free everything')
  */
 
-class LeanHeap: public Cpl::Memory::Allocator
+class LeanHeap: public ContiguousAllocator
 {
 
 public:
@@ -41,20 +41,15 @@ public:
 
 
 public:
-    /// See Cpl::Memory::Allocator
+    /// See Cpl::Memory::ContiguousAllocator
     void* allocate( size_t numbytes );
 
-
-    /// See Cpl::Memory::Allocator. Note: this method DOES NOTHING 
-    void release( void *ptr );
-
-
-public:
-    /** Reset the heap, i.e. effectively frees all allocated memory.  It is the
-        caller's RESPONSIBILTY to ensure that it is kosher to free all of the
-        memory.
-     */
+    /// See Cpl::Memory::ContiguousAllocator
     void reset() noexcept;
+
+    /// See Cpl::Memory::ContiguousAllocator. Note: this method DOES NOTHING 
+    uint8_t* getMemoryStart( size_t& dstAllocatedLenInBytes ) noexcept;
+
 
 private:
     /// Prevent access to the copy constructor -->LeanHeap can not be copied!

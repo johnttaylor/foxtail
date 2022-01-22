@@ -15,6 +15,7 @@
 #include "Cpl/Point/Int32.h"
 #include "Cpl/System/Trace.h"
 #include <string.h>
+#include "Cpl/Memory/HPool.h"
 
 #define SECT_   "_0test"
 
@@ -42,6 +43,14 @@ TEST_CASE( "Int32" )
     REQUIRE( db.add( orangeId, info ) );
     bool     valid;
     int32_t value;
+
+    SECTION( "create" )
+    {
+        Cpl::Memory::HPool<Int32> heap( 1 );
+        Api* pt = Int32::create( heap, 0 );
+        REQUIRE( pt );
+        REQUIRE( strcmp( pt->getTypeAsText(), apple_.getTypeAsText() ) == 0 );
+    }
 
     SECTION( "read" )
     {

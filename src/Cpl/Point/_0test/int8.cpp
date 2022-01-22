@@ -15,6 +15,7 @@
 #include "Cpl/Point/Int8.h"
 #include "Cpl/System/Trace.h"
 #include <string.h>
+#include "Cpl/Memory/HPool.h"
 
 #define SECT_   "_0test"
 
@@ -42,6 +43,14 @@ TEST_CASE( "Int8" )
     REQUIRE( db.add( orangeId, info ) );
     bool     valid;
     int8_t value;
+
+    SECTION( "create" )
+    {
+        Cpl::Memory::HPool<Int8> heap( 1 );
+        Api* pt = Int8::create( heap, 0 );
+        REQUIRE( pt );
+        REQUIRE( strcmp( pt->getTypeAsText(), apple_.getTypeAsText() ) == 0 );
+    }
 
     SECTION( "read" )
     {
