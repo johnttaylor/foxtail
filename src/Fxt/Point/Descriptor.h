@@ -13,228 +13,103 @@
 /** @file */
 
 #include "Cpl/Container/DictItem.h"
-#include <stdint.h>
+#include "Fxt/Point/SetterApi.h"
+#include "Cpl/Memory/Allocator.h"
+#include "Cpl/Point/Identifier.h"
 
 ///
-namespace Cpl {
+namespace Fxt {
 ///
 namespace Point {
 
 
-class PointDescriptor : public Cpl::Container::DictItem
-{
-protected:
-    CreatePointFunc m_createMethod;          // 'Factory' method to create the point of the correct type
+/** This concrete class provides a mapping of 'User facing local ID' of a Point
+    to the its actual runtime Point Identifier.  An instance also contains
+    additional information such as:
+        - A Factory function to create the point
+        - A SetterApi instance if the Point is an 'Auto Data' Point
 
-    uint32_t        m_localId;               // Is the 'key' for the Dictionary.. The local ID is assigned/created by the 'user' (in theory at run time).
-                                             // The dictionary is used to map the user defined ID to actual Point ID.  
-                                             // The construction and look-up of Points is done while the control is in the offline mode (i.e. not executing Logic chains)
-                                             //   -->the 'look-up' is for/when wiring components within the logic chains
+    Descriptors can be stored in Dictionary and looked-up by their User facing
+    localId.
 
-    void*        m_initialScalarVal;         // If zero -->not used -->mutually exclusive
-    const char*  m_initialComplexJsonVal;    // If zero -->not used -->mutually exclusive.  String must stay in scope from time of point creation till tear-down for new logic chains
-    bool         m_initialInvalid;           // If false ignored, else auto-initial value is invalid -->mutually exclusive. 
-
-    Identifier_T m_pointId;                  // 'output': Is assigned when the Point is created
-};
-/** This mostly abstract class defines the interface for a Point.  A
-    Point contains an atomic (i.e. thread-safe), managed, type-safe 'chunk' of 
-    data.  In addition to the data - a point has meta data and state. A Point 
-    has the following features:
-
-        o Read/write operations from/to a Point's data are atomic operations,
-        o A Point has inherit valid/invalid state respect to its data.  The
-          valid/invalid state is meta data and not associated with a specific
-          value of its data
-        o A Point can be locked.  Any write operations to a locked point will
-          silently fail (i.e. its current value when locked will not be
-          changed).
-        o A Point can serialize/deserialize to/from a JSON string.
-        o A Point is type safe.  This means that child classes - per 'data
-          type' - are required.  Each Point type can have method unique to its
-          type.
-        o Each point has unique (to the application) numeric identifier.  A
-          'named' look-up is also supported.  Instances of the numeric identifier
-          are 'managed types', i.e. each Point child class defines a unique
-          leaf type for its identifier.
-        o Points are NOT THREAD SAFE.
-
-    
+    This class is NOT thread-safe.
  */
-class Api
+class Descriptor : public Cpl::Container::DictItem, public Cpl::Container::KeyUinteger32_T
 {
 public:
-    /// Options related to the Point's locked state
-    enum LockRequest_T
+    /// Define the function signature for creating a concrete point
+    typedef Cpl::Point::Api* (*CreateFunc_T)(Cpl::Memory::Allocator& allocatorForPoints, uint32_t pointId);
+
+public:
+    /// Constructor
+    Descriptor( uint32_t localId, CreateFunc_T createFunction, SetterApi* setter=nullptr )
+        : Cpl::Container::KeyUinteger32_T( localId )
+        , m_createMethod( createFunction )
+        , m_initialValue( setter )
+        , m_pointId( 0 )
+        , m_point( nullptr )
     {
-        eNO_REQUEST,            //!< No change in the Point's lock state is requested
-        eLOCK,                  //!< Request to lock the Point.  If the Point is already lock - the request is ignored and the update operation silent fails
-        eUNLOCK,                //!< Request to unlock the Point.  If the Point is already unlocked - the request is ignored and the update operation is completed
-    };
-
-public:
-    /** This method returns the RAM size, in bytes, of the Point's data.
-      */
-    virtual size_t getSize() const noexcept = 0;
-
-    /** This method returns a string identifier for the Point's data type.
-        This value IS GUARANTEED to be unique (within an Application).  The
-        format of the string is the Point's fully qualified namespace and
-        class type as a string. For example, the for Cpl::Point::Uint32 Model
-        the function would return "Cpl::Point::Uint32"
-     */
-    virtual const char* getTypeAsText() const noexcept = 0;
-
-    /// This method returns the Point's meta-data
-    virtual void getMetadata( bool& isValid, bool& isLocked ) const noexcept = 0;
+    }
 
 
 public:
-    /** This method sets the Point to the invalid state.
-
-        Notes:
-        1) Any write operation will set the Point's state to valid.
-        2) If the Point is locked then the invalidate operation...
-           a) If lockRequest == eNO_REQUEST, the operation silently fails, i.e.
-              nothing is done. OR
-           b) If lockRequest != eNO_REQUEST, the operation is performed and the
-              the new lock state is applied
-
+    /** This method is used to create Point defined by the descriptor.  The
+        method returns true when successful; else false (e.g. insufficient memory)
+        is returned.
      */
-    virtual void setInvalid( LockRequest_T lockRequest = eNO_REQUEST ) noexcept = 0;
-
-    /// This method returns true when the Point data is invalid.
-    virtual bool isNotValid() const noexcept = 0;
+    bool createPoint( Cpl::Memory::Allocator& allocatorForPoints, uint32_t pointId )
+    {
+        m_point   = (m_createMethod) (allocatorForPoints, pointId);
+        m_pointId = pointId;
+        return m_point != nullptr;
+    }
 
 public:
-    /** This method returns true if the Point is in the locked state.
-        In the locked state - ALL WRITE/UPDATE OPERATIONS (except for changing
-        the locked state) are silently ignored/dropped.
-     */
-    virtual bool isLocked() const noexcept = 0;
+    /// This function is used to identify a 'Null Descriptor'
+    virtual bool isNullDescriptor() const noexcept { return false; }
 
-    /** This updates the lock state of the Point. Model Points support
-        the concept of a client 'locking' the Point's data value.  When a Point's
-        data has been locked - any attempted writes/updated operation to the
-        Point will SILENTLY fail.  The Application uses the 'eUNLOCK' lock request
-        to remove the locked state from the Point's data.
-     */
-    virtual void setLockState( LockRequest_T lockRequest ) noexcept = 0;
+public:
+    /// Data accessor
+    inline uint32_t getLocalId() { return m_keyData; }
+    
+    /// Data accessor.  If null, then no Point has been allocated
+    inline Cpl::Point::Api* getPoint() { return m_point; }
 
-    /// Short hand for unconditionally removing the lock from the Point
-    inline void removeLock() noexcept { setLockState( eUNLOCK ); }
+    /// Data accessor. If getPoint() returns zero/nullptr then this value has no meaning
+    inline Cpl::Point::Identifier_T getPointId() { return m_pointId; }
 
-    /// Short hand for putting the Point into the locked state
-    inline void applyLock() noexcept { setLockState( eLOCK ); }
+    /// Data accessor.  If null, then the Point has no associated Setter
+    inline SetterApi* getSetter() { return m_initialValue; }
 
 
 protected:
-    /** This method copies the Point's content to the caller's memory buffer.
-        The method returns the Point's valid state.
+    /// 'Factory' method to create the point of the correct type
+    CreateFunc_T                m_createMethod;
 
-        If false is returned (i.e. the point is invalid), then contents of
-        'dstData' is meaningless.
+    /// Setter associated with the Point.  If no setter is needed for the point the value will be zero/nullptr
+    SetterApi*                  m_initialValue;  
 
-        Notes:
-        1) The assumption is that Point's internal data and 'dstData' are
-           of the same type.
-        2) The data size of the 'dstSize' is ALWAYS honored when coping the
-           data from the Point
-     */
-    virtual bool read( void* dstData, size_t dstSize ) const noexcept = 0;
+    /// The runtime Point identifier.  If m_point is zero/nullptr - then the is method has no meaning
+    uint32_t                    m_pointId;
+    
+    /// Handle to the create Point.  If the point has not been created, the value is zero/nullptr
+    Cpl::Point::Api*            m_point;
+};
 
-    /** This method writes the caller Point memory buffer to the Point's
-        internal data.
 
-        Point supports the concept of a client 'locking' the Point's data
-        value.  When a Point's data has been locked - all attempted writes to the
-        Point - with lockRequest == eNO_REQUEST - will SILENTLY fail.  The
-        Application uses the removeLock() method or the 'eUNLOCK' lock request
-        to remove the locked state from the Point's data.  The application can
-        also updated the value of Point when it is locked state by setting
-        lockRequest == eLOCK.
-
-        Notes:
-        1) The assumption is that Point's internal data and 'srcData' are
-           of the same type.
-        2) The data size of the Model Points data instance is ALWAYS honored
-           when coping the data from 'srcData'
-     */
-    virtual void write( const void*   srcData,
-                        size_t        srcSize,
-                        LockRequest_T lockRequest = eNO_REQUEST ) noexcept = 0;
-
- 
+/** This concrete Descriptor Instance is a/the NULL descriptor (used when 
+    creating variable length list of descriptors.  Only ONE instance of
+    this class should every been created/needed.
+ */
+class NullDescriptor : public Descriptor
+{
+public:
+    /// Constructor
+    NullDescriptor() :Descriptor( 0, 0 ){}
 
 public:
-    /** This method has PACKAGE Scope, i.e. it is intended to be ONLY accessible
-        by other classes in the Cpl::Point namespace.  The Application should
-        NEVER call this method.
-
-        This method is used to unconditionally update the Point's data.
-
-        This method is NOT Thread Safe.
-
-        Notes:
-        1) The assumption is that Point Data instance and 'src' are the
-           of the same type.
-        2) The internal data size of the Point instance is ALWAYS honored
-           when coping the data from 'src'
-        3) The Point's sequence number is not changed.
-    */
-    virtual void copyDataFrom_( const void* srcData, size_t srcSize ) noexcept = 0;
-
-
-    /** This method has PACKAGE Scope, i.e. it is intended to be ONLY accessible
-        by other classes in the Cpl::Point namespace.  The Application should
-        NEVER call this method.
-
-        This method is used update's the caller's 'Point Data' with the Model
-        Point's data.
-
-        This method is NOT Thread Safe.
-
-        Notes:
-        1) The assumption is that Point Data instance and 'dst' are the
-           of the same type.
-        2) The 'dstSize' of the destination ALWAYS honored when coping the
-           Point's data to 'dst'
-        3) The Point's sequence number is not changed.
-    */
-    virtual void copyDataTo_( void* dstData, size_t dstSize ) const noexcept = 0;
-
-
-    /** This method has PACKAGE Scope, i.e. it is intended to be ONLY accessible
-        by other classes in the Cpl::Point namespace.  The Application should
-        NEVER call this method.
-
-        This method attempts to convert JSON object 'src' to its binary format
-        and copies the result to the Point's internal data. The expected
-        format of the JSON string is specific to the concrete leaf class.
-
-        See Cpl::Point::ModelDatabaseApi::fromJSON() method for JSON format.
-     */
-    virtual bool fromJSON_( JsonVariant&        src,
-                            LockRequest_T       lockRequest,
-                            Cpl::Text::String*  errorMsg ) noexcept = 0;
-
-
-    /** This method has PACKAGE Scope, i.e. it is intended to be ONLY accessible
-        by other classes in the Cpl::Point namespace.  The Application should
-        NEVER call this method.
-
-        This method converts the Points data to a JSON object.  If the point
-        does not support serializing to a JSON object then false is returned;
-        else true is returned.  This method is ONLY called if the Point is in
-        the valid state.
-
-        See Cpl::Point::ModelDatabaseApi::fromJSON() method for JSON format.
-     */   
-    virtual bool toJSON_( JsonDocument& doc, bool verbose = true ) noexcept = 0;
-
-public:
-    /// Virtual destructor to make the compiler happy
-    virtual ~Api() {}
+    /// See Descriptor
+    bool isNullDescriptor() const noexcept { return true; }
 };
 
 

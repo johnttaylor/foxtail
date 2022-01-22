@@ -1,5 +1,5 @@
-#ifndef Cpl_Point_Api_h_
-#define Cpl_Point_Api_h_
+#ifndef Fxt_Point_BankApi_h_
+#define Fxt_Point_BankApi_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -12,9 +12,9 @@
 *----------------------------------------------------------------------------*/
 /** @file */
 
-#include "colony_config.h"
-#include "Cpl/Text/String.h"
-#include "Cpl/Json/Arduino.h"
+#include "Fxt/Point/Descriptor.h"
+#include "Cpl/Point/DatabaseApi.h"
+#include "Cpl/Memory/ContiguousAllocator.h"
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -32,6 +32,38 @@ namespace Point {
  */
 class BankApi
 {
+public:
+    /** This method takes a list of point Descriptors and 'populates' the bank.
+        Populates means that Point instances are created for each Descriptors.
+        
+        The listOfDescriptors is variable length array of descriptor instances,
+        where the end-of-list is an instance of the NullDescrptor.
+
+        The method should only be called once per 'setup'.
+
+        The method returns true when successful; else false (e.g. out-of-memory)
+        is returned.
+     */
+    virtual bool populate( Descriptor*                       listOfDescriptors, 
+                           Cpl::Memory::ContiguousAllocator& allocatorForPoints, 
+                           Cpl::Point::DatabaseApi&          dbForPoints, 
+                           uint32_t                          initialPointIdValue=0 ) noexcept = 0;
+
+
+public:
+    /** This method copies the Bank's 'point memory' to the specified destination.
+        The method returns if the copy operation is successful; else false (e.g.
+        'dst' size is less than the Bank's point memory) is returned.
+     */
+    virtual bool copyTo( void* dst, size_t maxDstSizeInBytes ) noexcept = 0;
+
+    /** This method copies specified source data to the Bank's 'point memory' 
+        The method returns if the copy operation is successful; else false (e.g.
+        'src' size is greater than the Bank's point memory) is returned.
+     */
+    virtual bool copyFrom( const void* src, size_t srcSizeInBytes ) noexcept = 0;
+
+
 public:
     /// Virtual destructor to make the compiler happy
     virtual ~BankApi() {}

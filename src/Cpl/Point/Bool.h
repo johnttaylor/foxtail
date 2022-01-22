@@ -26,14 +26,14 @@ namespace Point {
 /** This class provides a concrete implementation for a Point who's data is a
     bool.
 
- 	The toJSON()/fromJSON format is:
-	\code
-	
-	{ name:"<mpname>", type:"<mptypestring>", valid:true|false, locked:true|false, val:true|false }
-	
-	\endcode
-	
-	NOTE: All methods in this class ARE thread Safe unless explicitly
+    The toJSON()/fromJSON format is:
+    \code
+
+    { name:"<mpname>", type:"<mptypestring>", valid:true|false, locked:true|false, val:true|false }
+
+    \endcode
+
+    NOTE: All methods in this class ARE thread Safe unless explicitly
           documented otherwise.
  */
 class Bool : public Basic_<bool>
@@ -69,6 +69,19 @@ public:
 
     /// Short-cut for writing false
     inline bool clear( Cpl::Point::Api::LockRequest_T lockRequest = Cpl::Point::Api::eNO_REQUEST ) noexcept { return write( false, lockRequest ); }
+
+    /// Updates the MP's data from 'src'
+    virtual void write( Bool& src, Cpl::Point::Api::LockRequest_T lockRequest = Cpl::Point::Api::eNO_REQUEST ) noexcept 
+    {
+        if ( src.isNotValid() )
+        {
+            setInvalid();
+        }
+        else
+        {
+            write( src.m_data, lockRequest );
+        }
+    }
 
 
 public:

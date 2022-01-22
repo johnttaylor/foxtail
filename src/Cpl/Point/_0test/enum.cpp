@@ -52,6 +52,23 @@ public:
     MyEnum( const Id_T myIdentifier, MyColors initialValue ) :Enum_<MyColors>( initialValue ), m_id( myIdentifier ) {}
 
 public:
+    /// Pull in overloaded methods from base class
+    using Enum_<MyColors>::write;
+
+    /// Updates the MP's data from 'src'
+    virtual void write( MyEnum& src, Cpl::Point::Api::LockRequest_T lockRequest = Cpl::Point::Api::eNO_REQUEST ) noexcept 
+    {
+        if ( src.isNotValid() )
+        {
+            setInvalid();
+        }
+        else
+        {
+            Enum_<MyColors>::write( src.m_data, lockRequest );
+        }
+    }
+
+public:
     ///  See Cpl::Dm::ModelPoint.
     const char* getTypeAsText() const noexcept { return "Cpl::Point::MyEnum"; }
 
@@ -121,6 +138,21 @@ TEST_CASE( "Enum" )
         REQUIRE( value == +MyColors::eGREEN );
         value = apple_.write( MyColors::eRED );
         REQUIRE( value == +MyColors::eRED );
+    }
+
+    SECTION( "write2" )
+    {
+        apple_.write( orange_, Api::eLOCK );
+        valid = apple_.read( value );
+        REQUIRE( value == +ORANGE_INIT_VAL );
+        REQUIRE( apple_.isLocked() );
+        apple_.write( orange_ );
+        REQUIRE( apple_.isLocked() );
+        apple_.write( orange_, Api::eUNLOCK );
+        REQUIRE( apple_.isLocked() == false );
+        orange_.setInvalid();
+        apple_.write( orange_ );
+        REQUIRE( apple_.isNotValid() );
     }
 
     SECTION( "other" )

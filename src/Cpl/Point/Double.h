@@ -56,6 +56,23 @@ public:
     /// Constructor. Valid MP.  Requires an initial value
     Double( const Id_T myIdentifier, double initialValue ) :BasicReal_<double>( initialValue ), m_id( myIdentifier ){}
 
+public:
+    /// Pull in overloaded methods from base class
+    using BasicReal_<double>::write;
+
+    /// Updates the MP's data from 'src'
+    virtual void write( Double& src, Cpl::Point::Api::LockRequest_T lockRequest = Cpl::Point::Api::eNO_REQUEST ) noexcept 
+    {
+        if ( src.isNotValid() )
+        {
+            setInvalid();
+        }
+        else
+        {
+            BasicReal_<double>::write( src.m_data, lockRequest );
+        }
+    }
+
 
 public:
     ///  See Cpl::Point::Api.
@@ -64,6 +81,7 @@ public:
 public:
     /// Creates a concrete instance in the invalid state
     static Api* create( Cpl::Memory::Allocator& allocatorForPoints, uint32_t pointId ) { return new(allocatorForPoints.allocate( sizeof( Double ) )) Double( pointId ); }
+
 
 protected:
     /// The points numeric identifier

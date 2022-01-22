@@ -59,6 +59,23 @@ public:
     Uint8( const Id_T myIdentifier, uint8_t initialValue ) : BasicInteger_<uint8_t>( initialValue ), m_id( myIdentifier ) {}
 
 public:
+    /// Pull in overloaded methods from base class
+    using BasicInteger_<uint8_t>::write;
+
+    /// Updates the MP's data from 'src'
+    virtual void write( Uint8& src, Cpl::Point::Api::LockRequest_T lockRequest = Cpl::Point::Api::eNO_REQUEST ) noexcept 
+    {
+        if ( src.isNotValid() )
+        {
+            setInvalid();
+        }
+        else
+        {
+            BasicInteger_<uint8_t>::write( src.m_data, lockRequest );
+        }
+    }
+
+public:
     ///  See Cpl::Dm::ModelPoint.
     const char* getTypeAsText() const noexcept { return "Cpl::Point::Uint8"; }
 

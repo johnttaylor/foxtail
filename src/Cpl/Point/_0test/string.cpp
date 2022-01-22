@@ -51,6 +51,23 @@ public:
     MyString( const Id_T myIdentifier, const char* initialValue ) :String_<STR_LEN>( initialValue ), m_id( myIdentifier ) {}
 
 public:
+    /// Pull in overloaded methods from base class
+    using String_<STR_LEN>::write;
+
+    /// Updates the MP's data from 'src'. 
+    virtual void write( MyString& src, Cpl::Point::Api::LockRequest_T lockRequest = Cpl::Point::Api::eNO_REQUEST ) noexcept
+    {
+        if ( src.isNotValid() )
+        {
+            setInvalid();
+        }
+        else
+        {
+            String_<STR_LEN>::write( src.m_data, lockRequest );
+        }
+    }
+
+public:
     ///  See Cpl::Dm::ModelPoint.
     const char* getTypeAsText() const noexcept { return "Cpl::Point::MyString::10"; }
 
@@ -81,7 +98,7 @@ TEST_CASE( "MyString" )
     info ={ &orange_, "ORANGE" };
     REQUIRE( db.add( orangeId, info ) );
     bool valid;
-    char value[STR_LEN+1];
+    char value[STR_LEN + 1];
     Cpl::Text::FString<20> valStr;
 
     SECTION( "create" )
@@ -109,7 +126,7 @@ TEST_CASE( "MyString" )
         valid = apple_.read( valStr );
         REQUIRE( valid == false );
 
-        REQUIRE( apple_.getSize() == STR_LEN+1 );
+        REQUIRE( apple_.getSize() == STR_LEN + 1 );
     }
 
     SECTION( "write" )
@@ -120,6 +137,21 @@ TEST_CASE( "MyString" )
         REQUIRE( valStr == "Bob was he" );
         valStr = apple_.write( "Hello", Api::eUNLOCK );
         REQUIRE( valStr == "Hello" );
+    }
+
+    SECTION( "write2" )
+    {
+        apple_.write( orange_, Api::eLOCK );
+        apple_.read( valStr );
+        REQUIRE( valStr == ORANGE_INIT_VAL );
+        REQUIRE( apple_.isLocked() );
+        apple_.write( orange_ );
+        REQUIRE( apple_.isLocked() );
+        apple_.write( orange_, Api::eUNLOCK );
+        REQUIRE( apple_.isLocked() == false );
+        orange_.setInvalid();
+        apple_.write( orange_ );
+        REQUIRE( apple_.isNotValid() );
     }
 
     SECTION( "other" )
@@ -156,7 +188,7 @@ TEST_CASE( "MyString" )
         REQUIRE( result );
         valid  = apple_.read( valStr );
         REQUIRE( valid );
-        REQUIRE( valStr == " hi there "  );
+        REQUIRE( valStr == " hi there " );
 
         result = db.fromJSON( "{\"id\":0,\"val\":123}" );
         REQUIRE( result == false );

@@ -1,5 +1,5 @@
-#ifndef Cpl_Point_Identifier_h_
-#define Cpl_Point_Identifier_h_
+#ifndef Fxt_Point_Source_h_
+#define Fxt_Point_Source_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -12,36 +12,36 @@
 *----------------------------------------------------------------------------*/
 /** @file */
 
-#include "colony_config.h"
-#include <stdint.h>
+#include "Fxt/Point/SetterApi.h"
 
 ///
-namespace Cpl {
+namespace Fxt {
 ///
 namespace Point {
 
 
+/** This concrete template class implements the SetterApi.  The 'source' value for
+    the setValue() method is separate point instance.
 
-/// Base class for Point Identifiers
-class Identifier_T
+    Template args: class "P" is the type of the 'source point'
+ */
+template <class P>
+class Source : public SetterApi
 {
 public:
-    /// Default constructor
-    constexpr Identifier_T() :val( 0 ) {}
-
-    /// Copy constructor
-    constexpr Identifier_T( uint32_t x ) : val( x ) {}
-
+    /// Constructor
+    Source( P& src ) :m_src( &src ){}
+    
 public:
-    /// Short hand for casting/returning my value as unsigned integer
-    constexpr uint32_t operator+() const { return val; }
-
-    /// Cast to uint32_t integer
-    constexpr operator uint32_t() const { return val; }
+    /// See Fxt::Point::SetterApi
+    void setValue( Cpl::Point::Api* dstPt ) noexcept
+    {
+        ((P*) dstPt)->write( m_src );
+    }
 
 protected:
-    /// Actual value;
-    const uint32_t val;
+    /// Handle to the point that is the 'source' of the set operation
+    P& m_src;
 };
 
 

@@ -89,6 +89,21 @@ TEST_CASE( "Double" )
         REQUIRE( value == 2 );
     }
 
+    SECTION( "write2" )
+    {
+        apple_.write( orange_, Api::eLOCK );
+        valid = apple_.read( value );
+        REQUIRE( Cpl::Math::areDoublesEqual( value, ORANGE_INIT_VAL ) );
+        REQUIRE( apple_.isLocked() );
+        apple_.write( orange_ );
+        REQUIRE( apple_.isLocked() );
+        apple_.write( orange_, Api::eUNLOCK );
+        REQUIRE( apple_.isLocked() == false );
+        orange_.setInvalid();
+        apple_.write( orange_ );
+        REQUIRE( apple_.isNotValid() );
+    }
+
     SECTION( "json" )
     {
         char buffer[256];

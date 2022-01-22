@@ -56,6 +56,23 @@ public:
     /// Constructor. Valid MP.  Requires an initial value
     Float( const Id_T myIdentifier, float initialValue ) :BasicReal_<float>( initialValue ), m_id( myIdentifier ){}
 
+public:
+    /// Pull in overloaded methods from base class
+    using BasicReal_<float>::write;
+
+
+    /// Updates the MP's data from 'src'
+    virtual void write( Float& src, Cpl::Point::Api::LockRequest_T lockRequest = Cpl::Point::Api::eNO_REQUEST ) noexcept 
+    {
+        if ( src.isNotValid() )
+        {
+            setInvalid();
+        }
+        else
+        {
+            BasicReal_<float>::write( src.m_data, lockRequest );
+        }
+    }
 
 public:
     ///  See Cpl::Point::Api.

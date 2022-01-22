@@ -52,6 +52,23 @@ public:
     MyRealArray( const Id_T myIdentifier, const double initialSrcData[NUM_ELEM] ) :RealArray_<NUM_ELEM, double>( initialSrcData ), m_id( myIdentifier ) {}
 
 public:
+    /// Pull in overloaded methods from base class
+    using RealArray_<NUM_ELEM, double>::write;
+
+    /// Updates the MP's data from 'src'
+    virtual void write( MyRealArray& src, Cpl::Point::Api::LockRequest_T lockRequest = Cpl::Point::Api::eNO_REQUEST ) noexcept
+    {
+        if ( src.isNotValid() )
+        {
+            setInvalid();
+        }
+        else
+        {
+            RealArray_<NUM_ELEM, double>::write( src.m_array, NUM_ELEM, lockRequest );
+        }
+    }
+
+public:
     ///  See Cpl::Dm::ModelPoint.
     const char* getTypeAsText() const noexcept { return "Cpl::Point::MyRealArray::5"; }
 
@@ -141,6 +158,21 @@ TEST_CASE( "MyRealArray" )
         valid = apple_.read( value, sizeof( value ) );
         REQUIRE( valid );
         REQUIRE( compareArray( value, expectedVal, NUM_ELEM ) );
+    }
+
+    SECTION( "write2" )
+    {
+        apple_.write( orange_, Api::eLOCK );
+        valid = apple_.read( value, sizeof( value ) );
+        REQUIRE( compareArray( value, orangeInitVal_, NUM_ELEM ) );
+        REQUIRE( apple_.isLocked() );
+        apple_.write( orange_ );
+        REQUIRE( apple_.isLocked() );
+        apple_.write( orange_, Api::eUNLOCK );
+        REQUIRE( apple_.isLocked() == false );
+        orange_.setInvalid();
+        apple_.write( orange_ );
+        REQUIRE( apple_.isNotValid() );
     }
 
     SECTION( "other" )

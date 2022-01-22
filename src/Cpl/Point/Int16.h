@@ -59,6 +59,24 @@ public:
     Int16( const Id_T myIdentifier, int16_t initialValue ) : BasicInteger_<int16_t>( initialValue ), m_id( myIdentifier ) {}
 
 public:
+    /// Pull in overloaded methods from base class
+    using BasicInteger_<int16_t>::write;
+
+
+    /// Updates the MP's data from 'src'
+    virtual void write( Int16& src, Cpl::Point::Api::LockRequest_T lockRequest = Cpl::Point::Api::eNO_REQUEST ) noexcept 
+    {
+        if ( src.isNotValid() )
+        {
+            setInvalid();
+        }
+        else
+        {
+            BasicInteger_<int16_t>::write( src.m_data, lockRequest );
+        }
+    }
+
+public:
     ///  See Cpl::Dm::ModelPoint.
     const char* getTypeAsText() const noexcept { return "Cpl::Point::Int16"; }
 
