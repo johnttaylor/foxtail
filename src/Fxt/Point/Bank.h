@@ -1,5 +1,5 @@
-#ifndef Cpl_Point_Bool_h_
-#define Cpl_Point_Bool_h_
+#ifndef Fxt_Point_Bamk_h_
+#define Fxt_Point_Bamk_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -13,79 +13,43 @@
 /** @file */
 
 
-#include "Cpl/Point/Basic_.h"
-#include "Cpl/Point/Identifier.h"
+#include "Fxt/Point/BankApi.h"
 
 ///
-namespace Cpl {
+namespace Fxt {
 ///
 namespace Point {
 
 
-/** This class provides a concrete implementation for a Point who's data is a
-    bool.
+/** This concrete class implements the BankApi
 
- 	The toJSON()/fromJSON format is:
-	\code
-	
-	{ name:"<mpname>", type:"<mptypestring>", valid:true|false, locked:true|false, val:true|false }
-	
-	\endcode
-	
-	NOTE: All methods in this class ARE thread Safe unless explicitly
-          documented otherwise.
+    NOTE: This class is NOT thread safe
  */
-class Bool : public Basic_<bool>
+class Bank : public BankApi
 {
 public:
-    /// Type safe Point Identifier
-    class Id_T : public Identifier_T
-    {
-    public:
-        constexpr Id_T() : Identifier_T() {}
-        constexpr Id_T( uint32_t x ) : Identifier_T( x ) {}
-    };
-
+    /// Constructor
+    Bank();
 
 public:
-    /// Returns the Point's Identifier
-    inline Bool::Id_T getId() const noexcept { return m_id; }
+    /// Set Fxt::Point::BankApi
+    bool populate( Descriptor*                       listOfDescriptors,
+                   Cpl::Memory::ContiguousAllocator& allocatorForPoints,
+                   Cpl::Point::DatabaseApi&          dbForPoints,
+                   uint32_t&                         pointIdValue ) noexcept;
 
-public:
-    /** Constructor. Invalid Point.
-     */
-    Bool( const Id_T myIdentifier );
+    /// Set Fxt::Point::BankApi
+    bool copyTo( void* dst, size_t maxDstSizeInBytes ) noexcept;
 
-    /// Constructor. Valid Point.  Requires an initial value
-    Bool( const Id_T myIdentifier, bool initialValue );
-
-public:
-    /// Type safe write. See Cpl::Point::Api
-    virtual bool write( bool newValue, Cpl::Point::Api::LockRequest_T lockRequest = Cpl::Point::Api::eNO_REQUEST ) noexcept;
-
-    /// Short-cut for writing true
-    inline bool set( Cpl::Point::Api::LockRequest_T lockRequest = Cpl::Point::Api::eNO_REQUEST ) noexcept { return write( true, lockRequest ); }
-
-    /// Short-cut for writing false
-    inline bool clear( Cpl::Point::Api::LockRequest_T lockRequest = Cpl::Point::Api::eNO_REQUEST ) noexcept { return write( false, lockRequest ); }
-
-
-public:
-    /// See Cpl::Point::Api.  
-    bool toJSON_( JsonDocument& doc, bool verbose = true ) noexcept;
-
-    /// See Cpl::Point::Api.  
-    bool fromJSON_( JsonVariant& src, Cpl::Point::Api::LockRequest_T lockRequest, Cpl::Text::String* errorMsg=0 ) noexcept;
-
-
-public:
-    ///  See Cpl::Dm::ModelPoint.
-    const char* getTypeAsText() const noexcept;
+    /// Set Fxt::Point::BankApi
+    bool copyFrom( const void* src, size_t srcSizeInBytes ) noexcept;
 
 protected:
-    /// The points numeric identifier
-    Id_T m_id;
+    /// Start of allocated memory
+    void*    m_memStart;
 
+    /// Size of allocated memory
+    size_t   m_memSize;
 };
 
 

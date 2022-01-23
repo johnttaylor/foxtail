@@ -93,12 +93,16 @@ public:
 
 
 public:
-    ///  See Cpl::Dm::ModelPoint.
+    ///  See Cpl::Point::Api
     const char* getTypeAsText() const noexcept;
+
+    ///  See Cpl::Point::Api
+    size_t getTotalSize() const noexcept { return sizeof( Bool ); }
 
 public:
     /// Creates a concrete instance in the invalid state
     static Api* create( Cpl::Memory::Allocator& allocatorForPoints, uint32_t pointId ) { return new(allocatorForPoints.allocate( sizeof( Bool ) )) Bool( pointId ); }
+
 
 protected:
     /// The points numeric identifier

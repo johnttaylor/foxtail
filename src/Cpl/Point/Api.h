@@ -64,6 +64,11 @@ public:
       */
     virtual size_t getSize() const noexcept = 0;
 
+    /** This method returns the RAM size of the Point's data PLUS any metadata
+        associated with the Point.
+     */
+    virtual size_t getTotalSize() const noexcept = 0;
+
     /** This method returns a string identifier for the Point's data type.
         This value IS GUARANTEED to be unique (within an Application).  The
         format of the string is the Point's fully qualified namespace and

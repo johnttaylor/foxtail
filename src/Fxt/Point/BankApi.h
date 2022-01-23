@@ -25,7 +25,7 @@ namespace Point {
 
 
 /** This abstract class defines the interface for a point Bank.  A Point bank
-    is responsible for creating a collection point and managing the memory
+    is responsible for creating a collection of points and managing the memory
     for the allocated points.  A point Bank supports being able to block its
     point memory.  This allows for fast 'double buffering' of Points as well
     as HA transfers.
@@ -39,6 +39,12 @@ public:
         The listOfDescriptors is variable length array of descriptor instances,
         where the end-of-list is an instance of the NullDescrptor.
 
+        The 'pointIdValue' is an INPUT to the function AND it is an 
+        OUTPUT.  For input it is the STARTING point ID to use when creating
+        points.  For output i returns the 'last/final' PointId assigned by 
+        the Bank.  The Bank auto-increments the pointIdValue every time a 
+        point is created.
+
         The method should only be called once per 'setup'.
 
         The method returns true when successful; else false (e.g. out-of-memory)
@@ -47,7 +53,7 @@ public:
     virtual bool populate( Descriptor*                       listOfDescriptors, 
                            Cpl::Memory::ContiguousAllocator& allocatorForPoints, 
                            Cpl::Point::DatabaseApi&          dbForPoints, 
-                           uint32_t                          initialPointIdValue=0 ) noexcept = 0;
+                           uint32_t&                         pointIdValue ) noexcept = 0;
 
 
 public:

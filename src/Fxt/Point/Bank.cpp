@@ -11,59 +11,77 @@
 /** @file */
 
 
-#include "Bool.h"
+#include "Bank.h"
 
 ///
-using namespace Cpl::Point;
+using namespace Fxt::Point;
 
 ///////////////////////////////////////////////////////////////////////////////
-Bool::Bool( const Id_T myIdentifier )
-    : Basic_<bool>()
-    , m_id( myIdentifier )
+Bank::Bank()
+    : m_memStart( nullptr )
+    , m_memSize(0 )
 {
 }
 
-/// Constructor. Valid Point.  Requires an initial value
-Bool::Bool( const Id_T myIdentifier, bool initialValue )
-    : Basic_<bool>( initialValue )
-    , m_id( myIdentifier )
-{
-}
 
 
 ///////////////////////////////////////////////////////////////////////////////
-bool Bool::write( bool newValue, Cpl::Point::Api::LockRequest_T lockRequest ) noexcept
+bool Bank::populate( Descriptor*                       listOfDescriptors,
+                     Cpl::Memory::ContiguousAllocator& allocatorForPoints,
+                     Cpl::Point::DatabaseApi&          dbForPoints,
+                     uint32_t&                         pointIdValue ) noexcept
 {
-    Cpl::Point::PointCommon_::write( &newValue, sizeof( bool ), lockRequest );
-    return m_data;
-}
+    m_memSize = 0;
+    m_memStart = nullptr;
+    while ( !listOfDescriptors->isNullDescriptor() )
+    {
+        // Create the next point
+        if ( !listOfDescriptors->createPoint( allocatorForPoints, pointIdValue ) )
+        {
+            m_memSize  = 0;
+            m_memStart = nullptr;
+            return false;
+        }
 
-const char* Bool::getTypeAsText() const noexcept
-{
-    return "Cpl::Point::Bool";
-}
+        // Trap the 1st allocate address
+        if ( m_memStart == nullptr )
+        {
+            m_memStart = listOfDescriptors->getPoint();
+        }
+        
+        // Keep track of the allocated size
+        m_memSize += listOfDescriptors->getPoint()->getTotalSize();
 
-bool Bool::toJSON_( JsonDocument& doc, bool verbose ) noexcept
-{
-    // Construct the 'val' key/value pair (as a HEX string)
-    doc["val"] = m_data;
+        // Get the next descriptor in the list
+        pointIdValue++;
+        listOfDescriptors++;
+    }
+
+    // If I get here the bank was successfully populated
     return true;
 }
 
-bool Bool::fromJSON_( JsonVariant& src, Cpl::Point::Api::LockRequest_T lockRequest, Cpl::Text::String* errorMsg ) noexcept
+bool Bank::copyTo( void* dst, size_t maxDstSizeInBytes ) noexcept
 {
-    // Attempt to parse the value key/value pair
-    bool checkForError = src | false;
-    bool newValue      = src | true;
-    if ( newValue == true && checkForError == false )
+    // Fail if the destination is too small
+    if ( maxDstSizeInBytes < m_memSize )
     {
-        if ( errorMsg )
-        {
-            *errorMsg = "Invalid syntax for the 'val' key/value pair";
-        }
         return false;
     }
 
-    write( newValue, lockRequest );
+    memcpy( dst, m_memStart, m_memSize );
     return true;
 }
+
+bool Bank::copyFrom( const void* src, size_t srcSizeInBytes ) noexcept
+{
+    // Fail if the source is too large
+    if ( srcSizeInBytes > m_memSize )
+    {
+        return false;
+    }
+
+    memcpy( m_memStart, src, m_memSize );
+    return true;
+}
+

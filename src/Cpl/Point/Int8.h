@@ -80,6 +80,9 @@ public:
     ///  See Cpl::Dm::ModelPoint.
     const char* getTypeAsText() const noexcept { return "Cpl::Point::Int8"; }
 
+    ///  See Cpl::Point::Api
+    size_t getTotalSize() const noexcept { return sizeof( Int8 ); }
+
 public:
     /// Creates a concrete instance in the invalid state
     static Api* create( Cpl::Memory::Allocator& allocatorForPoints, uint32_t pointId ) { return new(allocatorForPoints.allocate( sizeof( Int8 ) )) Int8( pointId ); }

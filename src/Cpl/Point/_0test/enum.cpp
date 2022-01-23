@@ -72,6 +72,9 @@ public:
     ///  See Cpl::Dm::ModelPoint.
     const char* getTypeAsText() const noexcept { return "Cpl::Point::MyEnum"; }
 
+    ///  See Cpl::Point::Api
+    size_t getTotalSize() const noexcept { return sizeof( MyEnum ); }
+
     /// Creates a concrete instance in the invalid state
     static Api* create( Cpl::Memory::Allocator& allocatorForPoints, uint32_t pointId ) { return new(allocatorForPoints.allocate( sizeof( MyEnum ) )) MyEnum( pointId ); }
 
@@ -110,6 +113,8 @@ TEST_CASE( "Enum" )
         Api* pt = MyEnum::create( heap, 0 );
         REQUIRE( pt );
         REQUIRE( strcmp( pt->getTypeAsText(), apple_.getTypeAsText() ) == 0 );
+
+        REQUIRE( apple_.getTotalSize() == sizeof( apple_ ) );
     }
 
     SECTION( "read" )

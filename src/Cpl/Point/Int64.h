@@ -79,6 +79,9 @@ public:
     ///  See Cpl::Dm::ModelPoint.
     const char* getTypeAsText() const noexcept { return "Cpl::Point::Int64"; }
 
+    ///  See Cpl::Point::Api
+    size_t getTotalSize() const noexcept { return sizeof( Int64 ); }
+
 public:
     /// Creates a concrete instance in the invalid state
     static Api* create( Cpl::Memory::Allocator& allocatorForPoints, uint32_t pointId ) { return new(allocatorForPoints.allocate( sizeof( Int64 ) )) Int64( pointId ); }

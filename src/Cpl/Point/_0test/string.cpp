@@ -71,6 +71,9 @@ public:
     ///  See Cpl::Dm::ModelPoint.
     const char* getTypeAsText() const noexcept { return "Cpl::Point::MyString::10"; }
 
+    ///  See Cpl::Point::Api
+    size_t getTotalSize() const noexcept { return sizeof( MyString ); }
+
     /// Creates a concrete instance in the invalid state
     static Api* create( Cpl::Memory::Allocator& allocatorForPoints, uint32_t pointId ) { return new(allocatorForPoints.allocate( sizeof( MyString ) )) MyString( pointId ); }
 
@@ -107,6 +110,8 @@ TEST_CASE( "MyString" )
         Api* pt = MyString::create( heap, 0 );
         REQUIRE( pt );
         REQUIRE( strcmp( pt->getTypeAsText(), apple_.getTypeAsText() ) == 0 );
+
+        REQUIRE( apple_.getTotalSize() == sizeof( apple_ ) );
     }
 
     SECTION( "read" )

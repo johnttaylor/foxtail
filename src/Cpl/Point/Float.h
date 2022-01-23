@@ -78,6 +78,9 @@ public:
     ///  See Cpl::Point::Api.
     const char* getTypeAsText() const noexcept { return "Cpl::Point:Float"; }
 
+    ///  See Cpl::Point::Api
+    size_t getTotalSize() const noexcept { return sizeof( Float ); }
+
 
 public:
     /// Creates a concrete instance in the invalid state

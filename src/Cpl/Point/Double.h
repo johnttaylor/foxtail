@@ -78,6 +78,9 @@ public:
     ///  See Cpl::Point::Api.
     const char* getTypeAsText() const noexcept { return "Cpl::Point:Double"; }
 
+    ///  See Cpl::Point::Api
+    size_t getTotalSize() const noexcept { return sizeof( Double ); }
+
 public:
     /// Creates a concrete instance in the invalid state
     static Api* create( Cpl::Memory::Allocator& allocatorForPoints, uint32_t pointId ) { return new(allocatorForPoints.allocate( sizeof( Double ) )) Double( pointId ); }

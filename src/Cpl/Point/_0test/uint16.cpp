@@ -50,6 +50,8 @@ TEST_CASE( "Uint16" )
         Api* pt = Uint16::create( heap, 0 );
         REQUIRE( pt );
         REQUIRE( strcmp( pt->getTypeAsText(), apple_.getTypeAsText() ) == 0 );
+
+        REQUIRE( apple_.getTotalSize() == sizeof( apple_ ) );
     }
 
     SECTION( "read" )
