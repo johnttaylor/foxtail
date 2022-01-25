@@ -45,10 +45,12 @@ void Record::start( Cpl::Dm::MailboxServer& myMbox ) noexcept
         m_chunkHandler.start( myMbox );
 
         // Load the record's data from persistent storage
+        bool dataDefaulted = false;
         if ( !m_chunkHandler.loadData( *this ) )
         {
             // No valid data -->reset to my defaults
             resetData();
+            dataDefaulted = true;
         }
 
         // Subscribe for change notification 
@@ -61,8 +63,11 @@ void Record::start( Cpl::Dm::MailboxServer& myMbox ) noexcept
                 m_items[i].observerPtr = new Cpl::Dm::SubscriberComposer<Record, Cpl::Dm::ModelPoint>( myMbox, *this, &Record::dataChanged );
                 if ( m_items[i].observerPtr )
                 {
-                    // subscribe with the current sequence number so there will be NO IMMEDIATE call back
-                    m_items[i].mpPtr->genericAttach( *( m_items[i].observerPtr ), m_items[i].mpPtr->getSequenceNumber() );
+                    // If we have valid data then subscribe with the current 
+                    // sequence number so there will be NO IMMEDIATE call back;
+                    // ELSE subscribe with 'unknown' so that there is immediate 
+                    // callback to 'flush' the defaulted data to persistent storage
+                    m_items[i].mpPtr->genericAttach( *( m_items[i].observerPtr ), !dataDefaulted? m_items[i].mpPtr->getSequenceNumber(): Cpl::Dm::ModelPoint::SEQUENCE_NUMBER_UNKNOWN );
                 }
                 else
                 {
