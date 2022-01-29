@@ -16,6 +16,7 @@
 #include "Fxt/Point/SetterApi.h"
 #include "Cpl/Memory/Allocator.h"
 #include "Cpl/Point/Identifier.h"
+#include "Cpl/Point/Info.h"
 
 ///
 namespace Fxt {
@@ -42,12 +43,12 @@ public:
 
 public:
     /// Constructor
-    Descriptor( uint32_t localId, CreateFunc_T createFunction, SetterApi* setter=nullptr )
+    Descriptor( const char* symbolicName, uint32_t localId, CreateFunc_T createFunction, SetterApi* setter=nullptr )
         : Cpl::Container::KeyUinteger32_T( localId )
         , m_createMethod( createFunction )
         , m_initialValue( setter )
         , m_pointId( 0 )
-        , m_point( nullptr )
+        , m_pointInfo( { nullptr, symbolicName } )
     {
     }
 
@@ -59,21 +60,20 @@ public:
      */
     bool createPoint( Cpl::Memory::Allocator& allocatorForPoints, uint32_t pointId )
     {
-        m_point   = (m_createMethod) (allocatorForPoints, pointId);
-        m_pointId = pointId;
-        return m_point != nullptr;
+        m_pointInfo.pointInstance = (m_createMethod) (allocatorForPoints, pointId);
+        m_pointId                 = pointId;
+        return m_pointInfo.pointInstance != nullptr;
     }
-
-public:
-    /// This function is used to identify a 'Null Descriptor'
-    virtual bool isNullDescriptor() const noexcept { return false; }
 
 public:
     /// Data accessor
     inline uint32_t getLocalId() { return m_keyData; }
     
+    /// Data accessor.  
+    inline const char* getSymbolicName() { return m_pointInfo.symbolicName; }
+
     /// Data accessor.  If null, then no Point has been allocated
-    inline Cpl::Point::Api* getPoint() { return m_point; }
+    inline Cpl::Point::Api* getPoint() { return m_pointInfo.pointInstance; }
 
     /// Data accessor. If getPoint() returns zero/nullptr then this value has no meaning
     inline Cpl::Point::Identifier_T getPointId() { return m_pointId; }
@@ -81,6 +81,12 @@ public:
     /// Data accessor.  If null, then the Point has no associated Setter
     inline SetterApi* getSetter() { return m_initialValue; }
 
+    /// Data accessor
+    inline Cpl::Point::Info_T& getPointInfo() { return m_pointInfo; }
+
+public:
+    ///  API from DictItem
+    const Cpl::Container::Key& getKey() const noexcept { return *this; }
 
 protected:
     /// 'Factory' method to create the point of the correct type
@@ -92,24 +98,8 @@ protected:
     /// The runtime Point identifier.  If m_point is zero/nullptr - then the is method has no meaning
     uint32_t                    m_pointId;
     
-    /// Handle to the create Point.  If the point has not been created, the value is zero/nullptr
-    Cpl::Point::Api*            m_point;
-};
-
-
-/** This concrete Descriptor Instance is a/the NULL descriptor (used when 
-    creating variable length list of descriptors.  Only ONE instance of
-    this class should every been created/needed.
- */
-class NullDescriptor : public Descriptor
-{
-public:
-    /// Constructor
-    NullDescriptor() :Descriptor( 0, 0 ){}
-
-public:
-    /// See Descriptor
-    bool isNullDescriptor() const noexcept { return true; }
+    /// Contains the pointer to the Point (is zero until created) and Points symbolic name
+    Cpl::Point::Info_T          m_pointInfo;
 };
 
 

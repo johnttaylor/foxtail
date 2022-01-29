@@ -1,9 +1,10 @@
 # Unit under test
-src/Cpl/Point
+src/Fxt/Point
 
 # tests
-src/Cpl/Point/_0test
+src/Fxt/Point/_0test
 
+src/Cpl/Point
 src/Cpl/Io/Stdio/_ansi
 
 

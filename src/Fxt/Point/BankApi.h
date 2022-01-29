@@ -36,8 +36,8 @@ public:
     /** This method takes a list of point Descriptors and 'populates' the bank.
         Populates means that Point instances are created for each Descriptors.
         
-        The listOfDescriptors is variable length array of descriptor instances,
-        where the end-of-list is an instance of the NullDescrptor.
+        The listOfDescriptors is variable length array of Descriptor pointers,
+        where the end-of-list is a null pointer.
 
         The 'pointIdValue' is an INPUT to the function AND it is an 
         OUTPUT.  For input it is the STARTING point ID to use when creating
@@ -50,7 +50,7 @@ public:
         The method returns true when successful; else false (e.g. out-of-memory)
         is returned.
      */
-    virtual bool populate( Descriptor*                       listOfDescriptors, 
+    virtual bool populate( Descriptor*                       listOfDescriptorPointers[], 
                            Cpl::Memory::ContiguousAllocator& allocatorForPoints, 
                            Cpl::Point::DatabaseApi&          dbForPoints, 
                            uint32_t&                         pointIdValue ) noexcept = 0;

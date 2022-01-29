@@ -12,6 +12,7 @@
 
 
 #include "Bank.h"
+#include "Cpl/System/Assert.h"
 
 ///
 using namespace Fxt::Point;
@@ -26,18 +27,31 @@ Bank::Bank()
 
 
 ///////////////////////////////////////////////////////////////////////////////
-bool Bank::populate( Descriptor*                       listOfDescriptors,
+bool Bank::populate( Descriptor*                       listOfDescriptorPointers[],
                      Cpl::Memory::ContiguousAllocator& allocatorForPoints,
                      Cpl::Point::DatabaseApi&          dbForPoints,
                      uint32_t&                         pointIdValue ) noexcept
 {
-    m_memSize = 0;
-    m_memStart = nullptr;
-    while ( !listOfDescriptors->isNullDescriptor() )
+    CPL_SYSTEM_ASSERT( listOfDescriptorPointers );
+
+    m_memSize           = 0;
+    m_memStart          = nullptr;
+    Descriptor* itemPtr = *listOfDescriptorPointers;
+    while ( itemPtr  )
     {
         // Create the next point
-        if ( !listOfDescriptors->createPoint( allocatorForPoints, pointIdValue ) )
+        if ( !itemPtr->createPoint( allocatorForPoints, pointIdValue ) )
         {
+            // Error: allocator is out-of-space
+            m_memSize  = 0;
+            m_memStart = nullptr;
+            return false;
+        }
+
+        // Add the point to the database
+        if ( !dbForPoints.add( itemPtr->getPointId(), itemPtr->getPointInfo() ) )
+        {
+            // Error: database is out-of-space
             m_memSize  = 0;
             m_memStart = nullptr;
             return false;
@@ -46,15 +60,16 @@ bool Bank::populate( Descriptor*                       listOfDescriptors,
         // Trap the 1st allocate address
         if ( m_memStart == nullptr )
         {
-            m_memStart = listOfDescriptors->getPoint();
+            m_memStart = itemPtr->getPoint();
         }
         
         // Keep track of the allocated size
-        m_memSize += listOfDescriptors->getPoint()->getTotalSize();
+        m_memSize += itemPtr->getPoint()->getTotalSize();
 
         // Get the next descriptor in the list
         pointIdValue++;
-        listOfDescriptors++;
+        listOfDescriptorPointers++;
+        itemPtr = *listOfDescriptorPointers;
     }
 
     // If I get here the bank was successfully populated

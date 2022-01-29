@@ -47,9 +47,8 @@ public:
     /// See Cpl::Memory::ContiguousAllocator
     void reset() noexcept;
 
-    /// See Cpl::Memory::ContiguousAllocator. Note: this method DOES NOTHING 
+    /// See Cpl::Memory::ContiguousAllocator. 
     uint8_t* getMemoryStart( size_t& dstAllocatedLenInBytes ) noexcept;
-
 
 private:
     /// Prevent access to the copy constructor -->LeanHeap can not be copied!

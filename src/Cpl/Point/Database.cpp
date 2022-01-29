@@ -15,7 +15,7 @@
 #include "Cpl/System/Mutex.h"
 #include <new>
 
-#define VALID_IDX(numId)        (m_points && numId < m_maxNumPoints && m_points[numId].pointInstance)
+#define VALID_IDX(numId)        (numId < m_maxNumPoints && m_points[numId].pointInstance)
 ///
 using namespace Cpl::Point;
 
@@ -29,7 +29,14 @@ Database::Database( size_t maxNumPoints ) noexcept
     :m_maxNumPoints( maxNumPoints )
 {
     m_points = new(std::nothrow) Info_T[maxNumPoints];
-    memset( m_points, 0, sizeof( Info_T ) * maxNumPoints );
+    if ( m_points )
+    {
+        memset( m_points, 0, sizeof( Info_T ) * maxNumPoints );
+    }
+    else
+    {
+        m_maxNumPoints = 0;
+    }
 }
 
 Database::~Database()
@@ -65,7 +72,7 @@ const char* Database::getSymbolicName( const Identifier_T pointIdToFind ) const 
 
 bool Database::add( const Identifier_T numericId, Info_T& pointInfo ) noexcept
 {
-    if ( m_points && numericId < m_maxNumPoints )
+    if ( numericId < m_maxNumPoints )
     {
         m_points[numericId] = pointInfo;
         return true;

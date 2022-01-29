@@ -39,16 +39,18 @@ public:
 	
 public:
 	/** This method returns a pointer to the start of Allocator's contiguous
-	    memory.
+	    memory AND the total number of bytes allocated so far.
 
 		NOTE: This method has GREAT POWER and it is the responsibility of the 
 		      Application to use it correctly (Uncle Ben 2002).
      */ 
 	virtual uint8_t* getMemoryStart( size_t& dstAllocatedLenInBytes ) noexcept= 0;
 
-
 private:
-	/// Hide/disable the individual release method (it does not fit the contiguous semantics)
+	/** Hide/disable the individual release method (it does not fit the 
+	    contiguous semantics).  If it gets called via the parent 'Allocator'
+		interface - it does NOTHING
+	 */
 	void release( void *ptr ){};
 };
 

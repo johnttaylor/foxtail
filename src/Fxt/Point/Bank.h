@@ -33,7 +33,7 @@ public:
 
 public:
     /// Set Fxt::Point::BankApi
-    bool populate( Descriptor*                       listOfDescriptors,
+    bool populate( Descriptor*                       listOfDescriptorPointers[],
                    Cpl::Memory::ContiguousAllocator& allocatorForPoints,
                    Cpl::Point::DatabaseApi&          dbForPoints,
                    uint32_t&                         pointIdValue ) noexcept;

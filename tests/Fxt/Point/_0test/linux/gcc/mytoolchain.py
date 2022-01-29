@@ -35,7 +35,7 @@ FINAL_OUTPUT_NAME = 'a.out'
 # For build config/variant: "Release" (aka posix build variant)
 #
 # Link unittest directory by object module so that Catch's self-registration mechanism 'works'
-unit_test_objects = '_BUILT_DIR_.src/Cpl/Point/_0test'
+unit_test_objects = '_BUILT_DIR_.src/Fxt/Point/_0test'
 
 #
 # For build config/variant: "Release" (aka posix build variant)
