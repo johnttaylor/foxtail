@@ -14,7 +14,7 @@
 
 
 #include "colony_config.h"
-#include "Cpl/Container/MapItem.h"
+#include "Cpl/Container/Item.h"
 #include "Cpl/Text/String.h"
 #include "Cpl/Dm/StaticInfo.h"
 #include "Cpl/Dm/SubscriberApi.h"
@@ -54,7 +54,7 @@ namespace Dm {
         3) All methods in this class ARE thread Safe unless explicitly
            documented otherwise.
  */
-class ModelPoint : public Cpl::Container::MapItem
+class ModelPoint : public Cpl::Container::Item
 {
 public:
     /// Options related to the Model Point's locked state

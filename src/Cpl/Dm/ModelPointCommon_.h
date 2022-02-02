@@ -112,10 +112,6 @@ protected:
 
 
 public:
-    /// See Cpl::Container::DictItem
-    const Cpl::Container::Key& getKey() const noexcept;
-
-public:
     /// See Cpl::Dm::ModelPoint
     void processSubscriptionEvent_( SubscriberApi& subscriber, Event_T event ) noexcept;
 

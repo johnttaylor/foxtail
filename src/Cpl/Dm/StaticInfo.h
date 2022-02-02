@@ -13,7 +13,6 @@
 /** @file */
 
 
-#include "Cpl/Container/Key.h"
 #include "Cpl/Json/Arduino.h"
 
 ///
@@ -48,13 +47,13 @@ namespace Dm {
        provide the actual JSON formating.
 
  */
-class StaticInfo : public Cpl::Container::KeyLiteralString
+class StaticInfo 
 {
 public:
     /// Returns the Point's name
     inline const char* getName() const noexcept 
     {
-        return m_stringKeyPtr;
+        return m_name;
     }
 
     /** Returns true if the instance has a JSON formatter.  The default is 
@@ -76,7 +75,11 @@ public:
 
 public:
     /// Constructor
-    StaticInfo( const char* pointName ) : Cpl::Container::KeyLiteralString( pointName ) {}
+    StaticInfo( const char* pointName ) : m_name( pointName ) {}
+
+protected:
+    /// Name
+    const char* m_name;
 };
 
 

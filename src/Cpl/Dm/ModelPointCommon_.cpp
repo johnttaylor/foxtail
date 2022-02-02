@@ -295,12 +295,6 @@ size_t ModelPointCommon_::getExternalSize( bool includeLockedState ) const noexc
 }
 
 
-/////////////////
-const Cpl::Container::Key& ModelPointCommon_::getKey() const noexcept
-{
-    return m_staticInfo;
-}
-
 
 
 /////////////////
