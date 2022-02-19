@@ -101,7 +101,7 @@ public:
 
 public:
     /// Creates a concrete instance in the invalid state
-    static Api* create( Cpl::Memory::Allocator& allocatorForPoints, uint32_t pointId ) { return new(allocatorForPoints.allocate( sizeof( Bool ) )) Bool( pointId ); }
+    static Api* create( Cpl::Memory::Allocator& allocatorForPoints, uint32_t pointId ) { return PointCommon_::create<Bool>( allocatorForPoints, pointId ); }
 
 
 protected:

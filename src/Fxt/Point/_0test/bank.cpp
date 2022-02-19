@@ -31,7 +31,9 @@ static Descriptor       orange_( "ORANGE", 200, Cpl::Point::Int64::create );
 static Descriptor       cherry_( "CHERRY", 300, Cpl::Point::Uint32::create );
 static Descriptor       lime_( "LIME", 400, Cpl::Point::Int64::create );
 
-static size_t           heapMemory_[(sizeof( Cpl::Point::Uint32 ) * 2 + sizeof( Cpl::Point::Int64 ) * 2 + (sizeof(size_t)-1)) / sizeof(size_t)];
+#define MEM_SIZE        (sizeof( Cpl::Point::Uint32 ) * 2 + sizeof( Cpl::Point::Int64 ) * 2 + (sizeof( size_t ) - 1)) / sizeof( size_t )
+static size_t           heapMemory_[MEM_SIZE];
+static size_t           tempBuffer_[MEM_SIZE];
 
 #define CMP(db,s,id)    (strcmp( db.getSymbolicName(id), s ) == 0)
 
@@ -39,14 +41,14 @@ static size_t           heapMemory_[(sizeof( Cpl::Point::Uint32 ) * 2 + sizeof( 
 TEST_CASE( "Database" )
 {
     Cpl::System::Shutdown_TS::clearAndUseCounter();
-    Bank uut;
-    Cpl::Memory::LeanHeap heap( heapMemory_, sizeof( heapMemory_ ) );
 
     SECTION( "create" )
     {
+        Bank uut;
+        Cpl::Memory::LeanHeap heap( heapMemory_, sizeof( heapMemory_ ) );
         Cpl::Point::Database db( MAX_POINTS );
-        Descriptor* list[4+1] = { &apple_, &orange_, &cherry_, &lime_, 0 };
-        
+        Descriptor* list[4 + 1] ={ &apple_, &orange_, &cherry_, &lime_, 0 };
+
         uint32_t pointId = 0;
         bool result = uut.populate( list, heap, db, pointId );
         REQUIRE( result );
@@ -54,6 +56,72 @@ TEST_CASE( "Database" )
         REQUIRE( CMP( db, "ORANGE", 1 ) );
         REQUIRE( CMP( db, "CHERRY", 2 ) );
         REQUIRE( CMP( db, "LIME", 3 ) );
+        REQUIRE( pointId == 4 );
+    }
+
+    SECTION( "copy" )
+    {
+        Bank uut;
+        Cpl::Memory::LeanHeap heap( heapMemory_, sizeof( heapMemory_ ) );
+        Cpl::Point::Database db( MAX_POINTS );
+        Descriptor* list[4 + 1] ={ &apple_, &orange_, &cherry_, &lime_, 0 };
+
+        uint32_t pointId = 0;
+        bool result = uut.populate( list, heap, db, pointId );
+        REQUIRE( result );
+        REQUIRE( CMP( db, "APPLE", 0 ) );
+        REQUIRE( CMP( db, "ORANGE", 1 ) );
+        REQUIRE( CMP( db, "CHERRY", 2 ) );
+        REQUIRE( CMP( db, "LIME", 3 ) );
+        REQUIRE( pointId == 4 );
+
+        size_t dstAllocatedLenInBytes;
+        heap.getMemoryStart( dstAllocatedLenInBytes );
+        REQUIRE( dstAllocatedLenInBytes == uut.getAllocatedSize() );
+        REQUIRE( uut.copyTo( tempBuffer_, sizeof( tempBuffer_ ) ) );
+        REQUIRE( memcmp( tempBuffer_, heapMemory_, uut.getAllocatedSize() ) == 0 );
+        REQUIRE( uut.copyTo( tempBuffer_+1, uut.getAllocatedSize() - 1 ) == false );
+        REQUIRE( memcmp( tempBuffer_, heapMemory_, uut.getAllocatedSize() ) == 0 );
+
+        memset( tempBuffer_, 0, sizeof( tempBuffer_ ) );
+        uut.copyFrom( tempBuffer_, sizeof( tempBuffer_ ) );
+        REQUIRE( memcmp( tempBuffer_, heapMemory_, uut.getAllocatedSize() ) == 0 );
+        REQUIRE( uut.copyFrom( tempBuffer_ + 1, uut.getAllocatedSize() + 1 ) == false );
+        REQUIRE( memcmp( tempBuffer_, heapMemory_, uut.getAllocatedSize() ) == 0 );
+    }
+
+    SECTION( "db-out-of-space" )
+    {
+        Bank uut;
+        Cpl::Memory::LeanHeap heap( heapMemory_, sizeof( heapMemory_ ) );
+        Cpl::Point::Database db( MAX_POINTS-1 );
+        Descriptor* list[4 + 1] ={ &apple_, &orange_, &cherry_, &lime_, 0 };
+
+        uint32_t pointId = 0;
+        bool result = uut.populate( list, heap, db, pointId );
+        REQUIRE( result == false );
+        REQUIRE( CMP( db, "APPLE", 0 ) );
+        REQUIRE( CMP( db, "ORANGE", 1 ) );
+        REQUIRE( CMP( db, "CHERRY", 2 ) );
+        REQUIRE( db.getSymbolicName( 3 ) == nullptr );
+        REQUIRE( pointId == 3 );
+    }
+
+    SECTION( "heap-out-of-space" )
+    {
+        Bank uut;
+        Cpl::Memory::LeanHeap heap( heapMemory_, sizeof( heapMemory_ ) - sizeof( Cpl::Point::Uint32 ) );
+        Cpl::Point::Database db( MAX_POINTS - 1 );
+        Descriptor* list[4 + 1] ={ &apple_, &orange_, &cherry_, &lime_, 0 };
+
+        uint32_t pointId = 0;
+        bool result = uut.populate( list, heap, db, pointId );
+        REQUIRE( result == false );
+        REQUIRE( CMP( db, "APPLE", 0 ) );
+        REQUIRE( CMP( db, "ORANGE", 1 ) );
+        REQUIRE( CMP( db, "CHERRY", 2 ) );
+        REQUIRE( db.getSymbolicName( 3 ) == nullptr );
+        REQUIRE( pointId == 3 );
     }
 
     REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );

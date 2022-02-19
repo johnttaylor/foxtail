@@ -18,6 +18,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+/// Helper macro for a concrete point's factory/create method
+
 ///
 namespace Cpl {
 ///
@@ -25,8 +27,8 @@ namespace Point {
 
 
 /** This mostly abstract class defines the interface for a Point.  A
-    Point contains an atomic (i.e. thread-safe), managed, type-safe 'chunk' of 
-    data.  In addition to the data - a point has meta data and state. A Point 
+    Point contains an atomic (i.e. thread-safe), managed, type-safe 'chunk' of
+    data.  In addition to the data - a point has meta data and state. A Point
     has the following features:
 
         o Read/write operations from/to a Point's data are atomic operations,
@@ -46,7 +48,7 @@ namespace Point {
           leaf type for its identifier.
         o Points are NOT THREAD SAFE.
 
-    
+
  */
 class Api
 {
@@ -155,7 +157,7 @@ protected:
                         size_t        srcSize,
                         LockRequest_T lockRequest = eNO_REQUEST ) noexcept = 0;
 
- 
+
 
 public:
     /** This method has PACKAGE Scope, i.e. it is intended to be ONLY accessible
@@ -220,8 +222,9 @@ public:
         the valid state.
 
         See Cpl::Point::ModelDatabaseApi::fromJSON() method for JSON format.
-     */   
+     */
     virtual bool toJSON_( JsonDocument& doc, bool verbose = true ) noexcept = 0;
+
 
 public:
     /// Virtual destructor to make the compiler happy

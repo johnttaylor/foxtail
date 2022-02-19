@@ -1,0 +1,136 @@
+{
+    // Component definition -->Separate list/database of components.  This is updated when a new component is created/finished
+    "component": {
+        "name": "FooBar",
+        "type": "Fxt::Component::FooBar",
+        "summary": "Do something interesting...",
+        "details": "Alot more stuff...", // Optional
+        "inputs": [ // Can be empty
+            {
+                "name": "deltaError",
+                "type": "Cpl::Point::Uint32",
+                "pos": 0 // Position of the PointId in my input-initializer-list
+
+            },
+            {
+                "name": "setPoint",
+                "type": "Cpl::Point::Uint32",
+                "pos": 1 // Position of the PointId in my output-initializer-list
+            }
+        ],
+        "outputs": [ // Can be empty
+            {
+                "name": "loadValue",
+                "type": "Cpl::Point::Uint32",
+                "pos": 0
+            }
+        ],
+        "private": [ // Can be empty
+            {
+                "name": "sumError",
+                "type": "Cpl::Point::Uint32",
+                "pos": 0 // Position of the PointId in my private-initializer-list
+            }
+        ]
+    },
+
+    // Logic Chain definition
+    "logicChain": {
+        "name": "LC number 1",
+        "id": 0, // Range: uint16_t. In theory Auto-assigned within the Chassis
+        "executionRate": 50,
+        "summary": "Do something interesting...",
+        "details": "Alot more stuff...", // Optional
+
+        "points": {
+            "dataAuto": [ // In theory this list can be optimized to only include the minimum number of Pts (i.e. reuse Pt instance by type)
+
+            ],
+
+            "dataNamed": [
+                {
+                    "name": "sumError",
+                    "type": "Cpl::Point::Uint32",
+                    "id": 0 // In theory Auto-assigned within the 'Data Points'
+                }
+            ],
+
+            "dataInitialized": [
+                {
+                    "name": "sumError",
+                    "type": "Cpl::Point::Uint32",
+                    "id": 0, // In theory Auto-assigned within the 'Data Points'
+                    "initVal": "a-fromJSON-string (just the val/invalid fields) that supplies the sets the initial value"
+                }
+            ],
+
+            "dataPrivate": [
+
+            ]
+        },
+
+        "components": [
+            {
+                "name": "bob", // Optional
+                "type": "Fxt::Component::FooBar",
+                "id": 0, // Range uint16_t. In theory Auto-assigned within the Logic Chain
+                "order": 3,
+                "wiring": {
+                    "inputs": [
+                        {
+                            "pointId": 34, // ID of the point providing the input
+                            "connectTo": 2 // Connected to me at my input.pos
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "pointId": 36, // ID of point that is the sink for the output
+                            "connectFrom": 2 // Connected my output.pos to the destination
+                        }
+                    ],
+                    "private": [
+                        {
+                            "pointId": 35, // ID of point that is the source/sink for the private data
+                            "connectAt": 2 // Connected at my private.pos
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+
+    // Chassis definition
+    "chassis": {
+        "name": "First Chassis", // Optional
+        "id": 0, // Range: uint8_t. In theory Auto-assigned within the Node
+        "fer": 50, // Fundemental Executing Rate
+        "summary": "Do something interesting...", // Optional
+        "details": "Alot more stuff...", // Optional
+
+        "inputs": [
+            1,
+            2 // List of Input Point Id
+        ],
+        "outputs": [
+            4,
+            6 // List of Output Point Ids
+        ],
+        "dataGlobal": [
+            {
+                "name": "sumError",
+                "type": "Cpl::Point::Uint32",
+                "id": 0 // In theory Auto-assigned within the 'Data Points'
+            }
+        ],
+        "logicChains": [
+            // List of logic chains
+        ]
+    },
+
+    // Node definition
+    "node": {
+        // name, id, etc.
+        // IO cards with IO Register definitions/allocations
+        // List of chassis
+    }
+}

@@ -76,7 +76,7 @@ public:
     size_t getTotalSize() const noexcept { return sizeof( MyEnum ); }
 
     /// Creates a concrete instance in the invalid state
-    static Api* create( Cpl::Memory::Allocator& allocatorForPoints, uint32_t pointId ) { return new(allocatorForPoints.allocate( sizeof( MyEnum ) )) MyEnum( pointId ); }
+    static Api* create( Cpl::Memory::Allocator& allocatorForPoints, uint32_t pointId ) { return PointCommon_::create<MyEnum>( allocatorForPoints, pointId ); }
 
 protected:
     /// The points numeric identifier

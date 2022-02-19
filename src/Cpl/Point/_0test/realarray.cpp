@@ -76,7 +76,7 @@ public:
     size_t getTotalSize() const noexcept { return sizeof( MyRealArray ); }
     
     /// Creates a concrete instance in the invalid state
-    static Api* create( Cpl::Memory::Allocator& allocatorForPoints, uint32_t pointId ) { return new(allocatorForPoints.allocate( sizeof( MyRealArray ) )) MyRealArray( pointId ); }
+    static Api* create( Cpl::Memory::Allocator& allocatorForPoints, uint32_t pointId ) { return PointCommon_::create<MyRealArray>( allocatorForPoints, pointId ); }
 
 protected:
     /// The points numeric identifier

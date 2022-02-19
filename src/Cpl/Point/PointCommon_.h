@@ -14,6 +14,7 @@
 
 
 #include "Cpl/Point/Api.h"
+#include "Cpl/Memory/Allocator.h"
 
 
 ///
@@ -70,6 +71,20 @@ protected:
         This method is NOT thread safe.
      */
     virtual bool testAndUpdateLock( LockRequest_T lockRequest ) noexcept;
+
+
+protected:
+    /// Creates a concrete instance in the invalid state
+    template <class T>
+    static Api* create( Cpl::Memory::Allocator& allocatorForPoints, uint32_t pointId )
+    {
+        void* memPtr = allocatorForPoints.allocate( sizeof( T ) );
+        if ( memPtr )
+        {
+            return new(memPtr) T( pointId );
+        }
+        return nullptr;
+    }
 
 
 protected:

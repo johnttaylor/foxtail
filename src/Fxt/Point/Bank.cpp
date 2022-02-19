@@ -42,6 +42,7 @@ bool Bank::populate( Descriptor*                       listOfDescriptorPointers[
         // Create the next point
         if ( !itemPtr->createPoint( allocatorForPoints, pointIdValue ) )
         {
+            printf( "OUT-OF_MEMORY\n" );
             // Error: allocator is out-of-space
             m_memSize  = 0;
             m_memStart = nullptr;
@@ -74,6 +75,11 @@ bool Bank::populate( Descriptor*                       listOfDescriptorPointers[
 
     // If I get here the bank was successfully populated
     return true;
+}
+
+size_t Bank::getAllocatedSize() const noexcept
+{
+    return m_memSize;
 }
 
 bool Bank::copyTo( void* dst, size_t maxDstSizeInBytes ) noexcept

@@ -26,7 +26,7 @@ namespace Point {
 
 /** This abstract class defines the interface for a point Bank.  A Point bank
     is responsible for creating a collection of points and managing the memory
-    for the allocated points.  A point Bank supports being able to block its
+    for the allocated points.  A point Bank supports being able to block-up its
     point memory.  This allows for fast 'double buffering' of Points as well
     as HA transfers.
  */
@@ -41,9 +41,9 @@ public:
 
         The 'pointIdValue' is an INPUT to the function AND it is an 
         OUTPUT.  For input it is the STARTING point ID to use when creating
-        points.  For output i returns the 'last/final' PointId assigned by 
-        the Bank.  The Bank auto-increments the pointIdValue every time a 
-        point is created.
+        points.  For output it returns the 'next' PointId, i,e, the last
+        assigned PointId plus one.  The Bank auto-increments the pointIdValue 
+        every time a point is created.
 
         The method should only be called once per 'setup'.
 
@@ -57,6 +57,10 @@ public:
 
 
 public:
+    /** This method returns the amount of memory currently allocated by the Bank
+     */
+    virtual size_t getAllocatedSize() const noexcept = 0;
+
     /** This method copies the Bank's 'point memory' to the specified destination.
         The method returns if the copy operation is successful; else false (e.g.
         'dst' size is less than the Bank's point memory) is returned.

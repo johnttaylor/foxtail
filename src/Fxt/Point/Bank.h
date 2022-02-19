@@ -44,6 +44,9 @@ public:
     /// Set Fxt::Point::BankApi
     bool copyFrom( const void* src, size_t srcSizeInBytes ) noexcept;
 
+    /// Set Fxt::Point::BankApi
+    size_t getAllocatedSize() const noexcept;
+
 protected:
     /// Start of allocated memory
     void*    m_memStart;

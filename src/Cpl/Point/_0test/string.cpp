@@ -75,7 +75,7 @@ public:
     size_t getTotalSize() const noexcept { return sizeof( MyString ); }
 
     /// Creates a concrete instance in the invalid state
-    static Api* create( Cpl::Memory::Allocator& allocatorForPoints, uint32_t pointId ) { return new(allocatorForPoints.allocate( sizeof( MyString ) )) MyString( pointId ); }
+    static Api* create( Cpl::Memory::Allocator& allocatorForPoints, uint32_t pointId ) { return PointCommon_::create<MyString>( allocatorForPoints, pointId ); }
 
 protected:
     /// The points numeric identifier
