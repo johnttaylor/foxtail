@@ -60,7 +60,7 @@
                     "name": "sumError",
                     "type": "Cpl::Point::Uint32",
                     "id": 0, // In theory Auto-assigned within the 'Data Points'
-                    "initVal": "a-fromJSON-string (just the val/invalid fields) that supplies the sets the initial value"
+                    "initVal": "<a-fromJSON-string (just the val/invalid fields) that supplies the sets the initial value>"
                 }
             ],
 
@@ -75,6 +75,9 @@
                 "type": "Fxt::Component::FooBar",
                 "id": 0, // Range uint16_t. In theory Auto-assigned within the Logic Chain
                 "order": 3,
+                "config": {
+                    // contains the static config for the object.  format is component specific"
+                },
                 "wiring": {
                     "inputs": [
                         {
@@ -103,7 +106,7 @@
     "chassis": {
         "name": "First Chassis", // Optional
         "id": 0, // Range: uint8_t. In theory Auto-assigned within the Node
-        "fer": 50, // Fundemental Executing Rate
+        "fer": 50, // Fundamental Executing Rate
         "summary": "Do something interesting...", // Optional
         "details": "Alot more stuff...", // Optional
 

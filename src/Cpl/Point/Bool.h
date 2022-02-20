@@ -33,8 +33,6 @@ namespace Point {
 
     \endcode
 
-    NOTE: All methods in this class ARE thread Safe unless explicitly
-          documented otherwise.
  */
 class Bool : public Basic_<bool>
 {

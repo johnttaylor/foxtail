@@ -50,6 +50,15 @@ bool bufferToString( const void* buffer, int len, Cpl::Text::String& destString,
  */
 bool bufferToAsciiHex( const void* binaryData, int len, Cpl::Text::String& destString, bool upperCase=true, bool appendToString=false );
 
+/** This method converts the binary buffer to a single string that is the
+	ASCII HEX followed by 'separator', then by the binary data as 'viewable'
+	text.  The converted result is returned via 'buffer'. If the results where
+	truncated by the no enough memory in 'buffer' then false is returned; else
+	true is returned.
+ */
+bool bufferToViewer( const void* binaryData, int len, Cpl::Text::String& destString, int bytesPerLine=16, const char* separator = "    ", bool upperCase=true, bool appendToString=false );
+
+
 
 /** This method converts the binary millisecond count of 'timeStampInMsecs'
 	to a string with the following format: "DD HH:MM:SS.SSS". The converted
@@ -57,7 +66,6 @@ bool bufferToAsciiHex( const void* binaryData, int len, Cpl::Text::String& destS
 	enough memory in 'buffer' then false is returned; else true is returned.
  */
 bool formatMsecTimeStamp( Cpl::Text::String& buffer, unsigned long long timeStampInMsecs, bool encodeDay=true, bool appendToString=false );
-
 
 /** This method converts the binary second count of 'timeStampInSecs'
 	to a string with the following format: "DD HH:MM:SS". The converted result

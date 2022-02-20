@@ -1,6 +1,7 @@
-/** @namespace Cpl::Node
+/** @namespace Fxt::Point
 
-The 'Node' namespace is the root namespace for a Node (aka a Controller) framework
+The 'Point' namespace is the root namespace for Foxtail specific extensions to
+the basic Cpl::Point framework
 
 */ 
 

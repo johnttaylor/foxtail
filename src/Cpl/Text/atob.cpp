@@ -10,6 +10,7 @@
 *----------------------------------------------------------------------------*/
 #include "atob.h"
 #include "strip.h"
+#include "misc.h"
 #include <stdint.h>
 #include <string.h>
 #include "Cpl/System/Assert.h"
@@ -250,14 +251,11 @@ long Cpl::Text::asciiHexToBuffer( void* dstBinary, const char* srcP, size_t dstM
         return -1;
     }
 
-    char        temp[3] = { '\0', };
-    uint8_t*    dstP    = ( uint8_t*) dstBinary;
-    size_t      len     = strlen( srcP );
-    unsigned    rawByte;
-    size_t      i;
+    uint8_t* dstP = (uint8_t*) dstBinary;
+    size_t   len  = strlen( srcP );
 
     // Length must be even
-    if ( ( len & 1 ) == 1 )
+    if ( (len & 1) == 1 )
     {
         return -1;
     }
@@ -268,19 +266,11 @@ long Cpl::Text::asciiHexToBuffer( void* dstBinary, const char* srcP, size_t dstM
         return -1;
     }
 
-    // Walk the entire string
-    for ( i=0; i < len; i+=2 )
+    // Convert the string
+    if ( !unhex( srcP, len, dstP ) )
     {
-        // Convert the data
-        temp[0] = *srcP++;
-        temp[1] = *srcP++;
-        if ( !a2ui( rawByte, temp, 16 ) )
-        {
-            // Error -->end conversion
-            return -1;
-        }
-
-        *dstP++ = ( uint8_t) rawByte;
+        // Error -->end conversion
+        return -1;
     }
 
     return len / 2;

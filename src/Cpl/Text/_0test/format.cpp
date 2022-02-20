@@ -82,6 +82,38 @@ TEST_CASE( "format", "[format]" )
 		REQUIRE( result == false );
 	}
 
+	SECTION( "bufferToViewer...." )
+	{
+		uint8_t buffer[5] ={ 0, 0xAA, 0x55, 0xF0, 0x31 };
+		DString    s1;
+		FString<3> s2;
+
+		bool result = bufferToViewer( buffer, sizeof( buffer ), s1, sizeof( buffer ) );
+		REQUIRE( s1 == "00AA55F031    ..U.1" );
+		REQUIRE( result == true );
+		bufferToViewer( buffer, sizeof( buffer ), s1, sizeof( buffer ), "    ", false );
+		REQUIRE( s1 == "00aa55f031    ..U.1" );
+
+
+		s1 = "buffer=";
+		bufferToViewer( buffer, sizeof( buffer ), s1, sizeof( buffer ), " -- ", true, true );
+		REQUIRE( s1 == "buffer=00AA55F031 -- ..U.1" );
+
+		result = bufferToViewer( buffer, 4, s1, 5 );
+		printf( "%s\n00AA55F0      ..U.\n", s1.getString() );
+		REQUIRE( s1 == "00AA55F0      ..U." );
+		REQUIRE( result == true );
+
+
+		s1 = "no change";
+		bufferToAsciiHex( 0, sizeof( buffer ), s1 );
+		REQUIRE( s1 == "no change" );
+		bufferToAsciiHex( buffer, 0, s1 );
+		REQUIRE( s1 == "no change" );
+		result = bufferToAsciiHex( buffer, sizeof( buffer ), s2 );
+		REQUIRE( result == false );
+	}
+
 	SECTION( "timestamp::sec...." )
 	{
 		DString    s1;

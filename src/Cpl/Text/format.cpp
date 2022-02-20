@@ -74,6 +74,28 @@ bool Cpl::Text::bufferToAsciiHex( const void* binaryData, int len, String& destS
 	return !destString.truncated();
 }
 
+bool Cpl::Text::bufferToViewer( const void* binaryData, int len, Cpl::Text::String& destString, int bytesPerLine, const char* separator, bool upperCase, bool appendToString )
+{
+	if ( !bufferToAsciiHex( binaryData, len, destString, upperCase, appendToString ) )
+	{
+		return false;
+	}
+
+	// Fill in 'missing' bytes
+	for ( int i=len; i < bytesPerLine; i++ )
+	{
+		destString += "  ";
+	}
+
+	// Add separator
+	destString += separator;
+	if ( destString.truncated() )
+	{
+		return false;
+	}
+
+	return bufferToString( binaryData, len, destString, true );
+}
 
 static bool formatMsec( Cpl::Text::String& buffer, unsigned msec, unsigned long long elaspedSecs, bool encodeDay, bool appendToString )
 {

@@ -1,5 +1,5 @@
-#ifndef Fxt_Point_Bank_h_
-#define Fxt_Point_Bank_h_
+#ifndef Fxt_Point_RegisterBank_h_
+#define Fxt_Point_RegisterBank_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -13,7 +13,8 @@
 /** @file */
 
 
-#include "Fxt/Point/BankApi.h"
+#include "Fxt/Point/Bank.h"
+#include "Cpl/System/Mutex.h"
 
 ///
 namespace Fxt {
@@ -21,38 +22,24 @@ namespace Fxt {
 namespace Point {
 
 
-/** This concrete class implements the BankApi
-
-    NOTE: This class is NOT thread safe
+/** This concrete class extends the Bank implementation to have thread-safe
+    copy operations
  */
-class Bank : public BankApi
+class RegisterBank : public Bank
 {
 public:
     /// Constructor
-    Bank();
+    RegisterBank(){};
 
-public:
-    /// See Fxt::Point::BankApi
-    bool populate( Descriptor*                       listOfDescriptorPointers[],
-                   Cpl::Memory::ContiguousAllocator& allocatorForPoints,
-                   Cpl::Point::DatabaseApi&          dbForPoints,
-                   uint32_t&                         pointIdValue ) noexcept;
-
-    /// See Fxt::Point::BankApi
+    /// Provides a thread-safe copy operation (See Fxt::Point::BankApi)
     bool copyTo( void* dst, size_t maxDstSizeInBytes ) noexcept;
 
-    /// See Fxt::Point::BankApi
+    /// Provides a thread-safe copy operation (See Fxt::Point::BankApi)
     bool copyFrom( const void* src, size_t srcSizeInBytes ) noexcept;
 
-    /// See Fxt::Point::BankApi
-    size_t getAllocatedSize() const noexcept;
-
 protected:
-    /// Start of allocated memory
-    void*    m_memStart;
-
-    /// Size of allocated memory
-    size_t   m_memSize;
+    /// Mutex for critical sections
+    Cpl::System::Mutex  m_lock;
 };
 
 

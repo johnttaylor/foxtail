@@ -47,8 +47,6 @@ namespace Point {
           are 'managed types', i.e. each Point child class defines a unique
           leaf type for its identifier.
         o Points are NOT THREAD SAFE.
-
-
  */
 class Api
 {
