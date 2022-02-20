@@ -51,10 +51,10 @@ TEST_CASE( "guid" )
     Guid_T guidOut;
     result = guidOut.fromString( "123e4567-e89b-12d3-a456-426614174000" );
     REQUIRE( result == true );
-    REQUIRE( memcmp( guid.block, guidOut.block, sizeof( guid.block ) ) == 0 );
+    REQUIRE( guid == guidOut );
     result = guidOut.fromString( "{123e4567-e89b-12d3-a456-426614174000}" );
     REQUIRE( result == true );
-    REQUIRE( memcmp( guid.block, guidOut.block, sizeof( guid.block ) ) == 0 );
+    REQUIRE( guid == guidOut );
 
     result = guidOut.fromString( "123e4567e89b-12d3-a456-426614174000}" );
     REQUIRE( result == false );

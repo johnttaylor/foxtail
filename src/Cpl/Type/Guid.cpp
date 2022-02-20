@@ -15,6 +15,11 @@
 
 using namespace Cpl::Type;
 
+bool Guid_T::operator ==( const Guid_T other ) const
+{
+    return memcmp( block, other.block, sizeof( block ) ) == 0;
+}
+
 bool Guid_T::toString( Cpl::Text::String& formattedOutput, bool withBraces )
 {
     formattedOutput.format( "%s%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x%s",

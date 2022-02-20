@@ -27,6 +27,10 @@ namespace Card {
     performed on an "IO Card".   
 
     Note: IO Card semantics are NOT thread-safe.
+
+    Note: IO Cards support being in a Container - however 'that' container
+          is the Card Database.  This means if the application what to maintain
+          a list of IO Cards - it must provide its own wrapper.
  */
 class Api: public Cpl::Container::Item
 {

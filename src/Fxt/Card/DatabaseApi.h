@@ -1,5 +1,5 @@
-#ifndef Fxt_Point_BankApi_h_
-#define Fxt_Point_BankApi_h_
+#ifndef Fxt_Card_DatabaseApi_h_
+#define Fxt_Card_DatabaseApi_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -12,71 +12,68 @@
 *----------------------------------------------------------------------------*/
 /** @file */
 
-#include "Fxt/Point/Descriptor.h"
-#include "Cpl/Point/DatabaseApi.h"
-#include "Cpl/Memory/ContiguousAllocator.h"
-#include <stdint.h>
-#include <stdlib.h>
+#include "Fxt/Card/Api.h"
+#include "Fxt/Card/FactoryApi.h"
+
 
 ///
 namespace Fxt {
 ///
-namespace Point {
+namespace Card {
 
 
-/** This abstract class defines the interface for a point Bank.  A Point bank
-    is responsible for creating a collection of points and managing the memory
-    for the allocated points.  A point Bank supports being able to block-up its
-    point memory.  This allows for fast 'double buffering' of Points as well
-    as HA transfers.
+/** This abstract class defines the interface for the IO Card Database.  The
+    database contains the list of all currently created IO Cards.  It also
+    contains the list of all support IO Card type (aka. factory instances)
+    for the HW platform.
+
+    Note: There is no guaranteed order to the IO Card and IO Card Factory
+          lists.
+
+    The semantics of the Database interface is NOT thread safe.
  */
-class BankApi
+class DatabaseApi
 {
 public:
-    /** This method takes a list of point Descriptors and 'populates' the bank.
-        Populates means that Point instances are created for each Descriptors.
-        
-        The listOfDescriptors is variable length array of Descriptor pointers,
-        where the end-of-list is a null pointer.
-
-        The 'pointIdValue' is an INPUT to the function AND it is an 
-        OUTPUT.  For input it is the STARTING point ID to use when creating
-        points.  For output it returns the 'next' PointId, i,e, the last
-        assigned PointId plus one.  The Bank auto-increments the pointIdValue 
-        every time a point is created.
-
-        The method should only be called once per 'setup'.
-
-        The method returns true when successful; else false (e.g. out-of-memory)
-        is returned.
+    /** This method looks-up the IO card by its 'User facing local ID'.  If the 
+        IO Card ID cannot be found, THEN the method returns 0.
      */
-    virtual bool populate( Descriptor*                       listOfDescriptorPointers[], 
-                           Cpl::Memory::ContiguousAllocator& allocatorForPoints, 
-                           Cpl::Point::DatabaseApi&          dbForPoints, 
-                           uint32_t&                         pointIdValue ) noexcept = 0;
+    virtual Api* lookupCard( uint16_t cardLocalId ) noexcept = 0;
+
+    /** This method returns a pointer to the first IO Card in the Database. If 
+        there are no IO Cards in the Database, THEN the method returns 0.
+     */
+    virtual Api* getFirstCard() noexcept = 0;
+
+    /** This method returns the next IO Card in the Database. If 'currentCard' 
+        is the last IO Card in the Database the method returns 0.
+     */
+    virtual Api* getNextCard( Api& currentCard ) noexcept = 0;
 
 
 public:
-    /** This method returns the amount of memory currently allocated by the Bank
+    /** This method looks-up the IO card Factory by its GUID.  If the
+        IO Card Factory GUID cannot be found (i.e. card type not supported by
+        the platform), THEN the method returns 0.
      */
-    virtual size_t getAllocatedSize() const noexcept = 0;
+    virtual FactoryApi* lookupFactory( Cpl::Type::Guid_T cardTypeId ) noexcept = 0;
 
-    /** This method copies the Bank's 'point memory' to the specified destination.
-        The method returns if the copy operation is successful; else false (e.g.
-        'dst' size is less than the Bank's point memory) is returned.
+    /** This method returns a pointer to the first IO Card Factory in the 
+        Database. If there are no IO Card Factories in the Database, THEN the 
+        method returns 0.
      */
-    virtual bool copyTo( void* dst, size_t maxDstSizeInBytes ) noexcept = 0;
+    virtual FactoryApi* getFirstFactory() noexcept = 0;
 
-    /** This method copies specified source data to the Bank's 'point memory' 
-        The method returns if the copy operation is successful; else false (e.g.
-        'src' size is greater than the Bank's point memory) is returned.
+    /** This method returns the next IO Card Factory in the Database. If 
+        'currentFactory' is the last IO Card Factory in the Database the method 
+        returns 0.
      */
-    virtual bool copyFrom( const void* src, size_t srcSizeInBytes ) noexcept = 0;
+    virtual Api* getNextFactory( FactoryApi& currentFactory ) noexcept = 0;
 
 
 public:
     /// Virtual destructor to make the compiler happy
-    virtual ~BankApi() {}
+    virtual ~DatabaseApi() {}
 };
 
 

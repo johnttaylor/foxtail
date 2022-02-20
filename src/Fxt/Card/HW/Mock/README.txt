@@ -1,6 +1,7 @@
-/** @namespace Cpl::Node
+/** @namespace Fxt::Card::HW::Mock
 
-The 'Node' namespace is the root namespace for a Node (aka a Controller) framework
+The 'Mock' namespace contains a mocked/emulated IO Cards that support N 
+and M inputs and output respectively
 
 */ 
 

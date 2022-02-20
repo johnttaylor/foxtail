@@ -135,5 +135,36 @@
         // name, id, etc.
         // IO cards with IO Register definitions/allocations
         // List of chassis
+    },
+
+    "staticConfig": {
+        "numInputs": "n", // Number of inputs.  Range 0 to 64
+        "numOutputs": "m", // Number of outputs.  Range 0 to 64
+        "initialOutputVals": [ 0, 1, 0 ], // Each output signal must have value. 0=signal low, 1=signal high.  Zero indexed base array
+        "initialInputVals": [ 0, 1, 1 ] // Each input signal must have value. 0=signal low, 1=signal high. Zero indexed base array
+    },
+    "runtimeConfig": {
+        "descriptors": {    // Minimum required info
+            "inputs": [ // One entry per input
+                {
+                    "id": 0,
+                    "name": "symbolicName1"
+                },
+                {
+                    "id": 1,
+                    "name": "symbolicName2"
+                }
+            ],
+            "outputs": [ // One entry per output
+                {
+                    "id": 2,
+                    "name": "symbolicName3"
+                },
+                {
+                    "id": 3,
+                    "name": "symbolicName4"
+                }
+            ]
+        }
     }
 }

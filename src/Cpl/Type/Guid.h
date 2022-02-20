@@ -59,6 +59,10 @@ public:
 
 
 public:
+    /// Comparison
+    bool operator ==( const Guid_T other ) const;
+
+public:
     /** This method converts the in binary format to a text string in
         8-4-4-4-12 format.
 

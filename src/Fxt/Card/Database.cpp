@@ -11,98 +11,91 @@
 /** @file */
 
 
-#include "Bank.h"
+#include "Database.h"
 #include "Cpl/System/Assert.h"
 
 ///
-using namespace Fxt::Point;
+using namespace Fxt::Card;
 
 ///////////////////////////////////////////////////////////////////////////////
-Bank::Bank()
-    : m_memStart( nullptr )
-    , m_memSize(0 )
+Database::Database() noexcept
+    : m_cards()
+    , m_factories()
 {
+}
+
+Database::Database( const char* ignoreThisParameter_usedToCreateAUniqueConstructor ) noexcept
+    : m_cards( ignoreThisParameter_usedToCreateAUniqueConstructor )
+    , m_factories( ignoreThisParameter_usedToCreateAUniqueConstructor )
+{
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+Api* Database::lookupCard( uint16_t cardLocalId ) noexcept
+{
+    Api* item  = m_cards.first();
+    while ( item )
+    {
+        if ( item->getLocalId() == cardLocalId )
+        {
+            return item;
+        }
+        item = m_cards.next( *item );
+    }
+
+    return nullptr;
+}
+
+Api* Database::getFirstCard() noexcept
+{
+    return m_cards.first();
+}
+
+Api* Database::getNextCard( Api& currentCard ) noexcept
+{
+    return m_cards.next( currentCard );
+}
+
+FactoryApi* Database::lookupFactory( Cpl::Type::Guid_T cardTypeId ) noexcept
+{
+    FactoryApi* item  = m_factories.first();
+    while ( item )
+    {
+        if ( item->getGuid() == cardTypeId )
+        {
+            return item;
+        }
+        item = m_factories.next( *item );
+    }
+
+    return nullptr;
+}
+
+FactoryApi* Database::getFirstFactory() noexcept
+{
+    return m_factories.first();
+}
+
+FactoryApi* Database::getNextFactory( FactoryApi& currentFactory ) noexcept
+{
+    return m_factories.next( currentFactory );
 }
 
 
 
 ///////////////////////////////////////////////////////////////////////////////
-bool Bank::populate( Descriptor*                       listOfDescriptorPointers[],
-                     Cpl::Memory::ContiguousAllocator& allocatorForPoints,
-                     Cpl::Point::DatabaseApi&          dbForPoints,
-                     uint32_t&                         pointIdValue ) noexcept
+void Database::insert_( Api& cardToAdd ) noexcept
 {
-    CPL_SYSTEM_ASSERT( listOfDescriptorPointers );
-
-    m_memSize           = 0;
-    m_memStart          = nullptr;
-    Descriptor* itemPtr = *listOfDescriptorPointers;
-    while ( itemPtr  )
-    {
-        // Create the next point
-        if ( !itemPtr->createPoint( allocatorForPoints, pointIdValue ) )
-        {
-            printf( "OUT-OF_MEMORY\n" );
-            // Error: allocator is out-of-space
-            m_memSize  = 0;
-            m_memStart = nullptr;
-            return false;
-        }
-
-        // Add the point to the database
-        if ( !dbForPoints.add( itemPtr->getPointId(), itemPtr->getPointInfo() ) )
-        {
-            // Error: database is out-of-space
-            m_memSize  = 0;
-            m_memStart = nullptr;
-            return false;
-        }
-
-        // Trap the 1st allocate address
-        if ( m_memStart == nullptr )
-        {
-            m_memStart = itemPtr->getPoint();
-        }
-        
-        // Keep track of the allocated size
-        m_memSize += itemPtr->getPoint()->getTotalSize();
-
-        // Get the next descriptor in the list
-        pointIdValue++;
-        listOfDescriptorPointers++;
-        itemPtr = *listOfDescriptorPointers;
-    }
-
-    // If I get here the bank was successfully populated
-    return true;
+    m_cards.put( cardToAdd );
 }
 
-size_t Bank::getAllocatedSize() const noexcept
+void Database::remove_( Api& cardToRemove ) noexcept
 {
-    return m_memSize;
+    m_cards.remove( cardToRemove );
 }
 
-bool Bank::copyTo( void* dst, size_t maxDstSizeInBytes ) noexcept
+void Database::insert_( FactoryApi& cardFactoryToAdd ) noexcept
 {
-    // Fail if the destination is too small
-    if ( maxDstSizeInBytes < m_memSize )
-    {
-        return false;
-    }
-
-    memcpy( dst, m_memStart, m_memSize );
-    return true;
+    m_factories.put( cardFactoryToAdd );
 }
-
-bool Bank::copyFrom( const void* src, size_t srcSizeInBytes ) noexcept
-{
-    // Fail if the source is too large
-    if ( srcSizeInBytes > m_memSize )
-    {
-        return false;
-    }
-
-    memcpy( m_memStart, src, m_memSize );
-    return true;
-}
-

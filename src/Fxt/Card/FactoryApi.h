@@ -25,11 +25,14 @@ namespace Fxt {
 ///
 namespace Card {
 
-
 /** This abstract class defines the interface for a 'Factory' that knows how
     to create a IO card of a specific type.
 
     The semantics of the Factory interface is NOT thread safe.
+
+    Note: Factories support being in a Container - however 'that' container
+          is the Card Database.  This means if the application what to maintain
+          a list of factories - it must provide its own wrapper.
  */
 class FactoryApi: public Cpl::Container::Item
 {
@@ -41,6 +44,14 @@ public:
         Each individual Card Type defines the content/structure of its JSON
         'staticConfig' object.
 
+        Each individual Card Type defines the content/structure of its JSON
+        'runtimeConfig' object. HOWEVER, the 'runtimeConfig' must contain
+        sufficient information to construct a Point Descriptor for each internal
+        Point and each external/visible/Register Point created by the IO card.
+        Note: The IO Card is responsible for allocating the memory for the
+              Point Descriptors and the memory must stay in scope until the
+              IO card is destroyed.
+ 
         Each IO card is required to create internal Points for all of its
         'visible' inputs/outputs.  In addition, for the input and output sets
         of Points, the IO card is required to create the associated Points for
@@ -54,27 +65,34 @@ public:
 
         The method returns true when successful; else false (e.g. out-of-memory)
         is returned.
-     */
-    virtual bool create( Cpl::Memory::Allocator&    allocatorForCard, 
-                         const char*                cardName,
+
+        TODO: In the Factory Constructor
+            Fxt::Card::Database&                               cardDatabase,
+            Cpl::Container::Dictionary<Fxt::Point::Descriptor> descriptorDatabase,
+            Cpl::Point::DatabaseApi&                           pointDatabase,
+            Cpl::Memory::Allocator&                            allocatorForCard,
+      */
+    virtual bool create( const char*                cardName,
                          uint16_t                   cardLocalId,
                          JsonVariant&               staticConfig,
+                         JsonVariant&               runtimeConfig,
                          Fxt::Point::BankApi&       internalInputsBank,
-                         Fxt::Point::BankApi&       internalOutputsBank,
                          Fxt::Point::RegisterBank&  registerInputsBank,
+                         Fxt::Point::BankApi&       internalOutputsBank,
                          Fxt::Point::RegisterBank&  registerOutputsBank,
                          uint32_t&                  startEndPointIdValue ) noexcept = 0;
 
 
-    /** This method is used to destroy/free an IO card.  The same 'allocatorForCard'
-        that was specified on the create() call must be supplied to the destroy() 
-        call.
+    /** This method is used to destroy/free an IO card.  
 
         Note: The factory will call stop() on the specified IO card before 
               destroying.
       */
-    virtual void destroy( Api& cardToDestory, Cpl::Memory::Allocator& allocatorForCard ) noexcept = 0;
+    virtual void destroy( Api& cardToDestory ) noexcept = 0;
 
+public:
+    /// This method returns the GUID for the type of IO card that the factory is able to create
+    virtual const Cpl::Type::Guid_T& getGuid() const noexcept = 0;
 
 public:
     /// Virtual destructor to make the compiler happy
