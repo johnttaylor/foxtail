@@ -33,6 +33,8 @@ static Descriptor       lime_( "LIME", 400, Cpl::Point::Int64::create );
 
 #define MEM_SIZE        (sizeof( Cpl::Point::Uint32 ) * 2 + sizeof( Cpl::Point::Int64 ) * 2 + (sizeof( size_t ) - 1)) / sizeof( size_t )
 static size_t           heapMemory_[MEM_SIZE];
+static size_t           heapMemory2_[MEM_SIZE];
+static size_t           heapMemory3_[MEM_SIZE];
 static size_t           tempBuffer_[MEM_SIZE];
 
 #define CMP(db,s,id)    (strcmp( db.getSymbolicName(id), s ) == 0)
@@ -88,6 +90,50 @@ TEST_CASE( "Database" )
         REQUIRE( memcmp( tempBuffer_, heapMemory_, uut.getAllocatedSize() ) == 0 );
         REQUIRE( uut.copyFrom( tempBuffer_ + 1, uut.getAllocatedSize() + 1 ) == false );
         REQUIRE( memcmp( tempBuffer_, heapMemory_, uut.getAllocatedSize() ) == 0 );
+    }
+
+    SECTION( "copy-bank" )
+    {
+        Bank uut;
+        Cpl::Memory::LeanHeap heap( heapMemory_, sizeof( heapMemory_ ) );
+        Cpl::Point::Database db( MAX_POINTS * 3 );
+        Descriptor* list[4 + 1] ={ &apple_, &orange_, &cherry_, &lime_, 0 };
+        Bank uut2;
+        Cpl::Memory::LeanHeap heap2( heapMemory2_, sizeof( heapMemory2_ ) );
+        Descriptor* list2[4 + 1] ={ &orange_, &cherry_, &lime_, &apple_, 0 };
+
+        Bank uut3;
+        Cpl::Memory::LeanHeap heap3( heapMemory3_, sizeof( heapMemory3_ ) );
+        Descriptor* list3[3 + 1] ={ &orange_, &cherry_, &lime_, 0 };
+
+        uint32_t pointId = 0;
+        bool result = uut.populate( list, heap, db, pointId );
+        REQUIRE( result );
+        REQUIRE( CMP( db, "APPLE", 0 ) );
+        REQUIRE( CMP( db, "ORANGE", 1 ) );
+        REQUIRE( CMP( db, "CHERRY", 2 ) );
+        REQUIRE( CMP( db, "LIME", 3 ) );
+        REQUIRE( pointId == 4 );
+
+        result = uut2.populate( list2, heap2, db, pointId );
+        REQUIRE( result );
+        REQUIRE( CMP( db, "ORANGE", 4 ) );
+        REQUIRE( CMP( db, "CHERRY", 5 ) );
+        REQUIRE( CMP( db, "LIME", 6 ) );
+        REQUIRE( CMP( db, "APPLE", 7 ) );
+        REQUIRE( pointId == 8 );
+
+        uut.copyFrom( uut2 );
+        REQUIRE( memcmp( heapMemory2_, heapMemory_, uut.getAllocatedSize() ) == 0 );
+
+        result = uut3.populate( list3, heap3, db, pointId );
+        REQUIRE( result );
+        REQUIRE( CMP( db, "ORANGE", 8 ) );
+        REQUIRE( CMP( db, "CHERRY", 9 ) );
+        REQUIRE( CMP( db, "LIME", 10 ) );
+        REQUIRE( pointId == 11 );
+        REQUIRE( uut2.copyFrom( uut3 ) == false );
+
     }
 
     SECTION( "db-out-of-space" )

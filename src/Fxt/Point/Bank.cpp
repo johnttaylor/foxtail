@@ -42,7 +42,6 @@ bool Bank::populate( Descriptor*                       listOfDescriptorPointers[
         // Create the next point
         if ( !itemPtr->createPoint( allocatorForPoints, pointIdValue ) )
         {
-            printf( "OUT-OF_MEMORY\n" );
             // Error: allocator is out-of-space
             m_memSize  = 0;
             m_memStart = nullptr;
@@ -82,6 +81,11 @@ size_t Bank::getAllocatedSize() const noexcept
     return m_memSize;
 }
 
+const void* Bank::getStartOfMemory() const noexcept
+{
+    return m_memStart;
+}
+
 bool Bank::copyTo( void* dst, size_t maxDstSizeInBytes ) noexcept
 {
     // Fail if the destination is too small
@@ -106,3 +110,13 @@ bool Bank::copyFrom( const void* src, size_t srcSizeInBytes ) noexcept
     return true;
 }
 
+bool Bank::copyFrom( BankApi& src ) noexcept
+{
+    size_t srcSizeInBytes = src.getAllocatedSize();
+    if ( srcSizeInBytes != m_memSize )
+    {
+        return false;
+    }
+    memcpy( m_memStart, src.getStartOfMemory(), m_memSize );
+    return true;
+}

@@ -52,6 +52,24 @@ public:
     {
     }
 
+    /// Default constructor.  If use, then the configure() method MUST be called prior any other methods being called
+    Descriptor()
+        : Cpl::Container::KeyUinteger32_T( 0 )
+        , m_createMethod( nullptr )
+        , m_initialValue( nullptr )
+        , m_pointId( 0 )
+        , m_pointInfo( { nullptr, nullptr } )
+    {
+    }
+
+    /// Configure the Descriptor after it been constructed using the default constructor
+    void configure( const char* symbolicName, uint32_t localId, CreateFunc_T createFunction, SetterApi* setter=nullptr ) noexcept
+    {
+        m_keyData                = localId;
+        m_createMethod           = createFunction;
+        m_initialValue           = setter;
+        m_pointInfo.symbolicName = symbolicName;
+    }
 
 public:
     /** This method is used to create Point defined by the descriptor.  The
@@ -95,7 +113,7 @@ protected:
     /// Setter associated with the Point.  If no setter is needed for the point the value will be zero/nullptr
     SetterApi*                  m_initialValue;  
 
-    /// The runtime Point identifier.  If m_point is zero/nullptr - then the is method has no meaning
+    /// The runtime Point identifier.  If m_pointInfo.pointInstance is zero/nullptr - then the is method has no meaning
     uint32_t                    m_pointId;
     
     /// Contains the pointer to the Point (is zero until created) and Points symbolic name

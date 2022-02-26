@@ -15,8 +15,16 @@ NOTES:
   The IO registers are thread safe, but are only updated via RegisterBank block
   copy operations.  The IO card itself maintains it own internal points that
   are the src/dst for the block copy operations. IO cards are responsible for
-  creating the Points for the IO registers - there are mapped 1-to-1 with the
-  IO card's internal points.
+  creating the following Points.  
+    o Internal Points that are used to transfer data to/from the IO registers.
+        - These points do not a public 'Descriptor'
+    o IO Registers
+        - These points do not a public 'Descriptor'
+    o Virtual Points that are used to transfer data to/from the IO registers
+        - These points do HAVE a public 'Descriptor'
+
+  The IO Registers and Application Points are mapped 1-to-1 with the IO card's 
+  internal points.
 
 - IO Cards are dynamically allocated/destroyed when their containing Node is 
   provisioned.

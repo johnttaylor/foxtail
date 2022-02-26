@@ -29,7 +29,7 @@ namespace Card {
     Note: IO Card semantics are NOT thread-safe.
 
     Note: IO Cards support being in a Container - however 'that' container
-          is the Card Database.  This means if the application what to maintain
+          is the Card Database.  This means if the application wants to maintain
           a list of IO Cards - it must provide its own wrapper.
  */
 class Api: public Cpl::Container::Item
@@ -53,6 +53,33 @@ public:
     /** This method returns true if the card is in the started state
      */
     virtual bool isStarted() const noexcept = 0;
+
+
+public:
+    /** This method is used by the Chassis Card scanner to update the its virtual
+        input points (associated with the card) from the content of the IO 
+        Registers.
+
+        Note: The Chassis Card scanner is responsible for ensuring the
+              thread-safety/integrity of its virtual input points being
+              updated.
+
+        The method return false if unrecoverable error occurred; else true
+        is returned.
+     */
+    virtual bool scanInputs() noexcept = 0;
+         
+    /** This method is used by the Chassis Card scanner to flush its virtual
+        output points (associated with the card) to the card's IO Registers
+
+        Note: The Chassis Card scanner is responsible for ensuring the
+              thread-safety/integrity of its virtual output points being
+              copied.
+
+        The method return false if unrecoverable error occurred; else true
+        is returned.
+     */
+    virtual bool flushOutputs() noexcept = 0;
 
 
 public:

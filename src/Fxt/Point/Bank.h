@@ -45,7 +45,13 @@ public:
     bool copyFrom( const void* src, size_t srcSizeInBytes ) noexcept;
 
     /// See Fxt::Point::BankApi
+    bool copyFrom( BankApi& src ) noexcept;
+
+    /// See Fxt::Point::BankApi
     size_t getAllocatedSize() const noexcept;
+
+    /// See Fxt::Point::BankApi
+    const void* getStartOfMemory() const noexcept;
 
 protected:
     /// Start of allocated memory

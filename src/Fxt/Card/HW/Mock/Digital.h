@@ -13,9 +13,11 @@
 /** @file */
 
 
-#include "Fxt/Card/Api.h"
+#include "Fxt/Card/Common_.h"
 #include "Cpl/Json/Arduino.h"
-#include "Fxt/Point/RegisterBank.h"
+#include "Fxt/Point/BankApi.h"
+#include "Cpl/Memory/ContiguousAllocator.h"
+#include "Cpl/Container/Dictionary.h"
 
 ///
 namespace Fxt {
@@ -34,15 +36,23 @@ namespace Mock {
     ARE thread safe to allow the application/test/console to drive/access the
     inputs/outputs.
 
+    The class creates numerous internal objects when it is created/at-run-time.
+    This memory is allocated via a 'Contiguous Allocator'.  This means the
+    object will NOT free the allocated memory in its destructor (it WILL however
+    call the destructor on the objects created from the allocator).  The semantics 
+    with the Application is that the Application is RESPONSIBLE for 
+    freeing/recycling the memory in the Contiguous Allocator when Card(s) are 
+    deleted.
+
     \code
 
     Static Configuration
     --------------------
     "staticConfig": {
-        "numInputs": "n",                   // Number of inputs.   Range 0 to 32
-        "numOutputs": "m",                  // Number of outputs.  Range 0 to 32
-        "initialOutputVals": [ 0, 1, ...],  // Each output signal must have value. 0=signal low, 1=signal high.  
-        "initialInputVals": [ 1, 1, ...]    // Each input signal must have value.  0=signal low, 1=signal high. 
+        "numInputs": "n",         // Number of inputs.   Range 0 to 32
+        "numOutputs": "m",        // Number of outputs.  Range 0 to 32
+        "initialOutputVals" : 0,  // Bit mask for outputs. Bit 0 is output0, Bit 31 is output31. Bit Values: 0=signal low, 1=signal high.
+        "initialInputVals" : 0    // Bit mask for inputs.  Bit 0 is input0,  Bit 31 is input32.  Bit Values: 0=signal low, 1=signal high.
     }
 
     Runtime Configuration
@@ -51,7 +61,7 @@ namespace Mock {
         "descriptors": {    // Minimum required info
             "inputs": [ // One entry per input. Signals are the same order as the staticConfig order
                 {
-                    "id": 0,
+                    "id": 0,    // ID for the Virtual Point
                     "name": "symbolicName1"
                 },
                 {
@@ -74,7 +84,7 @@ namespace Mock {
 
     \endcode
  */
-class Digital : public Fxt::Card::Api
+class Digital : public Fxt::Card::Common_
 {
 public:
     /// Type ID for the card
@@ -82,15 +92,19 @@ public:
 
 public:
     /// Constructor
-    Digital( const char*                cardName,
-             uint16_t                   cardLocalId,
-             JsonVariant&               staticConfig,
-             JsonVariant&               runtimeConfig,
-             Fxt::Point::BankApi&       internalInputsBank,
-             Fxt::Point::RegisterBank&  registerInputsBank,
-             Fxt::Point::BankApi&       internalOutputsBank,
-             Fxt::Point::RegisterBank&  registerOutputsBank,
-             uint32_t&                  startEndPointIdValue );
+    Digital( const char*                                                    cardName,
+             uint16_t                                                       cardLocalId,
+             JsonVariant&                                                   staticConfigObject,
+             JsonVariant&                                                   runtimeConfigObject,
+             Fxt::Point::BankApi&                                           internalInputsBank,
+             Fxt::Point::BankApi&                                           registerInputsBank,
+             Fxt::Point::BankApi&                                           virtualInputsBank,
+             Fxt::Point::BankApi&                                           internalOutputsBank,
+             Fxt::Point::BankApi&                                           registerOutputsBank,
+             Fxt::Point::BankApi&                                           virtualOutputsBank,
+             uint32_t&                                                      startEndPointIdValue,
+             Cpl::Container::Dictionary<Cpl::Container::KeyUinteger32_T>    virtualPointDatabase,
+             Cpl::Memory::ContiguousAllocator&                              allocator );
 
     /// Destructor
     ~Digital();
@@ -103,15 +117,6 @@ public:
     bool stop() noexcept;
 
     /// See Fxt::Card::Api
-    bool isStarted() const noexcept;
-
-    /// See Fxt::Card::Api
-    uint16_t getLocalId() const noexcept;
-
-    /// See Fxt::Card::Api
-    const char* getName() const noexcept;
-
-    /// See Fxt::Card::Api
     const Cpl::Type::Guid_T& getGuid() const noexcept;
 
     /// See Fxt::Card::Api
@@ -119,13 +124,13 @@ public:
 
 public:
     /// Provide the Application the ability to set the inputs. This method is thread safe
-    void setInputs( uint32_t bitMask );
+    void setInputs( uint32_t bitMaskToOR );
 
     /// Provide the Application the ability to clear the inputs. This method is thread safe
-    void clearInputs( uint32_t bitMask );
+    void clearInputs( uint32_t bitMaskToAND );
 
     /// Provide the Application the ability to toggle the inputs. This method is thread safe
-    void toggleInputs( uint32_t bitMask );
+    void toggleInputs( uint32_t bitMaskToXOR );
 
     /// Provide the Application the ability to read the inputs. 
     uint32_t getOutputs();
@@ -141,38 +146,64 @@ public:
 
 
 protected:
+    /// Helper method to parse the static JSON config
+    virtual void parseStaticConfig( JsonVariant& object ) noexcept;
+
+    /// Helper method to parse the runtime JSON config
+    virtual void parseRuntimeConfig( JsonVariant& object, Cpl::Container::Dictionary<Cpl::Container::KeyUinteger32_T> virtualPointDatabase ) noexcept;
+
+    /// Helper method to create Point descriptors
+    virtual bool createDescriptors( Fxt::Point::Descriptor* descriptors, JsonArray& json, int8_t numDescriptors, const char* errMsg ) noexcept;
+
+protected:
     /// The card's Type/GUID (is the same for all instances)
-    static Cpl::Type::Guid_T g_guid;
+    static Cpl::Type::Guid_T            g_guid;
 
-    /// The card's runtime name
-    const char* m_cardName;
-
-    /// The card's 'User facing local ID'
-    uint16_t    m_localId;
-
-    /// Number of Inputs
-    uint8_t     m_numInputs;
-
-    /// Number of Outputs
-    uint8_t     m_numInputs;
-
-    /// Initial (when start() is called) input values
-    uint32_t    m_initInputVals;
-
-    /// Initial (when start() is called) output values
-    uint32_t    m_initOutputVals;
+    /// Allocator for all thing dynamic - except for Points
+    Cpl::Memory::ContiguousAllocator&   m_allocator;
 
     /// Internal Input Descriptors (allocate space for max IO)
-    Fxt::Point::Descriptor m_internalInDescriptors[32];
+    Fxt::Point::Descriptor              m_internalInDescriptors[32];
 
-    /// Visible/Register Input Descriptors (allocate space for max IO)
-    Fxt::Point::Descriptor m_registerInDescriptors[32];
+    /// IO Register Input Descriptors (allocate space for max IO)
+    Fxt::Point::Descriptor              m_registerInDescriptors[32];
+
+    /// Visible/Register Application Descriptors (allocate space for max IO)
+    Fxt::Point::Descriptor              m_virtualInDescriptors[32];
 
     /// Internal Output Descriptors (allocate space for max IO)
-    Fxt::Point::Descriptor m_internalOutDescriptors[32];
+    Fxt::Point::Descriptor              m_internalOutDescriptors[32];
 
-    /// Visible/Register Output Descriptors (allocate space for max IO)
-    Fxt::Point::Descriptor m_registerOutDescriptors[32];
+    /// IO Register Output Descriptors (allocate space for max IO)
+    Fxt::Point::Descriptor              m_registerOutDescriptors[32];
+
+    /// Application Output Descriptors (allocate space for max IO).
+    Fxt::Point::Descriptor              m_virtualOutDescriptors[32];
+
+    /// Error string
+    const char*                         m_configErrString;
+
+    /// Initial (when start() is called) input values
+    uint32_t                            m_initInputVals;
+
+    /// Initial (when start() is called) output values
+    uint32_t                            m_initOutputVals;
+
+    /// Current input values
+    uint32_t                            m_inputVals;
+
+    /// Current output values
+    uint32_t                            m_outputVals;
+
+    /// Number of Inputs
+    uint8_t                             m_numInputs;
+
+    /// Number of Outputs
+    uint8_t                             m_numOutputs;
+
+    /// Track that an error occurred during 'config'
+    bool                                m_configErr;
+
 };
 
 

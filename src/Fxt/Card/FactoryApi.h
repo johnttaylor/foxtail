@@ -15,7 +15,7 @@
 #include "Cpl/Container/Item.h"
 #include "Cpl/Memory/Allocator.h"
 #include "Cpl/Json/Arduino.h"
-#include "Fxt/Point/RegisterBank.h"
+#include "Fxt/Point/Bank.h"
 #include "Fxt/Card/Api.h"
 #include <stdint.h>
 #include <stdlib.h>
@@ -55,8 +55,11 @@ public:
         Each IO card is required to create internal Points for all of its
         'visible' inputs/outputs.  In addition, for the input and output sets
         of Points, the IO card is required to create the associated Points for
-        the 'Register Banks' (i.e. a 1-to-1 mapping of internal points to 
-        Register points).
+        the 'IO Register Banks', and the 'Virutal Point Banks' (i.e. a 1-to-1 
+        mapping of internal points to IO Register and Virtual points).
+
+        NOTE: Only the 'Virtual Points' are accessible via Point Descriptors/
+              'User Facing Local IDs'.
 
         The 'startEndPointIdValue' is an INPUT to the function AND it is an
         OUTPUT.  For input it is the STARTING point ID to use when creating
@@ -77,9 +80,11 @@ public:
                          JsonVariant&               staticConfig,
                          JsonVariant&               runtimeConfig,
                          Fxt::Point::BankApi&       internalInputsBank,
-                         Fxt::Point::RegisterBank&  registerInputsBank,
+                         Fxt::Point::BankApi&       registerInputsBank,
+                         Fxt::Point::BankApi&       virtualInputsBank,
                          Fxt::Point::BankApi&       internalOutputsBank,
-                         Fxt::Point::RegisterBank&  registerOutputsBank,
+                         Fxt::Point::BankApi&       registerOutputsBank,
+                         Fxt::Point::BankApi&       virtualOutputsBank,
                          uint32_t&                  startEndPointIdValue ) noexcept = 0;
 
 

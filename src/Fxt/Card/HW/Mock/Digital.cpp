@@ -11,98 +11,179 @@
 /** @file */
 
 
-#include "Bank.h"
+#include "Digital.h"
 #include "Cpl/System/Assert.h"
+#include "Cpl/Point/Bool.h"
+#include <stdint.h>
 
 ///
-using namespace Fxt::Point;
+using namespace Fxt::Card::HW::Mock;
+
+Cpl::Type::Guid_T Digital::g_guid;
 
 ///////////////////////////////////////////////////////////////////////////////
-Bank::Bank()
-    : m_memStart( nullptr )
-    , m_memSize(0 )
+Digital::Digital( const char*                                                    cardName,
+                  uint16_t                                                       cardLocalId,
+                  JsonVariant&                                                   staticConfigObject,
+                  JsonVariant&                                                   runtimeConfigObject,
+                  Fxt::Point::BankApi&                                           internalInputsBank,
+                  Fxt::Point::BankApi&                                           registerInputsBank,
+                  Fxt::Point::BankApi&                                           virtualInputsBank,
+                  Fxt::Point::BankApi&                                           internalOutputsBank,
+                  Fxt::Point::BankApi&                                           registerOutputsBank,
+                  Fxt::Point::BankApi&                                           virtualOutputsBank,
+                  uint32_t&                                                      startEndPointIdValue,
+                  Cpl::Container::Dictionary<Cpl::Container::KeyUinteger32_T>    virtualPointDatabase,
+                  Cpl::Memory::ContiguousAllocator&                              allocator )
+    : Fxt::Card::Common_( cardName, cardLocalId, internalInputsBank, registerInputsBank, virtualInputsBank, internalOutputsBank, m_registerOutputsBank, m_virtualOutputsBank )
+    , m_allocator( allocator )
+    , m_configErrString( "" )
+    , m_numInputs( 0 )
+    , m_numOutputs( 0 )
+    , m_initInputVals( 0 )
+    , m_initOutputVals( 0 )
+    , m_configErr( false )
 {
+    memset( &m_internalInDescriptors, 0, sizeof( m_internalInDescriptors ) );
+    memset( &m_internalOutDescriptors, 0, sizeof( m_internalOutDescriptors ) );
+    memset( &m_registerInDescriptors, 0, sizeof( m_registerInDescriptors ) );
+    memset( &m_registerOutDescriptors, 0, sizeof( m_registerOutDescriptors ) );
+    memset( &m_virtualInDescriptors, 0, sizeof( m_virtualInDescriptors ) );
+    memset( &m_virtualOutDescriptors, 0, sizeof( m_virtualOutDescriptors ) );
+
+    parseStaticConfig( staticConfigObject );
+    parseRuntimeConfig( runtimeConfigObject );
 }
 
-
-
-///////////////////////////////////////////////////////////////////////////////
-bool Bank::populate( Descriptor*                       listOfDescriptorPointers[],
-                     Cpl::Memory::ContiguousAllocator& allocatorForPoints,
-                     Cpl::Point::DatabaseApi&          dbForPoints,
-                     uint32_t&                         pointIdValue ) noexcept
+void Digital::parseStaticConfig( JsonVariant& obj ) noexcept
 {
-    CPL_SYSTEM_ASSERT( listOfDescriptorPointers );
+    m_numInputs      = obj["numInputs"] | 0;
+    m_numOutputs     = obj["numOutputs"] | 0;
+    m_initInputVals  = obj["initialInputstVals"] | 0;
+    m_initOutputVals = obj["initialOutputVals"] | 0;
+}
 
-    m_memSize           = 0;
-    m_memStart          = nullptr;
-    Descriptor* itemPtr = *listOfDescriptorPointers;
-    while ( itemPtr  )
+// TODO -->only need one set of Descriptors -->can be reused for the internal/regsiters
+void Digital::parseRuntimeConfig( JsonVariant& obj, Cpl::Container::Dictionary<Cpl::Container::KeyUinteger32_T> virtualPointDatabase ) noexcept
+{
+    // Parse input descriptors
+    if ( !obj["descriptors"].isNull() )
     {
-        // Create the next point
-        if ( !itemPtr->createPoint( allocatorForPoints, pointIdValue ) )
+        JsonArray inputs = obj["descriptors"]["inputs"];
+        if ( !inputs.isNull() )
         {
-            printf( "OUT-OF_MEMORY\n" );
-            // Error: allocator is out-of-space
-            m_memSize  = 0;
-            m_memStart = nullptr;
+            // Check for Mismatch input configuration
+            if ( inputs.size() != m_numInputs )
+            {
+                m_configErr = true;
+                m_configErrString = "Mismatch inputs.  Number of Inputs does not match array of Input descriptors";
+                return;
+            }
+
+            // Create the Input descriptors
+            if ( !createDescriptors( m_internalInDescriptors, inputs, m_numInputs, "Failed to allocate memory for Virtual Input Descriptors fields." ) )
+            {
+                return;
+            }
+            if ( !createDescriptors( m_registerInDescriptors, inputs, m_numInputs, "Failed to allocate memory for Register Input Descriptors fields." ) )
+            {
+                return;
+            }
+            if ( !createDescriptors( m_virtualInDescriptors, inputs, m_numInputs, "Failed to allocate memory for Register Input Descriptors fields." ) )
+            {
+                return;
+            }
+
+            // All Virtual Point Descriptors to the database
+            for ( int i=0; i < m_numInputs; i++ )
+            {
+                virtualPointDatabase.insert( m_virtualInDescriptors[i] );
+            }
+        }
+
+        // Parse Output descriptors
+        JsonArray outputs = obj["descriptors"]["outputs"];
+        if ( !outputs.isNull() )
+        {
+            // Check for Mismatch output configuration
+            if ( outputs.size() != m_numOutputs )
+            {
+                m_configErr = true;
+                m_configErrString = "Mismatch outputs.  Number of Outputs does not match array of Outputs descriptors";
+                return;
+            }
+
+            // Create the Input descriptors
+            if ( !createDescriptors( m_internalOutDescriptors, outputs, m_numOutputs, "Failed to allocate memory for Virtual Output Descriptors fields." ) )
+            {
+                return;
+            }
+            if ( !createDescriptors( m_registerOutDescriptors, outputs, m_numOutputs, "Failed to allocate memory for Register Output Descriptors fields." ) )
+            {
+                return;
+            }
+            if ( !createDescriptors( m_virtualOutDescriptors, outputs, m_numOutputs, "Failed to allocate memory for Register Output Descriptors fields." ) )
+            {
+                return;
+            }
+
+            // All Virtual Point Descriptors to the database
+            for ( int i=0; i < m_numOutputs; i++ )
+            {
+                virtualPointDatabase.insert( m_virtualOutDescriptors[i] );
+            }
+        }
+    }
+}
+
+bool Digital::createDescriptors( Fxt::Point::Descriptor* descriptors, JsonArray& json, int8_t numDescriptors, const char* errMsg )
+{
+    // Initialize the descriptor elements
+    for ( int i=0; i < numDescriptors; i++ )
+    {
+        uint32_t    localId       = json[i]["id"];
+        const char* name          = json[i]["name"] | "";
+        char*       nameMemoryPtr = (char*) m_allocator.allocate( strlen( name ) + 1 );
+        if ( nameMemoryPtr == nullptr )
+        {
+            m_configErr       = true;
+            m_configErrString = errMsg;
             return false;
         }
-
-        // Add the point to the database
-        if ( !dbForPoints.add( itemPtr->getPointId(), itemPtr->getPointInfo() ) )
-        {
-            // Error: database is out-of-space
-            m_memSize  = 0;
-            m_memStart = nullptr;
-            return false;
-        }
-
-        // Trap the 1st allocate address
-        if ( m_memStart == nullptr )
-        {
-            m_memStart = itemPtr->getPoint();
-        }
-        
-        // Keep track of the allocated size
-        m_memSize += itemPtr->getPoint()->getTotalSize();
-
-        // Get the next descriptor in the list
-        pointIdValue++;
-        listOfDescriptorPointers++;
-        itemPtr = *listOfDescriptorPointers;
+        strcpy( nameMemoryPtr, name );
+        descriptors[i].configure( nameMemoryPtr, localId, Cpl::Point::Bool::create, nullptr );
     }
 
-    // If I get here the bank was successfully populated
     return true;
 }
 
-size_t Bank::getAllocatedSize() const noexcept
+bool Digital::start() noexcept
 {
-    return m_memSize;
-}
-
-bool Bank::copyTo( void* dst, size_t maxDstSizeInBytes ) noexcept
-{
-    // Fail if the destination is too small
-    if ( maxDstSizeInBytes < m_memSize )
+    // Do NOT start if my configuration failed
+    if ( m_configErr )
     {
         return false;
     }
 
-    memcpy( dst, m_memStart, m_memSize );
-    return true;
+    m_inputVals  = m_initInputVals;
+    m_outputVals = m_initOutputVals;
+    return Common_::start();
 }
 
-bool Bank::copyFrom( const void* src, size_t srcSizeInBytes ) noexcept
+bool Digital::stop() noexcept
 {
-    // Fail if the source is too large
-    if ( srcSizeInBytes > m_memSize )
-    {
-        return false;
-    }
-
-    memcpy( m_memStart, src, m_memSize );
-    return true;
+    return Common_::stop();
 }
 
+const Cpl::Type::Guid_T& Digital::getGuid() const noexcept
+{
+}
+
+/// See Fxt::Card::Api
+const char* Digital::getTypeName() const noexcept
+{
+    return "Fxt::Card::HW::Mock::Digital";
+}
+
+
+///////////////////////////////////////////////////////////////////////////////

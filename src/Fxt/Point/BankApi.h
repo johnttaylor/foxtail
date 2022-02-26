@@ -61,6 +61,11 @@ public:
      */
     virtual size_t getAllocatedSize() const noexcept = 0;
 
+    /** This method returns a pointer to the start of the Bank's memory.
+        USE WITH CAUTION!!
+     */
+    virtual const void* getStartOfMemory() const noexcept = 0;
+
     /** This method copies the Bank's 'point memory' to the specified destination.
         The method returns if the copy operation is successful; else false (e.g.
         'dst' size is less than the Bank's point memory) is returned.
@@ -73,6 +78,12 @@ public:
      */
     virtual bool copyFrom( const void* src, size_t srcSizeInBytes ) noexcept = 0;
 
+
+    /** This method copies the data from 'src' into this instance.  If the
+        size of the 'src' bank is not the same as this error then false is
+        returned; else true is returned.
+     */
+    virtual bool copyFrom( BankApi& src ) noexcept = 0;
 
 public:
     /// Virtual destructor to make the compiler happy
