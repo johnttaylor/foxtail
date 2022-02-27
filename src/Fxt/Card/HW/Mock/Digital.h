@@ -119,12 +119,12 @@ public:
 
 public:
     /// Constructor
-    Digital( JsonVariant&                                                   cardObject,
-             Banks_T&                                                       pointBanks,
-             PointAllocators_T&                                             pointAllocators,
-             Fxt::Point::Database&                                          pointDatabase,
-             Cpl::Container::Dictionary<Cpl::Container::KeyUinteger32_T>&   descriptorDatabase,
-             Cpl::Memory::ContiguousAllocator&                              allocator );
+    Digital( JsonVariant&                                          cardObject,
+             Banks_T&                                              pointBanks,
+             PointAllocators_T&                                    pointAllocators,
+             Fxt::Point::Database&                                 pointDatabase,
+             Cpl::Container::Dictionary<Fxt::Point::Descriptor>&   descriptorDatabase,
+             Cpl::Memory::ContiguousAllocator&                     allocator );
 
     /// Destructor
     ~Digital();
@@ -137,7 +137,7 @@ public:
     bool stop() noexcept;
 
     /// See Fxt::Card::Api
-    const const char* getGuid() const noexcept;
+    const char* getGuid() const noexcept;
 
     /// See Fxt::Card::Api
     const char* getTypeName() const noexcept;
@@ -181,10 +181,10 @@ protected:
     virtual void parseConfiguration( JsonVariant& obj ) noexcept;
 
     /// Helper method to create Point descriptors
-    virtual bool createDescriptors( Fxt::Point::Descriptor* descriptorList[], ChannelInfo_T* channels, JsonArray& json, int8_t numDescriptors, uint32_t errCode ) noexcept;
+    virtual bool createDescriptors( Fxt::Point::Descriptor* descriptorList[], ChannelInfo_T* channels, JsonArray& json, size_t numDescriptors, uint32_t errCode ) noexcept;
 
     /// Helper method to create the point instances
-    virtual void createPoints( Cpl::Container::Dictionary<Cpl::Container::KeyUinteger32_T>& descriptorDb, Fxt::Point::Database& pointDb, PointAllocators_T& allocators ) noexcept;
+    virtual void createPoints( Cpl::Container::Dictionary<Fxt::Point::Descriptor>& descriptorDb, Fxt::Point::Database& pointDb, PointAllocators_T& allocators ) noexcept;
 
     /// Helper method that returns a Point handle for the specified channel.  Returns nullptr if not match found
     Cpl::Point::Bool* getPointByChannel( ChannelInfo_T * channels, uint16_t channelIndex ) noexcept;
@@ -227,10 +227,10 @@ protected:
     uint32_t                            m_outputVals;
 
     /// Number of Inputs
-    uint8_t                             m_numInputs;
+    size_t                              m_numInputs;
 
     /// Number of Outputs
-    uint8_t                             m_numOutputs;
+    size_t                              m_numOutputs;
 };
 
 

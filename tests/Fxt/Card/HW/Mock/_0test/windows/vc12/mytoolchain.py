@@ -29,37 +29,32 @@ from nqbplib.my_globals import NQBP_WORK_ROOT
 #---------------------------------------------------
 
 # Set the name for the final output item
-FINAL_OUTPUT_NAME = 'a.out'
+FINAL_OUTPUT_NAME = 'a.exe'
 
-#
-# For build config/variant: "Release" (aka posix build variant)
-#
 # Link unittest directory by object module so that Catch's self-registration mechanism 'works'
-unit_test_objects = '_BUILT_DIR_.src/Fxt/Card/_0test'
+unit_test_objects = '_BUILT_DIR_.src/Fxt/Card/HW/Mock/_0test'
 
-#
-# For build config/variant: "Release" (aka posix build variant)
+##
+# For build config/variant: "Release" 
 #
 
 # Set project specific 'base' (i.e always used) options
 base_release           = BuildValues()        # Do NOT comment out this line
-base_release.cflags    = '-m32 -std=c++11 -Wall -Werror -x c++ -fprofile-arcs -ftest-coverage -DCATCH_CONFIG_FAST_COMPILE'
-base_release.linkflags = '-m32 -fprofile-arcs'
-base_release.linklibs  = '-lgcov -lpthread -lm'
+base_release.cflags    = '/W3 /WX /EHsc /D CATCH_CONFIG_FAST_COMPILE'  # /EHsc enables exceptions
 base_release.firstobjs = unit_test_objects
 
 
 # Set project specific 'optimized' options
-optimzed_release           = BuildValues()    # Do NOT comment out this line
-optimzed_release.cflags    = '-O3'
-optimzed_release.linklibs  = '-lstdc++'
+optimzed_release          = BuildValues()    # Do NOT comment out this line
+optimzed_release.cflags   = '/O2'
+optimzed_release.linklibs = ''
 
 # Set project specific 'debug' options
-debug_release           = BuildValues()       # Do NOT comment out this line
-debug_release.linklibs  = '-lstdc++'
+debug_release          = BuildValues()       # Do NOT comment out this line
+debug_release.cflags   = '/D "_MY_APP_DEBUG_SWITCH_"'
+debug_release.linklibs = ''
 
-
-# 
+#
 # For build config/variant: "cpp11"
 # (note: uses same internal toolchain options as the 'Release' variant, 
 #        only the 'User' options will/are different)
@@ -70,43 +65,17 @@ base_cpp11     = BuildValues()
 optimzed_cpp11 = BuildValues()
 debug_cpp11    = BuildValues()
 
+
 # Set 'base' options
-base_cpp11.cflags     = '-m64 -std=c++11 -Wall -Werror -x c++ -fprofile-arcs -ftest-coverage -DCATCH_CONFIG_FAST_COMPILE'
-base_cpp11.linkflags  = '-m64 -fprofile-arcs'
-base_cpp11.linklibs   = '-lgcov -pthread -lm'
+base_cpp11.cflags     = '/W3 /WX /EHsc /D CATCH_CONFIG_FAST_COMPILE'  # /EHsc enables exceptions
 base_cpp11.firstobjs  = unit_test_objects
 
 # Set 'Optimized' options
-optimzed_cpp11.cflags    = '-O3'
-optimzed_cpp11.linklibs  = '-lstdc++'
+optimzed_cpp11.cflags   = '/O2'
+optimzed_cpp11.linklibs = ''
 
 # Set project specific 'debug' options
-debug_cpp11.linklibs  = '-lstdc++'
-
-
-# 
-# For build config/variant: "posix64" (same as release, except 64bit target)
-# (note: uses same internal toolchain options as the 'Release' variant, 
-#        only the 'User' options will/are different)
-#
-
-# Construct option structs
-base_posix64     = BuildValues()
-optimzed_posix64 = BuildValues()
-debug_posix64    = BuildValues()
-
-# Set project specific 'base' (i.e always used) options
-base_posix64.cflags    = '-m64 -std=c++11 -Wall -Werror -x c++ -fprofile-arcs -ftest-coverage -DCATCH_CONFIG_FAST_COMPILE'
-base_posix64.linkflags = '-fprofile-arcs'
-base_posix64.linklibs  = '-lgcov -lpthread -lm'
-base_posix64.firstobjs = unit_test_objects
-
-# Set project specific 'optimized' options
-optimzed_posix64.cflags    = '-O3'
-optimzed_posix64.linklibs  = '-lstdc++'
-
-# Set project specific 'debug' options
-debug_posix64.linklibs  = '-lstdc++'
+debug_cpp11.linklibs = ''
 
 
 #-------------------------------------------------
@@ -127,16 +96,10 @@ cpp11_opts = { 'user_base':base_cpp11,
                'user_debug':debug_cpp11
              }
   
-posix64_opts = { 'user_base':base_posix64, 
-                 'user_optimized':optimzed_posix64, 
-                 'user_debug':debug_posix64
-               }
-  
         
 # Add new variant option dictionary to # dictionary of 
 # build variants
-build_variants = { 'posix':release_opts,
-                   'posix64':posix64_opts,
+build_variants = { 'win32':release_opts,
                    'cpp11':cpp11_opts,
                  }    
 
@@ -152,10 +115,10 @@ prjdir = os.path.dirname(os.path.abspath(__file__))
 
 
 # Select Module that contains the desired toolchain
-from nqbplib.toolchains.linux.gcc.console_exe import ToolChain
+from nqbplib.toolchains.windows.vc12.console_exe import ToolChain
 
 
 # Function that instantiates an instance of the toolchain
 def create():
-    tc = ToolChain( FINAL_OUTPUT_NAME, prjdir, build_variants, "posix64" )
+    tc = ToolChain( FINAL_OUTPUT_NAME, prjdir, build_variants, 'win32' )
     return tc 

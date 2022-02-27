@@ -58,12 +58,12 @@ public:
     MockFactory( const char* guid, Database& factoryDb ) :m_guid( guid ) { factoryDb.insert_( *this ); }
 
 public:
-    bool create( JsonVariant&                                                   cardObject,
-                 Banks_T&                                                       pointBanks,
-                 PointAllocators_T&                                             pointAllocators,
-                 Fxt::Point::Database&                                          pointDatabase,
-                 Cpl::Container::Dictionary<Cpl::Container::KeyUinteger32_T>&   descriptorDatabase,
-                 Cpl::Memory::ContiguousAllocator&                              allocator ) noexcept
+    bool create( JsonVariant&                                          cardObject,
+                 Banks_T&                                              pointBanks,
+                 PointAllocators_T&                                    pointAllocators,
+                 Fxt::Point::Database&                                 pointDatabase,
+                 Cpl::Container::Dictionary<Fxt::Point::Descriptor>&   descriptorDatabase,
+                 Cpl::Memory::ContiguousAllocator&                     allocator ) noexcept
     {
         return true;
     }
@@ -75,24 +75,24 @@ public:
 }; // end anonymous namespace
 
 //// Static UUT
-//static Database uut_( "ignoreThisParameter_usedToCreateAUniqueConstructor" );
-//
-//// Static Cards an factories
+static Database uut_( "ignoreThisParameter_usedToCreateAUniqueConstructor" );
+
+// Static Cards an factories
 #define APPLE_GUID  "9f88d3a1-6b10-4fd5-865f-aaeef1cc2060"
 #define APPLE1_ID   1
 #define APPLE2_ID   2
-//static MockCard     cardApple1_( "apple", APPLE1_ID, APPLE_GUID, uut_ );
-//static MockFactory  factoryApple_( APPLE_GUID, uut_ );
-//
+static MockCard     cardApple1_( "apple", APPLE1_ID, APPLE_GUID, uut_ );
+static MockFactory  factoryApple_( APPLE_GUID, uut_ );
+
 #define ORANGE_GUID "fabd0cfd-dfe7-49ca-9e3a-e188dd7a4be6"
 #define ORANGE_ID   3
-//static MockCard     cardOrange_( "orange", ORANGE_ID, ORANGE_GUID, uut_ );
-//static MockFactory  factoryOrange_( ORANGE_ID, uut_ );
-//
+static MockCard     cardOrange_( "orange", ORANGE_ID, ORANGE_GUID, uut_ );
+static MockFactory  factoryOrange_( ORANGE_GUID, uut_ );
+
 #define CHERRY_GUID "fabd0cfd-dfe7-49ca-9e3a-e188dd7a4be6"
 #define CHERRY_ID   4
-//static MockCard     cardCherry_( "cherry", CHERRY_ID, CHERRY_GUID, uut_ );
-//static MockFactory  factoryCherry_( CHERRY_GUID, uut_ );
+static MockCard     cardCherry_( "cherry", CHERRY_ID, CHERRY_GUID, uut_ );
+static MockFactory  factoryCherry_( CHERRY_GUID, uut_ );
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -184,6 +184,54 @@ TEST_CASE( "Database" )
         item =  uut.getNextFactory( *item );
         REQUIRE( item == &factoryCherry );
         item =  uut.getNextFactory( *item );
+        REQUIRE( item == 0 );
+    }
+
+    SECTION( "static-cards" )
+    {
+        REQUIRE( uut_.lookupCard( APPLE1_ID ) == &cardApple1_ );
+        Api* item =  uut_.getFirstCard();
+        REQUIRE( item == &cardApple1_ );
+        item =  uut_.getNextCard( *item );
+        REQUIRE( item == &cardOrange_ );
+        item =  uut_.getNextCard( *item );
+        REQUIRE( item == &cardCherry_ );
+        item =  uut_.getNextCard( *item );
+        REQUIRE( item == 0 );
+
+        // Remove some cards
+        uut_.remove_( cardApple1_ );
+        uut_.remove_( cardOrange_ );
+        REQUIRE( uut_.lookupCard( CHERRY_ID ) == &cardCherry_ );
+        item =  uut_.getFirstCard();
+        REQUIRE( item == &cardCherry_ );
+        item =  uut_.getNextCard( *item );
+        REQUIRE( item == 0 );
+
+        // Add some cards
+        uut_.insert_( cardApple1_ );
+        uut_.insert_( cardOrange_ );
+        REQUIRE( uut_.lookupCard( APPLE1_ID ) == &cardApple1_ );
+        item =  uut_.getFirstCard();
+        REQUIRE( item == &cardCherry_ );
+        item =  uut_.getNextCard( *item );
+        REQUIRE( item == &cardApple1_ );
+        item =  uut_.getNextCard( *item );
+        REQUIRE( item == &cardOrange_ );
+        item =  uut_.getNextCard( *item );
+        REQUIRE( item == 0 );
+    }
+
+    SECTION( "static-factories" )
+    {
+        REQUIRE( uut_.lookupFactory( APPLE_GUID ) == &factoryApple_ );
+        FactoryApi* item =  uut_.getFirstFactory();
+        REQUIRE( item == &factoryApple_ );
+        item =  uut_.getNextFactory( *item );
+        REQUIRE( item == &factoryOrange_ );
+        item =  uut_.getNextFactory( *item );
+        REQUIRE( item == &factoryCherry_ );
+        item =  uut_.getNextFactory( *item );
         REQUIRE( item == 0 );
     }
 

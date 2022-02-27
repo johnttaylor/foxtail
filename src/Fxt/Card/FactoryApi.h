@@ -77,12 +77,12 @@ public:
             Cpl::Point::DatabaseApi&                           pointDatabase,
             Cpl::Memory::Allocator&                            allocatorForCard,
       */
-    virtual bool create( JsonVariant&                                                   cardObject,
-                         Banks_T&                                                       pointBanks,
-                         PointAllocators_T&                                             pointAllocators,
-                         Fxt::Point::Database&                                          pointDatabase,
-                         Cpl::Container::Dictionary<Cpl::Container::KeyUinteger32_T>&   descriptorDatabase,
-                         Cpl::Memory::ContiguousAllocator&                              allocator ) noexcept = 0;
+    virtual bool create( JsonVariant&                                          cardObject,
+                         Banks_T&                                              pointBanks,
+                         PointAllocators_T&                                    pointAllocators,
+                         Fxt::Point::Database&                                 pointDatabase,
+                         Cpl::Container::Dictionary<Fxt::Point::Descriptor>&   descriptorDatabase,
+                         Cpl::Memory::ContiguousAllocator&                     allocator ) noexcept = 0;
 
 
     /** This method is used to destroy/free an IO card.  

@@ -22,12 +22,12 @@ using namespace Fxt::Card::HW::Mock;
 static const char emptyString_[1] ={ '\0' };
 
 ///////////////////////////////////////////////////////////////////////////////
-Digital::Digital( JsonVariant&                                                   cardObject,
-                  Banks_T&                                                       pointBanks,
-                  PointAllocators_T&                                             pointAllocators,
-                  Fxt::Point::Database&                                          pointDatabase,
-                  Cpl::Container::Dictionary<Cpl::Container::KeyUinteger32_T>&   descriptorDatabase,
-                  Cpl::Memory::ContiguousAllocator&                              generalAllocator )
+Digital::Digital( JsonVariant&                                          cardObject,
+                  Banks_T&                                              pointBanks,
+                  PointAllocators_T&                                    pointAllocators,
+                  Fxt::Point::Database&                                 pointDatabase,
+                  Cpl::Container::Dictionary<Fxt::Point::Descriptor>&   descriptorDatabase,
+                  Cpl::Memory::ContiguousAllocator&                     generalAllocator )
     : Fxt::Card::Common_( pointBanks )
     , m_allocator( generalAllocator )
     , m_numInputs( 0 )
@@ -156,10 +156,10 @@ void Digital::parseConfiguration( JsonVariant& obj ) noexcept
     }
 }
 
-bool Digital::createDescriptors( Fxt::Point::Descriptor* descriptorList[], ChannelInfo_T* channels, JsonArray& json, int8_t numDescriptors, uint32_t errCode )
+bool Digital::createDescriptors( Fxt::Point::Descriptor* descriptorList[], ChannelInfo_T* channels, JsonArray& json, size_t numDescriptors, uint32_t errCode ) noexcept
 {
     // Initialize the descriptor elements
-    for ( int i=0; i < numDescriptors; i++ )
+    for ( size_t i=0; i < numDescriptors; i++ )
     {
         if ( json[i]["id"].isNull() )
         {
@@ -202,14 +202,14 @@ bool Digital::createDescriptors( Fxt::Point::Descriptor* descriptorList[], Chann
     return true;
 }
 
-void Digital::createPoints( Cpl::Container::Dictionary<Cpl::Container::KeyUinteger32_T>& descriptorDb, Fxt::Point::Database& pointDb, PointAllocators_T& allocators ) noexcept
+void Digital::createPoints( Cpl::Container::Dictionary<Fxt::Point::Descriptor>& descriptorDb, Fxt::Point::Database& pointDb, PointAllocators_T& allocators ) noexcept
 {
     // Create Input points
     if ( m_numInputs > 0 )
     {
         // Create internal Points
         m_banks.internalInputs->populate( m_inDescriptors, *allocators.internalInputs, pointDb );
-        for ( int i=0; i < m_numInputs; i++ )
+        for ( size_t i=0; i < m_numInputs; i++ )
         {
             m_inputChannels[i].point = (Cpl::Point::Bool*) m_inDescriptors[i]->getPoint();
         }
@@ -220,9 +220,9 @@ void Digital::createPoints( Cpl::Container::Dictionary<Cpl::Container::KeyUinteg
         // Create visible Points. This must be done LAST so that the descriptors 
         // contain the 'correct' Point references for the 'visible' points
         m_banks.virtualInputs->populate( m_inDescriptors, *allocators.virtualInputs, pointDb );
-        for ( int i=0; i < m_numInputs; i++ )
+        for ( size_t i=0; i < m_numInputs; i++ )
         {
-            descriptorDb.insert( *m_inDescriptors[i] );
+            descriptorDb.insert( *(m_inDescriptors[i]) );
         }
     }
 
@@ -231,7 +231,7 @@ void Digital::createPoints( Cpl::Container::Dictionary<Cpl::Container::KeyUinteg
     {
         // Create internal Points
         m_banks.internalOutputs->populate( m_outDescriptors, *allocators.internalOutputs, pointDb );
-        for ( int i=0; i < m_numOutputs; i++ )
+        for ( size_t i=0; i < m_numOutputs; i++ )
         {
             m_outputChannels[i].point = (Cpl::Point::Bool*) m_inDescriptors[i]->getPoint();
         }
@@ -242,9 +242,9 @@ void Digital::createPoints( Cpl::Container::Dictionary<Cpl::Container::KeyUinteg
         // Create visible Points. This must be done LAST so that the descriptors 
         // contain the 'correct' PointId/Point references for the 'visible' points
         m_banks.virtualOutputs->populate( m_outDescriptors, *allocators.virtualOutputs, pointDb );
-        for ( int i=0; i < m_numInputs; i++ )
+        for ( size_t i=0; i < m_numInputs; i++ )
         {
-            descriptorDb.insert( *m_outDescriptors[i] );
+            descriptorDb.insert( *(m_outDescriptors[i]) );
         }
     }
 }
@@ -263,7 +263,7 @@ bool Digital::stop() noexcept
     return Common_::stop();
 }
 
-const const char* Digital::getGuid() const noexcept
+const char* Digital::getGuid() const noexcept
 {
     return GUID_STRING;
 }
@@ -328,6 +328,7 @@ uint32_t Digital::getOutputs()
     Cpl::System::Mutex::ScopeBlock criticalSection( m_internalLock );
     readOutputRegisters();  // Get the current Register values
     pointsToMask();
+    return m_outputVals;
 }
 
 void Digital::pointsToMask() noexcept
@@ -348,7 +349,7 @@ void Digital::pointsToMask() noexcept
     }
 }
 
-void Digital::maskToPoints()
+void Digital::maskToPoints() noexcept
 {
     for ( uint16_t i=0, mask=0x1; i < m_numInputs; i++, mask <<= 1 )
     {
@@ -369,7 +370,7 @@ void Digital::maskToPoints()
     }
 }
 
-Cpl::Point::Bool* Digital::getPointByChannel( ChannelInfo_T * channels, uint16_t channelIndex )
+Cpl::Point::Bool* Digital::getPointByChannel( ChannelInfo_T * channels, uint16_t channelIndex ) noexcept
 {
     for ( uint16_t i=0; i < MAX_CHANNELS; i++ )
     {

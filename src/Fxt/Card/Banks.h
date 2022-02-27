@@ -31,8 +31,8 @@ struct Banks_T
     Fxt::Point::BankApi*   registerOutputs;     //!< Bank that is used manage/create the card's internal Output Registers
     Fxt::Point::BankApi*   virtualOutputs;      //!< Bank that is used manage/create the cards' application visible Output Points
 
-    /// Copy constructor
-    Banks_T( Banks_T& src )
+    /// Assignment operation
+    Banks_T& operator=( Banks_T& src )
     {
         internalInputs  = src.internalInputs;
         registerInputs  = src.registerInputs;
@@ -40,6 +40,7 @@ struct Banks_T
         internalOutputs = src.internalOutputs;
         registerOutputs = src.registerOutputs;
         virtualOutputs  = src.virtualOutputs;
+        return *this;
     }
 };
 
@@ -53,8 +54,8 @@ struct PointAllocators_T
     Cpl::Memory::ContiguousAllocator*  registerOutputs;     //!< Allocator for the card's internal Output Registers
     Cpl::Memory::ContiguousAllocator*  virtualOutputs;      //!< Allocator for the cards' application visible Output Points
 
-    /// Copy constructor
-    PointAllocators_T( PointAllocators_T& src )
+    /// Assignment operation
+    PointAllocators_T& operator=( PointAllocators_T& src )
     {
         internalInputs  = src.internalInputs;
         registerInputs  = src.registerInputs;
@@ -62,6 +63,7 @@ struct PointAllocators_T
         internalOutputs = src.internalOutputs;
         registerOutputs = src.registerOutputs;
         virtualOutputs  = src.virtualOutputs;
+        return *this;
     }
 };
 
