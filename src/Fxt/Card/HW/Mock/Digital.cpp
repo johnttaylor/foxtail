@@ -255,6 +255,8 @@ bool Digital::start() noexcept
 {
     m_inputVals  = m_initInputVals;
     m_outputVals = m_initOutputVals;
+    maskToPoints();
+    // TODO: FIXME: call maskToPoints() to set the internal Output Points - requires changing function signature to pass src/dst for the val/points
     return Common_::start();
 }
 
