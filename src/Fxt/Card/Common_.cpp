@@ -18,24 +18,20 @@
 using namespace Fxt::Card;
 
 //////////////////////////////////////////////////
-Common_::Common_( const char*            cardName,
-                  uint16_t               cardLocalId,
-                  Fxt::Point::BankApi&   internalInputsBank,
-                  Fxt::Point::BankApi&   registerInputsBank,
-                  Fxt::Point::BankApi&   virtualInputsBank,
-                  Fxt::Point::BankApi&   internalOutputsBank,
-                  Fxt::Point::BankApi&   registerOutputsBank,
-                  Fxt::Point::BankApi&   virtualOutputsBank )
-    : m_internalInputsBank( internalInputsBank )
-    , m_registerInputsBank( registerInputsBank )
-    , m_virtualInputsBank( virtualInputsBank )
-    , m_internalOutputsBank( internalOutputsBank )
-    , m_registerOutputsBank( registerOutputsBank )
-    , m_virtualOutputsBank( virtualOutputsBank )
-    , m_cardName( cardName )
-    , m_localId( cardLocalId )
+Common_::Common_( Banks_T&  banks )
+    : m_banks( banks )
+    , m_error( 0 )
+    , m_cardName( nullptr )
+    , m_localId( 0 )
+    , m_slotNumber( 0 )
     , m_started( false )
 {
+    CPL_SYSTEM_ASSERT( banks.internalInputs );
+    CPL_SYSTEM_ASSERT( banks.registerInputs );
+    CPL_SYSTEM_ASSERT( banks.virtualInputs );
+    CPL_SYSTEM_ASSERT( banks.internalOutputs );
+    CPL_SYSTEM_ASSERT( banks.registerOutputs );
+    CPL_SYSTEM_ASSERT( banks.virtualOutputs );
     CPL_SYSTEM_ASSERT( cardName );
 }
 
@@ -47,7 +43,7 @@ Common_::~Common_()
 //////////////////////////////////////////////////
 bool Common_::start() noexcept
 {
-    if ( !m_started )
+    if ( !m_started && m_error == 0 )
     {
         m_started = true;
         return true;
@@ -70,7 +66,7 @@ bool Common_::isStarted() const noexcept
     return m_started;
 }
 
-uint16_t Common_::getLocalId() const noexcept
+uint32_t Common_::getLocalId() const noexcept
 {
     return m_localId;
 }
@@ -80,30 +76,37 @@ const char* Common_::getName() const noexcept
     return m_cardName;
 }
 
+uint32_t Common_::getErrorCode() const noexcept
+{
+    return m_error;
+}
+
+uint16_t Common_::getSlot() const noexcept
+{
+    return m_slotNumber;
+}
 
 //////////////////////////////////////////////////
 bool Common_::scanInputs() noexcept
 {
     Cpl::System::Mutex::ScopeBlock criticalSection( m_registerLock );
-    return m_virtualInputsBank.copyFrom( m_registerInputsBank );
+    return m_banks.virtualInputs->copyFrom( *m_banks.registerInputs );
 }
 
 bool Common_::flushOutputs() noexcept
 {
     Cpl::System::Mutex::ScopeBlock criticalSection( m_registerLock );
-    return m_registerOutputsBank.copyFrom( m_virtualOutputsBank );
+    return m_banks.registerOutputs->copyFrom( *m_banks.virtualOutputs );
 }
 
 bool Common_::updateInputRegisters() noexcept
 {
-    Cpl::System::Mutex::ScopeBlock criticalSection2( m_internalLock );
     Cpl::System::Mutex::ScopeBlock criticalSection( m_registerLock );
-    return m_registerInputsBank.copyFrom( m_internalInputsBank );
+    return m_banks.registerInputs->copyFrom( *m_banks.internalInputs );
 }
 
 bool Common_::readOutputRegisters() noexcept
 {
-    Cpl::System::Mutex::ScopeBlock criticalSection2( m_internalLock );
     Cpl::System::Mutex::ScopeBlock criticalSection( m_registerLock );
-    return m_internalOutputsBank.copyFrom( m_registerOutputsBank );
+    return m_banks.internalOutputs->copyFrom( *m_banks.registerOutputs );
 }

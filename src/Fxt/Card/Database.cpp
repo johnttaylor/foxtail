@@ -32,7 +32,7 @@ Database::Database( const char* ignoreThisParameter_usedToCreateAUniqueConstruct
 
 
 ///////////////////////////////////////////////////////////////////////////////
-Api* Database::lookupCard( uint16_t cardLocalId ) noexcept
+Api* Database::lookupCard( uint32_t cardLocalId ) noexcept
 {
     Api* item  = m_cards.first();
     while ( item )
@@ -57,12 +57,12 @@ Api* Database::getNextCard( Api& currentCard ) noexcept
     return m_cards.next( currentCard );
 }
 
-FactoryApi* Database::lookupFactory( Cpl::Type::Guid_T cardTypeId ) noexcept
+FactoryApi* Database::lookupFactory( const char* guidCardTypeId ) noexcept
 {
     FactoryApi* item  = m_factories.first();
     while ( item )
     {
-        if ( item->getGuid() == cardTypeId )
+        if ( strcmp(item->getGuid(), guidCardTypeId) == 0 )
         {
             return item;
         }

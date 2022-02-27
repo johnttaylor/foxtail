@@ -13,7 +13,7 @@
 /** @file */
 
 #include "Fxt/Point/Descriptor.h"
-#include "Cpl/Point/DatabaseApi.h"
+#include "Fxt/Point/Database.h"
 #include "Cpl/Memory/ContiguousAllocator.h"
 #include <stdint.h>
 #include <stdlib.h>
@@ -39,12 +39,6 @@ public:
         The listOfDescriptors is variable length array of Descriptor pointers,
         where the end-of-list is a null pointer.
 
-        The 'pointIdValue' is an INPUT to the function AND it is an 
-        OUTPUT.  For input it is the STARTING point ID to use when creating
-        points.  For output it returns the 'next' PointId, i,e, the last
-        assigned PointId plus one.  The Bank auto-increments the pointIdValue 
-        every time a point is created.
-
         The method should only be called once per 'setup'.
 
         The method returns true when successful; else false (e.g. out-of-memory)
@@ -52,8 +46,7 @@ public:
      */
     virtual bool populate( Descriptor*                       listOfDescriptorPointers[], 
                            Cpl::Memory::ContiguousAllocator& allocatorForPoints, 
-                           Cpl::Point::DatabaseApi&          dbForPoints, 
-                           uint32_t&                         pointIdValue ) noexcept = 0;
+                           Fxt::Point::Database&             dbForPoints ) noexcept = 0;
 
 
 public:

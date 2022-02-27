@@ -62,7 +62,7 @@ public:
     {
     }
 
-    /// Configure the Descriptor after it been constructed using the default constructor
+    /// Configure the Descriptor after it has been constructed using the default constructor
     void configure( const char* symbolicName, uint32_t localId, CreateFunc_T createFunction, SetterApi* setter=nullptr ) noexcept
     {
         m_keyData                = localId;

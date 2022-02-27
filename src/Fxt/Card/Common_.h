@@ -14,6 +14,7 @@
 
 
 #include "Fxt/Card/Api.h"
+#include "Fxt/Card/Banks.h"
 #include "Cpl/Json/Arduino.h"
 #include "Fxt/Point/Bank.h"
 #include "Cpl/System/Mutex.h"
@@ -30,14 +31,7 @@ class Common_ : public Api
 {
 public:
     /// Constructor
-    Common_( const char*            cardName,
-             uint16_t               cardLocalId,
-             Fxt::Point::BankApi&   internalInputsBank,
-             Fxt::Point::BankApi&   registerInputsBank,
-             Fxt::Point::BankApi&   virtualInputsBank,
-             Fxt::Point::BankApi&   internalOutputsBank,
-             Fxt::Point::BankApi&   registerOutputsBank,
-             Fxt::Point::BankApi&   virtualOutputsBank );
+    Common_( Banks_T&  banks );
 
     /// Destructor
     ~Common_();
@@ -53,7 +47,7 @@ public:
     bool isStarted() const noexcept;
 
     /// See Fxt::Card::Api
-    uint16_t getLocalId() const noexcept;
+    uint32_t getLocalId() const noexcept;
 
     /// See Fxt::Card::Api
     const char* getName() const noexcept;
@@ -63,6 +57,12 @@ public:
 
     /// See Fxt::Card::Api
     bool flushOutputs() noexcept;
+
+    /// See Fxt::Card::Api
+    uint32_t getErrorCode() const noexcept;
+
+    /// See Fxt::Card::Api
+    uint16_t getSlot() const noexcept;
 
 protected:
     /// Updates the IO Registers from the Internal Card Inputs
@@ -75,32 +75,20 @@ protected:
     /// Mutex for protecting the data when transferring data to/from IO Registers
     Cpl::System::Mutex          m_registerLock;
 
-    /// Mutex for protecting the data when transferring data to/from the card's internal points
-    Cpl::System::Mutex          m_internalLock;
+    /// Point Banks
+    Banks_T                     m_banks;
 
-    /// Point Bank for the Internal Inputs
-    Fxt::Point::BankApi&        m_internalInputsBank;
-
-    /// Point Bank for the IO Register Inputs
-    Fxt::Point::BankApi&        m_registerInputsBank;
-
-    /// Point Bank for the Virtual Point Inputs
-    Fxt::Point::BankApi&        m_virtualInputsBank;
-
-    /// Point Bank for the Internal outputs
-    Fxt::Point::BankApi&        m_internalOutputsBank;
-    
-    /// Point Bank for the IO Register Outputs
-    Fxt::Point::BankApi&        m_registerOutputsBank;
-    
-    /// Point Bank for the Virtual Point Outputs
-    Fxt::Point::BankApi&        m_virtualOutputsBank;
+    /// Error state. A value of 0 indicates NO error
+    uint32_t                    m_error;
 
     /// The card's runtime name
-    const char*                 m_cardName;
+    char*                       m_cardName;
 
     /// The card's 'User facing local ID'
-    uint16_t                    m_localId;
+    uint32_t                    m_localId;
+
+    /// The card's slot number/identifier
+    uint16_t                    m_slotNumber;
 
     /// My started state
     bool                        m_started;
@@ -109,7 +97,5 @@ protected:
 
 
 };      // end namespaces
-};
-};
 };
 #endif  // end header latch

@@ -15,8 +15,10 @@
 #include "Cpl/Container/Item.h"
 #include "Cpl/Memory/Allocator.h"
 #include "Cpl/Json/Arduino.h"
+#include "Cpl/Container/Dictionary.h"
 #include "Fxt/Point/Bank.h"
 #include "Fxt/Card/Api.h"
+#include "Fxt/Card/Banks.h"
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -75,17 +77,12 @@ public:
             Cpl::Point::DatabaseApi&                           pointDatabase,
             Cpl::Memory::Allocator&                            allocatorForCard,
       */
-    virtual bool create( const char*                cardName,
-                         uint16_t                   cardLocalId,
-                         JsonVariant&               staticConfig,
-                         JsonVariant&               runtimeConfig,
-                         Fxt::Point::BankApi&       internalInputsBank,
-                         Fxt::Point::BankApi&       registerInputsBank,
-                         Fxt::Point::BankApi&       virtualInputsBank,
-                         Fxt::Point::BankApi&       internalOutputsBank,
-                         Fxt::Point::BankApi&       registerOutputsBank,
-                         Fxt::Point::BankApi&       virtualOutputsBank,
-                         uint32_t&                  startEndPointIdValue ) noexcept = 0;
+    virtual bool create( JsonVariant&                                                   cardObject,
+                         Banks_T&                                                       pointBanks,
+                         PointAllocators_T&                                             pointAllocators,
+                         Fxt::Point::Database&                                          pointDatabase,
+                         Cpl::Container::Dictionary<Cpl::Container::KeyUinteger32_T>&   descriptorDatabase,
+                         Cpl::Memory::ContiguousAllocator&                              allocator ) noexcept = 0;
 
 
     /** This method is used to destroy/free an IO card.  
@@ -96,8 +93,11 @@ public:
     virtual void destroy( Api& cardToDestory ) noexcept = 0;
 
 public:
-    /// This method returns the GUID for the type of IO card that the factory is able to create
-    virtual const Cpl::Type::Guid_T& getGuid() const noexcept = 0;
+    /** This method returns the GUID for the type of IO card that the factory 
+        is able to create.  The return value is a null terminated string with
+        a 8-4-4-4-12 formatted GUID.
+     */
+    virtual const char* getGuid() const noexcept = 0;
 
 public:
     /// Virtual destructor to make the compiler happy

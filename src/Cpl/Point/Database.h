@@ -15,7 +15,6 @@
 #include "colony_config.h"
 #include "Cpl/Point/DatabaseApi.h"
 #include "Cpl/Json/Arduino.h"
-#include "Cpl/Memory/LeanHeap.h"
 
 
 /** This symbol defines the size, in bytes, of a single/global JSON document

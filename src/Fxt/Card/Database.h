@@ -45,7 +45,7 @@ public:
 
 public:
     /// See Fxt::Card::DatabaseApi
-    Api* lookupCard( uint16_t cardLocalId ) noexcept;
+    Api* lookupCard( uint32_t cardLocalId ) noexcept;
 
     /// See Fxt::Card::DatabaseApi
     Api* getFirstCard() noexcept;
@@ -54,7 +54,7 @@ public:
     Api* getNextCard( Api& currentCard ) noexcept;
 
     /// See Fxt::Card::DatabaseApi
-    FactoryApi* lookupFactory( Cpl::Type::Guid_T cardTypeId ) noexcept;
+    FactoryApi* lookupFactory( const char* guidCardTypeId ) noexcept;
 
     /// See Fxt::Card::DatabaseApi
     FactoryApi* getFirstFactory() noexcept;

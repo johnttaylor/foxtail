@@ -38,7 +38,7 @@ public:
     /** This method looks-up the IO card by its 'User facing local ID'.  If the 
         IO Card ID cannot be found, THEN the method returns 0.
      */
-    virtual Api* lookupCard( uint16_t cardLocalId ) noexcept = 0;
+    virtual Api* lookupCard( uint32_t cardLocalId ) noexcept = 0;
 
     /** This method returns a pointer to the first IO Card in the Database. If 
         there are no IO Cards in the Database, THEN the method returns 0.
@@ -55,8 +55,11 @@ public:
     /** This method looks-up the IO card Factory by its GUID.  If the
         IO Card Factory GUID cannot be found (i.e. card type not supported by
         the platform), THEN the method returns 0.
+
+        The 'guidCardTypeId' is null terminated string contain a 8-4-4-4-12 
+        formated GUID.
      */
-    virtual FactoryApi* lookupFactory( Cpl::Type::Guid_T cardTypeId ) noexcept = 0;
+    virtual FactoryApi* lookupFactory( const char* guidCardTypeId ) noexcept = 0;
 
     /** This method returns a pointer to the first IO Card Factory in the 
         Database. If there are no IO Card Factories in the Database, THEN the 
@@ -68,7 +71,7 @@ public:
         'currentFactory' is the last IO Card Factory in the Database the method 
         returns 0.
      */
-    virtual Api* getNextFactory( FactoryApi& currentFactory ) noexcept = 0;
+    virtual FactoryApi* getNextFactory( FactoryApi& currentFactory ) noexcept = 0;
 
 
 public:

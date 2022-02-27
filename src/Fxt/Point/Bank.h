@@ -35,8 +35,7 @@ public:
     /// See Fxt::Point::BankApi
     bool populate( Descriptor*                       listOfDescriptorPointers[],
                    Cpl::Memory::ContiguousAllocator& allocatorForPoints,
-                   Cpl::Point::DatabaseApi&          dbForPoints,
-                   uint32_t&                         pointIdValue ) noexcept;
+                   Fxt::Point::Database&             dbForPoints ) noexcept;
 
     /// See Fxt::Point::BankApi
     bool copyTo( void* dst, size_t maxDstSizeInBytes ) noexcept;

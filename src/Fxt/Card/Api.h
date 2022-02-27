@@ -84,16 +84,37 @@ public:
 
 public:
     /// This method returns the card's 'User facing local ID'
-    virtual uint16_t getLocalId() const noexcept = 0;
+    virtual uint32_t getLocalId() const noexcept = 0;
 
     /// This method returns the card's text name/label (as defined by the user)
     virtual const char* getName() const noexcept = 0;
 
-    /// This method returns the card's GUID (that identifies its type)
-    virtual const Cpl::Type::Guid_T& getGuid() const noexcept = 0;
+    /** This method returns the card's GUID (that identifies its type) as a 
+        text string in 8-4-4-4-12 format
+     */
+    virtual const char* getGuid() const noexcept = 0;
 
     /// Returns the card's 'human readable' type name (note: this is NOT guaranteed to be unique)
     virtual const char* getTypeName() const noexcept = 0;
+
+    /// Returns the card's physical identifier in the Node's physical chassis
+    virtual uint16_t getSlot() const noexcept = 0;
+
+public:
+    /// ERROR Code: NO Error, i.e. the card is operating properly
+    static constexpr uint32_t ERR_NO_ERROR = 0;
+
+
+    /** This method returns the current error state/number of the card.  A value
+        of zero/ERR_NO_ERROR indicates the card is operating properly
+     */
+    virtual uint32_t getErrorCode() const noexcept = 0;
+
+    /** This method returns a text string associated with the specified 
+        error code.  If the specified error code is not-valid/out-of-range for
+        the card, a null pointer is returned.
+     */
+    virtual const char* getErrorText( uint32_t errCode ) const noexcept = 0;
 
 public:
     /// Virtual destructor to make the compiler happy
