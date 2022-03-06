@@ -156,14 +156,14 @@ bool Digital::createDescriptors( Fxt::Point::Descriptor* descriptorList[], Chann
     // Initialize the descriptor elements
     for ( size_t i=0; i < numDescriptors; i++ )
     {
-        if ( json[i]["id"].isNull() )
+        if ( json[i]["localId"].isNull() )
         {
             m_error = ERR_POINT_MISSING_LOCAL_ID;
             return false;
         }
 
         // Parse ID, Channel, and Name
-        uint32_t    localId       = json[i]["id"];
+        uint32_t    localId       = json[i]["localId"];
         uint16_t    channel       = json[i]["channel"] | MAX_CHANNELS + 1;
         if ( channel > MAX_CHANNELS )
         {

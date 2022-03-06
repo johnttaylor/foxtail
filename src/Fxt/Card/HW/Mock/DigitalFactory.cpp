@@ -25,6 +25,7 @@ DigitalFactory::DigitalFactory( Fxt::Card::DatabaseApi&                         
                                 Cpl::Memory::ContiguousAllocator&                   allocatorForCard )
     :FactoryCommon_( cardDb, descriptorDatabase, pointDatabase, pointAllocators, allocatorForCard )
 {
+    cardDb.insert_( *this );
 }
 
 DigitalFactory::~DigitalFactory()

@@ -1,5 +1,5 @@
 # Unit under test
-src/Fxt/Card/HW/Mock < Digital.cpp
+src/Fxt/Card/HW/Mock < Digital.cpp DigitalFactory.cpp
 
 # tests
 src/Fxt/Card/HW/Mock/_0test

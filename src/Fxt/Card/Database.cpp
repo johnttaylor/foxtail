@@ -59,14 +59,17 @@ Api* Database::getNextCard( Api& currentCard ) noexcept
 
 FactoryApi* Database::lookupFactory( const char* guidCardTypeId ) noexcept
 {
-    FactoryApi* item  = m_factories.first();
-    while ( item )
+    if ( guidCardTypeId )
     {
-        if ( strcmp(item->getGuid(), guidCardTypeId) == 0 )
+        FactoryApi* item  = m_factories.first();
+        while ( item )
         {
-            return item;
+            if ( strcmp( item->getGuid(), guidCardTypeId ) == 0 )
+            {
+                return item;
+            }
+            item = m_factories.next( *item );
         }
-        item = m_factories.next( *item );
     }
 
     return nullptr;

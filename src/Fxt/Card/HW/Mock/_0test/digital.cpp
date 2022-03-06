@@ -12,6 +12,7 @@
 #include "Catch/catch.hpp"
 #include "Cpl/System/_testsupport/Shutdown_TS.h"
 #include "Fxt/Card/HW/Mock/Digital.h"
+#include "Fxt/Card/HW/Mock/DigitalFactory.h"
 #include "Fxt/Point/Bank.h"
 #include "Fxt/Point/Database.h"
 #include "Cpl/Memory/LeanHeap.h"
@@ -22,17 +23,9 @@
 /// 
 using namespace Fxt::Card::HW::Mock;
 
-///
-static Fxt::Point::Bank inpInternalBank_;
-static Fxt::Point::Bank inpRegisterBank_;
-static Fxt::Point::Bank inpVirtualBank_;
-static Fxt::Point::Bank outInternalBank_;
-static Fxt::Point::Bank outRegisterBank_;
-static Fxt::Point::Bank outVirtualBank_;
-static Fxt::Card::Banks_T banks ={ &inpInternalBank_, &inpRegisterBank_, &inpVirtualBank_,
-                                    &outInternalBank_, &outRegisterBank_, &outVirtualBank_ };
+#define MAX_CHANNELS        32
 
-#define MAX_POINT_ALLOCATOR_SIZE_BYTES  (sizeof(Cpl::Point::Bool) * 32)
+#define MAX_POINT_ALLOCATOR_SIZE_BYTES  (sizeof(Cpl::Point::Bool) * MAX_CHANNELS)
 static size_t                inpMemoryInternalAlloc_[MAX_POINT_ALLOCATOR_SIZE_BYTES / sizeof( size_t )];
 static Cpl::Memory::LeanHeap inpInternalAlloc_( inpMemoryInternalAlloc_, sizeof( inpMemoryInternalAlloc_ ) );
 static size_t                inpMemoryRegisterAlloc_[MAX_POINT_ALLOCATOR_SIZE_BYTES / sizeof( size_t )];
@@ -45,22 +38,36 @@ static size_t                outMemoryRegisterAlloc_[MAX_POINT_ALLOCATOR_SIZE_BY
 static Cpl::Memory::LeanHeap outRegisterAlloc_( outMemoryRegisterAlloc_, sizeof( outMemoryRegisterAlloc_ ) );
 static size_t                outMemoryVirtualAlloc_[MAX_POINT_ALLOCATOR_SIZE_BYTES / sizeof( size_t )];
 static Cpl::Memory::LeanHeap outVirtualAlloc_( outMemoryVirtualAlloc_, sizeof( outMemoryVirtualAlloc_ ) );
-static Fxt::Card::PointAllocators_T allocators_ ={ &inpInternalAlloc_, &inpRegisterAlloc_, &inpVirtualAlloc_,
-                                                   &outInternalAlloc_, &outRegisterAlloc_, &outVirtualAlloc_ };
+static Fxt::Card::PointAllocators_T pointAllocators_ ={ &inpInternalAlloc_, &inpRegisterAlloc_, &inpVirtualAlloc_,
+                                                        &outInternalAlloc_, &outRegisterAlloc_, &outVirtualAlloc_ };
 
 static Cpl::Container::DList<Cpl::Container::DictItem>    buckets_10[10];
 static Cpl::Container::Dictionary<Fxt::Point::Descriptor> descriptorDictionary_( buckets_10, 10 );
+
+static Fxt::Point::Database pointDb_( MAX_CHANNELS * 6 );
+
+static Fxt::Card::Database  cardDb_( "ignoreThisParameter_usedToCreateAUniqueConstructor" );
 
 static size_t                generalMemoryAlloc_[(10 * 1024) / sizeof( size_t )];
 static Cpl::Memory::LeanHeap generalAlloc_( generalMemoryAlloc_, sizeof( generalMemoryAlloc_ ) );
 
 static StaticJsonDocument<4 * 1024>   jsonDoc_;
 
+DigitalFactory factoryUut( cardDb_, descriptorDictionary_, pointDb_, pointAllocators_, generalAlloc_ );
+
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE( "Database" )
+TEST_CASE( "Digital" )
 {
     Cpl::System::Shutdown_TS::clearAndUseCounter();
 
+    // Ensure all of the allocators start with all of their memory available
+    generalAlloc_.reset();
+    inpInternalAlloc_.reset();
+    inpRegisterAlloc_.reset();
+    inpVirtualAlloc_.reset();
+    outInternalAlloc_.reset();
+    outRegisterAlloc_.reset();
+    outVirtualAlloc_.reset();
 
     SECTION( "create" )
     {
@@ -111,6 +118,17 @@ TEST_CASE( "Database" )
 
         auto err = deserializeJson( jsonDoc_, json );
         REQUIRE( err == DeserializationError::Ok );
+        const char* guid = jsonDoc_["guid"];
+        REQUIRE( guid != nullptr );
+
+        Fxt::Card::FactoryApi* factory = cardDb_.lookupFactory( guid );
+        REQUIRE( factory != nullptr );
+
+        JsonVariant rootObject = jsonDoc_.as<JsonVariant>();
+        bool result = factory->create( rootObject );
+        REQUIRE( result );
+
+        // TODO: Get card, then work Input and Output descriptors
     }
 
     REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );
