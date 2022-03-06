@@ -16,7 +16,6 @@
 #include "Fxt/Card/Api.h"
 #include "Fxt/Card/Banks.h"
 #include "Cpl/Json/Arduino.h"
-#include "Fxt/Point/Bank.h"
 #include "Cpl/System/Mutex.h"
 
 ///
@@ -30,8 +29,12 @@ namespace Card {
 class Common_ : public Api
 {
 public:
+    /// ERROR Code: Unable to allocate memory for the card's Point Banks
+    static constexpr uint32_t ERR_MEMORY_POINT_BANKS  = 1;
+
+public:
     /// Constructor
-    Common_( Banks_T&  banks );
+    Common_( Cpl::Memory::ContiguousAllocator& allocator );
 
     /// Destructor
     ~Common_();

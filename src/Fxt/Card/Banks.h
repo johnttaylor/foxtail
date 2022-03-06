@@ -13,7 +13,7 @@
 /** @file */
 
 
-#include "Fxt/Point/BankApi.h"
+#include "Fxt/Point/Bank.h"
 
 ///
 namespace Fxt {
@@ -24,12 +24,12 @@ namespace Card {
 /// Convenience structure to reduce 'noise' in function arguments
 struct Banks_T
 {
-    Fxt::Point::BankApi*   internalInputs;      //!< Bank that is used manage/create the card's internal Input Points
-    Fxt::Point::BankApi*   registerInputs;      //!< Bank that is used manage/create the card's internal Input Registers
-    Fxt::Point::BankApi*   virtualInputs;       //!< Bank that is used manage/create the cards' application visible Input Points
-    Fxt::Point::BankApi*   internalOutputs;     //!< Bank that is used manage/create the card's internal Output Points
-    Fxt::Point::BankApi*   registerOutputs;     //!< Bank that is used manage/create the card's internal Output Registers
-    Fxt::Point::BankApi*   virtualOutputs;      //!< Bank that is used manage/create the cards' application visible Output Points
+    Fxt::Point::Bank*   internalInputs;      //!< Bank that is used manage/create the card's internal Input Points
+    Fxt::Point::Bank*   registerInputs;      //!< Bank that is used manage/create the card's internal Input Registers
+    Fxt::Point::Bank*   virtualInputs;       //!< Bank that is used manage/create the cards' application visible Input Points
+    Fxt::Point::Bank*   internalOutputs;     //!< Bank that is used manage/create the card's internal Output Points
+    Fxt::Point::Bank*   registerOutputs;     //!< Bank that is used manage/create the card's internal Output Registers
+    Fxt::Point::Bank*   virtualOutputs;      //!< Bank that is used manage/create the cards' application visible Output Points
 
     /// Assignment operation
     Banks_T& operator=( Banks_T& src )

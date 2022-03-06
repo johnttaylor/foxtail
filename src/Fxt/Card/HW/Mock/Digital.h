@@ -55,7 +55,6 @@ namespace Mock {
       "localId": 0,                                     // Local ID assigned to the card
       "name": "My Digital Card",                        // Text label for the card
       "initialInputValueMask":  0,                      // unsigned 32bit long mask used to set the initial input values.  Bit N == channel N. 0=Signal Low, 1=Signal High
-      "initialOutputValueMask": 0,                      // unsigned 32bit long mask used to set the initial output values. Bit N == channel N. 0=Signal Low, 1=Signal High
       "points": {
         "inputs": [                                     // Inputs. The card supports 0 to 32 input points
           {
@@ -86,31 +85,31 @@ public:
 
 public:
     /// ERROR Code: Unable to allocate memory for the card's Input Point Descriptors
-    static constexpr uint32_t ERR_MEMORY_INPUT_DESCRIPTORS  = 1;
+    static constexpr uint32_t ERR_MEMORY_INPUT_DESCRIPTORS  = 2;
 
     /// ERROR Code: Unable to allocate memory for the card's Output Point Descriptors
-    static constexpr uint32_t ERR_MEMORY_OUTPUT_DESCRIPTORS = 2;
+    static constexpr uint32_t ERR_MEMORY_OUTPUT_DESCRIPTORS = 3;
 
     /// ERROR Code: Configuration contains the wrong GUID (i.e. the JSON object calls out a different card type)
-    static constexpr uint32_t ERR_GUID_WRONG_TYPE           = 3;
+    static constexpr uint32_t ERR_GUID_WRONG_TYPE           = 4;
 
     /// ERROR Code: Configuration does NOT contain a LocalId value
-    static constexpr uint32_t ERR_CARD_MISSING_LOCAL_ID     = 4;
+    static constexpr uint32_t ERR_CARD_MISSING_LOCAL_ID     = 5;
 
     /// ERROR Code: Unable to allocate memory for the card's name
-    static constexpr uint32_t ERR_MEMORY_CARD_NAME          = 5;
+    static constexpr uint32_t ERR_MEMORY_CARD_NAME          = 6;
 
     /// ERROR Code: Configuration does NOT contain a LocalId value for one of it Points
-    static constexpr uint32_t ERR_POINT_MISSING_LOCAL_ID    = 6;
+    static constexpr uint32_t ERR_POINT_MISSING_LOCAL_ID    = 7;
 
     /// ERROR Code: Configuration contains TOO many input Points (max is 32)
-    static constexpr uint32_t ERR_TOO_MANY_INPUT_POINTS     = 7;
+    static constexpr uint32_t ERR_TOO_MANY_INPUT_POINTS     = 8;
 
     /// ERROR Code: Configuration contains TOO many output Points (max is 32)
-    static constexpr uint32_t ERR_TOO_MANY_OUTPUT_POINTS    = 8;
+    static constexpr uint32_t ERR_TOO_MANY_OUTPUT_POINTS    = 9;
 
     /// ERROR Code: Configuration contains duplicate or our-of-range Channel IDs
-    static constexpr uint32_t ERR_BAD_CHANNEL_ASSIGNMENTS   = 9;
+    static constexpr uint32_t ERR_BAD_CHANNEL_ASSIGNMENTS   = 10;
 
 public:
     /// Maximum number of signals/channels/points per Input and Output
@@ -120,7 +119,6 @@ public:
 public:
     /// Constructor
     Digital( JsonVariant&                                          cardObject,
-             Banks_T&                                              pointBanks,
              PointAllocators_T&                                    pointAllocators,
              Fxt::Point::Database&                                 pointDatabase,
              Cpl::Container::Dictionary<Fxt::Point::Descriptor>&   descriptorDatabase,
@@ -216,9 +214,6 @@ protected:
 
     /// Initial (when start() is called) input values
     uint32_t                            m_initInputVals;
-
-    /// Initial (when start() is called) output values
-    uint32_t                            m_initOutputVals;
 
     /// Current input values
     uint32_t                            m_inputVals;

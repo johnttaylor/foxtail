@@ -75,6 +75,33 @@ public:
 
 
 public:
+    /** This method has 'PACKAGE Scope' in that is should only be called by
+        other classes in the Fxt::Card namespace.  It is ONLY public to avoid
+        the tight coupling of C++ friend mechanism.
+
+        This method inserts a IO Card instance t into the Model Database.
+     */
+    virtual void insert_( Api& cardToAdd ) noexcept = 0;
+
+    /** This method has 'PACKAGE Scope' in that is should only be called by
+        other classes in the Fxt::Card namespace.  It is ONLY public to avoid
+        the tight coupling of C++ friend mechanism.
+
+        This method removes a IO Card instance t from the Model Database.
+     */
+    virtual void remove_( Api& cardToRemove ) noexcept = 0;
+
+public:
+    /** This method has 'PACKAGE Scope' in that is should only be called by
+        other classes in the Fxt::Card namespace.  It is ONLY public to avoid
+        the tight coupling of C++ friend mechanism.
+
+        This method inserts a IO Card Factory instance t into the Model Database.
+     */
+    virtual void insert_( FactoryApi& cardFactoryToAdd ) noexcept = 0;
+
+
+public:
     /// Virtual destructor to make the compiler happy
     virtual ~DatabaseApi() {}
 };

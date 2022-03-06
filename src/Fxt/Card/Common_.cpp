@@ -13,31 +13,46 @@
 
 #include "Common_.h"
 #include "Cpl/System/Assert.h"
+#include "Fxt/Point/Bank.h"
+#include <new>
+
+#define CREATE_BANK(b)      memBank = allocator.allocate( sizeof( Fxt::Point::Bank ) ); \
+                            if ( memBank == nullptr ) { m_error = ERR_MEMORY_POINT_BANKS; } \
+                            else { b = new(memBank) Fxt::Point::Bank(); }
+
+#define DESTROY_BANK(b)     if ( b != nullptr ) {b->~Bank();}
+
 
 ///
 using namespace Fxt::Card;
 
 //////////////////////////////////////////////////
-Common_::Common_( Banks_T&  banks )
-    : m_banks( banks )
-    , m_error( 0 )
+Common_::Common_( Cpl::Memory::ContiguousAllocator& allocator )
+    : m_error( 0 )
     , m_cardName( nullptr )
     , m_localId( 0 )
     , m_slotNumber( 0 )
     , m_started( false )
 {
-    CPL_SYSTEM_ASSERT( banks.internalInputs );
-    CPL_SYSTEM_ASSERT( banks.registerInputs );
-    CPL_SYSTEM_ASSERT( banks.virtualInputs );
-    CPL_SYSTEM_ASSERT( banks.internalOutputs );
-    CPL_SYSTEM_ASSERT( banks.registerOutputs );
-    CPL_SYSTEM_ASSERT( banks.virtualOutputs );
     CPL_SYSTEM_ASSERT( cardName );
+
+    void* memBank;
+    CREATE_BANK( m_banks.internalInputs );
+    CREATE_BANK( m_banks.registerInputs );
+    CREATE_BANK( m_banks.virtualInputs );
+    CREATE_BANK( m_banks.internalOutputs );
+    CREATE_BANK( m_banks.registerOutputs );
+    CREATE_BANK( m_banks.virtualOutputs );
 }
 
 Common_::~Common_()
 {
-    // nothing needed yet...
+    DESTROY_BANK( m_banks.internalInputs );
+    DESTROY_BANK( m_banks.registerInputs );
+    DESTROY_BANK( m_banks.virtualInputs );
+    DESTROY_BANK( m_banks.internalOutputs );
+    DESTROY_BANK( m_banks.registerOutputs );
+    DESTROY_BANK( m_banks.virtualOutputs );
 }
 
 //////////////////////////////////////////////////

@@ -1,5 +1,5 @@
-#ifndef Fxt_Card_HW_Mock_DigitalFactory_h_
-#define Fxt_Card_HW_Mock_DigitalFactory_h_
+#ifndef Fxt_Card_FactoryCommon_h_
+#define Fxt_Card_FactoryCommon_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -12,46 +12,58 @@
 *----------------------------------------------------------------------------*/
 /** @file */
 
-#include "Fxt/Card/FactoryCommon_.h"
-#include "Fxt/Card/HW/Mock/Digital.h"
+
+#include "Fxt/Card/FactoryApi.h"
+#include "Fxt/Card/Database.h"
+#include "Cpl/Container/Dictionary.h"
+#include "Cpl/Memory/ContiguousAllocator.h"
 
 ///
 namespace Fxt {
 ///
 namespace Card {
-///
-namespace HW {
-///
-namespace Mock {
 
 
-/** This concrete class implements the Factory API to create a Mock Digital
-    card.
+/** This partially concrete class provide common infrastructure for a Card
+    Factory.
  */
-class DigitalFactory : public Fxt::Card::FactoryCommon_
+class FactoryCommon_ : public Fxt::Card::FactoryApi
 {
 public:
     /// Constructor
-    DigitalFactory( Fxt::Card::DatabaseApi&                             cardDb,
+    FactoryCommon_( Fxt::Card::DatabaseApi&                             cardDb,
                     Cpl::Container::Dictionary<Fxt::Point::Descriptor>& descriptorDatabase,
                     Fxt::Point::Database&                               pointDatabase,
                     PointAllocators_T&                                  pointAllocators,
                     Cpl::Memory::ContiguousAllocator&                   allocatorForCard );
 
     /// Destructor
-    ~DigitalFactory();
+    ~FactoryCommon_();
 
 public:
     /// See Fxt::Card::FactoryApi
-    bool create( JsonVariant& cardObject ) noexcept;
+    void destroy( Api& cardToDestory ) noexcept;
 
-    /// See Fxt::Card::FactoryApi
-    const char* getGuid() const noexcept { return Digital::GUID_STRING; }
+
+protected:
+    /// Card database
+    Fxt::Card::DatabaseApi&                             m_cardDb;
+
+    /// Point Descriptor Database
+    Cpl::Container::Dictionary<Fxt::Point::Descriptor>& m_descriptorDatabase;
+    
+    /// Point instance database
+    Fxt::Point::Database&                               m_pointDatabase;
+
+    /// Point Allocators
+    PointAllocators_T&                                  m_pointAllocators;
+    
+    /// General pupose allocator (i.e. everything BUT points)
+    Cpl::Memory::ContiguousAllocator&                   m_allocatorForCard;
 };
+
 
 
 };      // end namespaces
-};
-};
 };
 #endif  // end header latch

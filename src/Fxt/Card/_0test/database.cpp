@@ -58,12 +58,7 @@ public:
     MockFactory( const char* guid, Database& factoryDb ) :m_guid( guid ) { factoryDb.insert_( *this ); }
 
 public:
-    bool create( JsonVariant&                                          cardObject,
-                 Banks_T&                                              pointBanks,
-                 PointAllocators_T&                                    pointAllocators,
-                 Fxt::Point::Database&                                 pointDatabase,
-                 Cpl::Container::Dictionary<Fxt::Point::Descriptor>&   descriptorDatabase,
-                 Cpl::Memory::ContiguousAllocator&                     allocator ) noexcept
+    bool create( JsonVariant& cardObject ) noexcept
     {
         return true;
     }

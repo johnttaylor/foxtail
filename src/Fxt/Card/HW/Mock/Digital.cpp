@@ -23,17 +23,15 @@ static const char emptyString_[1] ={ '\0' };
 
 ///////////////////////////////////////////////////////////////////////////////
 Digital::Digital( JsonVariant&                                          cardObject,
-                  Banks_T&                                              pointBanks,
                   PointAllocators_T&                                    pointAllocators,
                   Fxt::Point::Database&                                 pointDatabase,
                   Cpl::Container::Dictionary<Fxt::Point::Descriptor>&   descriptorDatabase,
                   Cpl::Memory::ContiguousAllocator&                     generalAllocator )
-    : Fxt::Card::Common_( pointBanks )
+    : Fxt::Card::Common_( generalAllocator )
     , m_allocator( generalAllocator )
     , m_numInputs( 0 )
     , m_numOutputs( 0 )
     , m_initInputVals( 0 )
-    , m_initOutputVals( 0 )
 {
     CPL_SYSTEM_ASSERT( pointAllocators.internalInputs );
     CPL_SYSTEM_ASSERT( pointAllocators.registerInputs );
@@ -149,9 +147,6 @@ void Digital::parseConfiguration( JsonVariant& obj ) noexcept
             {
                 return;
             }
-
-            // Get the initial state
-            m_initOutputVals  = obj["initialOutputValueMask"] | 0;
         }
     }
 }
@@ -254,9 +249,7 @@ void Digital::createPoints( Cpl::Container::Dictionary<Fxt::Point::Descriptor>& 
 bool Digital::start() noexcept
 {
     m_inputVals  = m_initInputVals;
-    m_outputVals = m_initOutputVals;
     maskToPoints();
-    // TODO: FIXME: call maskToPoints() to set the internal Output Points - requires changing function signature to pass src/dst for the val/points
     return Common_::start();
 }
 
@@ -279,6 +272,7 @@ const char* Digital::getErrorText( uint32_t errCode ) const noexcept
 {
     switch ( errCode )
     {
+    case ERR_MEMORY_POINT_BANKS:        return "Unable to allocate memory for the card's Point Banks.";
     case ERR_MEMORY_INPUT_DESCRIPTORS:  return "Unable to allocate memory for the card's Input Point Descriptors.";
     case ERR_MEMORY_OUTPUT_DESCRIPTORS: return "Unable to allocate memory for the card's Output Point Descriptors.";
     case ERR_GUID_WRONG_TYPE:           return "Configuration contains the wrong GUID (i.e. the JSON object calls out a different card type).";

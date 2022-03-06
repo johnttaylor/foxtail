@@ -62,34 +62,15 @@ public:
     /// See Fxt::Card::DatabaseApi
     FactoryApi* getNextFactory( FactoryApi& currentFactory ) noexcept;
 
-
 public:
-    /** This method has 'PACKAGE Scope' in that is should only be called by
-        other classes in the Fxt::Card namespace.  It is ONLY public to avoid
-        the tight coupling of C++ friend mechanism.
-
-        This method inserts a IO Card instance t into the Model Database.
-   */
+    /// See Fxt::Card::DatabaseApi
     void insert_( Api& cardToAdd ) noexcept;
 
-    /** This method has 'PACKAGE Scope' in that is should only be called by
-        other classes in the Fxt::Card namespace.  It is ONLY public to avoid
-        the tight coupling of C++ friend mechanism.
-
-        This method removes a IO Card instance t from the Model Database.
-   */
+    /// See Fxt::Card::DatabaseApi
     void remove_( Api& cardToRemove ) noexcept;
 
-
-public:
-    /** This method has 'PACKAGE Scope' in that is should only be called by
-        other classes in the Fxt::Card namespace.  It is ONLY public to avoid
-        the tight coupling of C++ friend mechanism.
-
-        This method inserts a IO Card Factory instance t into the Model Database.
-   */
+    /// See Fxt::Card::DatabaseApi
     void insert_( FactoryApi& cardFactoryToAdd ) noexcept;
-
 
 private:
     /// Prevent access to the copy constructor -->Databases can not be copied!

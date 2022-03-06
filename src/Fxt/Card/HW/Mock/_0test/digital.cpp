@@ -71,7 +71,6 @@ TEST_CASE( "Database" )
             "  \"localId\" : 0,                                   "
             "  \"name\" : \"My Digital Card\",                    "
             "  \"initialInputValueMask\" : 0,                     "
-            "  \"initialOutputValueMask\" : 0,                    "
             "  \"points\" : {                                     "
             "    \"inputs\": [                                    "
             "      {                                              "
