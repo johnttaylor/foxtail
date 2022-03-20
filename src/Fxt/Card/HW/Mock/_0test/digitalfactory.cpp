@@ -138,7 +138,7 @@ TEST_CASE( "DigitalFactory" )
         REQUIRE( strcmp( card->getName(), "My Digital Card" ) == 0 );
         REQUIRE( strcmp( card->getGuid(), Fxt::Card::HW::Mock::Digital::GUID_STRING ) == 0 );
         REQUIRE( strcmp( card->getTypeName(), Fxt::Card::HW::Mock::Digital::TYPE_NAME ) == 0 );
-        REQUIRE( card->getErrorCode() == Fxt::Card::Api::ERR_NO_ERROR );
+        REQUIRE( card->getErrorCode() == FXT_CARD_ERR_NO_ERROR );
         REQUIRE( card->getErrorText( card->getErrorCode() ) == nullptr );
         REQUIRE( card->start() );
         REQUIRE( card->stop() );
@@ -184,8 +184,8 @@ TEST_CASE( "DigitalFactory" )
         REQUIRE( result );
         uint32_t localid = jsonDoc_["localId"] | ((uint32_t) (-1));
         Fxt::Card::Api* card = cardDb_.lookupCard( localid );
-        REQUIRE( card->getErrorCode() == Fxt::Card::Api::ERR_CARD_MISSING_SLOT_ID );
-        printf( "error=[%s]\n", card->getErrorText( Fxt::Card::Api::ERR_CARD_MISSING_SLOT_ID) );
+        REQUIRE( card->getErrorCode() == FXT_CARD_ERR_CARD_MISSING_SLOT_ID );
+        printf( "error=[%s]\n", card->getErrorText( FXT_CARD_ERR_CARD_MISSING_SLOT_ID) );
 
         REQUIRE( card->start() == false );
         REQUIRE( card->isStarted() == false );
@@ -215,8 +215,8 @@ TEST_CASE( "DigitalFactory" )
         REQUIRE( result );
         uint32_t localid = jsonDoc_["localId"] | ((uint32_t) (-1));
         Fxt::Card::Api* card = cardDb_.lookupCard( localid );
-        REQUIRE( card->getErrorCode() == Fxt::Card::Api::ERR_CARD_MISSING_NAME );
-        printf( "error=[%s]\n", card->getErrorText( Fxt::Card::Api::ERR_CARD_MISSING_NAME ) );
+        REQUIRE( card->getErrorCode() == FXT_CARD_ERR_CARD_MISSING_NAME );
+        printf( "error=[%s]\n", card->getErrorText( FXT_CARD_ERR_CARD_MISSING_NAME ) );
     }
 
     SECTION( "create-missing-localid" )
@@ -239,8 +239,8 @@ TEST_CASE( "DigitalFactory" )
         bool result = factory->create( rootObject );
         REQUIRE( result );
         Fxt::Card::Api* card = cardDb_.getFirstCard();
-        REQUIRE( card->getErrorCode() == Fxt::Card::Api::ERR_CARD_MISSING_LOCAL_ID );
-        printf( "error=[%s]\n", card->getErrorText( Fxt::Card::Api::ERR_CARD_MISSING_LOCAL_ID ) );
+        REQUIRE( card->getErrorCode() == FXT_CARD_ERR_CARD_MISSING_LOCAL_ID );
+        printf( "error=[%s]\n", card->getErrorText( FXT_CARD_ERR_CARD_MISSING_LOCAL_ID ) );
     }
 
     SECTION( "create-bad-guid" )

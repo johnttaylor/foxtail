@@ -17,6 +17,50 @@
 #include "Cpl/Type/Guid.h"
 #include <stdint.h>
 
+
+/// ERROR Code: NO Error, i.e. the card is operating properly
+#define FXT_CARD_ERR_NO_ERROR                   0
+
+/// ERROR Code: Unable to allocate memory for the card's Point Banks
+#define FXT_CARD_ERR_MEMORY_POINT_BANKS         1
+
+/// ERROR Code: Unable to allocate memory for the card's Input Point Descriptors
+#define FXT_CARD_ERR_MEMORY_INPUT_DESCRIPTORS   2
+
+/// ERROR Code: Unable to allocate memory for the card's Output Point Descriptors
+#define FXT_CARD_ERR_MEMORY_OUTPUT_DESCRIPTORS  3
+
+/// ERROR Code: Configuration contains the wrong GUID (i.e. the JSON object calls out a different card type)
+#define FXT_CARD_ERR_GUID_WRONG_TYPE            4
+
+/// ERROR Code: Configuration does NOT contain a LocalId value
+#define FXT_CARD_ERR_CARD_MISSING_LOCAL_ID      5
+
+/// ERROR Code: Unable to allocate memory for the card's name
+#define FXT_CARD_ERR_MEMORY_CARD_NAME           6
+
+/// ERROR Code: Configuration does NOT contain a LocalId value for one of it Points
+#define FXT_CARD_ERR_POINT_MISSING_LOCAL_ID     7
+
+/// ERROR Code: Configuration contains TOO many input Points (max is 32)
+#define FXT_CARD_ERR_TOO_MANY_INPUT_POINTS      8
+
+/// ERROR Code: Configuration contains TOO many output Points (max is 32)
+#define FXT_CARD_ERR_TOO_MANY_OUTPUT_POINTS     9
+
+/// ERROR Code: Configuration contains duplicate or our-of-range Channel IDs
+#define FXT_CARD_ERR_BAD_CHANNEL_ASSIGNMENTS    10
+
+/// ERROR Code: Configuration does NOT contain a Slot ID
+#define FXT_CARD_ERR_CARD_MISSING_SLOT_ID       11
+
+/// ERROR Code: Configuration does NOT contain a Card name
+#define FXT_CARD_ERR_CARD_MISSING_NAME          12
+
+/// ERROR Code: Code to use for the start of card-specific Error codes
+#define FXT_CARD_ERR_START_CARD_SPECIFIC        100
+
+
 ///
 namespace Fxt {
 ///
@@ -24,7 +68,7 @@ namespace Card {
 
 
 /** This abstract class defines the non-type specific operations that can be
-    performed on an "IO Card".   
+    performed on an "IO Card".
 
     Note: IO Card semantics are NOT thread-safe.
 
@@ -32,7 +76,7 @@ namespace Card {
           is the Card Database.  This means if the application wants to maintain
           a list of IO Cards - it must provide its own wrapper.
  */
-class Api: public Cpl::Container::Item
+class Api : public Cpl::Container::Item
 {
 public:
     /** This method is used to start/activate the IO card.  If the card fails
@@ -57,7 +101,7 @@ public:
 
 public:
     /** This method is used by the Chassis Card scanner to update the its virtual
-        input points (associated with the card) from the content of the IO 
+        input points (associated with the card) from the content of the IO
         Registers.
 
         Note: The Chassis Card scanner is responsible for ensuring the
@@ -68,7 +112,7 @@ public:
         is returned.
      */
     virtual bool scanInputs() noexcept = 0;
-         
+
     /** This method is used by the Chassis Card scanner to flush its virtual
         output points (associated with the card) to the card's IO Registers
 
@@ -89,7 +133,7 @@ public:
     /// This method returns the card's text name/label (as defined by the user)
     virtual const char* getName() const noexcept = 0;
 
-    /** This method returns the card's GUID (that identifies its type) as a 
+    /** This method returns the card's GUID (that identifies its type) as a
         text string in 8-4-4-4-12 format
      */
     virtual const char* getGuid() const noexcept = 0;
@@ -101,55 +145,12 @@ public:
     virtual uint16_t getSlot() const noexcept = 0;
 
 public:
-    /// ERROR Code: NO Error, i.e. the card is operating properly
-    static constexpr uint32_t ERR_NO_ERROR                  = 0;
-
-    /// ERROR Code: Unable to allocate memory for the card's Point Banks
-    static constexpr uint32_t ERR_MEMORY_POINT_BANKS        = 1;
-
-    /// ERROR Code: Unable to allocate memory for the card's Input Point Descriptors
-    static constexpr uint32_t ERR_MEMORY_INPUT_DESCRIPTORS  = 2;
-
-    /// ERROR Code: Unable to allocate memory for the card's Output Point Descriptors
-    static constexpr uint32_t ERR_MEMORY_OUTPUT_DESCRIPTORS = 3;
-
-    /// ERROR Code: Configuration contains the wrong GUID (i.e. the JSON object calls out a different card type)
-    static constexpr uint32_t ERR_GUID_WRONG_TYPE           = 4;
-
-    /// ERROR Code: Configuration does NOT contain a LocalId value
-    static constexpr uint32_t ERR_CARD_MISSING_LOCAL_ID     = 5;
-
-    /// ERROR Code: Unable to allocate memory for the card's name
-    static constexpr uint32_t ERR_MEMORY_CARD_NAME          = 6;
-
-    /// ERROR Code: Configuration does NOT contain a LocalId value for one of it Points
-    static constexpr uint32_t ERR_POINT_MISSING_LOCAL_ID    = 7;
-
-    /// ERROR Code: Configuration contains TOO many input Points (max is 32)
-    static constexpr uint32_t ERR_TOO_MANY_INPUT_POINTS     = 8;
-
-    /// ERROR Code: Configuration contains TOO many output Points (max is 32)
-    static constexpr uint32_t ERR_TOO_MANY_OUTPUT_POINTS    = 9;
-
-    /// ERROR Code: Configuration contains duplicate or our-of-range Channel IDs
-    static constexpr uint32_t ERR_BAD_CHANNEL_ASSIGNMENTS   = 10;
-
-    /// ERROR Code: Configuration does NOT contain a Slot ID
-    static constexpr uint32_t ERR_CARD_MISSING_SLOT_ID     =  11;
-
-    /// ERROR Code: Configuration does NOT contain a Card name
-    static constexpr uint32_t ERR_CARD_MISSING_NAME        =  12;
-
-    /// ERROR Code: Code to use for the start of card-specific Error codes
-    static constexpr uint32_t ERR_START_CARD_SPECIFIC      =  100;
-
-public:
     /** This method returns the current error state/number of the card.  A value
         of zero/ERR_NO_ERROR indicates the card is operating properly
      */
     virtual uint32_t getErrorCode() const noexcept = 0;
 
-    /** This method returns a text string associated with the specified 
+    /** This method returns a text string associated with the specified
         error code.  If the specified error code is not-valid/out-of-range for
         the card, a null pointer is returned.
      */

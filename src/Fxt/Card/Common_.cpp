@@ -17,7 +17,7 @@
 #include <new>
 
 #define CREATE_BANK(b)      memBank = allocator.allocate( sizeof( Fxt::Point::Bank ) ); \
-                            if ( memBank == nullptr ) { m_error = ERR_MEMORY_POINT_BANKS; } \
+                            if ( memBank == nullptr ) { m_error = FXT_CARD_ERR_MEMORY_POINT_BANKS; } \
                             else { b = new(memBank) Fxt::Point::Bank(); }
 
 #define DESTROY_BANK(b)     if ( b != nullptr ) {b->~Bank();}
@@ -134,14 +134,14 @@ bool Common_::parseCommon( JsonVariant& obj, const char* expectedGuid ) noexcept
     // Validate the card type
     if ( obj["guid"].isNull() || strcmp( obj["guid"], expectedGuid ) != 0 )
     {
-        m_error = ERR_GUID_WRONG_TYPE;
+        m_error = FXT_CARD_ERR_GUID_WRONG_TYPE;
         return false;
     }
 
     // Ensure that a LocalId has been assigned
     if ( obj["localId"].isNull() )
     {
-        m_error = ERR_CARD_MISSING_LOCAL_ID;
+        m_error = FXT_CARD_ERR_CARD_MISSING_LOCAL_ID;
         return false;
     }
     m_localId = obj["localId"];
@@ -149,7 +149,7 @@ bool Common_::parseCommon( JsonVariant& obj, const char* expectedGuid ) noexcept
     // Ensure that a Slot ID has been assigned
     if ( obj["slot"].isNull() )
     {
-        m_error = ERR_CARD_MISSING_SLOT_ID;
+        m_error = FXT_CARD_ERR_CARD_MISSING_SLOT_ID;
         return false;
     }
     m_slotNumber = obj["slot"];
@@ -158,14 +158,14 @@ bool Common_::parseCommon( JsonVariant& obj, const char* expectedGuid ) noexcept
     const char* name = obj["name"];
     if ( name == nullptr )
     {
-        m_error = ERR_CARD_MISSING_NAME;
+        m_error = FXT_CARD_ERR_CARD_MISSING_NAME;
         return false;
     }
     m_cardName = (char*) m_allocator.allocate( strlen( name ) + 1 );
     if ( m_cardName == nullptr )
     {
         m_cardName = (char*) emptyString_;
-        m_error    = ERR_MEMORY_CARD_NAME;
+        m_error    = FXT_CARD_ERR_MEMORY_CARD_NAME;
         return false;
     }
     strcpy( m_cardName, name );

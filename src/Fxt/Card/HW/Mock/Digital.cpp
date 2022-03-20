@@ -82,13 +82,13 @@ void Digital::parseConfiguration( JsonVariant& obj ) noexcept
                 m_numInputs = inputs.size();
                 if ( m_numInputs > MAX_CHANNELS )
                 {
-                    m_error     = ERR_TOO_MANY_INPUT_POINTS;
+                    m_error     = FXT_CARD_ERR_TOO_MANY_INPUT_POINTS;
                     m_numInputs = 0;
                     return;
                 }
 
                 // Create the Input descriptors
-                if ( !createDescriptors( m_inDescriptors, m_inputChannels, inputs, m_numInputs, ERR_MEMORY_INPUT_DESCRIPTORS ) )
+                if ( !createDescriptors( m_inDescriptors, m_inputChannels, inputs, m_numInputs, FXT_CARD_ERR_MEMORY_INPUT_DESCRIPTORS ) )
                 {
                     return;
                 }
@@ -105,13 +105,13 @@ void Digital::parseConfiguration( JsonVariant& obj ) noexcept
                 m_numOutputs = outputs.size();
                 if ( m_numOutputs > MAX_CHANNELS )
                 {
-                    m_error      = ERR_TOO_MANY_OUTPUT_POINTS;
+                    m_error      = FXT_CARD_ERR_TOO_MANY_OUTPUT_POINTS;
                     m_numOutputs = 0;
                     return;
                 }
 
                 // Create the Input descriptors
-                if ( !createDescriptors( m_outDescriptors, m_outputChannels, outputs, m_numOutputs, ERR_MEMORY_OUTPUT_DESCRIPTORS ) )
+                if ( !createDescriptors( m_outDescriptors, m_outputChannels, outputs, m_numOutputs, FXT_CARD_ERR_MEMORY_OUTPUT_DESCRIPTORS ) )
                 {
                     return;
                 }
@@ -127,7 +127,7 @@ bool Digital::createDescriptors( Fxt::Point::Descriptor* descriptorList[], Chann
     {
         if ( json[i]["localId"].isNull() )
         {
-            m_error = ERR_POINT_MISSING_LOCAL_ID;
+            m_error = FXT_CARD_ERR_POINT_MISSING_LOCAL_ID;
             return false;
         }
 
@@ -136,12 +136,12 @@ bool Digital::createDescriptors( Fxt::Point::Descriptor* descriptorList[], Chann
         uint16_t    channel       = json[i]["channel"] | (MAX_CHANNELS + 1);
         if ( channel > MAX_CHANNELS )
         {
-            m_error = ERR_BAD_CHANNEL_ASSIGNMENTS;
+            m_error = FXT_CARD_ERR_BAD_CHANNEL_ASSIGNMENTS;
             return false;
         }
         if ( channels[i].channel != 0xFFFF )
         {
-            m_error = ERR_BAD_CHANNEL_ASSIGNMENTS;
+            m_error = FXT_CARD_ERR_BAD_CHANNEL_ASSIGNMENTS;
             return false;
         }
         channels[i].channel = channel;
