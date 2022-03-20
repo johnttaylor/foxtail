@@ -29,7 +29,7 @@ Bank::Bank()
 ///////////////////////////////////////////////////////////////////////////////
 bool Bank::populate( Descriptor*                       listOfDescriptorPointers[],
                      Cpl::Memory::ContiguousAllocator& allocatorForPoints,
-                     Fxt::Point::Database&             dbForPoints ) noexcept
+                     Fxt::Point::DatabaseApi&          dbForPoints ) noexcept
 {
     CPL_SYSTEM_ASSERT( listOfDescriptorPointers );
 
@@ -39,7 +39,7 @@ bool Bank::populate( Descriptor*                       listOfDescriptorPointers[
     while ( itemPtr  )
     {
         // Create the next point
-        if ( !itemPtr->createPoint( allocatorForPoints, dbForPoints.getNextAvailablePointId() ) )
+        if ( !itemPtr->createPoint( allocatorForPoints ) )
         {
             // Error: allocator is out-of-space
             m_memSize  = 0;

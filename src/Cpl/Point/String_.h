@@ -21,7 +21,7 @@ namespace Cpl {
 ///
 namespace Point {
 
-/** This partially concrete class provide common, non-size dependent implemenation
+/** This partially concrete class provide common, non-size dependent implementation
     for a Point who's data is a null terminated string
 
     The toJSON()/fromJSON format is:

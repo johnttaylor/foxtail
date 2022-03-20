@@ -12,41 +12,304 @@
 *----------------------------------------------------------------------------*/
 /** @file */
 
-#include "Cpl/Point/Database.h"
+#include "colony_config.h"
+#include "Fxt/Point/DatabaseApi.h"
+#include "Cpl/Json/Arduino.h"
+#include "Cpl/Container/Dictionary.h"
+#include "Cpl/System/Mutex.h"
 
 
-///
+/** This symbol defines the size, in bytes, of a single/global JSON document
+    buffer that is used for the toJSON() and fromJSON() operations. Only one
+    instance of this buffer is allocated.
+*/
+#ifndef OPTION_FXT_POINT_DATABASE_MAX_CAPACITY_JSON
+#define OPTION_FXT_POINT_DATABASE_MAX_CAPACITY_JSON          (1024*2)
+#endif
+
+/** This symbol defines the size, in bytes, of temporary storage allocated for
+    use by the fromJSON_() method (e.g. create a temporary array instance)
+ */
+#ifndef OPTION_FXT_POINT_DATABASE_TEMP_STORAGE_SIZE
+#define OPTION_FXT_POINT_DATABASE_TEMP_STORAGE_SIZE         (1024*2)
+#endif
+
+
+ ///
 namespace Fxt {
 ///
 namespace Point {
 
 
-/** This concrete class extends the Cpl::Point::Database implementation to
-    provide an auto-incremented Point ID that can be used to add points
-    to the database.  Note: The original intent of the Point ID was to allow
-    type safety for statically created points.  Since Foxtail always dynamically
-    creates its points - it is easier to allow the database to 'assigned' the
-    concrete Point ID values.
+/** This concrete template class implements a simple Point Database.
+
+    Template Args:
+        N   - The number of Hash buckets to use for the dictionary
   */
-class Database : public Cpl::Point::Database
+template<int N>
+class Database : public DatabaseApi, public Cpl::Container::Dictionary<Fxt::Point::Api>
 {
 public:
     /// Constructor
-    Database( size_t maxNumPoints ) noexcept;
+    Database() noexcept;
+
+    /// Destructor
+    ~Database();
 
 public:
-    /// See Cpl::Point::DatabaseApi
-    bool add( const Cpl::Point::Identifier_T numericId, Cpl::Point::Info_T& pointInfo ) noexcept;
+    /// See Fxt::Point::DatabaseApi
+    Fxt::Point::Api* lookupById( uint32_t pointIdToFind ) const noexcept;
 
-    /** Returns the 'next' Point Identifier for when creating a Point and
-        adding it to the database
+    /// See Fxt::Point::DatabaseApi
+    bool toJSON( Fxt::Point::Api& srcPoint,
+                 char*            dst,
+                 size_t           dstSize,
+                 bool&            truncated,
+                 bool             verbose = true ) noexcept;
+
+    /// See Fxt::Point::DatabaseApi
+    bool fromJSON( const char* src, Cpl::Text::String* errorMsg=0 ) noexcept;
+
+    /// See Fxt::Point::DatabaseApi
+    bool add( Api& pointInstanceToAdd ) noexcept;
+
+
+public:
+    /** This method has 'PACKAGE Scope' in that is should only be called by
+        other classes in the Cpl::Point namespace.  It is ONLY public to avoid
+        the tight coupling of C++ friend mechanism.
+
+        This method provides a single global lock for ALL Point Database
+        instances. The method is used to protect global Point Database (e.g.
+        the global parse buffer).
+
+        This method locks the global Point Database lock. For every call to
+        globalLock_() there must be corresponding call to globalUnlock_();
+    */
+    static void globalLock_() noexcept;
+
+    /** This method has 'PACKAGE Scope' in that is should only be called by
+        other classes in the Cpl::Point namespace.  It is ONLY public to avoid
+        the tight coupling of C++ friend mechanism.
+
+        This method unlocks the global Point Database lock
+    */
+    static void globalUnlock_() noexcept;
+
+    /** This variable has 'PACKAGE Scope' in that is should only be called by
+        other classes in the Cpl::Point namespace.  It is ONLY public to avoid
+        the tight coupling of C++ friend mechanism.
+
+        Global/single instance of a JSON document. Model Point's need to have
+        acquired the global lock before using this buffer
      */
-    virtual const Cpl::Point::Identifier_T getNextAvailablePointId() const noexcept;
+    static StaticJsonDocument<OPTION_FXT_POINT_DATABASE_MAX_CAPACITY_JSON> g_doc_;
+
+    /** This variable has 'PACKAGE Scope' in that is should only be called by
+        other classes in the Cpl::Point namespace.  It is ONLY public to avoid
+        the tight coupling of C++ friend mechanism.
+
+        Global temporary buffer. Model Point's need to have acquired the global
+        lock before using this buffer
+     */
+    static uint8_t   g_tempBuffer_[OPTION_FXT_POINT_DATABASE_TEMP_STORAGE_SIZE];
+
+private:
+    /// Prevent access to the copy constructor -->Point Databases can not be copied!
+    Database( const Database& m );
+
+    /// Prevent access to the assignment operator -->Point Databases can not be copied!
+    const Database& operator=( const Database& m );
 
 protected:
-    /// Next point ID
-    uint32_t m_nextPointId;
+    /// Memory for Point table
+    Cpl::Container::DList<Cpl::Container::DictItem>  m_buckets[N];
+
+    /// Mutex for the global lock
+    static Cpl::System::Mutex                        g_globalMutex;
 };
+
+/////////////////////////////////////////////////////////////////////////////
+//                  INLINE IMPLEMENTAION
+/////////////////////////////////////////////////////////////////////////////
+
+template <int N> static Cpl::System::Mutex                                       Database<N>::g_globalMutex;
+template <int N> StaticJsonDocument<OPTION_FXT_POINT_DATABASE_MAX_CAPACITY_JSON> Database<N>::g_doc_;
+template <int N> uint8_t                                                         Database<N>::g_tempBuffer_[OPTION_FXT_POINT_DATABASE_TEMP_STORAGE_SIZE];
+
+
+template <int N>
+Database<N>::Database( void ) noexcept
+    :Cpl::Container::Dictionary<uint32_t>( m_buckets, N )
+{
+}
+
+template <int N>
+Fxt::Point::Api* Database<N>::lookupById( uint32_t pointIdToFind ) const noexcept
+{
+    
+    Cpl::Container::KeyUinteger32_T key( pointIdToFind );
+    return find( key );
+}
+
+template <int N>
+bool Database<N>::add( Api& pointToAdd ) noexcept
+{
+    // Prevent duplicate keys
+    if ( lookupById( pointToAdd.getId() )
+    {
+        return false;
+    }
+    insert( pointToAdd );
+    return true;
+}
+
+template <int N>
+void Database<N>::globalLock_() noexcept
+{
+    g_globalMutex.lock();
+}
+
+template <int N>
+void Database<N>::globalUnlock_() noexcept
+{
+    g_globalMutex.unlock();
+}
+
+template <int N>
+bool Database<N>::toJSON( Fxt::Point::Api& srcPoint,
+                          char*            dst,
+                          size_t           dstSize,
+                          bool&            truncated,
+                          bool             verbose ) noexcept
+{
+    // Get the metadata
+    bool isValid;
+    bool isLocked;
+    srcPoint.getMetadata( isValid, isLocked );
+
+    // Get access to the Global JSON document
+    Database<N>::globalLock_();
+    Database<N>::g_doc_.clear();  // Make sure the JSON document is starting "empty"
+
+    // Construct the JSON
+    Database<N>::g_doc_["id"]    = +srcPoint;
+    Database<N>::g_doc_["valid"] = isValid;
+    if ( verbose )
+    {
+        Database<N>::g_doc_["type"]   = srcPoint.getTypeAsText();
+        Database<N>::g_doc_["locked"] = isLocked;
+    }
+
+    // Have the Point instance fill in the 'val' details
+    bool result = true;
+    if ( isValid && !srcPoint.toJSON_( g_doc_, verbose ) )
+    {
+        result = false;
+    }
+
+    // Generate the actual output string 
+    if ( result )
+    {
+        size_t jsonLen   = measureJson( Database<N>g_doc_ );
+        size_t outputLen = serializeJson( Database<N>::g_doc_, dst, dstSize );
+        truncated = outputLen == jsonLen ? false : true;
+    }
+
+    // Release the Global JSON document
+    Database<N>::globalUnlock_();
+    return result;
+}
+
+template <int N>
+bool Database<N>::fromJSON( const char* src, Cpl::Text::String* errorMsg ) noexcept
+{
+    // Get access to the Global JSON document
+    Database<N>::globalLock_();
+
+    // Parse the JSON payload...
+    DeserializationError err = deserializeJson( Database<N>::g_doc_, src );
+    if ( err )
+    {
+        if ( errorMsg )
+        {
+            *errorMsg = err.c_str();
+        }
+        Database::globalUnlock_();
+        return false;
+    }
+
+    // Valid JSON... Parse the Point identifier
+    uint32_t numericId = Database<N>::g_doc_["id"] | ((uint32_t) (-1));
+    if ( numericId == ((uint32_t) (-1)) )
+    {
+        if ( errorMsg )
+        {
+            *errorMsg = "No valid 'id' key in the JSON input.";
+        }
+        Database<N>::globalUnlock_();
+        return false;
+    }
+
+    // Look-up the Point name
+    Api* pt = lookupById( numericId );
+    if ( pt == nullptr )
+    {
+        if ( errorMsg )
+        {
+            errorMsg->format( "Point ID (%u) NOT found.", numericId );
+        }
+        Database<N>::globalUnlock_();
+        return false;
+    }
+
+    // Attempt to parse the key/value pairs of interest
+    JsonVariant validKey = Database::g_doc_["valid"];
+    JsonVariant locked   = Database::g_doc_["locked"];
+    JsonVariant valElem  = Database::g_doc_["val"];
+    Api::LockRequest_T lockAction = Api::eNO_REQUEST;
+    if ( locked.isNull() == false )
+    {
+        lockAction = locked.as<bool>() ? Api::eLOCK : Api::eUNLOCK;
+    }
+
+    // Request to invalidate the MP
+    if ( validKey.isNull() == false && validKey.as<bool>() == false )
+    {
+        pt->setInvalid( lockAction );
+    }
+
+    // Write a valid value to the MP
+    else if ( valElem.isNull() == false )
+    {
+        if ( pt->fromJSON_( valElem, lockAction, errorMsg ) == false )
+        {
+            Database::globalUnlock_();
+            return false;
+        }
+    }
+
+    // Just lock/unlock the MP
+    else if ( locked.isNull() == false )
+    {
+        pt->setLockState( lockAction );
+    }
+
+    // Bad Syntax
+    else
+    {
+        if ( errorMsg )
+        {
+            *errorMsg = "JSON syntax is not valid or invalid payload semantics";
+        }
+        Database<N>::globalUnlock_();
+        return false;
+    }
+
+    // Release the Global JSON document
+    Database::globalUnlock_();
+    return true;
+}
 
 
 };      // end namespaces

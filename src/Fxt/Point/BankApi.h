@@ -13,7 +13,7 @@
 /** @file */
 
 #include "Fxt/Point/Descriptor.h"
-#include "Fxt/Point/Database.h"
+#include "Fxt/Point/DatabaseApi.h"
 #include "Cpl/Memory/ContiguousAllocator.h"
 #include <stdint.h>
 #include <stdlib.h>
@@ -46,7 +46,7 @@ public:
      */
     virtual bool populate( Descriptor*                       listOfDescriptorPointers[], 
                            Cpl::Memory::ContiguousAllocator& allocatorForPoints, 
-                           Fxt::Point::Database&             dbForPoints ) noexcept = 0;
+                           Fxt::Point::DatabaseApi&          dbForPoints ) noexcept = 0;
 
 
 public:

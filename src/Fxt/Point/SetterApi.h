@@ -12,7 +12,7 @@
 *----------------------------------------------------------------------------*/
 /** @file */
 
-#include "Cpl/Point/Api.h"
+#include "Fxt/Point/Api.h"
 
 ///
 namespace Fxt {
@@ -33,7 +33,7 @@ public:
     /** This method update the data/state of 'dstPoint'.  The value/state
         being written is dependent on the concrete instance.
      */
-    virtual void setValue( Cpl::Point::Api* dstPoint ) noexcept = 0;
+    virtual void setValue( Fxt::Point::Api* dstPoint ) noexcept = 0;
 
 public:
     /// Virtual destructor to make the compiler happy
