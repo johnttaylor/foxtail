@@ -102,9 +102,48 @@ public:
 
 public:
     /// ERROR Code: NO Error, i.e. the card is operating properly
-    static constexpr uint32_t ERR_NO_ERROR = 0;
+    static constexpr uint32_t ERR_NO_ERROR                  = 0;
 
+    /// ERROR Code: Unable to allocate memory for the card's Point Banks
+    static constexpr uint32_t ERR_MEMORY_POINT_BANKS        = 1;
 
+    /// ERROR Code: Unable to allocate memory for the card's Input Point Descriptors
+    static constexpr uint32_t ERR_MEMORY_INPUT_DESCRIPTORS  = 2;
+
+    /// ERROR Code: Unable to allocate memory for the card's Output Point Descriptors
+    static constexpr uint32_t ERR_MEMORY_OUTPUT_DESCRIPTORS = 3;
+
+    /// ERROR Code: Configuration contains the wrong GUID (i.e. the JSON object calls out a different card type)
+    static constexpr uint32_t ERR_GUID_WRONG_TYPE           = 4;
+
+    /// ERROR Code: Configuration does NOT contain a LocalId value
+    static constexpr uint32_t ERR_CARD_MISSING_LOCAL_ID     = 5;
+
+    /// ERROR Code: Unable to allocate memory for the card's name
+    static constexpr uint32_t ERR_MEMORY_CARD_NAME          = 6;
+
+    /// ERROR Code: Configuration does NOT contain a LocalId value for one of it Points
+    static constexpr uint32_t ERR_POINT_MISSING_LOCAL_ID    = 7;
+
+    /// ERROR Code: Configuration contains TOO many input Points (max is 32)
+    static constexpr uint32_t ERR_TOO_MANY_INPUT_POINTS     = 8;
+
+    /// ERROR Code: Configuration contains TOO many output Points (max is 32)
+    static constexpr uint32_t ERR_TOO_MANY_OUTPUT_POINTS    = 9;
+
+    /// ERROR Code: Configuration contains duplicate or our-of-range Channel IDs
+    static constexpr uint32_t ERR_BAD_CHANNEL_ASSIGNMENTS   = 10;
+
+    /// ERROR Code: Configuration does NOT contain a Slot ID
+    static constexpr uint32_t ERR_CARD_MISSING_SLOT_ID     =  11;
+
+    /// ERROR Code: Configuration does NOT contain a Card name
+    static constexpr uint32_t ERR_CARD_MISSING_NAME        =  12;
+
+    /// ERROR Code: Code to use for the start of card-specific Error codes
+    static constexpr uint32_t ERR_START_CARD_SPECIFIC      =  100;
+
+public:
     /** This method returns the current error state/number of the card.  A value
         of zero/ERR_NO_ERROR indicates the card is operating properly
      */
@@ -114,7 +153,7 @@ public:
         error code.  If the specified error code is not-valid/out-of-range for
         the card, a null pointer is returned.
      */
-    virtual const char* getErrorText( uint32_t errCode ) const noexcept = 0;
+    virtual const char* getErrorText( uint32_t errCode ) const noexcept;
 
 public:
     /// Virtual destructor to make the compiler happy

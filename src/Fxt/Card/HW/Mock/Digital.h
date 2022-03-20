@@ -83,33 +83,10 @@ public:
     /// Type ID for the card
     static constexpr const char* GUID_STRING = "59d33888-62c7-45b2-a4d4-9dbc55914ed3";
 
+    /// Type name for the card
+    static constexpr const char* TYPE_NAME   = "Fxt::Card::HW::Mock::Digital";
+
 public:
-    /// ERROR Code: Unable to allocate memory for the card's Input Point Descriptors
-    static constexpr uint32_t ERR_MEMORY_INPUT_DESCRIPTORS  = 2;
-
-    /// ERROR Code: Unable to allocate memory for the card's Output Point Descriptors
-    static constexpr uint32_t ERR_MEMORY_OUTPUT_DESCRIPTORS = 3;
-
-    /// ERROR Code: Configuration contains the wrong GUID (i.e. the JSON object calls out a different card type)
-    static constexpr uint32_t ERR_GUID_WRONG_TYPE           = 4;
-
-    /// ERROR Code: Configuration does NOT contain a LocalId value
-    static constexpr uint32_t ERR_CARD_MISSING_LOCAL_ID     = 5;
-
-    /// ERROR Code: Unable to allocate memory for the card's name
-    static constexpr uint32_t ERR_MEMORY_CARD_NAME          = 6;
-
-    /// ERROR Code: Configuration does NOT contain a LocalId value for one of it Points
-    static constexpr uint32_t ERR_POINT_MISSING_LOCAL_ID    = 7;
-
-    /// ERROR Code: Configuration contains TOO many input Points (max is 32)
-    static constexpr uint32_t ERR_TOO_MANY_INPUT_POINTS     = 8;
-
-    /// ERROR Code: Configuration contains TOO many output Points (max is 32)
-    static constexpr uint32_t ERR_TOO_MANY_OUTPUT_POINTS    = 9;
-
-    /// ERROR Code: Configuration contains duplicate or our-of-range Channel IDs
-    static constexpr uint32_t ERR_BAD_CHANNEL_ASSIGNMENTS   = 10;
 
 public:
     /// Maximum number of signals/channels/points per Input and Output
@@ -140,9 +117,6 @@ public:
     /// See Fxt::Card::Api
     const char* getTypeName() const noexcept;
 
-    /// See Fxt::Card::Api
-    const char* getErrorText( uint32_t errCode ) const noexcept;
-
 public:
     /// Provide the Application the ability to set the inputs. This method is thread safe
     void setInputs( uint32_t bitMaskToOR );
@@ -153,8 +127,8 @@ public:
     /// Provide the Application the ability to toggle the inputs. This method is thread safe
     void toggleInputs( uint32_t bitMaskToXOR );
 
-    /// Provide the Application the ability to read the inputs. 
-    uint32_t getOutputs();
+    /// Provide the Application the ability to read the inputs. Returns false if one or more of the outputs is INVALID; else true is returned
+    bool getOutputs( uint32_t& valueMask );
 
     /// Set input by bit position (zero based bit position)
     inline void setInputBit( uint8_t bitPosition ) { setInputs( ((uint32_t) 1) << bitPosition ); }
@@ -191,15 +165,9 @@ protected:
     void maskToPoints() noexcept;
 
     /// Helper method that updates the current output mask value from individual Bool Points
-    void pointsToMask() noexcept;
+    bool pointsToMask() noexcept;
 
 protected:
-    /// Mutex for protecting the data when transferring data to/from the card's internal points
-    Cpl::System::Mutex                  m_internalLock;
-
-    /// Allocator for all thing dynamic - except for Points
-    Cpl::Memory::ContiguousAllocator&   m_allocator;
-
     /// List of Input Descriptors (allocate space for max IO plus a list-terminator)
     Fxt::Point::Descriptor*             m_inDescriptors[MAX_CHANNELS + 1];
 

@@ -29,8 +29,6 @@ namespace Card {
 class Common_ : public Api
 {
 public:
-    /// ERROR Code: Unable to allocate memory for the card's Point Banks
-    static constexpr uint32_t ERR_MEMORY_POINT_BANKS  = 1;
 
 public:
     /// Constructor
@@ -74,27 +72,36 @@ protected:
     /// Updates the Internal Card Outputs from the IO Registers
     virtual bool readOutputRegisters() noexcept;
 
+    /// Parses/extracts the Card's slot number and name from the JSON config
+    virtual bool parseCommon( JsonVariant& jsonConfigObject, const char* expectedGuid ) noexcept;
+
 protected:
+    /// Allocator for all thing dynamic - except for Points
+    Cpl::Memory::ContiguousAllocator&   m_allocator;
+
+    /// Mutex for protecting the data when transferring data to/from the card's internal points
+    Cpl::System::Mutex                  m_internalLock;
+
     /// Mutex for protecting the data when transferring data to/from IO Registers
-    Cpl::System::Mutex          m_registerLock;
+    Cpl::System::Mutex                  m_registerLock;
 
     /// Point Banks
-    Banks_T                     m_banks;
+    Banks_T                             m_banks;
 
     /// Error state. A value of 0 indicates NO error
-    uint32_t                    m_error;
+    uint32_t                            m_error;
 
     /// The card's runtime name
-    char*                       m_cardName;
+    char*                               m_cardName;
 
     /// The card's 'User facing local ID'
-    uint32_t                    m_localId;
+    uint32_t                            m_localId;
 
     /// The card's slot number/identifier
-    uint16_t                    m_slotNumber;
+    uint16_t                            m_slotNumber;
 
     /// My started state
-    bool                        m_started;
+    bool                                m_started;
 };
 
 

@@ -22,13 +22,15 @@
 
 #define DESTROY_BANK(b)     if ( b != nullptr ) {b->~Bank();}
 
+static const char emptyString_[1] ={ '\0' };
 
 ///
 using namespace Fxt::Card;
 
 //////////////////////////////////////////////////
 Common_::Common_( Cpl::Memory::ContiguousAllocator& allocator )
-    : m_error( 0 )
+    : m_allocator( allocator )
+    , m_error( 0 )
     , m_cardName( nullptr )
     , m_localId( 0 )
     , m_slotNumber( 0 )
@@ -124,4 +126,49 @@ bool Common_::readOutputRegisters() noexcept
 {
     Cpl::System::Mutex::ScopeBlock criticalSection( m_registerLock );
     return m_banks.internalOutputs->copyFrom( *m_banks.registerOutputs );
+}
+
+
+bool Common_::parseCommon( JsonVariant& obj, const char* expectedGuid ) noexcept
+{
+    // Validate the card type
+    if ( obj["guid"].isNull() || strcmp( obj["guid"], expectedGuid ) != 0 )
+    {
+        m_error = ERR_GUID_WRONG_TYPE;
+        return false;
+    }
+
+    // Ensure that a LocalId has been assigned
+    if ( obj["localId"].isNull() )
+    {
+        m_error = ERR_CARD_MISSING_LOCAL_ID;
+        return false;
+    }
+    m_localId = obj["localId"];
+
+    // Ensure that a Slot ID has been assigned
+    if ( obj["slot"].isNull() )
+    {
+        m_error = ERR_CARD_MISSING_SLOT_ID;
+        return false;
+    }
+    m_slotNumber = obj["slot"];
+
+    // Get the Text label
+    const char* name = obj["name"];
+    if ( name == nullptr )
+    {
+        m_error = ERR_CARD_MISSING_NAME;
+        return false;
+    }
+    m_cardName = (char*) m_allocator.allocate( strlen( name ) + 1 );
+    if ( m_cardName == nullptr )
+    {
+        m_cardName = (char*) emptyString_;
+        m_error    = ERR_MEMORY_CARD_NAME;
+        return false;
+    }
+    strcpy( m_cardName, name );
+
+    return true;
 }

@@ -24,8 +24,8 @@ FactoryCommon_::FactoryCommon_( Fxt::Card::DatabaseApi&                         
                                 Cpl::Memory::ContiguousAllocator&                   allocatorForCard )
     : m_cardDb( cardDb )
     , m_descriptorDatabase( descriptorDatabase )
-    , m_pointAllocators( pointAllocators )
     , m_pointDatabase( pointDatabase )
+    , m_pointAllocators( pointAllocators )
     , m_allocatorForCard( allocatorForCard )
 {
 }
