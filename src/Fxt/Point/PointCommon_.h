@@ -18,7 +18,7 @@
 
 
 ///
-namespace Cpl {
+namespace Fxt {
 ///
 namespace Point {
 
@@ -29,36 +29,38 @@ namespace Point {
           allocator.  As such this memory is NOT freed in the destructor
           (due to the 'global free' nature of the Contiguous Allocator).
  */
-class PointCommon_ : public Fxt::Point::Api
+class PointCommon_ : public Fxt::Point::Api, public Cpl::Container::KeyUinteger32_T
 {
 protected:
     /// Constructor
-    PointCommon_( Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, bool isValid = false );
+    PointCommon_( uint32_t pointId  );
 
+    /// Helper method to 'completed' the initialization after the Stateful memory has been allocated
+    virtual void finishInit( bool isValid ) noexcept;
 
 public:
-    /// See Cpl::Point::Api
+    /// See Fxt::Point::Api
     void setInvalid( LockRequest_T lockRequest = eNO_REQUEST ) noexcept;
 
-    /// See Cpl::Point::Api
+    /// See Fxt::Point::Api
     bool isNotValid( void ) const noexcept;
 
-    /// See Cpl::Point::Api
+    /// See Fxt::Point::Api
     bool isLocked() const noexcept;
 
-    /// See Cpl::Point::Api
+    /// See Fxt::Point::Api
     void setLockState( LockRequest_T lockRequest ) noexcept;
 
-    /// See Cpl::Point::Api
-    void getMetadata( bool& isValid, bool& isLocked ) const noexcept;
-
 protected:
-    /// See Cpl::Point::Api
+    /// See Fxt::Point::Api
     bool read( void* dstData, size_t dstSize ) const noexcept;
 
-    /// See Cpl::Point::Api
+    /// See Fxt::Point::Api
     void write( const void* srcData, size_t srcSize, LockRequest_T lockRequest = eNO_REQUEST ) noexcept;
 
+protected:
+    /// See Cpl::Container::DictItem
+    const Cpl::Container::Key& getKey() const noexcept;
 
 protected:
     /** Internal helper method that manages testing and updating the locked
@@ -81,7 +83,9 @@ protected:
 protected:
     /// Creates a concrete instance in the invalid state
     template <class T>
-    static Api* create( Cpl::Memory::Allocator& allocatorForPoints, uint32_t pointId, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData )
+    static Api* create( Cpl::Memory::Allocator&             allocatorForPoints, 
+                        uint32_t                            pointId, 
+                        Cpl::Memory::ContiguousAllocator&   allocatorForPointStatefulData )
     {
         void* memPtr = allocatorForPoints.allocate( sizeof( T ) );
         if ( memPtr )
@@ -91,17 +95,16 @@ protected:
         return nullptr;
     }
 
-
 protected:
-    /// Meta-data that is part of a Point's stateful data
-    struct Metadat_T
+    /// Structure for meta-data
+    struct Metadata_T
     {
-        bool    locked;           //!< Locked state
-        bool    valid;            //!< Internal valid/invalid state
+        bool valid;     //!< The point's valid/not-valid state
+        bool locked;    //!< The point's locked state
     };
 
-    /// Meta-data (dynamically allocated)
-    Metadat_T*  m_meta;
+    /// The point's 'data' and meta-data that is dynamically allocated. The Meta-data is REQUIRED to be first elements in the allocate chunk of memory
+    void* m_state;
 };
 
 };      // end namespaces

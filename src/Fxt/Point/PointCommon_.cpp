@@ -10,53 +10,70 @@
 *----------------------------------------------------------------------------*/
 
 #include "PointCommon_.h"
-
+#include 
 ///
-using namespace Cpl::Point;
+using namespace Fxt::Point;
 
+#define METAPTR     ((PointCommon_::Metadata_T*)(m_state))
 
 ////////////////////////
-PointCommon_::PointCommon_( bool isValid )
-    : m_locked( false )
-    , m_valid( isValid )
+PointCommon_::PointCommon_( uint32_t pointId )
+    : Cpl::Container::KeyUinteger32_T( pointId )
+    , m_state( nullptr )
 {
 }
 
-/////////////////
-void PointCommon_::getMetadata( bool& isValid, bool& isLocked ) const noexcept
+void PointCommon_::finishInit( bool isValid ) noexcept
 {
-    isValid  = m_valid;
-    isLocked = m_locked;
+    if ( METAPTR )
+    {
+        METAPTR->valid  = isValid;
+        METAPTR->locked = false;
+    }
+}
+
+/////////////////
+const Cpl::Container::Key& PointCommon_::getKey() const noexcept
+{
+    return *this;
 }
 
 bool PointCommon_::isNotValid( void ) const noexcept
 {
-    return !m_valid;
+    return METAPTR == nullptr || METAPTR->valid;
 }
 
 void PointCommon_::setInvalid( LockRequest_T lockRequest ) noexcept
 {
-    if ( testAndUpdateLock( lockRequest ) )
+
+    if ( METAPTR && testAndUpdateLock( lockRequest ) )
     {
-        m_valid = false;
+        METAPTR->valid = false;
     }
 }
 
 bool PointCommon_::read( void* dstData, size_t dstSize ) const noexcept
 {
-    if ( dstData && m_valid )
+    // Return invalid if memory allocation failed
+    if ( !METAPTR )
+    {
+        return false;
+    }
+
+    if ( dstData && METAPTR->valid )
     {
         copyDataTo_( dstData, dstSize );
     }
-    return m_valid;
+    return METAPTR->valid;
 }
 
 void PointCommon_::write( const void* srcData, size_t srcSize, LockRequest_T lockRequest ) noexcept
 {
+    // Note: testAndUpdateLock() always returns false if METAPTR is NULL
     if ( srcData && testAndUpdateLock( lockRequest ) )
     {
         copyDataFrom_( srcData, srcSize );
-        m_valid = true;
+        METAPTR->valid = true;
     }
 }
 
@@ -64,37 +81,49 @@ void PointCommon_::write( const void* srcData, size_t srcSize, LockRequest_T loc
 /////////////////
 void PointCommon_::setLockState( LockRequest_T lockRequest ) noexcept
 {
+    // Do nothing if memory allocation failed
+    if ( !METAPTR )
+    {
+        return;
+    }
+
     if ( lockRequest == eLOCK )
     {
-        m_locked = true;
+        METAPTR->locked = true;
     }
     else if ( lockRequest == eUNLOCK )
     {
-        m_locked = false;
+        METAPTR->locked = false;
     }
 }
 
 bool PointCommon_::isLocked() const noexcept
 {
-    return m_locked;
+    return METAPTR && METAPTR->locked;
 }
 
 bool PointCommon_::testAndUpdateLock( LockRequest_T lockRequest ) noexcept
 {
+    // Fail if memory allocation failed
+    if ( !METAPTR )
+    {
+        return false;
+    }
+
     bool result = false;
     if ( lockRequest == eUNLOCK )
     {
-        m_locked = false;
+        METAPTR->locked = false;
         result = true;
     }
     else if ( lockRequest == eLOCK )
     {
-        m_locked = true;
+        METAPTR->locked = true;
         result = true;
     }
     else
     {
-        if ( m_locked == false )
+        if ( METAPTR->locked == false )
         {
             result = true;
         }

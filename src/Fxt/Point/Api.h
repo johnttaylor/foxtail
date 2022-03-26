@@ -32,7 +32,7 @@ namespace Point {
     data.  In addition to the data - a point has meta data and state. A Point
     has the following features:
 
-        o Points have a unique numeric identifier
+        o Points have a unique numeric identifier (to the Application)
         o Points have a text label/name that is NOT guaranteed to be unique
         o Read/write operations from/to a Point's data are atomic operations
         o A Point has inherit valid/invalid state respect to its data.  The
@@ -59,7 +59,7 @@ public:
     };
 
 public:
-    /** This method returns the Point numeric id
+    /** This method returns the Point unique numeric id
      */
     virtual uint32_t getId() const noexcept = 0;
 
@@ -75,9 +75,6 @@ public:
         the function would return "Fxt::Point::Uint32"
      */
     virtual const char* getType() const noexcept = 0;
-
-    /// This method returns the Point's meta-data
-    virtual void getMetadata( bool& isValid, bool& isLocked ) const noexcept = 0;
 
 public:
     /** This method sets the Point to the invalid state.

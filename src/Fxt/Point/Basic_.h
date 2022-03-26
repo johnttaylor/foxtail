@@ -1,5 +1,5 @@
-#ifndef Cpl_Point_Basic_h_
-#define Cpl_Point_Basic_h_
+#ifndef Fxt_Point_Basic_h_
+#define Fxt_Point_Basic_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -13,89 +13,123 @@
 /** @file */
 
 
-#include "Cpl/Point/PointCommon_.h"
+#include "Fxt/Point/PointCommon_.h"
 #include "Cpl/System/Assert.h"
+#include "Cpl/System/Trace.h"
 #include "Cpl/System/FatalError.h"
 #include "Cpl/Text/atob.h"
 #include "Cpl/Text/FString.h"
 #include <string.h>
 
+/// Trace Section label for Point infrastructure
+#define FXT_POINT_TRACE_SECT_     "Fxt::Point"
 
 ///
-namespace Cpl {
+namespace Fxt {
 ///
 namespace Point {
 
 
 /** This template class provides a mostly concrete implementation for a Model
-    Point who's data is a C primitive type of type: 'ELEMTYPE'.
+    Point who's data is a C primitive type (or struct that has '==' operator)
+    of type: 'ELEMTYPE'.
  */
 template<class ELEMTYPE>
 class Basic_ : public PointCommon_
 {
 protected:
-    /// The element's value
-    ELEMTYPE    m_data;
+    /// The Point's Stateful data
+    struct Stateful_T
+    {
+        Metadata_T  meta;           //!< The Point's meta-data. THIS MUST BE THE FIRST ELEMENT in the structure
+        ELEMTYPE    data;           //!< The Point's 'data'
+    };
+
+    /// The element's value (dynamically allocated)
+    Stateful_T m_state;
+
+    /// Helper function to 'safely' access my state point
+    Basic_<ELEMTYPE>::Stateful_T* statePtr() { return (Basic_<ELEMTYPE>::Stateful_T*) m_state; }
 
 public:
     /// Constructor: Invalid MP
-    Basic_()
-        :Cpl::Point::PointCommon_( false )
+    Basic_( uint32_t pointId, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData )
+        :Fxt::Point::PointCommon_( pointId )
     {
-        m_data = 0;
+        m_state = allocatorForPointStatefulData.allocate( sizeof( Stateful_T ) );
+        if ( m_state )
+        {
+            statePtr()->data = 0;
+            finishInit( false );
+        }
+        {
+            CPL_SYSTEM_TRACE_MSG( FXT_POINT_TRACE_SECT_, ("Memory allocation failed for pointID: %lu", pointId) );
+        }
     }
 
     /// Constructor: Valid MP (requires initial value)
-    Basic_( ELEMTYPE initialValue )
-        :Cpl::Point::PointCommon_( true )
+    Basic_( uint32_t pointId, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, ELEMTYPE initialValue )
+        :Fxt::Point::PointCommon_( pointId, allocatorForPointStatefulData )
     {
-        m_data = initialValue;
+        m_state = allocatorForPointStatefulData.allocate( sizeof( Stateful_T ) );
+        if ( m_state )
+        {
+            statePtr()->data = 0;
+            finishInit( true );
+        }
+        {
+            CPL_SYSTEM_TRACE_MSG( FXT_POINT_TRACE_SECT_, ("Memory allocation failed for pointID: %lu", pointId) );
+        }
     }
 
 public:
-    /// Type safe read. See Cpl::Point::Api
+    /// Type safe read. See Fxt::Point::Api
     virtual bool read( ELEMTYPE& dstData ) const noexcept
     {
-        return Cpl::Point::PointCommon_::read( &dstData, sizeof( ELEMTYPE ) );
-    }
-
-    /// Returns the Point's value and its meta-data.  'dstData' has no meaning when the method returns false.
-    virtual bool get( ELEMTYPE& dstData, bool& isValid, bool& isLocked ) const noexcept
-    {
-        isValid  = m_valid;
-        isLocked = m_locked;
-        return read( dstData );
+        return Fxt::Point::PointCommon_::read( &dstData, sizeof( ELEMTYPE ) );
     }
 
 public:
-    /// See Cpl::Point::Api.  
+    /// See Fxt::Point::Api.  
     size_t getSize() const noexcept
     {
         return sizeof( ELEMTYPE );
     }
 
 public:
-    /// See Cpl::Point::Api. Sets the value to zero - for deterministic behavior of the increment/decrement methods
+    /// See Fxt::Point::Api. Sets the value to zero - for deterministic behavior of the increment/decrement methods
     void setInvalid( LockRequest_T lockRequest = eNO_REQUEST ) noexcept
     {
         PointCommon_::setInvalid( lockRequest );
-        m_data = 0;
+        if ( m_state )
+        {
+            statePtr()->data = 0;
+        }
     }
 
-
 protected:
-    /// See Cpl::Point::Api
+    /** See Fxt::Point::Api.  It is the caller's responsibility to
+        NOT call this method if m_data is null.
+
+        Note: The PointCommon_.read() will not call this method if the m_data
+              is null.
+     */
     void copyDataTo_( void* dstData, size_t dstSize ) const noexcept
     {
         CPL_SYSTEM_ASSERT( dstSize == sizeof( ELEMTYPE ) );
-        *((ELEMTYPE*)dstData) = m_data;
+        *((ELEMTYPE*) dstData) = *(statePtr()->data);
     }
 
-    /// See Cpl::Point::Api
+    /** See Fxt::Point::Api.  It is the caller's responsibility to
+        NOT call this method if m_data is null.
+
+        Note: The PointCommon_.write() will not call this method if the m_data
+              is null.
+     */
     void copyDataFrom_( const void* srcData, size_t srcSize ) noexcept
     {
         CPL_SYSTEM_ASSERT( srcSize == sizeof( ELEMTYPE ) );
-        m_data = *((ELEMTYPE*)srcData);
+        *(statePtr()->data) = *((ELEMTYPE*) srcData);
     }
 };
 
@@ -110,92 +144,89 @@ class BasicInteger_ : public Basic_<ELEMTYPE>
 {
 public:
     /// Constructor: Invalid MP
-    BasicInteger_()
-        :Basic_<ELEMTYPE>()
+    BasicInteger_( uint32_t pointId, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData )
+        :Basic_<ELEMTYPE>( pointId, allocatorForPointStatefulData )
     {
     }
 
     /// Constructor: Valid MP (requires initial value)
-    BasicInteger_( ELEMTYPE initialValue )
-        :Basic_<ELEMTYPE>( initialValue )
+    BasicInteger_( uint32_t pointId, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, ELEMTYPE initialValue )
+        :Basic_<ELEMTYPE>( pointId, allocatorForPointStatefulData, initialValue )
     {
     }
 
-    /// Type safe write. See Cpl::Point::Api
-    virtual ELEMTYPE write( ELEMTYPE newValue, Cpl::Point::Api::LockRequest_T lockRequest = Cpl::Point::Api::eNO_REQUEST ) noexcept
+    /// Type safe write. See Fxt::Point::Api
+    virtual void write( ELEMTYPE newValue, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
-        Cpl::Point::PointCommon_::write( &newValue, sizeof( ELEMTYPE ), lockRequest );
-        return Basic_<ELEMTYPE>::m_data;
+        Fxt::Point::PointCommon_::write( &newValue, sizeof( ELEMTYPE ), lockRequest );
     }
 
     /// Atomic increment
-    virtual ELEMTYPE increment( ELEMTYPE incSize = 1, Cpl::Point::Api::LockRequest_T lockRequest = Cpl::Point::Api::eNO_REQUEST ) noexcept
+    virtual void increment( ELEMTYPE incSize = 1, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
-        write( Basic_<ELEMTYPE>::m_data + incSize, lockRequest );
-        return Basic_<ELEMTYPE>::m_data;
+        write( *(statePtr()->data) + incSize, lockRequest );
     }
 
     /// Atomic decrement
-    virtual ELEMTYPE decrement( ELEMTYPE decSize = 1, Cpl::Point::Api::LockRequest_T lockRequest = Cpl::Point::Api::eNO_REQUEST ) noexcept
+    virtual void decrement( ELEMTYPE decSize = 1, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
-        write( Basic_<ELEMTYPE>::m_data - decSize, lockRequest );
-        return Basic_<ELEMTYPE>::m_data;
+        write( *(statePtr()->data) - decSize, lockRequest );
     }
 
     /// Atomic 'word' AND
-    virtual ELEMTYPE maskAnd(ELEMTYPE mask, Cpl::Point::Api::LockRequest_T lockRequest = Cpl::Point::Api::eNO_REQUEST) noexcept
+    virtual void maskAnd( ELEMTYPE mask, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
-        write( Basic_<ELEMTYPE>::m_data & mask, lockRequest );
-        return Basic_<ELEMTYPE>::m_data;
+        write( *(statePtr()->data) & mask, lockRequest );
     }
 
     /// Atomic 'word' OR
-    virtual ELEMTYPE maskOr(ELEMTYPE mask, Cpl::Point::Api::LockRequest_T lockRequest = Cpl::Point::Api::eNO_REQUEST) noexcept
+    virtual void maskOr( ELEMTYPE mask, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
-        write( Basic_<ELEMTYPE>::m_data | mask, lockRequest );
-        return Basic_<ELEMTYPE>::m_data;
+        write( *(statePtr()->data) | mask, lockRequest );
     }
 
     /// Atomic 'word' XOR
-    virtual ELEMTYPE maskXor(ELEMTYPE mask, Cpl::Point::Api::LockRequest_T lockRequest = Cpl::Point::Api::eNO_REQUEST) noexcept
+    virtual void maskXor( ELEMTYPE mask, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
-        write( Basic_<ELEMTYPE>::m_data ^ mask, lockRequest );
-        return Basic_<ELEMTYPE>::m_data;
+        write( *(statePtr()->data) ^ mask, lockRequest );
     }
 
     /// Atomic bit toggle.  'bitNum==0' is the Least significant bit
-    virtual ELEMTYPE bitToggle( unsigned bitNum, Cpl::Point::Api::LockRequest_T lockRequest = Cpl::Point::Api::eNO_REQUEST ) noexcept
+    virtual void bitToggle( unsigned bitNum, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
-        write( Basic_<ELEMTYPE>::m_data ^ (((ELEMTYPE)1) << bitNum), lockRequest );
-        return Basic_<ELEMTYPE>::m_data;
+        write( *(statePtr()->data) ^ (((ELEMTYPE) 1) << bitNum), lockRequest );
     }
     /// Atomic bit clear.  'bitNum==0' is the Least significant bit
-    virtual ELEMTYPE bitClear( unsigned bitNum, Cpl::Point::Api::LockRequest_T lockRequest = Cpl::Point::Api::eNO_REQUEST ) noexcept
+    virtual void bitClear( unsigned bitNum, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
-        write( Basic_<ELEMTYPE>::m_data & (~(((ELEMTYPE)1) << bitNum)), lockRequest );
-        return Basic_<ELEMTYPE>::m_data;
+        write( *(statePtr()->data) & (~(((ELEMTYPE) 1) << bitNum)), lockRequest );
     }
 
     /// Atomic bit set.  'bitNum==0' is the Least significant bit
-    virtual ELEMTYPE bitSet( unsigned bitNum, Cpl::Point::Api::LockRequest_T lockRequest = Cpl::Point::Api::eNO_REQUEST ) noexcept
+    virtual void bitSet( unsigned bitNum, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
-        write( Basic_<ELEMTYPE>::m_data | (((ELEMTYPE)1) << bitNum), lockRequest );
-        return Basic_<ELEMTYPE>::m_data;
+        write( *(statePtr()->data) | (((ELEMTYPE) 1) << bitNum), lockRequest );
     }
 
 public:
-    /// See Cpl::Point::Api.  
+    /** See Fxt::Point::Api.  Note: This method is NOT called when the MP is 
+        invalid (see comments above the MP always being invalid if m_data 
+        allocation failed)
+     */
     bool toJSON_( JsonDocument& doc, bool verbose = true ) noexcept
     {
         // Construct the 'val' key/value pair (as a HEX string)
         Cpl::Text::FString<20> tmp;
-        tmp.format( "0x%llX", (unsigned long long) Basic_<ELEMTYPE>::m_data );
-        doc["val"] = (char*)tmp.getString();
+        tmp.format( "0x%llX", (unsigned long long) * (statePtr()->data) );
+        doc["val"] = (char*) tmp.getString();
         return true;
     }
 
-    /// See Cpl::Point::Api.  
-    bool fromJSON_( JsonVariant& src, Cpl::Point::Api::LockRequest_T lockRequest, Cpl::Text::String* errorMsg=0 ) noexcept
+    /** See Fxt::Point::Api.  Note: This method is NOT called when the MP is
+        invalid (see comments above the MP always being invalid if m_data
+        allocation failed)
+     */
+    bool fromJSON_( JsonVariant& src, Fxt::Point::Api::LockRequest_T lockRequest, Cpl::Text::String* errorMsg=0 ) noexcept
     {
         ELEMTYPE newValue = 0;
 
@@ -211,7 +242,7 @@ public:
             return false;
         }
 
-        newValue = (ELEMTYPE)value;
+        newValue = (ELEMTYPE) value;
 
         write( newValue, lockRequest );
         return true;
@@ -230,56 +261,59 @@ class BasicReal_ : public Basic_<ELEMTYPE>
 {
 public:
     /// Constructor: Invalid MP
-    BasicReal_()
-        :Basic_<ELEMTYPE>()
+    BasicReal_( uint32_t pointId, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData )
+        :Basic_<ELEMTYPE>(pointId, allocatorForPointStatefulData )
     {
     }
 
     /// Constructor: Valid MP (requires initial value)
-    BasicReal_(ELEMTYPE initialValue)
-        :Basic_<ELEMTYPE>( initialValue )
+    BasicReal_( uint32_t pointId, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, ELEMTYPE initialValue )
+        :Basic_<ELEMTYPE>( pointId, allocatorForPointStatefulData )
     {
     }
 
 
 public:
-    /// Type safe write. See Cpl::Point::Api
-    virtual ELEMTYPE write( ELEMTYPE newValue, Cpl::Point::Api::LockRequest_T lockRequest = Cpl::Point::Api::eNO_REQUEST ) noexcept
+    /// Type safe write. See Fxt::Point::Api
+    virtual void write( ELEMTYPE newValue, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
-        Cpl::Point::PointCommon_::write( &newValue, sizeof( ELEMTYPE ), lockRequest );
-        return Basic_<ELEMTYPE>::m_data;
+        Fxt::Point::PointCommon_::write( &newValue, sizeof( ELEMTYPE ), lockRequest );
     }
 
     /// Atomic increment
-    virtual ELEMTYPE increment( ELEMTYPE incSize = 1.0, Cpl::Point::Api::LockRequest_T lockRequest = Cpl::Point::Api::eNO_REQUEST ) noexcept
+    virtual void increment( ELEMTYPE incSize = 1.0, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
-        write( Basic_<ELEMTYPE>::m_data + incSize, lockRequest );
-        return Basic_<ELEMTYPE>::m_data;
+        write( *(statePtr()->data) + incSize, lockRequest );
     }
 
     /// Atomic decrement
-    virtual ELEMTYPE decrement( ELEMTYPE decSize = 1.0, Cpl::Point::Api::LockRequest_T lockRequest = Cpl::Point::Api::eNO_REQUEST ) noexcept
+    virtual void decrement( ELEMTYPE decSize = 1.0, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
-        write( Basic_<ELEMTYPE>::m_data - decSize, lockRequest );
-        return Basic_<ELEMTYPE>::m_data;
+        write( *(statePtr()->data) - decSize, lockRequest );
     }
 
 
 public:
-    /// See Cpl::Point::Api.  
+    /** See Fxt::Point::Api.  Note: This method is NOT called when the MP is
+        invalid (see comments above the MP always being invalid if m_data
+        allocation failed)
+     */
     bool toJSON_( JsonDocument& doc, bool verbose = true ) noexcept
     {
         // Construct the 'val' key/value pair 
-        doc["val"] = Basic_<ELEMTYPE>::m_data;
+        doc["val"] = *(statePtr()->data);
         return true;
     }
 
-    /// See Cpl::Point.  
-    bool fromJSON_( JsonVariant& src, Cpl::Point::Api::LockRequest_T lockRequest, Cpl::Text::String* errorMsg=0 ) noexcept
+    /** See Fxt::Point::Api.  Note: This method is NOT called when the MP is
+        invalid (see comments above the MP always being invalid if m_data
+        allocation failed)
+     */
+    bool fromJSON_( JsonVariant& src, Fxt::Point::Api::LockRequest_T lockRequest, Cpl::Text::String* errorMsg=0 ) noexcept
     {
-        ELEMTYPE checkForError = src | (ELEMTYPE)2;
-        ELEMTYPE newValue      = src | (ELEMTYPE)1;
-        if ( newValue <= (ELEMTYPE)1 && checkForError >= (ELEMTYPE)2 )
+        ELEMTYPE checkForError = src | (ELEMTYPE) 2;
+        ELEMTYPE newValue      = src | (ELEMTYPE) 1;
+        if ( newValue <= (ELEMTYPE) 1 && checkForError >= (ELEMTYPE) 2 )
         {
             if ( errorMsg )
             {

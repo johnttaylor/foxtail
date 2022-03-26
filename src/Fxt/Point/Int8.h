@@ -1,5 +1,5 @@
-#ifndef Cpl_Point_Int8_h_
-#define Cpl_Point_Int8_h_
+#ifndef Fxt_Point_Int8_h_
+#define Fxt_Point_Int8_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -13,12 +13,11 @@
 /** @file */
 
 
-#include "Cpl/Point/Basic_.h"
-#include "Cpl/Point/Identifier.h"
+#include "Fxt/Point/Basic_.h"
 #include "Cpl/Memory/Allocator.h"
 
 ///
-namespace Cpl {
+namespace Fxt {
 ///
 namespace Point {
 
@@ -37,59 +36,43 @@ namespace Point {
 class Int8 : public BasicInteger_<int8_t>
 {
 public:
-    /// Type safe Point Identifier
-    class Id_T : public Identifier_T
-    {
-    public:
-        constexpr Id_T() : Identifier_T() {}
-        constexpr Id_T( uint32_t x ) : Identifier_T( x ) {}
-    };
-
-
-public:
-    /// Returns the Point's Identifier
-    inline Int8::Id_T getId() const noexcept { return m_id; }
-
-public:
     /** Constructor. Invalid Point.
      */
-    Int8( const Id_T myIdentifier ) : BasicInteger_<int8_t>(), m_id( myIdentifier ) {}
+    Int8( uint32_t pointId, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData ) : BasicInteger_<int8_t>(pointId, allocatorForPointStatefulData ) {}
 
     /// Constructor. Valid Point.  Requires an initial value
-    Int8( const Id_T myIdentifier, int8_t initialValue ) : BasicInteger_<int8_t>( initialValue ), m_id( myIdentifier ) {}
+    Int8( uint32_t pointId, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, int8_t initialValue ) : BasicInteger_<int8_t>( pointId, allocatorForPointStatefulData, initialValue ) {}
 
 public:
     /// Pull in overloaded methods from base class
     using BasicInteger_<int8_t>::write;
 
-
-    /// Updates the MP's data from 'src'
-    virtual void write( Int8& src, Cpl::Point::Api::LockRequest_T lockRequest = Cpl::Point::Api::eNO_REQUEST ) noexcept 
+    /// Updates the MP's data from 'src'. Note: The lock state of 'src' is NOT-USED/IGNORED
+    virtual void write( Int8& src, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept 
     {
         if ( src.isNotValid() )
         {
-            setInvalid();
+            setInvalid( lockRequest );
         }
         else
         {
-            BasicInteger_<int8_t>::write( src.m_data, lockRequest );
+            // Note: src.m_data is NOT null because the MP is valid
+            BasicInteger_<int8_t>::write( *(src.m_data), lockRequest );
         }
     }
 
 public:
-    ///  See Cpl::Dm::ModelPoint.
-    const char* getTypeAsText() const noexcept { return "Cpl::Point::Int8"; }
-
-    ///  See Cpl::Point::Api
-    size_t getTotalSize() const noexcept { return sizeof( Int8 ); }
+    ///  See Fxt::Point::Api
+    const char* getTypeAsText() const noexcept { return "Fxt::Point::Int8"; }
 
 public:
     /// Creates a concrete instance in the invalid state
-    static Api* create( Cpl::Memory::Allocator& allocatorForPoints, uint32_t pointId ) { return PointCommon_::create<Int8>( allocatorForPoints, pointId ); }
-
-protected:
-    /// The points numeric identifier
-    Id_T m_id;
+    static Api* create( Cpl::Memory::Allocator&             allocatorForPoints,
+                        uint32_t                            pointId,
+                        Cpl::Memory::ContiguousAllocator&   allocatorForPointStatefulData ) 
+    { 
+        return PointCommon_::create<Int8>( allocatorForPoints, pointId, allocatorForPointStatefulData );
+    }
 };
 
 
