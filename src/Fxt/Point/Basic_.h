@@ -44,9 +44,6 @@ protected:
         ELEMTYPE    data;           //!< The Point's 'data'
     };
 
-    /// Helper function to 'safely' access my state point (because m_state is void* in the parent class)
-    Basic_<ELEMTYPE>::Stateful_T* statePtr() { return (Basic_<ELEMTYPE>::Stateful_T*) m_state; }
-
 public:
     /// Constructor: Invalid MP
     Basic_( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData )
@@ -71,7 +68,7 @@ public:
         m_state = allocatorForPointStatefulData.allocate( sizeof( Basic_<ELEMTYPE>::Stateful_T ) );
         if ( m_state )
         {
-            statePtr()->data = initialValue;
+            ((Basic_<ELEMTYPE>::Stateful_T*) m_state)->data = initialValue;
             finishInit( true );
         }
         else
@@ -141,6 +138,9 @@ template<class ELEMTYPE>
 class BasicInteger_ : public Basic_<ELEMTYPE>
 {
 public:
+    /// Simplify access the stateful data
+    typedef typename Basic_<ELEMTYPE>::Stateful_T StateBlock_T;
+
     /// Constructor: Invalid MP
     BasicInteger_( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData )
         :Basic_<ELEMTYPE>( pointId, pointName, allocatorForPointStatefulData )
@@ -162,48 +162,48 @@ public:
     /// Atomic increment
     virtual void increment( ELEMTYPE incSize = 1, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
-        write( statePtr()->data + incSize, lockRequest );
+        write( ((StateBlock_T*) PointCommon_::m_state)->data + incSize, lockRequest );
     }
 
     /// Atomic decrement
     virtual void decrement( ELEMTYPE decSize = 1, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
-        write( statePtr()->data - decSize, lockRequest );
+        write( ((StateBlock_T*) PointCommon_::m_state)->data - decSize, lockRequest );
     }
 
     /// Atomic 'word' AND
     virtual void maskAnd( ELEMTYPE mask, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
-        write( statePtr()->data & mask, lockRequest );
+        write( ((StateBlock_T*) PointCommon_::m_state)->data & mask, lockRequest );
     }
 
     /// Atomic 'word' OR
     virtual void maskOr( ELEMTYPE mask, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
-        write( statePtr()->data | mask, lockRequest );
+        write( ((StateBlock_T*) PointCommon_::m_state)->data | mask, lockRequest );
     }
 
     /// Atomic 'word' XOR
     virtual void maskXor( ELEMTYPE mask, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
-        write( statePtr()->data ^ mask, lockRequest );
+        write( ((StateBlock_T*) PointCommon_::m_state)->data ^ mask, lockRequest );
     }
 
     /// Atomic bit toggle.  'bitNum==0' is the Least significant bit
     virtual void bitToggle( unsigned bitNum, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
-        write( statePtr()->data ^ (((ELEMTYPE) 1) << bitNum), lockRequest );
+        write( ((StateBlock_T*) PointCommon_::m_state)->data ^ (((ELEMTYPE) 1) << bitNum), lockRequest );
     }
     /// Atomic bit clear.  'bitNum==0' is the Least significant bit
     virtual void bitClear( unsigned bitNum, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
-        write( statePtr()->data & (~(((ELEMTYPE) 1) << bitNum)), lockRequest );
+        write( ((StateBlock_T*) PointCommon_::m_state)->data & (~(((ELEMTYPE) 1) << bitNum)), lockRequest );
     }
 
     /// Atomic bit set.  'bitNum==0' is the Least significant bit
     virtual void bitSet( unsigned bitNum, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
-        write( statePtr()->data | (((ELEMTYPE) 1) << bitNum), lockRequest );
+        write( ((StateBlock_T*) PointCommon_::m_state)->data | (((ELEMTYPE) 1) << bitNum), lockRequest );
     }
 
 public:
@@ -215,7 +215,7 @@ public:
     {
         // Construct the 'val' key/value pair (as a HEX string)
         Cpl::Text::FString<20> tmp;
-        tmp.format( "0x%llX", (unsigned long long) (statePtr()->data) );
+        tmp.format( "0x%llX", (unsigned long long) (((StateBlock_T*) PointCommon_::m_state)->data) );
         doc["val"] = (char*) tmp.getString();
         return true;
     }
@@ -257,6 +257,10 @@ public:
 template<class ELEMTYPE>
 class BasicReal_ : public Basic_<ELEMTYPE>
 {
+protected:
+    /// Simplify access the stateful data
+    typedef typename Basic_<ELEMTYPE>::Stateful_T StateBlock_T;
+
 public:
     /// Constructor: Invalid MP
     BasicReal_( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData )
@@ -281,13 +285,13 @@ public:
     /// Atomic increment
     virtual void increment( ELEMTYPE incSize = 1.0, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
-        write( statePtr()->data + incSize, lockRequest );
+        write( ((StateBlock_T*) PointCommon_::m_state)->data + incSize, lockRequest );
     }
 
     /// Atomic decrement
     virtual void decrement( ELEMTYPE decSize = 1.0, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
-        write( statePtr()->data - decSize, lockRequest );
+        write( ((StateBlock_T*) PointCommon_::m_state)->data - decSize, lockRequest );
     }
 
 
@@ -299,7 +303,7 @@ public:
     bool toJSON_( JsonDocument& doc, bool verbose = true ) noexcept
     {
         // Construct the 'val' key/value pair 
-        doc["val"] = statePtr()->data;
+        doc["val"] = ((StateBlock_T*) PointCommon_::m_state)->data;
         return true;
     }
 
