@@ -44,6 +44,30 @@ public:
     */
     virtual Fxt::Point::Api* lookupById( uint32_t pointIdToFind ) const noexcept = 0;
 
+    /** This method returns the 'first' Point instance in the data base.  If
+        the database is empty, a nullptr is returned.
+
+        Note: There is NO guarantees with respect to the order of the Points
+              in the database
+
+        This method is not type-safe because it returns point to the Point base
+        class (which does not have the read/write operations).  The application
+        is required to properly down case the pointer to appropriate child class.
+    */
+    virtual Fxt::Point::Api* first() const noexcept = 0;
+
+    /** This method returns the 'next' Point instance in the data base.  If
+        there are no more instances in the database, a nullptr is returned.
+
+        Note: There is NO guarantees with respect to the order of the Points
+              in the database
+
+        This method is not type-safe because it returns point to the Point base
+        class (which does not have the read/write operations).  The application
+        is required to properly down case the pointer to appropriate child class.
+    */
+    virtual Fxt::Point::Api* next( Fxt::Point::Api& currentPoint ) const noexcept = 0;
+
 
 public:
     /** This method converts the Point's data to JSON string and
@@ -78,7 +102,7 @@ public:
 
         \endcode
      */
-    virtual bool toJSON( Fxt::Point::Api& srcPoint,
+    virtual bool toJSON( uint32_t         pointId,
                          char*            dst,
                          size_t           dstSize,
                          bool&            truncated,

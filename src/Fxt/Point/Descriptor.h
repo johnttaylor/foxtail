@@ -34,14 +34,15 @@ class Descriptor
 {
 public:
     /// Define the function signature for creating a concrete point
-    typedef Fxt::Point::Api* (*CreateFunc_T)( Cpl::Memory::Allocator& allocatorForPoints, uint32_t pointId, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData );
+    typedef Fxt::Point::Api* (*CreateFunc_T)( Cpl::Memory::Allocator& allocatorForPoints, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData );
 
 public:
     /// Constructor
-    Descriptor( const char* symbolicName, uint32_t pointId, CreateFunc_T createFunction, SetterApi* setter=nullptr )
+    Descriptor( uint32_t pointId, const char* symbolicName, CreateFunc_T createFunction, SetterApi* setter=nullptr )
         : m_createMethod( createFunction )
         , m_initialValue( setter )
-        , m_pointId( 0 )
+        , m_pointName( symbolicName )
+        , m_pointId( pointId )
         , m_pointInstance( nullptr )
     {
     }
@@ -50,14 +51,17 @@ public:
     Descriptor()
         : m_createMethod( nullptr )
         , m_initialValue( nullptr )
+        , m_pointName( nullptr )
         , m_pointId( 0 )
         , m_pointInstance( nullptr )
     {
     }
 
     /// Configure the Descriptor after it has been constructed using the default constructor
-    void configure( CreateFunc_T createFunction, SetterApi* setter=nullptr ) noexcept
+    void configure( uint32_t pointId, const char* symbolicName, CreateFunc_T createFunction, SetterApi* setter=nullptr ) noexcept
     {
+        m_pointId      = pointId;
+        m_pointName    = symbolicName;
         m_createMethod = createFunction;
         m_initialValue = setter;
     }
@@ -67,9 +71,9 @@ public:
         method returns the point instance when successful; else nullptr (e.g. 
         insufficient memory) is returned.
      */
-    Fxt::Point::Api* createPoint( Cpl::Memory::Allocator& allocatorForPoints, uint32_t pointId, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData )
+    Fxt::Point::Api* createPoint( Cpl::Memory::Allocator& allocatorForPoints, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData )
     {
-        m_pointInstance = (m_createMethod) (allocatorForPoints, pointId, allocatorForPointStatefulData );
+        m_pointInstance = (m_createMethod) (allocatorForPoints, m_pointId, m_pointName, allocatorForPointStatefulData );
         return m_pointInstance;
     }
 
@@ -81,7 +85,7 @@ public:
     inline uint32_t         getPointId() { return m_pointId; }
 
     /// Data accessor.  
-    inline const char*      getSymbolicName() { return m_pointInstance? m_pointInstance->getName(): ""; }
+    inline const char*      getSymbolicName() { return m_pointName; }
 
     /// Data accessor.  If null, then the Point has no associated Setter
     inline SetterApi*       getSetter() { return m_initialValue; }
@@ -95,7 +99,10 @@ protected:
     /// Setter associated with the Point.  If no setter is needed for the point the value will be zero/nullptr
     SetterApi*                  m_initialValue;  
 
-    /// The runtime Point identifier.  If m_pointInstance is zero/nullptr - then this field has no meaning
+    /// The Point name/label
+    const char*                 m_pointName;
+
+    /// The Point identifier.
     uint32_t                    m_pointId;
     
     /// Contains the pointer to the Point (is zero until created) 

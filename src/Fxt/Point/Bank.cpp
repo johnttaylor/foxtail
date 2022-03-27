@@ -13,6 +13,9 @@
 
 #include "Bank.h"
 #include "Cpl/System/Assert.h"
+#include "Cpl/System/Trace.h"
+
+#define SECT_ "Fxt::Point::Bank"
 
 ///
 using namespace Fxt::Point;
@@ -29,7 +32,8 @@ Bank::Bank()
 ///////////////////////////////////////////////////////////////////////////////
 bool Bank::populate( Descriptor*                       listOfDescriptorPointers[],
                      Cpl::Memory::ContiguousAllocator& allocatorForPoints,
-                     Fxt::Point::DatabaseApi&          dbForPoints ) noexcept
+                     Fxt::Point::DatabaseApi&          dbForPoints,
+                     Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData ) noexcept
 {
     CPL_SYSTEM_ASSERT( listOfDescriptorPointers );
 
@@ -39,31 +43,34 @@ bool Bank::populate( Descriptor*                       listOfDescriptorPointers[
     while ( itemPtr  )
     {
         // Create the next point
-        if ( !itemPtr->createPoint( allocatorForPoints ) )
+        Api* point = itemPtr->createPoint( allocatorForPoints, allocatorForPointStatefulData );
+        if ( point == nullptr )
         {
             // Error: allocator is out-of-space
             m_memSize  = 0;
             m_memStart = nullptr;
+            CPL_SYSTEM_TRACE_MSG( SECT_, ("Point Memory allocation failed for pointID: %lu", itemPtr->getPointId() ) );
             return false;
         }
 
         // Add the point to the database
-        if ( !dbForPoints.add( itemPtr->getPointId(), itemPtr->getPointInfo() ) )
+        if ( !dbForPoints.add( *point ) )
         {
             // Error: database is out-of-space
             m_memSize  = 0;
             m_memStart = nullptr;
+            CPL_SYSTEM_TRACE_MSG( SECT_, ("Failed to add Point to the database. pointID: %lu", itemPtr->getPointId()) );
             return false;
         }
 
         // Trap the 1st allocate address
         if ( m_memStart == nullptr )
         {
-            m_memStart = itemPtr->getPoint();
+            m_memStart = point->getStartOfStatefulMemory_();
         }
         
         // Keep track of the allocated size
-        m_memSize += itemPtr->getPoint()->getTotalSize();
+        m_memSize += point->getStatefulMemorySize();
 
         // Get the next descriptor in the list
         listOfDescriptorPointers++;
@@ -74,17 +81,17 @@ bool Bank::populate( Descriptor*                       listOfDescriptorPointers[
     return true;
 }
 
-size_t Bank::getAllocatedSize() const noexcept
+size_t Bank::getStatefulAllocatedSize() const noexcept
 {
     return m_memSize;
 }
 
-const void* Bank::getStartOfMemory() const noexcept
+const void* Bank::getStartOfStatefulMemory() const noexcept
 {
     return m_memStart;
 }
 
-bool Bank::copyTo( void* dst, size_t maxDstSizeInBytes ) noexcept
+bool Bank::copyStatefulMemoryTo( void* dst, size_t maxDstSizeInBytes ) noexcept
 {
     // Fail if the destination is too small
     if ( maxDstSizeInBytes < m_memSize )
@@ -96,7 +103,7 @@ bool Bank::copyTo( void* dst, size_t maxDstSizeInBytes ) noexcept
     return true;
 }
 
-bool Bank::copyFrom( const void* src, size_t srcSizeInBytes ) noexcept
+bool Bank::copyStatefulMemoryFrom( const void* src, size_t srcSizeInBytes ) noexcept
 {
     // Fail if the source is too large
     if ( srcSizeInBytes > m_memSize )
@@ -108,13 +115,13 @@ bool Bank::copyFrom( const void* src, size_t srcSizeInBytes ) noexcept
     return true;
 }
 
-bool Bank::copyFrom( BankApi& src ) noexcept
+bool Bank::copyStatefulMemoryFrom( BankApi& src ) noexcept
 {
-    size_t srcSizeInBytes = src.getAllocatedSize();
+    size_t srcSizeInBytes = src.getStatefulAllocatedSize();
     if ( srcSizeInBytes != m_memSize )
     {
         return false;
     }
-    memcpy( m_memStart, src.getStartOfMemory(), m_memSize );
+    memcpy( m_memStart, src.getStartOfStatefulMemory(), m_memSize );
     return true;
 }

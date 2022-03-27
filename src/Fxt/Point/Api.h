@@ -28,9 +28,9 @@ namespace Point {
 
 
 /** This mostly abstract class defines the interface for a Point.  A
-    Point contains an atomic (i.e. thread-safe), managed, type-safe 'chunk' of
-    data.  In addition to the data - a point has meta data and state. A Point
-    has the following features:
+    Point contains an atomic, managed, type-safe 'chunk' of data.  In addition 
+    to the data - a point has meta data and state. A Point has the following 
+    features:
 
         o Points have a unique numeric identifier (to the Application)
         o Points have a text label/name that is NOT guaranteed to be unique
@@ -43,11 +43,11 @@ namespace Point {
           changed).
         o A Point can serialize/deserialize to/from a JSON string.
         o A Point is type safe.  This means that child classes - per 'data
-          type' - are required.  Each Point type can have method unique to its
+          type' - are required.  Each Point type can have methods unique to its
           type.
         o Points are NOT THREAD SAFE.
  */
-class Api: public Cpl::Container::DictItem
+class Api
 {
 public:
     /// Options related to the Point's locked state
@@ -75,6 +75,15 @@ public:
         the function would return "Fxt::Point::Uint32"
      */
     virtual const char* getType() const noexcept = 0;
+
+    /// This method returns the Point's meta-data
+    virtual void getMetadata( bool& isValid, bool& isLocked ) const noexcept = 0;
+
+    /** This method returns the size, in bytes, of the Point's data and 
+        its dynamic meta-data. Non stateful data (such as the Point's name, id, etc.) is
+        NOT included return value.
+     */
+    virtual size_t getStatefulMemorySize() const noexcept = 0;
 
 public:
     /** This method sets the Point to the invalid state.
@@ -219,6 +228,16 @@ public:
      */
     virtual bool toJSON_( JsonDocument& doc, bool verbose = true ) noexcept = 0;
 
+
+    /** This method has PACKAGE Scope, i.e. it is intended to be ONLY accessible
+        by other classes in the Cpl::Point namespace.  The Application should
+        NEVER call this method.
+
+        This method returns a pointer to the start of Point's 'Stateful' data.
+
+        This method is NOT Thread Safe.
+    */
+    virtual void* getStartOfStatefulMemory_() const noexcept = 0;
 
 public:
     /// Virtual destructor to make the compiler happy

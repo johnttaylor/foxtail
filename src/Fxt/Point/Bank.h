@@ -35,22 +35,23 @@ public:
     /// See Fxt::Point::BankApi
     bool populate( Descriptor*                       listOfDescriptorPointers[],
                    Cpl::Memory::ContiguousAllocator& allocatorForPoints,
-                   Fxt::Point::DatabaseApi&          dbForPoints ) noexcept;
+                   Fxt::Point::DatabaseApi&          dbForPoints,
+                   Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData ) noexcept;
 
     /// See Fxt::Point::BankApi
-    bool copyTo( void* dst, size_t maxDstSizeInBytes ) noexcept;
+    bool copyStatefulMemoryTo( void* dst, size_t maxDstSizeInBytes ) noexcept;
 
     /// See Fxt::Point::BankApi
-    bool copyFrom( const void* src, size_t srcSizeInBytes ) noexcept;
+    bool copyStatefulMemoryFrom( const void* src, size_t srcSizeInBytes ) noexcept;
 
     /// See Fxt::Point::BankApi
-    bool copyFrom( BankApi& src ) noexcept;
+    bool copyStatefulMemoryFrom( BankApi& src ) noexcept;
 
     /// See Fxt::Point::BankApi
-    size_t getAllocatedSize() const noexcept;
+    size_t getStatefulAllocatedSize() const noexcept;
 
     /// See Fxt::Point::BankApi
-    const void* getStartOfMemory() const noexcept;
+    const void* getStartOfStatefulMemory() const noexcept;
 
 protected:
     /// Start of allocated memory

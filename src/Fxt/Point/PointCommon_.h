@@ -29,16 +29,25 @@ namespace Point {
           allocator.  As such this memory is NOT freed in the destructor
           (due to the 'global free' nature of the Contiguous Allocator).
  */
-class PointCommon_ : public Fxt::Point::Api, public Cpl::Container::KeyUinteger32_T
+class PointCommon_ : public Fxt::Point::Api
 {
 protected:
     /// Constructor
-    PointCommon_( uint32_t pointId  );
+    PointCommon_( uint32_t pointId, const char* pointName  );
 
     /// Helper method to 'completed' the initialization after the Stateful memory has been allocated
     virtual void finishInit( bool isValid ) noexcept;
 
 public:
+    /// See Fxt::Point::Api
+    uint32_t getId() const noexcept;
+    
+    /// See Fxt::Point::Api
+    const char* getName() const noexcept;
+
+    /// See Fxt::Point::Api
+    void getMetadata( bool& isValid, bool& isLocked ) const noexcept;
+
     /// See Fxt::Point::Api
     void setInvalid( LockRequest_T lockRequest = eNO_REQUEST ) noexcept;
 
@@ -51,16 +60,15 @@ public:
     /// See Fxt::Point::Api
     void setLockState( LockRequest_T lockRequest ) noexcept;
 
+public:
+    void* getStartOfStatefulMemory_() const noexcept;
+
 protected:
     /// See Fxt::Point::Api
     bool read( void* dstData, size_t dstSize ) const noexcept;
 
     /// See Fxt::Point::Api
     void write( const void* srcData, size_t srcSize, LockRequest_T lockRequest = eNO_REQUEST ) noexcept;
-
-protected:
-    /// See Cpl::Container::DictItem
-    const Cpl::Container::Key& getKey() const noexcept;
 
 protected:
     /** Internal helper method that manages testing and updating the locked
@@ -85,12 +93,13 @@ protected:
     template <class T>
     static Api* create( Cpl::Memory::Allocator&             allocatorForPoints, 
                         uint32_t                            pointId, 
+                        const char*                         pointName,
                         Cpl::Memory::ContiguousAllocator&   allocatorForPointStatefulData )
     {
         void* memPtr = allocatorForPoints.allocate( sizeof( T ) );
         if ( memPtr )
         {
-            return new(memPtr) T( allocatorForPointStatefulData, pointId );
+            return new(memPtr) T( pointId, pointName, allocatorForPointStatefulData );
         }
         return nullptr;
     }
@@ -103,8 +112,14 @@ protected:
         bool locked;    //!< The point's locked state
     };
 
+    /// The Point's unique numeric ID
+    uint32_t    m_id;
+
     /// The point's 'data' and meta-data that is dynamically allocated. The Meta-data is REQUIRED to be first elements in the allocate chunk of memory
-    void* m_state;
+    void*       m_state;
+
+    /// The point's 'label. The constructor ensures that a null name is 'converted' to an empty string.
+    const char* m_name;
 };
 
 };      // end namespaces

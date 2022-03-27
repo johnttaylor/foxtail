@@ -44,24 +44,27 @@ namespace Point {
 /** This concrete template class implements a simple Point Database.
 
     Template Args:
-        N   - The number of Hash buckets to use for the dictionary
+        N   - The maximum number of Points that can be stored in the Database
   */
 template<int N>
-class Database : public DatabaseApi, public Cpl::Container::Dictionary<Fxt::Point::Api>
+class Database : public DatabaseApi
 {
 public:
     /// Constructor
     Database() noexcept;
-
-    /// Destructor
-    ~Database();
 
 public:
     /// See Fxt::Point::DatabaseApi
     Fxt::Point::Api* lookupById( uint32_t pointIdToFind ) const noexcept;
 
     /// See Fxt::Point::DatabaseApi
-    bool toJSON( Fxt::Point::Api& srcPoint,
+    Fxt::Point::Api* first() const noexcept;
+    
+    /// See Fxt::Point::DatabaseApi
+    Fxt::Point::Api* next( Fxt::Point::Api& currentPoint ) const noexcept;
+    
+    /// See Fxt::Point::DatabaseApi
+    bool toJSON( uint32_t         pointId,
                  char*            dst,
                  size_t           dstSize,
                  bool&            truncated,
@@ -122,45 +125,66 @@ private:
     const Database& operator=( const Database& m );
 
 protected:
-    /// Memory for Point table
-    Cpl::Container::DList<Cpl::Container::DictItem>  m_buckets[N];
+    /// Memory for Point table.  Note: A Point ID is its index into m_points.
+    Fxt::Point::Api*            m_points[N];
 
     /// Mutex for the global lock
-    static Cpl::System::Mutex                        g_globalMutex;
+    static Cpl::System::Mutex   g_globalMutex;
 };
 
 /////////////////////////////////////////////////////////////////////////////
 //                  INLINE IMPLEMENTAION
 /////////////////////////////////////////////////////////////////////////////
 
-template <int N> static Cpl::System::Mutex                                       Database<N>::g_globalMutex;
+template <int N> Cpl::System::Mutex                                              Database<N>::g_globalMutex;
 template <int N> StaticJsonDocument<OPTION_FXT_POINT_DATABASE_MAX_CAPACITY_JSON> Database<N>::g_doc_;
 template <int N> uint8_t                                                         Database<N>::g_tempBuffer_[OPTION_FXT_POINT_DATABASE_TEMP_STORAGE_SIZE];
 
 
 template <int N>
 Database<N>::Database( void ) noexcept
-    :Cpl::Container::Dictionary<uint32_t>( m_buckets, N )
 {
+    memset( m_points, 0, sizeof( m_points ) );
 }
 
 template <int N>
 Fxt::Point::Api* Database<N>::lookupById( uint32_t pointIdToFind ) const noexcept
 {
-    
-    Cpl::Container::KeyUinteger32_T key( pointIdToFind );
-    return find( key );
+    if ( pointIdToFind >= N )
+    {
+        return nullptr;
+    }
+    return m_points[pointIdToFind];
+}
+
+template <int N>
+Fxt::Point::Api* Database<N>::first() const noexcept
+{
+    return m_points[0];
+}
+
+template <int N>
+Fxt::Point::Api* Database<N>::next( Fxt::Point::Api& currentPoint ) const noexcept
+{
+    uint32_t nextId = currentPoint.getId() + 1;
+    if ( nextId >= N )
+    {
+        return nullptr;
+    }
+    return m_points[nextId];
 }
 
 template <int N>
 bool Database<N>::add( Api& pointToAdd ) noexcept
 {
-    // Prevent duplicate keys
-    if ( lookupById( pointToAdd.getId() )
+    // Prevent duplicate and out-of-range IDs
+    uint32_t id = pointToAdd.getId();
+    if ( id >= N || m_points[id] != 0 )
     {
         return false;
+
     }
-    insert( pointToAdd );
+    m_points[id] = &pointToAdd;
     return true;
 }
 
@@ -177,33 +201,40 @@ void Database<N>::globalUnlock_() noexcept
 }
 
 template <int N>
-bool Database<N>::toJSON( Fxt::Point::Api& srcPoint,
+bool Database<N>::toJSON( uint32_t         pointId,
                           char*            dst,
                           size_t           dstSize,
                           bool&            truncated,
                           bool             verbose ) noexcept
 {
+    // Get the point instance
+    Api* point = lookupById( pointId );
+    if ( point == nullptr )
+    {
+        return false;
+    }
+
     // Get the metadata
     bool isValid;
     bool isLocked;
-    srcPoint.getMetadata( isValid, isLocked );
+    point->getMetadata( isValid, isLocked );
 
     // Get access to the Global JSON document
     Database<N>::globalLock_();
     Database<N>::g_doc_.clear();  // Make sure the JSON document is starting "empty"
 
     // Construct the JSON
-    Database<N>::g_doc_["id"]    = +srcPoint;
+    Database<N>::g_doc_["id"]    = point->getId();
     Database<N>::g_doc_["valid"] = isValid;
     if ( verbose )
     {
-        Database<N>::g_doc_["type"]   = srcPoint.getTypeAsText();
+        Database<N>::g_doc_["type"]   = point->getType();
         Database<N>::g_doc_["locked"] = isLocked;
     }
 
     // Have the Point instance fill in the 'val' details
     bool result = true;
-    if ( isValid && !srcPoint.toJSON_( g_doc_, verbose ) )
+    if ( isValid && !point->toJSON_( Database<N>::g_doc_, verbose ) )
     {
         result = false;
     }
@@ -211,7 +242,7 @@ bool Database<N>::toJSON( Fxt::Point::Api& srcPoint,
     // Generate the actual output string 
     if ( result )
     {
-        size_t jsonLen   = measureJson( Database<N>g_doc_ );
+        size_t jsonLen   = measureJson( Database<N>::g_doc_ );
         size_t outputLen = serializeJson( Database<N>::g_doc_, dst, dstSize );
         truncated = outputLen == jsonLen ? false : true;
     }
@@ -240,8 +271,7 @@ bool Database<N>::fromJSON( const char* src, Cpl::Text::String* errorMsg ) noexc
     }
 
     // Valid JSON... Parse the Point identifier
-    uint32_t numericId = Database<N>::g_doc_["id"] | ((uint32_t) (-1));
-    if ( numericId == ((uint32_t) (-1)) )
+    if ( Database<N>::g_doc_["id"].isNull() )
     {
         if ( errorMsg )
         {
@@ -250,6 +280,7 @@ bool Database<N>::fromJSON( const char* src, Cpl::Text::String* errorMsg ) noexc
         Database<N>::globalUnlock_();
         return false;
     }
+    uint32_t numericId = Database<N>::g_doc_["id"];
 
     // Look-up the Point name
     Api* pt = lookupById( numericId );

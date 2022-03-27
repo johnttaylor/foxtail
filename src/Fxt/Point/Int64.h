@@ -1,5 +1,5 @@
-#ifndef Fxt_Point_Int8_h_
-#define Fxt_Point_Int8_h_
+#ifndef Fxt_Point_Int64_h_
+#define Fxt_Point_Int64_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -23,7 +23,7 @@ namespace Point {
 
 
 /** This class provides a concrete implementation for a Point who's data is a
-    int8_t.
+    int64_t.
 
     The toJSON()/fromJSON format is:
         \code
@@ -33,22 +33,22 @@ namespace Point {
         \endcode
 
  */
-class Int8 : public BasicInteger_<int8_t>
+class Int64 : public BasicInteger_<int64_t>
 {
 public:
     /** Constructor. Invalid Point.
      */
-    Int8( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData ) : BasicInteger_<int8_t>(pointId, pointName, allocatorForPointStatefulData ) {}
+    Int64( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData ) : BasicInteger_<int64_t>( pointId, pointName, allocatorForPointStatefulData ) {}
 
     /// Constructor. Valid Point.  Requires an initial value
-    Int8( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, int8_t initialValue ) : BasicInteger_<int8_t>( pointId, pointName, allocatorForPointStatefulData, initialValue ) {}
+    Int64( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, int64_t initialValue ) : BasicInteger_<int64_t>( pointId, pointName, allocatorForPointStatefulData, initialValue ) {}
 
 public:
     /// Pull in overloaded methods from base class
-    using BasicInteger_<int8_t>::write;
+    using BasicInteger_<int64_t>::write;
 
     /// Updates the MP's data from 'src'. Note: The lock state of 'src' is NOT-USED/IGNORED
-    virtual void write( Int8& src, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept 
+    virtual void write( Int64& src, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
         if ( src.isNotValid() )
         {
@@ -56,23 +56,23 @@ public:
         }
         else
         {
-            // Note: src.m_data is NOT null because the MP is valid
-            BasicInteger_<int8_t>::write( ((Basic_<int8_t>::Stateful_T*)(src.m_state))->data, lockRequest );
+            // Note: src.m_state is NOT null because the MP is valid
+            BasicInteger_<int64_t>::write( ((Basic_<int64_t>::Stateful_T*)(src.m_state))->data, lockRequest );
         }
     }
 
 public:
     ///  See Fxt::Point::Api
-    const char* getType() const noexcept { return "Fxt::Point::Int8"; }
+    const char* getType() const noexcept { return "Fxt::Point::Int64"; }
 
 public:
     /// Creates a concrete instance in the invalid state
     static Api* create( Cpl::Memory::Allocator&             allocatorForPoints,
                         uint32_t                            pointId,
                         const char*                         pointName,
-                        Cpl::Memory::ContiguousAllocator&   allocatorForPointStatefulData ) 
-    { 
-        return PointCommon_::create<Int8>( allocatorForPoints, pointId, pointName, allocatorForPointStatefulData );
+                        Cpl::Memory::ContiguousAllocator&   allocatorForPointStatefulData )
+    {
+        return PointCommon_::create<Int64>( allocatorForPoints, pointId, pointName, allocatorForPointStatefulData );
     }
 };
 

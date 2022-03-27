@@ -10,17 +10,22 @@
 *----------------------------------------------------------------------------*/
 
 #include "PointCommon_.h"
-#include 
+
 ///
 using namespace Fxt::Point;
 
 #define METAPTR     ((PointCommon_::Metadata_T*)(m_state))
 
 ////////////////////////
-PointCommon_::PointCommon_( uint32_t pointId )
-    : Cpl::Container::KeyUinteger32_T( pointId )
+PointCommon_::PointCommon_( uint32_t pointId, const char* pointName )
+    : m_id( pointId )
     , m_state( nullptr )
+    , m_name( pointName )
 {
+    if ( m_name == nullptr )
+    {
+        m_name = "";
+    }
 }
 
 void PointCommon_::finishInit( bool isValid ) noexcept
@@ -33,14 +38,39 @@ void PointCommon_::finishInit( bool isValid ) noexcept
 }
 
 /////////////////
-const Cpl::Container::Key& PointCommon_::getKey() const noexcept
+void* PointCommon_::getStartOfStatefulMemory_() const noexcept
 {
-    return *this;
+    return m_state;
+}
+
+uint32_t PointCommon_::getId() const noexcept
+{
+    return m_id;
+}
+
+
+const char* PointCommon_::getName() const noexcept
+{
+    return m_name;
+}
+
+void PointCommon_::getMetadata( bool& isValid, bool& isLocked ) const noexcept
+{
+    if ( METAPTR )
+    {
+        isValid  = METAPTR->valid;
+        isLocked = METAPTR->locked;
+    }
+    else
+    {
+        isValid  = false;
+        isLocked = false;
+    }
 }
 
 bool PointCommon_::isNotValid( void ) const noexcept
 {
-    return METAPTR == nullptr || METAPTR->valid;
+    return METAPTR == nullptr || METAPTR->valid == false;
 }
 
 void PointCommon_::setInvalid( LockRequest_T lockRequest ) noexcept
