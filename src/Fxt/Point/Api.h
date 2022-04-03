@@ -208,7 +208,7 @@ public:
         and copies the result to the Point's internal data. The expected
         format of the JSON string is specific to the concrete leaf class.
 
-        See Cpl::Point::ModelDatabaseApi::fromJSON() method for JSON format.
+        See Fxt::Point::ModelDatabaseApi::fromJSON() method for JSON format.
      */
     virtual bool fromJSON_( JsonVariant&        src,
                             LockRequest_T       lockRequest,
@@ -224,7 +224,7 @@ public:
         else true is returned.  This method is ONLY called if the Point is in
         the valid state.
 
-        See Cpl::Point::ModelDatabaseApi::fromJSON() method for JSON format.
+        See Fxt::Point::ModelDatabaseApi::fromJSON() method for JSON format.
      */
     virtual bool toJSON_( JsonDocument& doc, bool verbose = true ) noexcept = 0;
 

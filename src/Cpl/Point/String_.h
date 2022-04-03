@@ -51,7 +51,7 @@ public:
     /// Returns the Point's value and its meta-data.  'dstData' has no meaning when the method returns false.
     virtual bool get( Cpl::Text::String& dstData, bool& isValid, bool& isLocked ) const noexcept;
 
-    /// Type safe read.
+    /// Type safe read. Note: 'dstSizeInBytes' is assumed to include the storage for the null terminator
     virtual bool read( char* dstData, size_t dstSizeInBytes ) const noexcept;
 
     /// Returns the Point's value and its meta-data.  'dstData' has no meaning when the method returns false.

@@ -17,6 +17,9 @@
 #include "Cpl/Memory/ContiguousAllocator.h"
 
 
+/// Trace Section label for Point infrastructure
+#define FXT_POINT_TRACE_SECT_     "Fxt::Point"
+
 ///
 namespace Fxt {
 ///
@@ -103,6 +106,9 @@ protected:
         }
         return nullptr;
     }
+
+    /// Helper function to Update the MP's data from 'src'
+    void updateFrom( const void* srcData, size_t srcSize, bool isNotValid, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept;
 
 protected:
     /// Structure for meta-data

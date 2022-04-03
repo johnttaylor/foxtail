@@ -59,7 +59,7 @@ bool StringBase_::get( char* dstData, size_t dstSizeInBytes, bool& isValid, bool
 
 const char* StringBase_::write( const char* srcString, Cpl::Point::Api::LockRequest_T lockRequest ) noexcept
 {
-    // Note: The copyToFrom_() method ensures that there are no buffer/data overruns
+    // Note: The copyDataFrom_() method ensures that there are no buffer/data overruns
     Cpl::Point::PointCommon_::write( srcString, strlen( srcString ), lockRequest );
     return getDataPtr();
 }
@@ -109,3 +109,4 @@ void StringBase_::copyDataFrom_( const void* srcData, size_t srcSize ) noexcept
     strncpy( dstPtr, (const char*)srcData, dstLen );
     dstPtr[dstLen] = '\0';
 }
+

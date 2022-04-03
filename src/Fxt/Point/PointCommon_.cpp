@@ -107,6 +107,17 @@ void PointCommon_::write( const void* srcData, size_t srcSize, LockRequest_T loc
     }
 }
 
+void PointCommon_::updateFrom( const void* srcData, size_t srcSize, bool isNotValid, Fxt::Point::Api::LockRequest_T lockRequest ) noexcept
+{
+    if ( isNotValid )
+    {
+        setInvalid();
+    }
+    else
+    {
+        write( srcData, srcSize, lockRequest );
+    }
+}
 
 /////////////////
 void PointCommon_::setLockState( LockRequest_T lockRequest ) noexcept

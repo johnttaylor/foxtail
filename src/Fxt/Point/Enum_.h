@@ -28,7 +28,7 @@ namespace Point {
     following methods:
 
         write( MyChildEnumPointClass& src, ... )
-        getTypeAsText()
+        getType()
         create(...)
 
     The toJSON()/fromJSON format is:

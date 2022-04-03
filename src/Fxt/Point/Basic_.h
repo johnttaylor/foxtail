@@ -21,8 +21,6 @@
 #include "Cpl/Text/FString.h"
 #include <string.h>
 
-/// Trace Section label for Point infrastructure
-#define FXT_POINT_TRACE_SECT_     "Fxt::Point"
 
 ///
 namespace Fxt {
@@ -106,7 +104,7 @@ protected:
     /** See Fxt::Point::Api.  It is the caller's responsibility to
         NOT call this method if m_data is null.
 
-        Note: The PointCommon_.read() will not call this method if the m_data
+        Note: The PointCommon_.read() will not call this method if the m_state
               is null.
      */
     void copyDataTo_( void* dstData, size_t dstSize ) const noexcept
@@ -118,7 +116,7 @@ protected:
     /** See Fxt::Point::Api.  It is the caller's responsibility to
         NOT call this method if m_data is null.
 
-        Note: The PointCommon_.write() will not call this method if the m_data
+        Note: The PointCommon_.write() will not call this method if the m_state
               is null.
      */
     void copyDataFrom_( const void* srcData, size_t srcSize ) noexcept

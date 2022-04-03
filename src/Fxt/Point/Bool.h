@@ -63,15 +63,7 @@ public:
     /// Updates the MP's data from 'src'. Note: The lock state of 'src' is NOT-USED/IGNORED
     virtual void write( Bool& src, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept 
     {
-        if ( src.isNotValid() )
-        {
-            setInvalid( lockRequest );
-        }
-        else
-        {
-            // Note: src.m_data is NOT null because the MP is valid
-            write( ((StateBlock_T*)(src.m_state))->data, lockRequest );
-        }
+        updateFrom( &(((StateBlock_T*)(src.m_state))->data), sizeof( bool ), src.isNotValid(), lockRequest );
     }
 
 public:

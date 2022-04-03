@@ -34,7 +34,7 @@ public:
     
 public:
     /// See Fxt::Point::SetterApi
-    void setValue( Cpl::Point::Api* dstPt ) noexcept
+    void setValue( Fxt::Point::Api* dstPt ) noexcept
     {
         ((P*) dstPt)->write( m_src );
     }

@@ -38,7 +38,7 @@ class Uint8 : public BasicInteger_<uint8_t>
 public:
     /** Constructor. Invalid Point.
      */
-    Uint8( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData ) : BasicInteger_<uint8_t>(pointId, pointName, allocatorForPointStatefulData ) {}
+    Uint8( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData ) : BasicInteger_<uint8_t>( pointId, pointName, allocatorForPointStatefulData ) {}
 
     /// Constructor. Valid Point.  Requires an initial value
     Uint8( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, uint8_t initialValue ) : BasicInteger_<uint8_t>( pointId, pointName, allocatorForPointStatefulData, initialValue ) {}
@@ -48,17 +48,9 @@ public:
     using BasicInteger_<uint8_t>::write;
 
     /// Updates the MP's data from 'src'. Note: The lock state of 'src' is NOT-USED/IGNORED
-    virtual void write( Uint8& src, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept 
+    virtual void write( Uint8& src, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
-        if ( src.isNotValid() )
-        {
-            setInvalid( lockRequest );
-        }
-        else
-        {
-            // Note: src.m_data is NOT null because the MP is valid
-            BasicInteger_<uint8_t>::write( ((Basic_<uint8_t>::Stateful_T*)(src.m_state))->data, lockRequest );
-        }
+        updateFrom( &(((Basic_<uint8_t>::Stateful_T*)(src.m_state))->data), sizeof( uint8_t ), src.isNotValid(), lockRequest );
     }
 
 public:
@@ -70,8 +62,8 @@ public:
     static Api* create( Cpl::Memory::Allocator&             allocatorForPoints,
                         uint32_t                            pointId,
                         const char*                         pointName,
-                        Cpl::Memory::ContiguousAllocator&   allocatorForPointStatefulData ) 
-    { 
+                        Cpl::Memory::ContiguousAllocator&   allocatorForPointStatefulData )
+    {
         return PointCommon_::create<Uint8>( allocatorForPoints, pointId, pointName, allocatorForPointStatefulData );
     }
 };

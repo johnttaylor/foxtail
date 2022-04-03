@@ -50,18 +50,11 @@ public:
     /// Updates the MP's data from 'src'
     virtual void write( MyEnum& src, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
-        if ( src.isNotValid() )
-        {
-            setInvalid();
-        }
-        else
-        {
-            Enum_<MyColors>::write( ((StateBlock_T*) (src.m_state))->data, lockRequest );
-        }
+        updateFrom( &(((StateBlock_T*) (src.m_state))->data), sizeof( MyColors ), src.isNotValid(), lockRequest );
     }
 
     ///  See Cpl::Dm::ModelPoint.
-    const char* getType() const noexcept { return "Cpl::Point::MyEnum"; }
+    const char* getType() const noexcept { return "Fxt::Point::MyEnum"; }
 
     /// Creates a concrete instance in the invalid state
     static Api* create( Cpl::Memory::Allocator&             allocatorForPoints,

@@ -50,15 +50,7 @@ public:
     /// Updates the MP's data from 'src'. Note: The lock state of 'src' is NOT-USED/IGNORED
     virtual void write( Uint64& src, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
-        if ( src.isNotValid() )
-        {
-            setInvalid( lockRequest );
-        }
-        else
-        {
-            // Note: src.m_data is NOT null because the MP is valid
-            BasicInteger_<uint64_t>::write( ((Basic_<uint64_t>::Stateful_T*)(src.m_state))->data, lockRequest );
-        }
+        updateFrom( &(((Basic_<uint64_t>::Stateful_T*)(src.m_state))->data), sizeof( uint64_t ), src.isNotValid(), lockRequest );
     }
 
 public:
