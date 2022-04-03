@@ -12,7 +12,7 @@
 #include "Catch/catch.hpp"
 #include "Cpl/System/_testsupport/Shutdown_TS.h"
 #include "Fxt/Point/Database.h"
-#include "Fxt/Point/Int8.h"
+#include "Fxt/Point/Uint16.h"
 #include "Cpl/System/Trace.h"
 #include <string.h>
 #include "Cpl/Memory/HPool.h"
@@ -35,20 +35,20 @@ using namespace Fxt::Point;
 #define ORANGE_ID       1
 #define ORANGE_LABEL    "ORANGE"
 
-static size_t stateHeapMemory_[(sizeof( Int8::StateBlock_T ) * MAX_POINTS + sizeof( size_t ) - 1) / sizeof( size_t )];
+static size_t stateHeapMemory_[(sizeof( Uint16::StateBlock_T ) * MAX_POINTS + sizeof( size_t ) - 1) / sizeof( size_t )];
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE( "Int8" )
+TEST_CASE( "Uint16" )
 {
     Cpl::System::Shutdown_TS::clearAndUseCounter();
     Database<MAX_POINTS>     db;
     Cpl::Memory::LeanHeap    stateHeap( stateHeapMemory_, sizeof( stateHeapMemory_ ) );
     bool                     valid;
-    int8_t                   value;
+    uint16_t                   value;
 
-    Int8* apple = new(std::nothrow) Int8( APPLE_ID, APPLE_LABEL, stateHeap );
+    Uint16* apple = new(std::nothrow) Uint16( APPLE_ID, APPLE_LABEL, stateHeap );
     REQUIRE( apple );
-    Int8* orange = new(std::nothrow) Int8( ORANGE_ID, ORANGE_LABEL, stateHeap, ORANGE_INIT_VAL );
+    Uint16* orange = new(std::nothrow) Uint16( ORANGE_ID, ORANGE_LABEL, stateHeap, ORANGE_INIT_VAL );
     REQUIRE( orange );
 
 
@@ -69,7 +69,7 @@ TEST_CASE( "Int8" )
         valid = apple->read( value );
         REQUIRE( valid == false );
 
-        REQUIRE( apple->getStatefulMemorySize() >= (sizeof( int8_t ) + sizeof(bool)*2) );
+        REQUIRE( apple->getStatefulMemorySize() >= (sizeof( uint16_t ) + sizeof(bool)*2) );
     }
 
     SECTION( "write" )
@@ -114,17 +114,17 @@ TEST_CASE( "Int8" )
     SECTION( "bitOpertions" )
     {
         apple->setInvalid();
-        apple->maskOr( (int8_t) 0xA5 );
+        apple->maskOr( (uint16_t) 0xA5 );
         REQUIRE( apple->read( value ) );
-        REQUIRE( value == (int8_t) 0xA5 );
+        REQUIRE( value == (uint16_t) 0xA5 );
         
-        apple->maskAnd( (int8_t) 0xF0 );
+        apple->maskAnd( (uint16_t) 0xF0 );
         REQUIRE( apple->read( value ) );
-        REQUIRE( value == (int8_t) 0xA0 );
+        REQUIRE( value == (uint16_t) 0xA0 );
 
-        apple->maskXor( (int8_t) 0x8A );
+        apple->maskXor( (uint16_t) 0x8A );
         REQUIRE( apple->read( value ) );
-        REQUIRE( value == (int8_t) 0x2A );
+        REQUIRE( value == (uint16_t) 0x2A );
 
         apple->bitClear( 5 );
         REQUIRE( apple->read( value ) );
@@ -212,7 +212,7 @@ TEST_CASE( "Int8" )
         result = db.fromJSON( "{\"id\":0,\"val\":20.1,locked:true}", &errMsg );
         REQUIRE( result == false );
         REQUIRE( errMsg != "NOERROR" );
-
+        
         // ERROR
         result = db.fromJSON( "{\"id\":0,\"val\":20.1,locked:true}" );
         REQUIRE( result == false );

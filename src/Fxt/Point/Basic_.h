@@ -207,8 +207,8 @@ public:
     }
 
 public:
-    /** See Fxt::Point::Api.  Note: This method is NOT called when the MP is 
-        invalid (see comments above the MP always being invalid if m_data 
+    /** See Fxt::Point::Api.  Note: This method is NOT called when the MP is
+        invalid (see comments above the MP always being invalid if m_data
         allocation failed)
      */
     bool toJSON_( JsonDocument& doc, bool verbose = true ) noexcept
@@ -229,18 +229,38 @@ public:
         ELEMTYPE newValue = 0;
 
         // Attempt to parse the value as HEX string
-        const char*        val = src;
-        unsigned long long value;
-        if ( Cpl::Text::a2ull( value, val, 16 ) == false )
+        if ( src.is<const char*>() )
+        {
+            const char*        val = src;
+            unsigned long long value;
+            if ( Cpl::Text::a2ull( value, val, 0 ) == false )
+            {
+                if ( errorMsg )
+                {
+                    *errorMsg = "Invalid syntax for the 'val' key/value pair";
+                }
+                return false;
+            }
+
+            newValue = (ELEMTYPE) value;
+        }
+
+        // Attempt to parse a numeric decimal
+        else if ( src.is<ELEMTYPE>() )
+        {
+            newValue = src.as<ELEMTYPE>();
+        }
+
+        // NOT a hex string or an integer
+        else
         {
             if ( errorMsg )
             {
                 *errorMsg = "Invalid syntax for the 'val' key/value pair";
             }
+
             return false;
         }
-
-        newValue = (ELEMTYPE) value;
 
         write( newValue, lockRequest );
         return true;
@@ -257,20 +277,20 @@ public:
 template<class ELEMTYPE>
 class BasicReal_ : public Basic_<ELEMTYPE>
 {
-protected:
+public:
     /// Simplify access the stateful data
     typedef typename Basic_<ELEMTYPE>::Stateful_T StateBlock_T;
 
 public:
     /// Constructor: Invalid MP
     BasicReal_( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData )
-        :Basic_<ELEMTYPE>(pointId, pointName, allocatorForPointStatefulData )
+        :Basic_<ELEMTYPE>( pointId, pointName, allocatorForPointStatefulData )
     {
     }
 
     /// Constructor: Valid MP (requires initial value)
     BasicReal_( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, ELEMTYPE initialValue )
-        :Basic_<ELEMTYPE>( pointId, pointName, allocatorForPointStatefulData )
+        :Basic_<ELEMTYPE>( pointId, pointName, allocatorForPointStatefulData, initialValue )
     {
     }
 
@@ -313,9 +333,7 @@ public:
      */
     bool fromJSON_( JsonVariant& src, Fxt::Point::Api::LockRequest_T lockRequest, Cpl::Text::String* errorMsg=0 ) noexcept
     {
-        ELEMTYPE checkForError = src | (ELEMTYPE) 2;
-        ELEMTYPE newValue      = src | (ELEMTYPE) 1;
-        if ( newValue <= (ELEMTYPE) 1 && checkForError >= (ELEMTYPE) 2 )
+        if ( src.is<ELEMTYPE>() == false )
         {
             if ( errorMsg )
             {
@@ -324,7 +342,7 @@ public:
             return false;
         }
 
-        write( newValue, lockRequest );
+        write( src.as<ELEMTYPE>(), lockRequest );
         return true;
     }
 };
