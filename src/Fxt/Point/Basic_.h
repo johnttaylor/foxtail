@@ -141,6 +141,7 @@ public:
     /// Simplify access the stateful data
     typedef typename Basic_<ELEMTYPE>::Stateful_T StateBlock_T;
 
+protected:
     /// Constructor: Invalid MP
     BasicInteger_( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData )
         :Basic_<ELEMTYPE>( pointId, pointName, allocatorForPointStatefulData )
@@ -153,6 +154,7 @@ public:
     {
     }
 
+public:
     /// Type safe write. See Fxt::Point::Api
     virtual void write( ELEMTYPE newValue, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
@@ -281,7 +283,7 @@ public:
     /// Simplify access the stateful data
     typedef typename Basic_<ELEMTYPE>::Stateful_T StateBlock_T;
 
-public:
+protected:
     /// Constructor: Invalid MP
     BasicReal_( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData )
         :Basic_<ELEMTYPE>( pointId, pointName, allocatorForPointStatefulData )

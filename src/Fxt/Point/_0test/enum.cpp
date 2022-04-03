@@ -12,11 +12,12 @@
 #include "Catch/catch.hpp"
 #include "Cpl/System/_testsupport/Shutdown_TS.h"
 #include "Fxt/Point/Database.h"
-#include "Fxt/Point/Bool.h"
+#include "Fxt/Point/Enum_.h"
 #include "Cpl/System/Trace.h"
 #include <string.h>
 #include "Cpl/Memory/HPool.h"
 #include "Cpl/Memory/LeanHeap.h"
+#include "Cpl/Type/enum.h"
 #include <new>
 
 #define SECT_   "_0test"
@@ -24,10 +25,60 @@
 /// 
 using namespace Fxt::Point;
 
+
+// Anonymous namespace
+namespace {
+
+BETTER_ENUM( MyColors, int, eRED, eBLUE, eGREEN );
+
+class MyEnum : public Enum_<MyColors>
+{
+public:
+    /// Constructor. Invalid Point.
+    MyEnum( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData ) : Enum_<MyColors>( pointId, pointName, allocatorForPointStatefulData )
+    {
+    }
+
+    /// Constructor. Valid Point.  Requires an initial value
+    MyEnum( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, MyColors initialValue ) :Enum_<MyColors>( pointId, pointName, allocatorForPointStatefulData, initialValue )
+    {
+    }
+
+    /// Pull in overloaded methods from base class
+    using Enum_<MyColors>::write;
+
+    /// Updates the MP's data from 'src'
+    virtual void write( MyEnum& src, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
+    {
+        if ( src.isNotValid() )
+        {
+            setInvalid();
+        }
+        else
+        {
+            Enum_<MyColors>::write( ((StateBlock_T*) (src.m_state))->data, lockRequest );
+        }
+    }
+
+    ///  See Cpl::Dm::ModelPoint.
+    const char* getType() const noexcept { return "Cpl::Point::MyEnum"; }
+
+    /// Creates a concrete instance in the invalid state
+    static Api* create( Cpl::Memory::Allocator&             allocatorForPoints,
+                        uint32_t                            pointId,
+                        const char*                         pointName,
+                        Cpl::Memory::ContiguousAllocator&   allocatorForPointStatefulData )
+    {
+        return PointCommon_::create<MyEnum>( allocatorForPoints, pointId, pointName, allocatorForPointStatefulData );
+    }
+};
+
+}; // end anonymous namespace
+
 #define MAX_POINTS  2
 
 
-#define ORANGE_INIT_VAL true
+#define ORANGE_INIT_VAL MyColors::eGREEN
 
 #define APPLE_ID        0
 #define APPLE_LABEL     "APPLE"
@@ -35,20 +86,20 @@ using namespace Fxt::Point;
 #define ORANGE_ID       1
 #define ORANGE_LABEL    "ORANGE"
 
-static size_t stateHeapMemory_[(sizeof( Bool::StateBlock_T ) * MAX_POINTS + sizeof( size_t ) - 1) / sizeof( size_t )];
+static size_t stateHeapMemory_[(sizeof( MyEnum::StateBlock_T ) * MAX_POINTS + sizeof( size_t ) - 1) / sizeof( size_t )];
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE( "Bool" )
+TEST_CASE( "Enum" )
 {
     Cpl::System::Shutdown_TS::clearAndUseCounter();
     Database<MAX_POINTS>     db;
     Cpl::Memory::LeanHeap    stateHeap( stateHeapMemory_, sizeof( stateHeapMemory_ ) );
     bool                     valid;
-    bool                   value;
+    MyColors                 value = MyColors::eBLUE;
 
-    Bool* apple = new(std::nothrow) Bool( APPLE_ID, APPLE_LABEL, stateHeap );
+    MyEnum* apple = new(std::nothrow) MyEnum( APPLE_ID, APPLE_LABEL, stateHeap );
     REQUIRE( apple );
-    Bool* orange = new(std::nothrow) Bool( ORANGE_ID, ORANGE_LABEL, stateHeap, ORANGE_INIT_VAL );
+    MyEnum* orange = new(std::nothrow) MyEnum( ORANGE_ID, ORANGE_LABEL, stateHeap, ORANGE_INIT_VAL );
     REQUIRE( orange );
 
 
@@ -56,37 +107,32 @@ TEST_CASE( "Bool" )
     {
         valid = orange->read( value );
         REQUIRE( valid == true );
-        REQUIRE( value == ORANGE_INIT_VAL );
+        REQUIRE( value == +ORANGE_INIT_VAL );
 
         valid = apple->read( value );
         REQUIRE( valid == false );
-        apple->write( true );
+        apple->write( MyColors::eRED );
         valid = apple->read( value );
         REQUIRE( valid );
-        REQUIRE( value == true );
+        REQUIRE( value == +MyColors::eRED );
 
         apple->setInvalid();
         valid = apple->read( value );
         REQUIRE( valid == false );
 
-        apple->set();
-        valid = apple->read( value );
-        REQUIRE( valid  );
-        REQUIRE( value == true );
-
-        apple->clear();
+        apple->write( MyColors::eBLUE );
         valid = apple->read( value );
         REQUIRE( valid );
-        REQUIRE( value == false );
+        REQUIRE( value == +MyColors::eBLUE );
 
-        REQUIRE( apple->getStatefulMemorySize() >= (sizeof( bool ) + sizeof(bool)*2) );
+        REQUIRE( apple->getStatefulMemorySize() >= (sizeof( MyColors ) + sizeof( bool ) * 2) );
     }
 
     SECTION( "write2" )
     {
         apple->write( *orange, Api::eLOCK );
         REQUIRE( apple->read( value ) );
-        REQUIRE( value == ORANGE_INIT_VAL );
+        REQUIRE( value == +ORANGE_INIT_VAL );
         REQUIRE( apple->isLocked() );
 
         apple->write( *orange );
@@ -103,7 +149,7 @@ TEST_CASE( "Bool" )
     {
         char buffer[256];
         bool truncated;
-        apple->write( true );
+        apple->write( MyColors::eRED );
         REQUIRE( db.add( *apple ) );
         REQUIRE( db.add( *orange ) );
 
@@ -114,7 +160,7 @@ TEST_CASE( "Bool" )
         StaticJsonDocument<1024> doc;
         DeserializationError err = deserializeJson( doc, buffer );
         REQUIRE( err == DeserializationError::Ok );
-        REQUIRE( doc["val"] == true );
+        REQUIRE( strcmp(doc["val"], (+MyColors::eRED)._to_string() ) == 0 );
 
         orange->setInvalid();
         result = db.toJSON( ORANGE_ID, buffer, sizeof( buffer ), truncated, false );
@@ -122,30 +168,30 @@ TEST_CASE( "Bool" )
         REQUIRE( result );
         REQUIRE( truncated == false );
 
-        result = db.fromJSON( "{\"id\":0,\"val\":true}" );
+        result = db.fromJSON( "{\"id\":0,\"val\":\"eBLUE\"}" );
         REQUIRE( apple->read( value ) );
-        REQUIRE( value == true );
+        REQUIRE( value == +MyColors::eBLUE );
 
-        result = db.fromJSON( "{\"id\":0,\"val\":false}" );
+        result = db.fromJSON( "{\"id\":0,\"val\":\"eGREEN\"}" );
         REQUIRE( apple->read( value ) );
-        REQUIRE( value == false );
+        REQUIRE( value == +MyColors::eGREEN );
 
-        result = db.fromJSON( "{\"id\":0,\"val\":true,locked:true}" );
+        result = db.fromJSON( "{\"id\":0,\"val\":\"eRED\",locked:true}" );
         REQUIRE( result );
         REQUIRE( apple->read( value ) );
-        REQUIRE( value == true );
+        REQUIRE( value == +MyColors::eRED );
         REQUIRE( apple->isLocked() );
 
-        result = db.fromJSON( "{\"id\":0,\"val\":false,locked:false}" );
+        result = db.fromJSON( "{\"id\":0,\"val\":\"eGREEN\",locked:false}" );
         REQUIRE( result );
         REQUIRE( apple->read( value ) );
-        REQUIRE( value == false );
+        REQUIRE( value == +MyColors::eGREEN );
         REQUIRE( !apple->isLocked() );
 
         result = db.fromJSON( "{\"id\":0,locked:true}" );
         REQUIRE( result );
         REQUIRE( apple->read( value ) );
-        REQUIRE( value == false );
+        REQUIRE( value == +MyColors::eGREEN );
         REQUIRE( apple->isLocked() );
 
         result = db.fromJSON( "{\"id\":0,locked:false,valid:false}" );
@@ -154,12 +200,12 @@ TEST_CASE( "Bool" )
         REQUIRE( !apple->isLocked() );
 
         // ERROR
-        result = db.fromJSON( "{\"id\":100,\"val\":true,locked:true}" );
+        result = db.fromJSON( "{\"id\":100,\"val\":\"eBLUE\",locked:true}" );
         REQUIRE( result == false );
 
         // ERROR
         Cpl::Text::FString<100> errMsg = "NOERROR";
-        result = db.fromJSON( "{\"id\":100,\"val\":false,locked:true}", &errMsg );
+        result = db.fromJSON( "{\"id\":100,\"val\":\"eBLUE\",locked:true}", &errMsg );
         REQUIRE( result == false );
         REQUIRE( errMsg != "NOERROR" );
 
@@ -174,27 +220,27 @@ TEST_CASE( "Bool" )
         REQUIRE( result == false );
 
         // ERROR
-        result = db.toJSON( ORANGE_ID+2, buffer, sizeof( buffer ), truncated, false );
+        result = db.toJSON( ORANGE_ID + 2, buffer, sizeof( buffer ), truncated, false );
         REQUIRE( result == false );
 
         // ERROR
         errMsg = "NOERROR";
-        result = db.fromJSON( "{\"id\"=100,\"val\":true,locked:true}", &errMsg );
+        result = db.fromJSON( "{\"id\"=100,\"val\":\"eBLUE\",locked:true}", &errMsg );
         REQUIRE( result == false );
         REQUIRE( errMsg != "NOERROR" );
 
         // ERROR
-        result = db.fromJSON( "{\"id\"=100,\"val\":true,locked:true}" );
+        result = db.fromJSON( "{\"id\"=100,\"val\":\"eBLUE\",locked:true}" );
         REQUIRE( result == false );
 
         // ERROR
         errMsg = "NOERROR";
-        result = db.fromJSON( "{\"val\":false,locked:true}", &errMsg );
+        result = db.fromJSON( "{\"val\":\"eBLUE\",locked:true}", &errMsg );
         REQUIRE( result == false );
         REQUIRE( errMsg != "NOERROR" );
 
         // ERROR
-        result = db.fromJSON( "{\"val\":false,locked:true}" );
+        result = db.fromJSON( "{\"val\":\"eBLUE\",locked:true}" );
         REQUIRE( result == false );
 
         // ERROR
@@ -204,8 +250,19 @@ TEST_CASE( "Bool" )
         REQUIRE( errMsg != "NOERROR" );
 
         // ERROR
-        result = db.fromJSON( "{\"id\":0}");
+        result = db.fromJSON( "{\"id\":0}" );
         REQUIRE( result == false );
+
+        // ERROR
+        errMsg = "NOERROR";
+        result = db.fromJSON( "{\"id\":0,\"val\":\"eYELLOW\",locked:true}", &errMsg );
+        REQUIRE( result == false );
+        REQUIRE( errMsg != "NOERROR" );
+
+        // ERROR
+        result = db.fromJSON( "{\"id\":0,\"val\":\"eYELLOW\",locked:true}" );
+        REQUIRE( result == false );
+
     }
 
 
@@ -217,13 +274,13 @@ TEST_CASE( "Bool" )
 
         REQUIRE( db.lookupById( ORANGE_ID ) == orange );
         REQUIRE( db.lookupById( APPLE_ID ) == apple );
-        REQUIRE( db.lookupById( ORANGE_ID+2 ) == nullptr );
+        REQUIRE( db.lookupById( ORANGE_ID + 2 ) == nullptr );
 
         REQUIRE( db.first() == apple );
         REQUIRE( db.next( *apple ) == orange );
         REQUIRE( db.next( *orange ) == nullptr );
     }
-    
+
     delete apple;
     delete orange;
     REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );

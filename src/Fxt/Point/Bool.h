@@ -92,7 +92,7 @@ public:
     bool toJSON_( JsonDocument& doc, bool verbose ) noexcept
     {
         // Construct the 'val' key/value pair (as a HEX string)
-        doc["val"] = (((StateBlock_T*) PointCommon_::m_state)->data);
+        doc["val"] = ((StateBlock_T*) PointCommon_::m_state)->data;
         return true;
     }
 

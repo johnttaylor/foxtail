@@ -1,3 +1,4 @@
+#if 0
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -184,7 +185,7 @@ TEST_CASE( "Bool" )
         REQUIRE( errMsg != "NOERROR" );
 
         // ERROR
-        result = db.fromJSON( "{\"id\"=100,\"val\":true,locked:true}" );
+        result = db.fromJSON( "{\"id\"=100,\"val\":\true,locked:true}" );
         REQUIRE( result == false );
 
         // ERROR
@@ -228,3 +229,4 @@ TEST_CASE( "Bool" )
     delete orange;
     REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );
 }
+#endif
