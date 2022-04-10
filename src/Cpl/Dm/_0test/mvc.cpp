@@ -32,17 +32,10 @@ static MailboxServer     t3Mbox_;
 static ModelDatabase    modelDb_("ignoreThisParameter_usedToInvokeTheStaticConstructor");
 
 // Allocate my Model Points
-static StaticInfo       info_mp_apple_( "APPLE" );
-static Mp::Uint32       mp_apple_( modelDb_, info_mp_apple_ );
-
-static StaticInfo       info_mp_orange_( "ORANGE" );
-static Mp::Uint32       mp_orange_( modelDb_, info_mp_orange_ );
-
-static StaticInfo       info_mp_cherry_( "CHERRY" );
-static Mp::Uint32       mp_cherry_( modelDb_, info_mp_cherry_ );
-
-static StaticInfo       info_mp_plum_( "PLUM" );
-static Mp::Uint32       mp_plum_( modelDb_, info_mp_plum_ );
+static Mp::Uint32       mp_apple_( modelDb_, "APPLE" );
+static Mp::Uint32       mp_orange_( modelDb_, "ORANGE" );
+static Mp::Uint32       mp_cherry_( modelDb_, "CHERRY" );
+static Mp::Uint32       mp_plum_( modelDb_, "PLUM" );
 
 
 #define VIEWER_APPLE1_END_VALUE     101
@@ -54,9 +47,8 @@ static Mp::Uint32       mp_plum_( modelDb_, info_mp_plum_ );
 
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE( "mvc", "[mvc]" )
+TEST_CASE( "mvc" )
 {
-    CPL_SYSTEM_TRACE_SCOPE( SECT_, "MVC test" );
     Cpl::System::Shutdown_TS::clearAndUseCounter();
 
     Cpl::System::Thread* t1 = Cpl::System::Thread::create( t1Mbox_, "T1" );
@@ -72,13 +64,11 @@ TEST_CASE( "mvc", "[mvc]" )
 
     Viewer viewer_orange1( t1Mbox_, Cpl::System::Thread::getCurrent(), mp_orange_, VIEWER_ORANGE1_END_VALUE );
     Writer writer_orange1( t1Mbox_, Cpl::System::Thread::getCurrent(), mp_orange_, 0, 1, VIEWER_ORANGE1_END_VALUE, 1 );
-    Rmw rmw_orange2( t2Mbox_, Cpl::System::Thread::getCurrent(), mp_orange_, 0, 1, VIEWER_ORANGE1_END_VALUE, 1 );
 
     Viewer viewer_cherry1( t2Mbox_, Cpl::System::Thread::getCurrent(), mp_cherry_, VIEWER_CHERRY1_END_VALUE );
     Writer writer_cherry1( t1Mbox_, Cpl::System::Thread::getCurrent(), mp_cherry_, 100, 1, VIEWER_CHERRY1_END_VALUE, 1 );
 
     Viewer viewer_plum1( t1Mbox_, Cpl::System::Thread::getCurrent(), mp_plum_, VIEWER_PLUM1_END_VALUE );
-    Rmw rmw_plum1( t2Mbox_, Cpl::System::Thread::getCurrent(), mp_plum_, 1, 1, VIEWER_PLUM1_END_VALUE * 2, 1 );
 
     GenericViewer generic_viewer( t1Mbox_, Cpl::System::Thread::getCurrent(), mp_apple_, mp_orange_, mp_cherry_, GENERIC_VIEWER_END_COUNT );
 
@@ -93,9 +83,7 @@ TEST_CASE( "mvc", "[mvc]" )
     writer_apple1.open();
     writer_apple2.open();
     writer_orange1.open();
-    rmw_orange2.open();
     writer_cherry1.open();
-    rmw_plum1.open();
 
 
     // Wait for everything to finish
@@ -128,9 +116,7 @@ TEST_CASE( "mvc", "[mvc]" )
     writer_apple1.close();
     writer_apple2.close();
     writer_orange1.close();
-    rmw_orange2.close();
     writer_cherry1.close();
-    rmw_plum1.close();
 
 
     // Shutdown threads

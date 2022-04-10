@@ -27,7 +27,7 @@ LeanHeap::LeanHeap( size_t* heapMemory, size_t sizeInBytes )
     , m_ptr( heapMemory )
     , m_wordsRemaining( BYTES_TO_WORDS( sizeInBytes ) )
 {
-    CPL_SYSTEM_ASSERT( m_wordsRemaining == sizeInBytes * 4 );
+    CPL_SYSTEM_ASSERT( m_wordsRemaining * 4 <= sizeInBytes );
 
     // Zero out all of memory
     memset( m_ptr, 0, sizeInBytes );

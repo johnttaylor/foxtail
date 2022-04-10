@@ -137,7 +137,7 @@ bool ModelDatabase::fromJSON( const char* src, Cpl::Text::String* errorMsg, Mode
         return false;
     }
 
-    //    { name="<mpname>", type="<mptypestring>", valid=nn, seqnum:nnnn, locked:true|false val:<value> }
+    //    { name="<mpname>", type="<mptypestring>", valid=true|false, seqnum:nnnn, locked:true|false val:<value> }
 
     // Valid JSON... Parse the Model Point name
     const char* name = ModelDatabase::g_doc_["name"];
@@ -162,20 +162,26 @@ bool ModelDatabase::fromJSON( const char* src, Cpl::Text::String* errorMsg, Mode
     }
 
     // Attempt to parse the key/value pairs of interest
-    int8_t                    valid      = ModelDatabase::g_doc_["invalid"] | -1;
-    JsonVariant               locked     = ModelDatabase::g_doc_["locked"];
+    JsonVariant               validElem  = ModelDatabase::g_doc_["valid"];
+    JsonVariant               lockedElem = ModelDatabase::g_doc_["locked"];
     JsonVariant               valElem    = ModelDatabase::g_doc_["val"];
+    uint16_t                  seqnum     = 0;
     ModelPoint::LockRequest_T lockAction = ModelPoint::eNO_REQUEST;
-    if ( locked.isNull() == false )
+    bool                      parsed     = false;
+
+    // Lock/Unlock the MP
+    if ( !lockedElem.isNull() )
     {
-        lockAction = locked.as<bool>() ? ModelPoint::eLOCK : ModelPoint::eUNLOCK;
+        lockAction = lockedElem.as<bool>() ? ModelPoint::eLOCK : ModelPoint::eUNLOCK;
+        seqnum     = mp->setLockState( lockAction ); // Note: This handles the use case of locking/unlock when the 'val' key/pair was not specified
+        parsed     = true;
     }
 
     // Request to invalidate the MP
-    uint16_t seqnum = 0;
-    if ( valid > 0 )
+    if ( !validElem.isNull() && validElem.as<bool>() == false )
     {
-        seqnum = mp->setInvalidState( valid, lockAction );
+        seqnum = mp->setInvalid( lockAction );
+        parsed     = true;
     }
 
     // Write a valid value to the MP
@@ -185,16 +191,11 @@ bool ModelDatabase::fromJSON( const char* src, Cpl::Text::String* errorMsg, Mode
         {
             return false;
         }
-    }
-
-    // Just lock/unlock the MP
-    else if ( locked.isNull() == false )
-    {
-        seqnum = mp->setLockState( lockAction );
+        parsed = true;
     }
 
     // Bad Syntax
-    else
+    if ( !parsed )
     {
         if ( errorMsg )
         {
@@ -267,7 +268,7 @@ void ModelDatabase::sortList() noexcept
         {
             sortedList.putLast( *item );
         }
-        
+
         item = m_list.getFirst();
     }
 
