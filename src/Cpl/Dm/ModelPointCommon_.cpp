@@ -30,12 +30,16 @@ enum State_T
 
 
 ////////////////////////
-ModelPointCommon_::ModelPointCommon_( ModelDatabase& myModelBase, const char* symbolicName, void* myDataPtr, size_t dataSizeInBytes, bool isValid )
+ModelPointCommon_::ModelPointCommon_( ModelDatabase& myModelBase, 
+                                      const char*    symbolicName, 
+                                      void*          myDataPtr, 
+                                      size_t         dataSizeInBytes, 
+                                      bool           isValid )
     : m_name( symbolicName )
     , m_modelDatabase( myModelBase )
     , m_dataPtr( myDataPtr )
     , m_dataSize( dataSizeInBytes )
-    , m_seqNum( SEQUENCE_NUMBER_UNKNOWN + 1 )
+    , m_seqNum( SEQUENCE_NUMBER_UNKNOWN + 1          )
     , m_locked( false )
     , m_valid( isValid )
 {
@@ -67,7 +71,7 @@ bool ModelPointCommon_::isNotValid( void ) const noexcept
     m_modelDatabase.lock_();
     bool result = m_valid;
     m_modelDatabase.unlock_();
-    return result;
+    return !result;
 }
 
 uint16_t ModelPointCommon_::setInvalid( LockRequest_T lockRequest ) noexcept
@@ -79,6 +83,7 @@ uint16_t ModelPointCommon_::setInvalid( LockRequest_T lockRequest ) noexcept
         if ( m_valid )
         {
             m_valid = false;
+            hookSetInvalid();
             processChangeNotifications();
         }
     }
@@ -88,11 +93,18 @@ uint16_t ModelPointCommon_::setInvalid( LockRequest_T lockRequest ) noexcept
     return result;
 }
 
+void ModelPointCommon_::hookSetInvalid() noexcept
+{
+    // Set the data to a known state so that transition from tjhe invalid to the 
+    // valid state when using read-modify-write operation is consistent in its behavior
+    memset( m_dataPtr, 0, m_dataSize );
+}
+
 bool ModelPointCommon_::read( void* dstData, size_t dstSize, uint16_t* seqNumPtr ) const noexcept
 {
     m_modelDatabase.lock_();
-    bool validState = m_valid;
-    if ( dstData && validState )
+    bool valid = m_valid;
+    if ( dstData && valid )
     {
         copyDataTo_( dstData, dstSize );
     }
@@ -102,7 +114,7 @@ bool ModelPointCommon_::read( void* dstData, size_t dstSize, uint16_t* seqNumPtr
     }
     m_modelDatabase.unlock_();
 
-    return validState;
+    return valid;
 }
 
 uint16_t ModelPointCommon_::write( const void* srcData, size_t srcSize, LockRequest_T lockRequest ) noexcept
@@ -160,7 +172,7 @@ size_t ModelPointCommon_::getInternalDataSize_() const noexcept
 }
 
 /////////////////
-bool ModelPointCommon_::toJSON( char* dst, size_t dstSize, bool& truncated, bool verbose=true ) noexcept
+bool ModelPointCommon_::toJSON( char* dst, size_t dstSize, bool& truncated, bool verbose ) noexcept
 {
     // Get a snapshot of the my data and state
     Cpl::Dm::ModelPointCommon_::m_modelDatabase.lock_();

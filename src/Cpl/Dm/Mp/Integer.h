@@ -46,13 +46,14 @@ protected:
 public:
     /// Constructor: Invalid MP
     Integer( Cpl::Dm::ModelDatabase& myModelBase, const char* symbolicName )
-        :Cpl::Dm::ModelPointCommon_( myModelBase, symbolicName, &m_data, sizeof( ELEMTYPE ), false )
+        :Cpl::Dm::ModelPointCommon_( myModelBase, symbolicName, &m_data, sizeof( m_data ), false )
     {
+        hookSetInvalid();   // Setting the MP to the invalid state
     }
 
     /// Constructor: Valid MP (requires initial value)
     Integer( Cpl::Dm::ModelDatabase& myModelBase, const char* symbolicName, ELEMTYPE initialValue )
-        :Cpl::Dm::ModelPointCommon_( myModelBase, symbolicName, &m_data, sizeof( ELEMTYPE ), true )
+        :Cpl::Dm::ModelPointCommon_( myModelBase, symbolicName, &m_data, sizeof( m_data ), true )
     {
         m_data = initialValue;
     }
@@ -106,7 +107,7 @@ protected:
     /// See Cpl::Dm::Point.  
     void setJSONVal( JsonDocument& doc ) noexcept
     {
-        doc["val"] = value;
+        doc["val"] = m_data;
     }
 
 public:
@@ -118,7 +119,7 @@ public:
             retSequenceNumber = write( src.as<ELEMTYPE>(), lockRequest );
             return true;
         }
-        if ( *errorMsg )
+        if ( errorMsg )
         {
             *errorMsg = "Invalid syntax for the 'val' key/value pair";
         }

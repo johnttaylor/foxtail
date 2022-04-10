@@ -58,7 +58,11 @@ protected:
 
 protected:
     /// Constructor
-    ModelPointCommon_( ModelDatabase& myModelBase, const char* symbolicName, void* myDataPtr, size_t dataSizeInBytes, bool isValid = false );
+    ModelPointCommon_( ModelDatabase& myModelBase,
+                       const char*    symbolicName,
+                       void*          myDataPtr,
+                       size_t         dataSizeInBytes,
+                       bool           isValid = false );
 
 public:
     /// See Cpl::Dm::ModelPoint
@@ -190,6 +194,12 @@ protected:
 
     /// Helper method when converting MP to a JSON string
     virtual void endJSON( char* dst, size_t dstSize, bool& truncated, bool verbose=true ) noexcept;
+
+    /** Helper method that a child a class can override to change behavior when
+        an MP is set to the invalid state.  The default behavior is to zero out
+        the data (i.e. perform a memset(m_dataPtr,0, m_dataSize) call on the data)
+     */
+    virtual void hookSetInvalid() noexcept;
 };
 
 };      // end namespaces

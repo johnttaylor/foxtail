@@ -44,7 +44,7 @@ public:
 	/** Constructor. Invalid MP.  
 	 */
 	Uint32(Cpl::Dm::ModelDatabase& myModelBase, const char* symbolicName )
-		:Integer<uint32_t, Uint32>(myModelBase, symbolicName )
+		: Integer<uint32_t, Uint32>(myModelBase, symbolicName )
 	{
 	}
 

@@ -70,7 +70,7 @@ public:
         , m_lastValid( false )
         , m_done( false )
     {
-        CPL_SYSTEM_TRACE_MSG( SECT_, ( "VIEWER(%p). mp1=%s, endVal=%lu", this, mp1.getName(), mpEndValue1 ) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("VIEWER(%p). mp1=%s, endVal=%lu", this, mp1.getName(), mpEndValue1) );
     }
 
 public:
@@ -84,7 +84,7 @@ public:
 
         m_pendingOpenMsgPtr    = &msg;
         m_mpNotificationCount1 = 0;
-        CPL_SYSTEM_TRACE_MSG( SECT_, ( "SUBSCRIBING (%p) for Change notification. current value =%u", this, m_mpNotificationCount1 ) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("SUBSCRIBING (%p) for Change notification. current value =%u", this, m_mpNotificationCount1) );
 
         // Subscribe to my model point
         m_mp1.attach( m_observerMp1 );
@@ -100,7 +100,7 @@ public:
             FAIL( "CLOSING Viewer more than ONCE" );
         }
 
-        CPL_SYSTEM_TRACE_MSG( SECT_, ( "VIEWER(%p): Closing... ", this ) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("VIEWER(%p): Closing... ", this) );
 
         // Un-subscribe to my model point
         m_mp1.detach( m_observerMp1 );
@@ -113,30 +113,38 @@ public:
     void mp1_changed( Mp::Uint32& modelPointThatChanged ) noexcept
     {
         CPL_SYSTEM_TRACE_ALLOCATE( uint32_t, prevValue, m_lastValue );
-        CPL_SYSTEM_TRACE_ALLOCATE( int8_t,   prevState, m_lastValid );
+        CPL_SYSTEM_TRACE_ALLOCATE( int8_t, prevState, m_lastValid );
         uint16_t prevSeqNum = m_lastSeqNumber;
 
         m_mpNotificationCount1++;
         uint16_t seqNum;
-        m_lastValid = modelPointThatChanged.read( m_lastValue, &seqNum );
-        m_lastSeqNumber  = m_observerMp1.getSequenceNumber_();
+        m_lastValid     = modelPointThatChanged.read( m_lastValue, &seqNum );
+        m_lastSeqNumber = m_observerMp1.getSequenceNumber_();
+
+        //CPL_SYSTEM_TRACE_MSG( SECT_, ("VIEWER(%p): mp changed (%s), notify count=%d, valid=%d, value=%d",
+        //                               this,
+        //                               modelPointThatChanged.getName(),
+        //                               m_mpNotificationCount1,
+        //                               m_lastValid,
+        //                               m_lastValue) );
 
         if ( m_pendingOpenMsgPtr != 0 && m_mpNotificationCount1 == 1 )
         {
             m_pendingOpenMsgPtr->returnToSender();
-            m_opened            = true;
-            m_pendingOpenMsgPtr = 0;
+            m_opened               = true;
+            m_pendingOpenMsgPtr    = 0;
+            m_mpNotificationCount1 = 0;
         }
 
-        if ( m_lastValid&& m_lastValue >= m_mpEndValue )
+        if ( m_lastValid && m_lastValue >= m_mpEndValue )
         {
             if ( m_done )
             {
-                CPL_SYSTEM_TRACE_MSG( SECT_, ( "Viewer::mp1_changed(%p): Received Change notification after signaling the master thread, may or may not be an error. Prev: value=%lu, state=%d, seqNum=%u.  Rcvd: value=%lu, state=%d, seqNum=%u.  read_seq_num=%u, notifyCount=%d", this, prevValue, prevState, prevSeqNum, m_lastValue, m_lastValid, m_lastSeqNumber, seqNum, m_mpNotificationCount1 ) );
+                CPL_SYSTEM_TRACE_MSG( SECT_, ("Viewer::mp1_changed(%p): Received Change notification after signaling the master thread, may or may not be an error. Prev: value=%lu, state=%d, seqNum=%u.  Rcvd: value=%lu, state=%d, seqNum=%u.  read_seq_num=%u, notifyCount=%d", this, prevValue, prevState, prevSeqNum, m_lastValue, m_lastValid, m_lastSeqNumber, seqNum, m_mpNotificationCount1) );
             }
             else
             {
-                CPL_SYSTEM_TRACE_MSG( SECT_, ( "Viewer::mp1_changed(%p): Signaling master thread", this ) );
+                CPL_SYSTEM_TRACE_MSG( SECT_, ("Viewer::mp1_changed(%p, %s): Signaling master thread", this, m_mp1.getName() ) );
                 m_mp1.detach( m_observerMp1 );
                 m_masterThread.signal();
                 m_done = true;
@@ -184,7 +192,7 @@ public:
         , m_stepSize( stepSize )
         , m_timer( myMbox, *this, &Writer::timerExpired )
     {
-        CPL_SYSTEM_TRACE_MSG( SECT_, ( "WRITER(%p). mp1=%s, endVal=%lu, interval=%lu", this, mp1.getName(), endValue, intervalMsec ) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("WRITER(%p). mp1=%s, endVal=%lu, interval=%lu", this, mp1.getName(), endValue, intervalMsec) );
     }
 
 public:
@@ -196,7 +204,7 @@ public:
             FAIL( "OPENING Writer more than ONCE" );
         }
 
-        CPL_SYSTEM_TRACE_MSG( SECT_, ( "WRITER(%p): Starting interval timer (%lu)", this, m_intervalMsec ) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("WRITER(%p): Starting interval timer (%lu)", this, m_intervalMsec) );
         m_opened = true;
         m_timer.start( m_intervalMsec );
         msg.returnToSender();
@@ -210,7 +218,7 @@ public:
             FAIL( "CLOSING Writer more than ONCE" );
         }
 
-        CPL_SYSTEM_TRACE_MSG( SECT_, ( "WRITER(%p): Closing... ", this ) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("WRITER(%p): Closing... ", this) );
 
         // Stop my writ timer
         m_opened = false;
@@ -230,7 +238,7 @@ public:
 
             if ( m_currentValue >= m_endValue )
             {
-                CPL_SYSTEM_TRACE_MSG( SECT_, ( "Writer::timerExpired(%p): Signaling master thread", this ) );
+                CPL_SYSTEM_TRACE_MSG( SECT_, ("Writer::timerExpired(%p): Signaling master thread", this) );
                 m_masterThread.signal();
             }
             else
@@ -264,9 +272,9 @@ public:
     ///
     ModelPoint&                         m_mp3;
     ///
-    uint32_t                            m_mpNotificationCount;
+    unsigned                            m_maxNotifyCounts;
     ///
-    uint32_t                            m_mpEndValue;
+    uint32_t                            m_mpNotificationCount;
     ///
     SubscriberComposer<GenericViewer, ModelPoint> m_observerMp1;
     ///
@@ -276,14 +284,12 @@ public:
     ///
     uint16_t                            m_lastSeqNumber;
     ///
-    uint32_t                            m_lastValue;
-    ///
-    int8_t                              m_lastValid;
+    bool                                m_lastValid;
     ///
     bool                                m_done;
 
     /// Constructor
-    GenericViewer( MailboxServer& myMbox, Cpl::System::Thread& masterThread, ModelPoint& mp1, ModelPoint& mp2, ModelPoint& mp3, uint32_t mpEndValue3 )
+    GenericViewer( MailboxServer& myMbox, Cpl::System::Thread& masterThread, ModelPoint& mp1, ModelPoint& mp2, ModelPoint& mp3, unsigned maxNotifyCounts )
         :Cpl::Itc::CloseSync( myMbox )
         , m_opened( false )
         , m_masterThread( masterThread )
@@ -291,8 +297,8 @@ public:
         , m_mp1( mp1 )
         , m_mp2( mp2 )
         , m_mp3( mp3 )
+        , m_maxNotifyCounts( maxNotifyCounts )
         , m_mpNotificationCount( 0 )
-        , m_mpEndValue( mpEndValue3 )
         , m_observerMp1( myMbox, *this, &GenericViewer::mpChanged )
         , m_observerMp2( myMbox, *this, &GenericViewer::mpChanged )
         , m_observerMp3( myMbox, *this, &GenericViewer::mpChanged )
@@ -300,7 +306,7 @@ public:
         , m_lastValid( OPTION_CPL_DM_MODEL_POINT_STATE_INVALID )
         , m_done( false )
     {
-        CPL_SYSTEM_TRACE_MSG( SECT_, ( "GENERIC VIEWER(%p). mp1=%s, endVal3=%lu", this, mp1.getName(), mpEndValue3 ) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("GENERIC VIEWER(%p). mp1=%s", this, mp1.getName()) );
     }
 
 public:
@@ -314,7 +320,7 @@ public:
 
         m_pendingOpenMsgPtr   = &msg;
         m_mpNotificationCount = 0;
-        CPL_SYSTEM_TRACE_MSG( SECT_, ( "GENERIC SUBSCRIBING (%p) for Change notification. current value =%u", this, m_mpNotificationCount ) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("GENERIC SUBSCRIBING (%p) for Change notification. current value =%u", this, m_mpNotificationCount) );
 
         // Subscribe to my model point
         m_mp1.genericAttach( m_observerMp1 );
@@ -332,7 +338,7 @@ public:
             FAIL( "CLOSING GENERIC Viewer more than ONCE" );
         }
 
-        CPL_SYSTEM_TRACE_MSG( SECT_, ( "GENERIC VIEWER(%p): Closing... ", this ) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("GENERIC VIEWER(%p): Closing... ", this) );
 
         // Un-subscribe to my model point
         m_mp1.genericDetach( m_observerMp1 );
@@ -346,10 +352,6 @@ public:
 public:
     void mpChanged( ModelPoint& modelPointThatChanged ) noexcept
     {
-        CPL_SYSTEM_TRACE_ALLOCATE( uint32_t, prevValue,  m_lastValue  );
-        CPL_SYSTEM_TRACE_ALLOCATE( int8_t,   prevState,  m_lastValid );
-        CPL_SYSTEM_TRACE_ALLOCATE( uint16_t, prevSeqNum, m_lastSeqNumber );
-
         m_mpNotificationCount++;
         m_lastValid     = !modelPointThatChanged.isNotValid();
         m_lastSeqNumber = m_observerMp1.getSequenceNumber_();
@@ -357,19 +359,34 @@ public:
         if ( m_pendingOpenMsgPtr != 0 && m_mpNotificationCount == 3 )
         {
             m_pendingOpenMsgPtr->returnToSender();
-            m_opened            = true;
-            m_pendingOpenMsgPtr = 0;
+            m_opened              = true;
+            m_pendingOpenMsgPtr   = 0;
+            m_mpNotificationCount = 0;
         }
 
-        if ( m_lastValid && m_mpNotificationCount >= m_mpEndValue )
+        //CPL_SYSTEM_TRACE_MSG( SECT_, ("Generic VIEWER(%p): mp changed (%s), notify count=%d (of %d), valid=%d",
+        //                               this,
+        //                               modelPointThatChanged.getName(),
+        //                               m_mpNotificationCount,
+        //                               m_maxNotifyCounts,
+        //                               m_lastValid) );
+
+
+        if ( m_lastValid && m_mpNotificationCount >= m_maxNotifyCounts / 2 )   // Assume at least half the change notifications
         {
+            if ( m_mpNotificationCount > m_maxNotifyCounts )
+            {
+                CPL_SYSTEM_TRACE_MSG( SECT_, ("Generic View: Received TOO many change notification (%d, max=%d)", m_mpNotificationCount, m_maxNotifyCounts) );
+                FAIL( "Generic View: Received TOO many change notification" );
+            }
+
             if ( m_done )
             {
-                CPL_SYSTEM_TRACE_MSG( SECT_, ( "Generic Viewer::mpChanged(%p): Received Change notification after signaling the master thread, may or may not be an error. Prev: value=%lu, state=%d, seqNum=%u.  Rcvd: valid=%d, seqNum=%u.  read_seq_num=%u, notifyCount=%d", this, prevValue, prevState, prevSeqNum, m_lastValid, m_lastSeqNumber, m_mpNotificationCount ) );
+                CPL_SYSTEM_TRACE_MSG( SECT_, ("Generic Viewer::mpChanged(%p): Received Change notification after signaling the master thread, may or may not be an error.", this) );
             }
             else
             {
-                CPL_SYSTEM_TRACE_MSG( SECT_, ( "GenericViewer::mp1Changed(%p): Signaling master thread", this ) );
+                CPL_SYSTEM_TRACE_MSG( SECT_, ("GenericViewer::mp1Changed(%p): Signaling master thread", this) );
                 m_mp1.genericDetach( m_observerMp1 );
                 m_mp2.genericDetach( m_observerMp2 );
                 m_mp3.genericDetach( m_observerMp3 );

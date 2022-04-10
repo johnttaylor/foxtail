@@ -1,3 +1,4 @@
+#if 0 
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -103,3 +104,4 @@ bool Bool::fromJSON_( JsonVariant& src, LockRequest_T lockRequest, uint16_t& ret
 	retSequenceNumber = write( newValue, lockRequest );
 	return true;
 }
+#endif

@@ -29,7 +29,7 @@ static MailboxServer     t2Mbox_;
 static MailboxServer     t3Mbox_;
 
 // Allocate/create my Model Database
-static ModelDatabase    modelDb_("ignoreThisParameter_usedToInvokeTheStaticConstructor");
+static ModelDatabase    modelDb_( "ignoreThisParameter_usedToInvokeTheStaticConstructor" );
 
 // Allocate my Model Points
 static Mp::Uint32       mp_apple_( modelDb_, "APPLE" );
@@ -38,11 +38,10 @@ static Mp::Uint32       mp_cherry_( modelDb_, "CHERRY" );
 static Mp::Uint32       mp_plum_( modelDb_, "PLUM" );
 
 
-#define VIEWER_APPLE1_END_VALUE     101
-#define VIEWER_APPLE2_END_VALUE     (VIEWER_APPLE1_END_VALUE/2)
-#define VIEWER_ORANGE1_END_VALUE    101
+#define VIEWER_APPLE1_END_VALUE     10
+#define VIEWER_ORANGE1_END_VALUE    7
 #define VIEWER_CHERRY1_END_VALUE    11
-#define VIEWER_PLUM1_END_VALUE      101
+#define VIEWER_PLUM1_END_VALUE      9
 #define GENERIC_VIEWER_END_COUNT    (VIEWER_APPLE1_END_VALUE+VIEWER_ORANGE1_END_VALUE+VIEWER_CHERRY1_END_VALUE)
 
 
@@ -56,11 +55,9 @@ TEST_CASE( "mvc" )
     //Cpl::System::Thread* t3 = Cpl::System::Thread::create( t3Mbox_, "ReaderModifyWriters" );
 
     // Create my viewers, writers
-#define NUM_INSTANCES   12
+#define NUM_INSTANCES   8
     Viewer viewer_apple1( t1Mbox_, Cpl::System::Thread::getCurrent(), mp_apple_, VIEWER_APPLE1_END_VALUE );
-    Viewer viewer_apple2( t2Mbox_, Cpl::System::Thread::getCurrent(), mp_apple_, VIEWER_APPLE2_END_VALUE );
     Writer writer_apple1( t2Mbox_, Cpl::System::Thread::getCurrent(), mp_apple_, 10, 1, VIEWER_APPLE1_END_VALUE, 1 );
-    Writer writer_apple2( t1Mbox_, Cpl::System::Thread::getCurrent(), mp_apple_, 0, 1, VIEWER_APPLE1_END_VALUE - 1, 1 );
 
     Viewer viewer_orange1( t1Mbox_, Cpl::System::Thread::getCurrent(), mp_orange_, VIEWER_ORANGE1_END_VALUE );
     Writer writer_orange1( t1Mbox_, Cpl::System::Thread::getCurrent(), mp_orange_, 0, 1, VIEWER_ORANGE1_END_VALUE, 1 );
@@ -69,21 +66,21 @@ TEST_CASE( "mvc" )
     Writer writer_cherry1( t1Mbox_, Cpl::System::Thread::getCurrent(), mp_cherry_, 100, 1, VIEWER_CHERRY1_END_VALUE, 1 );
 
     Viewer viewer_plum1( t1Mbox_, Cpl::System::Thread::getCurrent(), mp_plum_, VIEWER_PLUM1_END_VALUE );
+    Writer writer_plum1( t1Mbox_, Cpl::System::Thread::getCurrent(), mp_plum_, 100, 1, VIEWER_PLUM1_END_VALUE, 1 );
 
     GenericViewer generic_viewer( t1Mbox_, Cpl::System::Thread::getCurrent(), mp_apple_, mp_orange_, mp_cherry_, GENERIC_VIEWER_END_COUNT );
 
 
     // Open my viewers, writers
     viewer_apple1.open();
-    viewer_apple2.open();
     viewer_orange1.open();
     viewer_cherry1.open();
     viewer_plum1.open();
     generic_viewer.open();
     writer_apple1.open();
-    writer_apple2.open();
     writer_orange1.open();
     writer_cherry1.open();
+    writer_plum1.open();
 
 
     // Wait for everything to finish
@@ -93,30 +90,27 @@ TEST_CASE( "mvc" )
     }
 
     REQUIRE( viewer_apple1.m_lastValue == VIEWER_APPLE1_END_VALUE );
-    REQUIRE( viewer_apple2.m_lastValue >= VIEWER_APPLE2_END_VALUE );
     REQUIRE( viewer_orange1.m_lastValue == VIEWER_ORANGE1_END_VALUE );
     REQUIRE( viewer_cherry1.m_lastValue == VIEWER_CHERRY1_END_VALUE );
     REQUIRE( viewer_plum1.m_lastValue >= VIEWER_PLUM1_END_VALUE );
-    REQUIRE( generic_viewer.m_mpNotificationCount >= GENERIC_VIEWER_END_COUNT );
+    REQUIRE( generic_viewer.m_mpNotificationCount >= (GENERIC_VIEWER_END_COUNT/2) );
 
     CPL_SYSTEM_TRACE_MSG( SECT_, ("viewer_apple1(%p). m_lastValue=%lu (expected == %lu)", &viewer_apple1, viewer_apple1.m_lastValue, VIEWER_APPLE1_END_VALUE) );
-    CPL_SYSTEM_TRACE_MSG( SECT_, ("viewer_apple2(%p). m_lastValue=%lu (expected >= %lu)", &viewer_apple2, viewer_apple2.m_lastValue, VIEWER_APPLE2_END_VALUE) );
     CPL_SYSTEM_TRACE_MSG( SECT_, ("viewer_orange1(%p). m_lastValue=%lu (expected == %lu)", &viewer_orange1, viewer_orange1.m_lastValue, VIEWER_ORANGE1_END_VALUE) );
     CPL_SYSTEM_TRACE_MSG( SECT_, ("viewer_cherry1(%p). m_lastValue=%lu (expected == %lu)", &viewer_cherry1, viewer_cherry1.m_lastValue, VIEWER_CHERRY1_END_VALUE) );
-    CPL_SYSTEM_TRACE_MSG( SECT_, ( "viewer_plum1(%p). m_lastValue=%lu (expected >= %lu)", &viewer_plum1, viewer_plum1.m_lastValue, VIEWER_PLUM1_END_VALUE ) );
-    CPL_SYSTEM_TRACE_MSG( SECT_, ("generic_viewer(%p). m_notifCount=%lu (expected >= %lu)", &generic_viewer, generic_viewer.m_mpNotificationCount, GENERIC_VIEWER_END_COUNT ) );
+    CPL_SYSTEM_TRACE_MSG( SECT_, ("viewer_plum1(%p). m_lastValue=%lu (expected >= %lu)", &viewer_plum1, viewer_plum1.m_lastValue, VIEWER_PLUM1_END_VALUE) );
+    CPL_SYSTEM_TRACE_MSG( SECT_, ("generic_viewer(%p). m_notifCount=%lu (expected >= %lu)", &generic_viewer, generic_viewer.m_mpNotificationCount, (GENERIC_VIEWER_END_COUNT/2)) );
 
     // Close my viewers, writers, 
     generic_viewer.close();
     viewer_apple1.close();
-    viewer_apple2.close();
     viewer_orange1.close();
     viewer_cherry1.close();
     viewer_plum1.close();
     writer_apple1.close();
-    writer_apple2.close();
     writer_orange1.close();
     writer_cherry1.close();
+    writer_plum1.close();
 
 
     // Shutdown threads
