@@ -101,10 +101,10 @@ public:
 
 
 public:
-     /// This method returns true when the MP data is invalid.
+    /// This method returns true when the MP data is invalid.
     virtual bool isNotValid() const noexcept = 0;
 
-    /** This method is used to mark the element's data as invalid.  
+    /** This method is used to mark the element's data as invalid.
 
         The method returns the Model Point's sequence number after updating
         the valid state.
@@ -151,10 +151,11 @@ public:
 
         \endcode
      */
-    virtual bool toJSON( char* dst,
+    virtual bool toJSON( char*  dst,
                          size_t dstSize,
-                         bool& truncated,
-                         bool  verbose=true ) noexcept = 0;
+                         bool&  truncated,
+                         bool   verbose = true,
+                         bool   pretty = false ) noexcept = 0;
 
 
     /** This method returns a string identifier for the Model Point's data type.
@@ -257,8 +258,8 @@ public:
 
 public:
     /** This method is used to subscribe to on-change notification in a GENERIC
-        manner. This means the on-change callback notification WILL NOT be type 
-        specific.  USE WITH CAUTION - using type specific callbacks is the 
+        manner. This means the on-change callback notification WILL NOT be type
+        specific.  USE WITH CAUTION - using type specific callbacks is the
         preferred usage.
 
         See the attach() method below for additional details of subscribing
@@ -266,8 +267,8 @@ public:
     virtual void genericAttach( SubscriberApi& observer,
                                 uint16_t       initialSeqNumber=SEQUENCE_NUMBER_UNKNOWN ) noexcept = 0;
 
-    /** This is method is used to detach a GENERIC Subscriber from a Model Point.  
-    
+    /** This is method is used to detach a GENERIC Subscriber from a Model Point.
+
         See the detach() method below for additional details of subscribing
      */
     virtual void genericDetach( SubscriberApi& observer ) noexcept = 0;
@@ -459,7 +460,7 @@ public:
 
         This method returns the "internal size" of the Model Point's data point.
         This length (when applicable) INCLUDES ANY 'META/EXTRA' DATA that is
-        NOT the valid/locked meta-data - but is used with the internal 
+        NOT the valid/locked meta-data - but is used with the internal
         import()/export() methods.
    */
     virtual size_t getInternalDataSize_() const noexcept = 0;
@@ -478,7 +479,7 @@ public:
         model points that do not have metadata.
 
         NOTE: The overall size of the destination has been validated with respect
-              holding both the Model Point's metadata and the data - so the 
+              holding both the Model Point's metadata and the data - so the
               no 'dstLength' argument is passed/provided.
     */
     virtual bool exportMetadata_( void* dstDataStream, size_t& bytesAdded ) const noexcept { bytesAdded = 0;  return true; }
@@ -498,7 +499,7 @@ public:
         model points that do not have metadata
 
         NOTE: The overall size of the source has been validated with respect
-              containing both the Model Point's metadata and the data - so the 
+              containing both the Model Point's metadata and the data - so the
               no 'srcLength' argument is passed/provided.
    */
     virtual bool importMetadata_( const void* srcDataStream, size_t& bytesConsumed ) noexcept { bytesConsumed = 0;  return true; }

@@ -105,7 +105,7 @@ public:
     void genericDetach( SubscriberApi& observer ) noexcept;
 
     /// See Cpl::Dm::ModelPoint
-    bool toJSON( char* dst, size_t dstSize, bool& truncated, bool verbose=true ) noexcept;
+    bool toJSON( char* dst, size_t dstSize, bool& truncated, bool verbose=true, bool pretty=false ) noexcept;
 
 protected:
     /// See Cpl::Dm::ModelPoint
@@ -193,7 +193,7 @@ protected:
     virtual JsonDocument& beginJSON( bool isValid, bool locked, uint16_t seqnum, bool verbose=true ) noexcept;
 
     /// Helper method when converting MP to a JSON string
-    virtual void endJSON( char* dst, size_t dstSize, bool& truncated, bool verbose=true ) noexcept;
+    virtual void endJSON( char* dst, size_t dstSize, bool& truncated, bool verbose=true, bool pretty=false ) noexcept;
 
     /** Helper method that a child a class can override to change behavior when
         an MP is set to the invalid state.  The default behavior is to zero out

@@ -24,6 +24,10 @@
 #define STREAM_BUFFER_SIZE  100
 #define MAX_STR_LENG        1024
 
+
+#define NEW_LINE    "\r\n"
+#define EXPECTED_PRETTY "{" NEW_LINE "  \"name\": \"APPLE\"," NEW_LINE "  \"valid\": true," NEW_LINE "  \"type\": \"Cpl::Dm::Mp::Uint32\"," NEW_LINE "  \"seqnum\": 16," NEW_LINE "  \"locked\": false," NEW_LINE "  \"val\": 127" NEW_LINE "}"
+
 #define STRCMP(s1,s2)  (strcmp(s1,s2)==0)
 
 // Allocate/create my Model Database
@@ -284,6 +288,23 @@ TEST_CASE( "uint32" )
         REQUIRE( doc["val"] == 127 );
     }
 
+
+    SECTION( "toJSON-pretty" )
+    {
+        uint16_t seqnum = mp_apple_.write( 127 );
+        mp_apple_.toJSON( string, MAX_STR_LENG, truncated, true, true );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s])", string) );
+        REQUIRE( strcmp( string, EXPECTED_PRETTY ) == 0 );
+
+        StaticJsonDocument<1024> doc;
+        DeserializationError err = deserializeJson( doc, string );
+        REQUIRE( err == DeserializationError::Ok );
+        REQUIRE( doc["seqnum"] == seqnum );
+        REQUIRE( doc["locked"] == false );
+        REQUIRE( doc["valid"] == true );
+        REQUIRE( doc["val"] == 127 );
+    }
+    
     SECTION( "toJSON-Value + Lock" )
     {
         mp_apple_.applyLock();

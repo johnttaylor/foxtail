@@ -45,6 +45,13 @@ ModelPointCommon_::ModelPointCommon_( ModelDatabase& myModelBase,
 {
     // Automagically add myself to the Model Database
     myModelBase.insert_( *this );
+
+
+    // Make sure that I process the 'transition' to the invalid state
+    if ( !m_valid )
+    {
+        hookSetInvalid();  
+    }
 }
 
 /////////////////
@@ -172,13 +179,13 @@ size_t ModelPointCommon_::getInternalDataSize_() const noexcept
 }
 
 /////////////////
-bool ModelPointCommon_::toJSON( char* dst, size_t dstSize, bool& truncated, bool verbose ) noexcept
+bool ModelPointCommon_::toJSON( char* dst, size_t dstSize, bool& truncated, bool verbose, bool pretty ) noexcept
 {
     // Get a snapshot of the my data and state
-    Cpl::Dm::ModelPointCommon_::m_modelDatabase.lock_();
+    m_modelDatabase.lock_();
 
     // Start the conversion
-    JsonDocument& doc = Cpl::Dm::ModelPointCommon_::beginJSON( m_valid, m_locked, m_seqNum, verbose );
+    JsonDocument& doc = beginJSON( m_valid, m_locked, m_seqNum, verbose );
 
     // Construct the 'val' key/value pair (as a simple numeric)
     if ( m_valid )
@@ -187,8 +194,8 @@ bool ModelPointCommon_::toJSON( char* dst, size_t dstSize, bool& truncated, bool
     }
 
     // End the conversion
-    Cpl::Dm::ModelPointCommon_::endJSON( dst, dstSize, truncated, verbose );
-    Cpl::Dm::ModelPointCommon_::m_modelDatabase.unlock_();
+    endJSON( dst, dstSize, truncated, verbose, pretty );
+    m_modelDatabase.unlock_();
     return true;
 }
 
@@ -562,12 +569,23 @@ JsonDocument& ModelPointCommon_::beginJSON( bool isValid, bool locked, uint16_t 
     return ModelDatabase::g_doc_;
 }
 
-void ModelPointCommon_::endJSON( char* dst, size_t dstSize, bool& truncated, bool verbose ) noexcept
+void ModelPointCommon_::endJSON( char* dst, size_t dstSize, bool& truncated, bool verbose, bool pretty ) noexcept
 {
+    size_t jsonLen;
+    size_t outputLen;
+
     // Generate the actual output string 
-    size_t jsonLen   = measureJson( ModelDatabase::g_doc_ );
-    size_t outputLen = serializeJson( ModelDatabase::g_doc_, dst, dstSize );
-    truncated        = outputLen == jsonLen ? false : true;
+    if ( !pretty )
+    {
+        jsonLen   = measureJson( ModelDatabase::g_doc_ );
+        outputLen = serializeJson( ModelDatabase::g_doc_, dst, dstSize );
+    }
+    else
+    {
+        jsonLen   = measureJsonPretty( ModelDatabase::g_doc_ );
+        outputLen = serializeJsonPretty( ModelDatabase::g_doc_, dst, dstSize );
+    }
+    truncated = outputLen == jsonLen ? false : true;
 
     // Release the Global JSON document
     ModelDatabase::globalUnlock_();

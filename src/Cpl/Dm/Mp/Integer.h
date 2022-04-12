@@ -48,7 +48,6 @@ public:
     Integer( Cpl::Dm::ModelDatabase& myModelBase, const char* symbolicName )
         :Cpl::Dm::ModelPointCommon_( myModelBase, symbolicName, &m_data, sizeof( m_data ), false )
     {
-        hookSetInvalid();   // Setting the MP to the invalid state
     }
 
     /// Constructor: Valid MP (requires initial value)
@@ -60,19 +59,19 @@ public:
 
 public:
     /// Type safe read. See Cpl::Dm::ModelPoint
-    virtual int8_t read( ELEMTYPE& dstData, uint16_t* seqNumPtr = 0 ) const noexcept
+    inline bool read( ELEMTYPE& dstData, uint16_t* seqNumPtr = 0 ) const noexcept
     {
         return Cpl::Dm::ModelPointCommon_::read( &dstData, sizeof( ELEMTYPE ), seqNumPtr );
     }
 
     /// Type safe write. See Cpl::Dm::ModelPoint
-    virtual uint16_t write( ELEMTYPE newValue, Cpl::Dm::ModelPoint::LockRequest_T lockRequest = Cpl::Dm::ModelPoint::eNO_REQUEST ) noexcept
+    inline uint16_t write( ELEMTYPE newValue, Cpl::Dm::ModelPoint::LockRequest_T lockRequest = Cpl::Dm::ModelPoint::eNO_REQUEST ) noexcept
     {
         return Cpl::Dm::ModelPointCommon_::write( &newValue, sizeof( ELEMTYPE ), lockRequest );
     }
 
     /// Atomic increment
-    virtual uint16_t increment( ELEMTYPE incSize = 1, Cpl::Dm::ModelPoint::LockRequest_T lockRequest = Cpl::Dm::ModelPoint::eNO_REQUEST ) noexcept
+    inline uint16_t increment( ELEMTYPE incSize = 1, Cpl::Dm::ModelPoint::LockRequest_T lockRequest = Cpl::Dm::ModelPoint::eNO_REQUEST ) noexcept
     {
         Cpl::Dm::ModelPointCommon_::m_modelDatabase.lock_();
         uint16_t result = write( m_data + incSize, lockRequest );
@@ -81,7 +80,7 @@ public:
     }
 
     /// Atomic decrement
-    virtual uint16_t decrement( ELEMTYPE decSize = 1, Cpl::Dm::ModelPoint::LockRequest_T lockRequest = Cpl::Dm::ModelPoint::eNO_REQUEST ) noexcept
+    inline uint16_t decrement( ELEMTYPE decSize = 1, Cpl::Dm::ModelPoint::LockRequest_T lockRequest = Cpl::Dm::ModelPoint::eNO_REQUEST ) noexcept
     {
         Cpl::Dm::ModelPointCommon_::m_modelDatabase.lock_();
         uint16_t result = write( m_data - decSize, lockRequest );
@@ -91,13 +90,13 @@ public:
 
 
     /// Type safe register observer
-    virtual void attach( Cpl::Dm::Subscriber<MPTYPE>& observer, uint16_t initialSeqNumber = SEQUENCE_NUMBER_UNKNOWN ) noexcept
+    inline void attach( Cpl::Dm::Subscriber<MPTYPE>& observer, uint16_t initialSeqNumber = SEQUENCE_NUMBER_UNKNOWN ) noexcept
     {
         ModelPointCommon_::attach( observer, initialSeqNumber );
     }
 
     /// Type safe un-register observer
-    virtual void detach( Cpl::Dm::Subscriber<MPTYPE>& observer ) noexcept
+    inline void detach( Cpl::Dm::Subscriber<MPTYPE>& observer ) noexcept
     {
         ModelPointCommon_::detach( observer );
     }
