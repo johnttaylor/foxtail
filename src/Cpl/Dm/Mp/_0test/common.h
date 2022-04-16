@@ -160,30 +160,6 @@ public:
     }
 };
 
-class RmwInt32 : public Mp::Int32::Client
-{
-public:
-    ///
-    int m_callbackCount;
-    ///
-    ModelPoint::RmwCallbackResult_T m_returnResult;
-    ///
-    int32_t                         m_incValue;
-
-public:
-    ///
-    RmwInt32():m_callbackCount( 0 ), m_returnResult( ModelPoint::eNO_CHANGE ), m_incValue( 0 ) {}
-    ///
-    ModelPoint::RmwCallbackResult_T callback( int32_t& data, int8_t validState ) noexcept
-    {
-        m_callbackCount++;
-        if ( m_returnResult != ModelPoint::eNO_CHANGE )
-        {
-            data += m_incValue;
-        }
-        return m_returnResult;
-    }
-};
 
 /////////////////////////////////////////////////////////////////
 class ViewerInt64 : public ViewerBase, public Mp::Int64::Observer

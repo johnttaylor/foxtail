@@ -13,7 +13,7 @@
 /** @file */
 
 
-#include "Cpl/Dm/Mp/Integer.h"
+#include "Cpl/Dm/Mp/Numeric.h"
 
 ///
 namespace Cpl {
@@ -38,19 +38,19 @@ namespace Mp {
  NOTE: All methods in this class ARE thread Safe unless explicitly
 		  documented otherwise.
  */
-class Uint32 : public Integer<uint32_t,Uint32>
+class Uint32 : public Numeric<uint32_t,Uint32>
 {
 public:
 	/** Constructor. Invalid MP.  
 	 */
 	Uint32(Cpl::Dm::ModelDatabase& myModelBase, const char* symbolicName )
-		: Integer<uint32_t, Uint32>(myModelBase, symbolicName )
+		: Numeric<uint32_t, Uint32>(myModelBase, symbolicName )
 	{
 	}
 
 	/// Constructor. Valid MP.  Requires an initial value
 	Uint32(Cpl::Dm::ModelDatabase& myModelBase, const char* symbolicName, uint32_t initialValue )
-		: Integer<uint32_t, Uint32>(myModelBase, symbolicName, initialValue)
+		: Numeric<uint32_t, Uint32>(myModelBase, symbolicName, initialValue)
 	{
 	}
 

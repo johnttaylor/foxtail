@@ -1,5 +1,5 @@
-#ifndef Cpl_Dm_Mp_Integer_h_
-#define Cpl_Dm_Mp_Integer_h_
+#ifndef Cpl_Dm_Mp_Numeric_h_
+#define Cpl_Dm_Mp_Numeric_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -30,14 +30,14 @@ namespace Mp {
 
 
 /** This template class provides a mostly concrete implementation for a Model
-    Point who's data is a C integer primitive type of type: 'ELEMTYPE'.
+    Point who's data is a C numeric primitive type of type: 'ELEMTYPE'.
 
     NOTES:
         1) All methods in this class are NOT thread Safe unless explicitly
         documented otherwise.
  */
 template<class ELEMTYPE, class MPTYPE>
-class Integer : public Cpl::Dm::ModelPointCommon_
+class Numeric : public Cpl::Dm::ModelPointCommon_
 {
 protected:
     /// The element's value
@@ -45,13 +45,13 @@ protected:
 
 public:
     /// Constructor: Invalid MP
-    Integer( Cpl::Dm::ModelDatabase& myModelBase, const char* symbolicName )
+    Numeric( Cpl::Dm::ModelDatabase& myModelBase, const char* symbolicName )
         :Cpl::Dm::ModelPointCommon_( myModelBase, symbolicName, &m_data, sizeof( m_data ), false )
     {
     }
 
     /// Constructor: Valid MP (requires initial value)
-    Integer( Cpl::Dm::ModelDatabase& myModelBase, const char* symbolicName, ELEMTYPE initialValue )
+    Numeric( Cpl::Dm::ModelDatabase& myModelBase, const char* symbolicName, ELEMTYPE initialValue )
         :Cpl::Dm::ModelPointCommon_( myModelBase, symbolicName, &m_data, sizeof( m_data ), true )
     {
         m_data = initialValue;
