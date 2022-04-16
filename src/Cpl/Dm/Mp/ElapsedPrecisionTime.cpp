@@ -1,4 +1,3 @@
-#if 0
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -15,28 +14,13 @@
 #include "ElapsedPrecisionTime.h"
 #include "Cpl/Text/format.h"
 #include "Cpl/Text/atob.h"
+#include "Cpl/Text/FString.h"
 
 ///
 using namespace Cpl::Dm::Mp;
 
-///////////////////////////////////////////////////////////////////////////////
-ElapsedPrecisionTime::ElapsedPrecisionTime( Cpl::Dm::ModelDatabase& myModelBase, Cpl::Dm::StaticInfo& staticInfo )
-	:Basic<Cpl::System::ElapsedTime::Precision_T>( myModelBase, staticInfo )
-{
-}
-
-ElapsedPrecisionTime::ElapsedPrecisionTime( Cpl::Dm::ModelDatabase& myModelBase, Cpl::Dm::StaticInfo& staticInfo, Cpl::System::ElapsedTime::Precision_T initialValue )
-	: Basic<Cpl::System::ElapsedTime::Precision_T>( myModelBase, staticInfo, initialValue )
-{
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////
-uint16_t ElapsedPrecisionTime::readModifyWrite( Client& callbackClient, LockRequest_T lockRequest )
-{
-    return ModelPointCommon_::readModifyWrite( callbackClient, lockRequest );
-}
-
 void ElapsedPrecisionTime::attach( Observer& observer, uint16_t initialSeqNumber ) noexcept
 {
     ModelPointCommon_::attach( observer, initialSeqNumber );
@@ -54,32 +38,12 @@ const char* ElapsedPrecisionTime::getTypeAsText() const noexcept
 }
 
 
-
 ///////////////////////////////////////////////////////////////////////////////
-bool ElapsedPrecisionTime::toJSON( char* dst, size_t dstSize, bool& truncated, bool verbose ) noexcept
+void ElapsedPrecisionTime::setJSONVal( JsonDocument& doc ) noexcept
 {
-	// Get a snapshot of the my data and state
-	m_modelDatabase.lock_();
-	Cpl::System::ElapsedTime::Precision_T value  = m_data;
-	uint16_t seqnum = m_seqNum;
-	int8_t   valid  = m_validState;
-	bool     locked = m_locked;
-	m_modelDatabase.unlock_();
-
-	// Start the conversion
-	JsonDocument& doc = beginJSON( valid, locked, seqnum, verbose );
-
-	// Construct the 'val' key/value pair (as a string)
-	if ( IS_VALID( valid ) )
-	{
-		Cpl::Text::FString<20> tmp;
-        Cpl::Text::formatPrecisionTimeStamp( tmp, value, true );
-		doc["val"] = (char*) tmp.getString();
-	}
-
-	// End the conversion
-	Cpl::Dm::ModelPointCommon_::endJSON( dst, dstSize, truncated, verbose );
-	return true;
+    Cpl::Text::FString<20> tmp;
+    Cpl::Text::formatPrecisionTimeStamp( tmp, m_data, true );
+    doc["val"] = (char*) tmp.getString();
 }
 
 bool ElapsedPrecisionTime::fromJSON_( JsonVariant& src, LockRequest_T lockRequest, uint16_t& retSequenceNumber, Cpl::Text::String* errorMsg ) noexcept
@@ -112,4 +76,3 @@ bool ElapsedPrecisionTime::fromJSON_( JsonVariant& src, LockRequest_T lockReques
 }
 
 
-#endif

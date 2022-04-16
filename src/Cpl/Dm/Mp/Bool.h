@@ -60,7 +60,7 @@ public:
     }
 
     /// Type safe write. See Cpl::Dm::ModelPoint
-    uint16_t write( bool newValue, LockRequest_T lockRequest = eNO_REQUEST ) noexcept
+    inline uint16_t write( bool newValue, LockRequest_T lockRequest = eNO_REQUEST ) noexcept
     {
         return Cpl::Dm::ModelPointCommon_::write( &newValue, sizeof( m_data ), lockRequest );
     }
