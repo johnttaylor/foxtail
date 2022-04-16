@@ -29,7 +29,7 @@ namespace Mp {
 	The toJSON()/fromJSON format is:
 		\code
 
-		{ name:"<mpname>", type:"<mptypestring>", invalid:nn, seqnum:nnnn, locked:true|false, val:<numvalue> }
+		{ name:"<mpname>", type:"<mptypestring>", valid:true|false, seqnum:nnnn, locked:true|false, val:<numvalue> }
 
 		where <numvalue> is integer numeric  
 

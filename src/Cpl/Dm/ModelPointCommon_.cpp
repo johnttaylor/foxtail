@@ -102,7 +102,7 @@ uint16_t ModelPointCommon_::setInvalid( LockRequest_T lockRequest ) noexcept
 
 void ModelPointCommon_::hookSetInvalid() noexcept
 {
-    // Set the data to a known state so that transition from tjhe invalid to the 
+    // Set the data to a known state so that transition from the invalid to the 
     // valid state when using read-modify-write operation is consistent in its behavior
     memset( m_dataPtr, 0, m_dataSize );
 }

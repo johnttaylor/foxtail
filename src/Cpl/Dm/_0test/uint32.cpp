@@ -43,7 +43,6 @@ TEST_CASE( "uint32" )
 {
     Cpl::System::Shutdown_TS::clearAndUseCounter();
 
-    //Cpl::Text::FString<MAX_STR_LENG> string;
     Cpl::Text::DString               errorMsg( "noerror", 1024 );
     char                             string[MAX_STR_LENG + 1];
     bool                             truncated;
