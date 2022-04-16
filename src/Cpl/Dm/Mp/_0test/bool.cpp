@@ -26,6 +26,8 @@
 #define MAX_STR_LENG        1024
 #define SECT_               "_0test"
 
+#define INITIAL_VALUE       true
+
 
 ////////////////////////////////////////////////////////////////////////////////
 using namespace Cpl::Dm;
@@ -35,9 +37,8 @@ static ModelDatabase    modelDb_( "ignoreThisParameter_usedToInvokeTheStaticCons
 
 // Allocate my Model Points
 static Mp::Bool       mp_apple_( modelDb_, "APPLE" );
+static Mp::Bool       mp_orange_( modelDb_, "ORANGE", INITIAL_VALUE );
 
-// Create my Data Model mailboxes
-static MailboxServer     t1Mbox_;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -53,6 +54,7 @@ TEST_CASE( "Bool" )
     bool truncated;
     bool valid;
     bool value;
+    mp_apple_.setInvalid();
 
     SECTION( "gets" )
     {
@@ -74,9 +76,6 @@ TEST_CASE( "Bool" )
 
     SECTION( "read/writes" )
     {
-        // Start with MP in the invalid state
-        mp_apple_.setInvalid();
-
         mp_apple_.write( true );
         valid = mp_apple_.read( value );
         REQUIRE( valid );
@@ -85,6 +84,10 @@ TEST_CASE( "Bool" )
         valid = mp_apple_.read( value );
         REQUIRE( valid );
         REQUIRE( value == false );
+
+        valid = mp_orange_.read( value );
+        REQUIRE( valid );
+        REQUIRE( value == INITIAL_VALUE );
     }
 
     SECTION( "toJSON-pretty" )
@@ -103,9 +106,6 @@ TEST_CASE( "Bool" )
 
     SECTION( "fromJSON" )
     {
-        // Start with MP in the invalid state
-        mp_apple_.setInvalid();
-
         const char* json = "{name:\"APPLE\", val:false}";
         bool result = modelDb_.fromJSON( json );
         REQUIRE( result == true );
@@ -124,16 +124,18 @@ TEST_CASE( "Bool" )
 
     SECTION( "observer" )
     {
-        Cpl::System::Thread* t1 = Cpl::System::Thread::create( t1Mbox_, "T1" );
+        MailboxServer        t1Mbox;
+        Viewer<Mp::Bool>     viewer_apple1( t1Mbox, Cpl::System::Thread::getCurrent(), mp_apple_ );
+        Cpl::System::Thread* t1 = Cpl::System::Thread::create( t1Mbox, "T1" );
 
-        Viewer<Mp::Bool> viewer_apple1( t1Mbox_, Cpl::System::Thread::getCurrent(), mp_apple_ );
+        // NOTE: The MP MUST be in the INVALID state at the start of this test
         viewer_apple1.open();
         mp_apple_.write( true );
         Cpl::System::Thread::wait();
         viewer_apple1.close();
 
         // Shutdown threads
-        t1Mbox_.pleaseStop();
+        t1Mbox.pleaseStop();
         Cpl::System::Api::sleep( 100 ); // allow time for threads to stop
         REQUIRE( t1->isRunning() == false );
         Cpl::System::Thread::destroy( *t1 );

@@ -25,14 +25,16 @@ public:
     ///
     Cpl::System::Thread&                            m_masterThread;
     ///
-    Cpl::Dm::SubscriberComposer<Viewer, MPTYPE>    m_observerMp1;
+    Cpl::Dm::SubscriberComposer<Viewer, MPTYPE>     m_observerMp1;
     ///
     MPTYPE&                                         m_mp;
+
+
     /// Constructor
     Viewer( Cpl::Dm::MailboxServer& myMbox, Cpl::System::Thread& masterThread, MPTYPE& mpToMonitor )
-        :Cpl::Itc::CloseSync( myMbox )
+        : Cpl::Itc::CloseSync( myMbox )
         , m_masterThread( masterThread )
-        , m_observerMp1( myMbox, *this, &Viewer::mp1_changed )
+        , m_observerMp1( myMbox, *this, &Viewer<MPTYPE>::mp1_changed )
         , m_mp( mpToMonitor )
     {
     }

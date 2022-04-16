@@ -23,6 +23,8 @@
 #define MAX_STR_LENG        1024
 #define SECT_               "_0test"
 
+#define INITIAL_VALUE       42
+
 ////////////////////////////////////////////////////////////////////////////////
 using namespace Cpl::Dm;
 
@@ -31,6 +33,7 @@ static ModelDatabase    modelDb_( "ignoreThisParameter_usedToInvokeTheStaticCons
 
 // Allocate my Model Points
 static Mp::Uint64       mp_apple_( modelDb_, "APPLE" );
+static Mp::Uint64       mp_orange_( modelDb_, "ORANGE", INITIAL_VALUE );
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -77,6 +80,10 @@ TEST_CASE( "Uint64" )
         valid = mp_apple_.read( value );
         REQUIRE( valid );
         REQUIRE( value == 1 );
+
+        valid = mp_orange_.read( value );
+        REQUIRE( valid );
+        REQUIRE( value == INITIAL_VALUE );
     }
 
     SECTION( "toJSON-pretty" )

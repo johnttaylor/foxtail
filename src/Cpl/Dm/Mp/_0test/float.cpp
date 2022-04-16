@@ -35,6 +35,7 @@ static ModelDatabase    modelDb_( "ignoreThisParameter_usedToInvokeTheStaticCons
 
 // Allocate my Model Points
 static Mp::Float       mp_apple_( modelDb_, "APPLE" );
+static Mp::Float       mp_orange_( modelDb_, "ORANGE", MAGIC_VALUE );
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -85,6 +86,10 @@ TEST_CASE( "Float" )
         mp_apple_.read( value );
         REQUIRE( Cpl::Math::areFloatsEqual( value, MAGIC_VALUE+ MAGIC_INC ) );
         REQUIRE( seqNum + 1 == seqNum2 );
+
+        valid = mp_orange_.read( value );
+        REQUIRE( valid );
+        REQUIRE( Cpl::Math::areFloatsEqual( value, MAGIC_VALUE ) );
     }
 
     SECTION( "toJSON-pretty" )

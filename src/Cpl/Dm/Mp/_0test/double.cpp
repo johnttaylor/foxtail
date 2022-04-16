@@ -35,6 +35,7 @@ static ModelDatabase    modelDb_( "ignoreThisParameter_usedToInvokeTheStaticCons
 
 // Allocate my Model Points
 static Mp::Double       mp_apple_( modelDb_, "APPLE" );
+static Mp::Double       mp_orange_( modelDb_, "ORANGE", MAGIC_VALUE );
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -85,6 +86,10 @@ TEST_CASE( "Double" )
         mp_apple_.read( value );
         REQUIRE( Cpl::Math::areDoublesEqual( value, MAGIC_VALUE + MAGIC_INC ) );
         REQUIRE( seqNum + 1 == seqNum2 );
+
+        valid = mp_orange_.read( value );
+        REQUIRE( valid );
+        REQUIRE( Cpl::Math::areDoublesEqual( value, MAGIC_VALUE ) );
     }
 
     SECTION( "toJSON-pretty" )
