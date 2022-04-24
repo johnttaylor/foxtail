@@ -74,9 +74,6 @@ public:
     /// Same as write(), except only writes at most 'srcLen' bytes
     virtual uint16_t write( const char* srcData, size_t dataSizeInBytesIncludingNullTerminator, LockRequest_T lockRequest = eNO_REQUEST ) noexcept;
 
-    /// Updates the MP with the valid-state/data from 'src'. Note: the src.lock state is NOT copied
-    virtual uint16_t copyFrom( StringBase_& src, LockRequest_T lockRequest = eNO_REQUEST ) noexcept;
-
 public:
     /// See Cpl::Dm::Point.  
     bool fromJSON_( JsonVariant& src, LockRequest_T lockRequest, uint16_t& retSequenceNumber, Cpl::Text::String* errorMsg ) noexcept;
@@ -85,6 +82,9 @@ public:
     bool isDataEqual_( const void* otherData ) const noexcept;
 
 protected:
+    /// Updates the MP with the valid-state/data from 'src'. Note: the src.lock state is NOT copied
+    virtual uint16_t copyFrom( StringBase_& src, LockRequest_T lockRequest = eNO_REQUEST ) noexcept;
+
     /// See Cpl::Dm::Point.  
     void setJSONVal( JsonDocument& doc ) noexcept;
 };
