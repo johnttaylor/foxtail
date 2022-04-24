@@ -52,7 +52,6 @@ TEST_CASE( "mvc" )
 
     Cpl::System::Thread* t1 = Cpl::System::Thread::create( t1Mbox_, "T1" );
     Cpl::System::Thread* t2 = Cpl::System::Thread::create( t2Mbox_, "T2" );
-    //Cpl::System::Thread* t3 = Cpl::System::Thread::create( t3Mbox_, "ReaderModifyWriters" );
 
     // Create my viewers, writers
 #define NUM_INSTANCES   8
@@ -116,15 +115,13 @@ TEST_CASE( "mvc" )
     // Shutdown threads
     t1Mbox_.pleaseStop();
     t2Mbox_.pleaseStop();
-    //t3Mbox_.pleaseStop();
     Cpl::System::Api::sleep( 100 ); // allow time for threads to stop
     REQUIRE( t1->isRunning() == false );
     REQUIRE( t2->isRunning() == false );
-    //REQUIRE( t3->isRunning() == false );
 
     Cpl::System::Thread::destroy( *t1 );
     Cpl::System::Thread::destroy( *t2 );
-    //Cpl::System::Thread::destroy( *t3 );
+    Cpl::System::Api::sleep( 100 ); // allow time for threads to stop BEFORE the runnable object goes out of scope
     REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );
 }
 

@@ -23,17 +23,6 @@
 #include <stdint.h>
 
 
-/** This symbol provides the default 'Invalid' state value for a Model Point.
-    The application is free define/apply its own meaning to the set of
-    'invalid-values'.  NOTE: All 'Invalid' values MUST be greater than zero,
-    i.e. between 1 and 127.  Zero and negative values ARE Reserved by the RTE
-    Engine.
- */
-#ifndef OPTION_CPL_DM_MODEL_POINT_STATE_INVALID
-#define OPTION_CPL_DM_MODEL_POINT_STATE_INVALID            1
-#endif
-
-
  ///
 namespace Cpl {
 ///
@@ -140,10 +129,10 @@ public:
         The general output format:
         \code
 
-        { name:"<mpname>", type:"<mptypestring>", invalid:nn, seqnum:nnnn, locked:true|false, val:<value> }
+        { name:"<mpname>", type:"<mptypestring>", valid:true|false, seqnum:nnnn, locked:true|false, val:<value> }
 
         Notes:
-            - The MP is in the valid state if/when the 'invalid' value is 0
+            - The MP is in the valid state if/when the 'valid' value is true
             - The 'val' key/value pair is omitted if the MP is in the invalid state
             - The 'val' key/value pair can be a single element, an object, or
               array. etc. -- it is specific to the concrete MP type/class.
@@ -246,7 +235,7 @@ public:
 
         When 'includeLockedState is set to true, the 'externalSize' includes
         space for the MP's locked state; else the returned size only includes
-        space for the MP's value and invalid state..
+        space for the MP's value and valid state..
 
         NOTE: The size returned is the size of the Point data WHEN it
               is being exported/imported - this is NOT the value of
@@ -280,8 +269,8 @@ protected:
         MP's sequence number is optionally return if 'seqNumPtr' is set to
         a non-zero value.
 
-        If 'validState' indicates that the data is invalid, then contents of
-        'dst' is meaningless.
+        If the method returns false then the MP's the data is invalid and the 
+        contents of 'dst' is meaningless.
 
         Notes:
         1) The assumption is that Model Point's internal data and 'dstData' are

@@ -123,6 +123,19 @@ protected:
     }
 
 public:
+    /// Updates the MP's data from 'src'. 
+    void write( MyString& src, Cpl::Point::Api::LockRequest_T lockRequest = Cpl::Point::Api::eNO_REQUEST ) noexcept
+    {
+        if ( src.isNotValid() )
+        {
+            setInvalid();
+        }
+        else
+        {
+            String_<STR_LEN>::write( src.m_data, lockRequest );
+        }
+    }
+
     /// See Fxt::Point::StringBase_
     size_t getMaxLength() const noexcept { return S; }
 

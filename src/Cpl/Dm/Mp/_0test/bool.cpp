@@ -139,6 +139,7 @@ TEST_CASE( "Bool" )
         Cpl::System::Api::sleep( 100 ); // allow time for threads to stop
         REQUIRE( t1->isRunning() == false );
         Cpl::System::Thread::destroy( *t1 );
+        Cpl::System::Api::sleep( 100 ); // allow time for threads to stop BEFORE the runnable object goes out of scope
     }
 
     REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );

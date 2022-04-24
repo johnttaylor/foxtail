@@ -31,32 +31,6 @@ namespace Dm {
 class ModelPointCommon_ : public Cpl::Dm::ModelPoint
 {
 protected:
-    /// List of Active Subscribers
-    Cpl::Container::DList<SubscriberApi>    m_subscribers;
-
-    /// The model point's symbolic name
-    const char*                             m_name;
-
-    /// Reference to the containing Model Base
-    ModelDatabase&                          m_modelDatabase;
-
-    /// Reference to my Data
-    void*                                   m_dataPtr;
-
-    /// Size of my data
-    size_t                                  m_dataSize;
-
-    /// Sequence number used for tracking changes in the Point data
-    uint16_t                                m_seqNum;
-
-    /// Locked state
-    bool                                    m_locked;
-
-    /// valid/invalid state
-    bool                                    m_valid;
-
-
-protected:
     /// Constructor
     ModelPointCommon_( ModelDatabase& myModelBase,
                        const char*    symbolicName,
@@ -200,6 +174,32 @@ protected:
         the data (i.e. perform a memset(m_dataPtr,0, m_dataSize) call on the data)
      */
     virtual void hookSetInvalid() noexcept;
+
+
+protected:
+    /// List of Active Subscribers
+    Cpl::Container::DList<SubscriberApi>    m_subscribers;
+
+    /// The model point's symbolic name
+    const char*                             m_name;
+
+    /// Reference to the containing Model Base
+    ModelDatabase&                          m_modelDatabase;
+
+    /// Reference to my Data
+    void*                                   m_dataPtr;
+
+    /// Size of my data
+    size_t                                  m_dataSize;
+
+    /// Sequence number used for tracking changes in the Point data
+    uint16_t                                m_seqNum;
+
+    /// Locked state
+    bool                                    m_locked;
+
+    /// valid/invalid state
+    bool                                    m_valid;
 };
 
 };      // end namespaces

@@ -153,13 +153,13 @@ uint16_t ModelPointCommon_::touch() noexcept
 
 void ModelPointCommon_::copyDataTo_( void* dstData, size_t dstSize ) const noexcept
 {
-    CPL_SYSTEM_ASSERT( dstSize == m_dataSize);
+    CPL_SYSTEM_ASSERT( dstSize <= m_dataSize);
     memcpy( dstData, m_dataPtr, dstSize );
 }
 
 void ModelPointCommon_::copyDataFrom_( const void* srcData, size_t srcSize ) noexcept
 {
-    CPL_SYSTEM_ASSERT( srcSize == m_dataSize );
+    CPL_SYSTEM_ASSERT( srcSize <= m_dataSize );
     memcpy( m_dataPtr, srcData, m_dataSize );
 }
 
@@ -175,7 +175,7 @@ const void* ModelPointCommon_::getImportExportDataPointer_() const noexcept
 
 size_t ModelPointCommon_::getInternalDataSize_() const noexcept
 {
-    return m_dataSize;
+    return getSize();
 }
 
 /////////////////

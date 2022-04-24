@@ -141,19 +141,24 @@ TEST_CASE( "ElapsedPrecisionTime" )
         MailboxServer        t1Mbox;
         Viewer<Mp::ElapsedPrecisionTime>     viewer_apple1( t1Mbox, Cpl::System::Thread::getCurrent(), mp_apple_ );
         Cpl::System::Thread* t1 = Cpl::System::Thread::create( t1Mbox, "T1" );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("Created Viewer thread (%p)", t1) );
 
         // NOTE: The MP MUST be in the INVALID state at the start of this test
         viewer_apple1.open();
         expectedVal ={ 10,11 };
         mp_apple_.write( expectedVal );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("Waiting for viewer signal...") );
         Cpl::System::Thread::wait();
         viewer_apple1.close();
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("Viewer closed."));
 
         // Shutdown threads
         t1Mbox.pleaseStop();
         Cpl::System::Api::sleep( 100 ); // allow time for threads to stop
         REQUIRE( t1->isRunning() == false );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("Destroying Viewer thread (%p)...", t1) );
         Cpl::System::Thread::destroy( *t1 );
+        Cpl::System::Api::sleep( 100 ); // allow time for threads to stop BEFORE the runnable object goes out of scope
     }
 
     REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );
