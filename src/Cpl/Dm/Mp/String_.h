@@ -125,13 +125,13 @@ public:
 
 public:
     /// Type safe register observer
-    void attach( Cpl::Dm::Subscriber<MPTYPE>& observer, uint16_t initialSeqNumber=SEQUENCE_NUMBER_UNKNOWN ) noexcept
+    inline void attach( Cpl::Dm::Subscriber<MPTYPE>& observer, uint16_t initialSeqNumber=SEQUENCE_NUMBER_UNKNOWN ) noexcept
     {
         ModelPointCommon_::attach( observer, initialSeqNumber );
     }
 
     /// Type safe un-register observer
-    void detach( Cpl::Dm::Subscriber<MPTYPE>& observer ) noexcept
+    inline void detach( Cpl::Dm::Subscriber<MPTYPE>& observer ) noexcept
     {
         ModelPointCommon_::detach( observer );
     }
