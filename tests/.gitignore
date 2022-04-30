@@ -1,0 +1,5 @@
+# visual studio
+*.exe
+*.ilk
+*.pdb
+*.sln

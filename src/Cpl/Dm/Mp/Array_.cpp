@@ -60,13 +60,13 @@ ArrayBase_::ArrayBase_( Cpl::Dm::ModelDatabase& myModelBase,
 /////////////////////////////////////////////////////
 bool ArrayBase_::read( void* dstData, size_t dstNumElements, size_t srcIndex, uint16_t* seqNumPtr ) const noexcept
 {
-    MetaData_T dst ={ (uint8_t*) dstData, dstNumElements, srcIndex, m_elementSize };
+    MetaData_T dst ={ (uint8_t*) dstData, dstNumElements, srcIndex };
     return ModelPointCommon_::read( &dst, sizeof( dst ), seqNumPtr );
 }
 
-uint16_t ArrayBase_::write( void* srcData, size_t srcNumElements, LockRequest_T lockRequest, size_t dstIndex  ) noexcept
+uint16_t ArrayBase_::write( void* srcData, size_t srcNumElements, size_t dstIndex, LockRequest_T lockRequest ) noexcept
 {
-    MetaData_T src ={ (uint8_t*) srcData, srcNumElements, dstIndex, m_elementSize };
+    MetaData_T src ={ (uint8_t*) srcData, srcNumElements, dstIndex };
     return ModelPointCommon_::write( &src, sizeof( src ), lockRequest );
 }
 
@@ -79,7 +79,7 @@ uint16_t ArrayBase_::copyFrom( ArrayBase_& src, LockRequest_T lockRequest ) noex
     }
 
     m_modelDatabase.lock_();
-    uint16_t seqNum = ArrayBase_::write( src.m_dataPtr, src.m_numElements, lockRequest );
+    uint16_t seqNum = ArrayBase_::write( src.m_dataPtr, src.m_numElements, 0, lockRequest );
     m_modelDatabase.unlock_();
     return seqNum;
 }
@@ -91,18 +91,14 @@ void ArrayBase_::copyDataTo_( void* dstData, size_t dstSize ) const noexcept
     MetaData_T* dstInfo = (MetaData_T*) dstData;
 
     // Make sure we don't read past the m_data storage
-    if ( m_numElements == 0 )
-    {
-        dstInfo->numElements = 0;
-    }
-    else if ( dstInfo->elemIndex + dstInfo->numElements > m_numElements )
+    if ( dstInfo->elemIndex + dstInfo->numElements > m_numElements )
     {
         dstInfo->numElements = m_numElements - dstInfo->elemIndex;
     }
 
     // Copy the data to 'dst'
     uint8_t* arrayStartPtr = (uint8_t*) m_dataPtr;
-    memcpy( dstInfo->elemPtr, &(arrayStartPtr[dstInfo->elemIndex]), dstInfo->numElements * m_elementSize );
+    memcpy( dstInfo->elemPtr, &(arrayStartPtr[dstInfo->elemIndex * m_elementSize]), dstInfo->numElements * m_elementSize );
 }
 
 void ArrayBase_::copyDataFrom_( const void* srcData, size_t srcSize ) noexcept
@@ -111,18 +107,14 @@ void ArrayBase_::copyDataFrom_( const void* srcData, size_t srcSize ) noexcept
     MetaData_T* srcInfo = (MetaData_T*) srcData;
 
     // Make sure we don't write past the m_data storage
-    if ( m_numElements == 0 )
-    {
-        srcInfo->numElements = 0;
-    }
-    else if ( srcInfo->elemIndex + srcInfo->numElements > m_numElements )
+    if ( srcInfo->elemIndex + srcInfo->numElements > m_numElements )
     {
         srcInfo->numElements = m_numElements - srcInfo->elemIndex;
     }
 
     // Copy the data to 'src'
     uint8_t* arrayStartPtr = (uint8_t*) m_dataPtr;
-    memcpy( &(arrayStartPtr[srcInfo->elemIndex]), srcInfo->elemPtr, srcInfo->numElements * m_elementSize );
+    memcpy( &(arrayStartPtr[srcInfo->elemIndex * m_elementSize]), srcInfo->elemPtr, srcInfo->numElements * m_elementSize );
 }
 
 bool ArrayBase_::isDataEqual_( const void* otherData ) const noexcept
@@ -130,17 +122,13 @@ bool ArrayBase_::isDataEqual_( const void* otherData ) const noexcept
     MetaData_T* otherInfo = (MetaData_T*) otherData;
 
     // Make sure we don't compare past the m_data storage
-    if ( m_numElements == 0 )
-    {
-        otherInfo->numElements = 0;
-    }
-    else if ( otherInfo->elemIndex + otherInfo->numElements > m_numElements )
+    if ( otherInfo->elemIndex + otherInfo->numElements > m_numElements )
     {
         otherInfo->numElements = m_numElements - otherInfo->elemIndex;
     }
 
     uint8_t* arrayStartPtr = (uint8_t*) m_dataPtr;
-    return memcmp( &(arrayStartPtr[otherInfo->elemIndex]), otherInfo->elemPtr, otherInfo->numElements * m_elementSize ) == 0;
+    return memcmp( &(arrayStartPtr[otherInfo->elemIndex * m_elementSize]), otherInfo->elemPtr, otherInfo->numElements * m_elementSize ) == 0;
 }
 
 /////////////////////////////////////////////////////

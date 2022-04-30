@@ -15,7 +15,17 @@
 
 #include "Cpl/Dm/ModelPointCommon_.h"
 
-///
+
+
+/** The number of Elements in the temporary array (that is allocated on the
+    STACK) when parsing the array elements in the fromJSON_() method.
+ */
+#ifndef OPTION_CPL_DM_MP_ARRAY_TEMP_ARRAY_NUM_ELEMENTS      
+#define OPTION_CPL_DM_MP_ARRAY_TEMP_ARRAY_NUM_ELEMENTS      8
+#endif
+
+
+ ///
 namespace Cpl {
 ///
 namespace Dm {
@@ -34,10 +44,9 @@ protected:
     /// Meta data for read/write/copy operations
     struct MetaData_T
     {
-        uint8_t*  elemPtr;          //!< Pointer to the element in the array to read/write
+        uint8_t*  elemPtr;          //!< Pointer to the 1st element in the array to read/write
         size_t    numElements;      //!< Number of element to read/write
         size_t    elemIndex;        //!< Starting array index
-        size_t    elemSize;         //!< Size, in bytes, of an element
     };
 
 protected:
@@ -47,7 +56,7 @@ protected:
     /// Size, in bytes, of an element
     size_t  m_elementSize;
 
-public:
+protected:
     /// Constructor: Invalid MP
     ArrayBase_( Cpl::Dm::ModelDatabase& myModelBase,
                 const char*             symbolicName,
@@ -86,10 +95,10 @@ protected:
         only partially initialized AND then MP is now in the valid
         state!
     */
-    virtual uint16_t write( void* srcData, size_t srcNumElements, LockRequest_T lockRequest = eNO_REQUEST, size_t dstIndex = 0 ) noexcept;
+    virtual uint16_t write( void* srcData, size_t srcNumElements, size_t dstIndex = 0, Cpl::Dm::ModelPoint::LockRequest_T lockRequest = Cpl::Dm::ModelPoint::eNO_REQUEST ) noexcept;
 
     /// Updates the MP with the valid-state/data from 'src'. Note: the src.lock state is NOT copied
-    virtual uint16_t copyFrom( ArrayBase_& src, LockRequest_T lockRequest = eNO_REQUEST ) noexcept;
+    virtual uint16_t copyFrom( ArrayBase_& src, Cpl::Dm::ModelPoint::LockRequest_T lockRequest = Cpl::Dm::ModelPoint::eNO_REQUEST ) noexcept;
 
 public:
     /// Returns the number of element in the array. This method IS thread safe.
@@ -119,83 +128,69 @@ public:
     bool exportMetadata_( void* dstDataStream, size_t& bytesAdded ) const noexcept;
 };
 
-/** This template class extends the implementation of BasicArray<ELEMTYPE> to support
-    the toJSON() and fromJSON_() methods for integer element types.
+/** This template class extends the implementation of ArrayBase_ to support
+    the toJSON() and fromJSON_() methods for numeric element types.
 
     NOTES:
     1) All methods in this class are NOT thread Safe unless explicitly
     documented otherwise.
 */
 template<class ELEMTYPE>
-class BasicIntegerArray : public BasicArray<ELEMTYPE>
+class NumericArrayBase_ : public ArrayBase_
 {
 protected:
-    /// Flag for to/from json() methods
-    bool        m_decimal;
-
-
-public:
     /// Constructor: Invalid MP
-    BasicIntegerArray( Cpl::Dm::ModelDatabase& myModelBase, StaticInfo& staticInfo, size_t numElements, bool decimalFormat = true )
-        :BasicArray<ELEMTYPE>( myModelBase, staticInfo, numElements )
-        , m_decimal( decimalFormat )
+    NumericArrayBase_( Cpl::Dm::ModelDatabase& myModelBase,
+                       const char*             symbolicName,
+                       ELEMTYPE*               myDataPtr,
+                       size_t                  numElements )
+        :ArrayBase_( myModelBase, symbolicName, myDataPtr, numElements, sizeof( ELEMTYPE ) )
     {
     }
 
 
     /** Constructor.  Valid MP.  Requires an initial value.  If the 'srcData'
-    pointer is set to zero, then the entire array will be initialized to
-    zero.   Note: 'srcData' MUST contain at least 'numElements' elements.
+        pointer is set to zero, then the entire array will be initialized to
+        zero.   Note: 'srcData' MUST contain at least 'numElements' elements.
     */
-    BasicIntegerArray( Cpl::Dm::ModelDatabase& myModelBase, StaticInfo& staticInfo, size_t numElements, const ELEMTYPE* srcData, bool decimalFormat = true )
-        :BasicArray<ELEMTYPE>( myModelBase, staticInfo, numElements, srcData )
-        , m_decimal( decimalFormat )
+    NumericArrayBase_( Cpl::Dm::ModelDatabase& myModelBase,
+                       const char*             symbolicName,
+                       ELEMTYPE*               myDataPtr,
+                       size_t                  numElements,
+                       ELEMTYPE*               srcData )
+        :ArrayBase_( myModelBase, symbolicName, myDataPtr, numElements, sizeof( ELEMTYPE ), srcData )
     {
     }
 
 
 public:
-    /// See Cpl::Dm::Point.  
-    bool toJSON( char* dst, size_t dstSize, bool& truncated, bool verbose=true ) noexcept
+    /// Type safe read. See Cpl::Dm::ModelPoint
+    inline bool read( ELEMTYPE* dstArrray, size_t dstNumElements, size_t srcIndex = 0, uint16_t* seqNumPtr = 0 ) const noexcept
     {
-        // Lock the Model Point
-        Cpl::Dm::ModelPointCommon_::m_modelDatabase.lock_();
-        uint16_t seqnum = BasicArray<ELEMTYPE>::m_seqNum;
-        int8_t   valid  = BasicArray<ELEMTYPE>::m_validState;
-        bool     locked = BasicArray<ELEMTYPE>::m_locked;
-
-        // Start the conversion
-        JsonDocument& doc = Cpl::Dm::ModelPointCommon_::beginJSON( valid, locked, seqnum, verbose );
-
-        // Construct the 'val' array object
-        if ( Cpl::Dm::ModelPointCommon_::IS_VALID( valid ) )
-        {
-            JsonObject obj = doc.createNestedObject( "val" );
-            obj["start"] = 0;
-            JsonArray arr = obj.createNestedArray( "elems" );
-            for ( size_t i = 0; i < BasicArray<ELEMTYPE>::m_data.numElements; i++ )
-            {
-                if ( m_decimal )
-                {
-                    arr.add( BasicArray<ELEMTYPE>::m_data.elemPtr[i] );
-                }
-                else
-                {
-                    Cpl::Text::FString<20> s;
-                    s.format( "0x%llX", (unsigned long long) BasicArray<ELEMTYPE>::m_data.elemPtr[i] );
-                    arr.add( (char*) s.getString() );
-                }
-            }
-        }
-
-        // End the conversion
-        Cpl::Dm::ModelPointCommon_::endJSON( dst, dstSize, truncated, verbose );
-
-        // unlock the database
-        Cpl::Dm::ModelPointCommon_::m_modelDatabase.unlock_();
-        return true;
+        return ArrayBase_::read( dstArrray, dstNumElements, srcIndex, seqNumPtr );
     }
 
+    /// Type safe write. See Cpl::Dm::ModelPoint
+    inline uint16_t write( ELEMTYPE* srcArray, size_t srcNumElements, size_t dstIndex = 0, Cpl::Dm::ModelPoint::LockRequest_T lockRequest = Cpl::Dm::ModelPoint::eNO_REQUEST ) noexcept
+    {
+        return ArrayBase_::write( srcArray, srcNumElements, dstIndex, lockRequest );
+    }
+
+protected:
+    /// See Cpl::Dm::Point.  
+    void setJSONVal( JsonDocument& doc ) noexcept
+    {
+        JsonObject obj    = doc.createNestedObject( "val" );
+        obj["start"]      = 0;
+        JsonArray arr     = obj.createNestedArray( "elems" );
+        ELEMTYPE* elemPtr = (ELEMTYPE*) m_dataPtr;
+        for ( size_t i = 0; i < m_numElements; i++ )
+        {
+            arr.add( elemPtr[i] );
+        }
+    }
+
+public:
     /// See Cpl::Dm::Point.  
     bool fromJSON_( JsonVariant& src, Cpl::Dm::ModelPoint::LockRequest_T lockRequest, uint16_t& retSequenceNumber, Cpl::Text::String* errorMsg ) noexcept
     {
@@ -225,45 +220,94 @@ public:
 
         // Check for exceeding array limits
         size_t numElements = elems.size();
-        if ( numElements > BasicArray<ELEMTYPE>::m_data.numElements )
+        if ( numElements + startIdx > m_numElements )
         {
             if ( errorMsg )
             {
-                errorMsg->format( "Number of array elements (%lu) exceeds the MP's element count (%lu)", src.size(), BasicArray<ELEMTYPE>::m_data.numElements );
+                errorMsg->format( "Number of array elements ([%lu+%lu)] exceeds the MP's element count (%lu)", startIdx, numElements, m_numElements );
             }
             return false;
         }
 
-        // Attempt to parse the value key/value pair (as a simple numeric)
-        ELEMTYPE* tempArray = (ELEMTYPE*) ModelDatabase::g_tempBuffer_;
-        for ( size_t i = 0; i < numElements; i++ )
+        // Update the Model Point in 'M' elements at a time (helps to reduce 'noise' on the MP's sequence number)
+        size_t offset = 0;
+        while ( numElements )
         {
-            // Attempt to parse the value as simple numeric
-            if ( m_decimal )
+            // Attempt to parse the value key/value pair (as a simple numeric)
+            ELEMTYPE tempArray[OPTION_CPL_DM_MP_ARRAY_TEMP_ARRAY_NUM_ELEMENTS];
+            size_t   idx;
+            for ( idx = 0; idx < numElements && idx < OPTION_CPL_DM_MP_ARRAY_TEMP_ARRAY_NUM_ELEMENTS; idx++ )
             {
-                tempArray[i] = elems[i];
-            }
-
-            // Attempt to parse the value as HEX string
-            else
-            {
-                const char*        val = elems[i];
-                unsigned long long value;
-                if ( Cpl::Text::a2ull( value, val, 16 ) == false )
+                // Is the element syntacticly correct?
+                if ( elems[idx].is<ELEMTYPE>() == false )
                 {
                     if ( errorMsg )
                     {
-                        *errorMsg = "Invalid syntax for the 'val' key/value pair";
+                        errorMsg->format( "Failed parsing element[%lu]. Content of the MP is suspect!", offset );
                     }
                     return false;
                 }
-                tempArray[i] = (ELEMTYPE) value;
+                tempArray[idx] = elems[idx + offset].as<ELEMTYPE>();
             }
+            retSequenceNumber = ArrayBase_::write( tempArray, idx, startIdx + offset, lockRequest );
+            offset      += idx;
+            numElements -= idx;
         }
 
-        // Update the Model Point 
-        retSequenceNumber = BasicArray<ELEMTYPE>::write( tempArray, numElements, lockRequest, startIdx );
         return true;
+    }
+};
+
+/** This mostly concrete template class implements an 'numeric Array' Model Point 
+    with an element size of N.  A child class is still required. The child classes 
+    must provide the following:
+
+        getTypeAsText() method and a typedef for child specific 'Observer'
+*/
+template<class ELEMTYPE, int NUMELEMS, class MPTYPE>
+class NumericArray_ : public NumericArrayBase_<ELEMTYPE>
+{
+protected:
+    /// The data store the MP
+    ELEMTYPE m_data[NUMELEMS];
+
+protected:
+    /// Constructor: Invalid MP
+    NumericArray_( Cpl::Dm::ModelDatabase& myModelBase,
+                   const char*             symbolicName )
+        :NumericArrayBase_<ELEMTYPE>( myModelBase, symbolicName, m_data, NUMELEMS )
+    {
+    }
+
+
+    /** Constructor.  Valid MP.  Requires an initial value.  If the 'srcData'
+        pointer is set to zero, then the entire array will be initialized to
+        zero.   Note: 'srcData' MUST contain at least 'numElements' elements.
+    */
+    NumericArray_( Cpl::Dm::ModelDatabase& myModelBase,
+                   const char*             symbolicName,
+                   ELEMTYPE*               srcData )
+        :NumericArrayBase_<ELEMTYPE>( myModelBase, symbolicName, m_data, NUMELEMS, srcData )
+    {
+    }
+
+public:
+    /// Updates the MP's data/valid-state from 'src'. 
+    inline uint16_t copyFrom( MPTYPE& src, Cpl::Dm::ModelPoint::LockRequest_T lockRequest = Cpl::Dm::ModelPoint::eNO_REQUEST ) noexcept
+    {
+        return ArrayBase_::copyFrom( src, lockRequest );
+    }
+
+    /// Type safe register observer
+    inline void attach( Cpl::Dm::Subscriber<MPTYPE>& observer, uint16_t initialSeqNumber = Cpl::Dm::ModelPoint::SEQUENCE_NUMBER_UNKNOWN ) noexcept
+    {
+        ModelPointCommon_::attach( observer, initialSeqNumber );
+    }
+
+    /// Type safe un-register observer
+    inline void detach( Cpl::Dm::Subscriber<MPTYPE>& observer ) noexcept
+    {
+        ModelPointCommon_::detach( observer );
     }
 };
 

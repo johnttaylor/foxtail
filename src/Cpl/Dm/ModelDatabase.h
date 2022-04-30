@@ -27,13 +27,6 @@
 #define OPTION_CPL_DM_MODEL_DATABASE_MAX_CAPACITY_JSON_DOC          (1024*2)
 #endif
 
-/** This symbol defines the size, in bytes, of temporary storage allocated for
-    use by the fromJSON_() method (e.g. create a temporary array instance)
- */
-#ifndef OPTION_CPL_DM_MODEL_DATABASE_TEMP_STORAGE_SIZE
-#define OPTION_CPL_DM_MODEL_DATABASE_TEMP_STORAGE_SIZE              (1024*2)
-#endif
-
 
 ///
 namespace Cpl {
@@ -150,15 +143,6 @@ public:
         acquired the global lock before using this buffer
      */
     static StaticJsonDocument<OPTION_CPL_DM_MODEL_DATABASE_MAX_CAPACITY_JSON_DOC> g_doc_;
-
-    /** This variable has 'PACKAGE Scope' in that is should only be called by
-        other classes in the Cpl::Dm namespace.  It is ONLY public to avoid
-        the tight coupling of C++ friend mechanism.
-
-        Global temporary buffer. Model Point's need to have acquired the global 
-        lock before using this buffer
-     */
-    static uint8_t   g_tempBuffer_[OPTION_CPL_DM_MODEL_DATABASE_TEMP_STORAGE_SIZE];
 
 
 protected:
