@@ -98,20 +98,6 @@ uint16_t MpCycleInfo::setMode( Storm::Type::CycleStatus newMode, LockRequest_T l
     return result;
 }
 
-uint16_t MpCycleInfo::copyFrom( const MpCycleInfo& src, LockRequest_T lockRequest ) noexcept
-{
-    // Handle the src.invalid case
-    if ( src.isNotValid() )
-    {
-        return setInvalid();
-    }
-
-    m_modelDatabase.lock_();
-    uint16_t seqNum = write( src.m_data, lockRequest );
-    m_modelDatabase.unlock_();
-    return seqNum;
-}
-
 void MpCycleInfo::attach( Observer& observer, uint16_t initialSeqNumber ) noexcept
 {
     ModelPointCommon_::attach( observer, initialSeqNumber );

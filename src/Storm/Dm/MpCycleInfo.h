@@ -63,7 +63,6 @@ public:
         return ModelPointCommon_::write( &srcData, sizeof( Storm::Type::CycleInfo_T ), lockRequest );
     }
 
-
     /// Sets the Point's Cycle on time.  Note: This is read-modify-write operation WRT to the Point's data
     uint16_t setOnTime( uint32_t newOnCycleTime, LockRequest_T lockRequest = eNO_REQUEST ) noexcept;
 
@@ -79,9 +78,13 @@ public:
     /// Sets the Point's Cycle mode/state.  Note: This is read-modify-write operation WRT to the Point's data
     uint16_t setMode( Storm::Type::CycleStatus newMode, LockRequest_T lockRequest = eNO_REQUEST ) noexcept;
 
+
 public:
     /// Updates the MP with the valid-state/data from 'src'. Note: the src.lock state is NOT copied
-    uint16_t copyFrom( const MpCycleInfo& src, LockRequest_T lockRequest = eNO_REQUEST ) noexcept;
+    inline uint16_t copyFrom( const MpCycleInfo& src, LockRequest_T lockRequest = eNO_REQUEST ) noexcept
+    {
+        return ModelPointCommon_::copyFrom( src, lockRequest );
+    }
 
 public:
     /// Type safe subscriber

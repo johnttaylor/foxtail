@@ -92,20 +92,6 @@ uint16_t MpComfortConfig::writeIndoorHeating( const Storm::Type::ComfortStagePar
     return result;
 }
 
-uint16_t MpComfortConfig::copyFrom( const MpComfortConfig& src, LockRequest_T lockRequest ) noexcept
-{
-    // Handle the src.invalid case
-    if ( src.isNotValid() )
-    {
-        return setInvalid();
-    }
-
-    m_modelDatabase.lock_();
-    uint16_t seqNum = write( src.m_data,  lockRequest );
-    m_modelDatabase.unlock_();
-    return seqNum;
-}
-
 void MpComfortConfig::attach( Observer & observer, uint16_t initialSeqNumber ) noexcept
 {
     ModelPointCommon_::attach( observer, initialSeqNumber );

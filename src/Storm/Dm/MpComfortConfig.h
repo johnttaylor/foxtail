@@ -86,7 +86,10 @@ public:
 
 public:
     /// Updates the MP with the valid-state/data from 'src'. Note: the src.lock state is NOT copied
-    uint16_t copyFrom( const MpComfortConfig& src, LockRequest_T lockRequest = eNO_REQUEST ) noexcept;
+    inline uint16_t copyFrom( const MpComfortConfig& src, LockRequest_T lockRequest = eNO_REQUEST ) noexcept
+    {
+        return ModelPointCommon_::copyFrom( src, lockRequest );
+    }
 
 
 public:
