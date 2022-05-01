@@ -75,6 +75,20 @@ TEST_CASE( "uint32" )
         REQUIRE( strcmp( mpType, "Cpl::Dm::Mp::Uint32" ) == 0 );
     }
 
+    SECTION( "copy" )
+    {
+        mp_apple_.write( 12 );
+        mp_orange_.copyFrom( mp_apple_ );
+        uint32_t value;
+        bool valid = mp_orange_.read( value );
+        REQUIRE( valid );
+        REQUIRE( value == 12 );
+
+        mp_apple_.setInvalid();
+        mp_orange_.copyFrom( mp_apple_ );
+        REQUIRE( mp_orange_.isNotValid() );
+    }
+
     SECTION( "export" )
     {
         //  Export/Import Buffer

@@ -44,6 +44,7 @@ TEST_CASE( "Int64" )
 {
     Cpl::System::Shutdown_TS::clearAndUseCounter();
 
+    Cpl::Text::DString errorMsg( "noerror", 1024 );
     char    string[MAX_STR_LENG + 1];
     bool    truncated;
     bool    valid;
@@ -111,6 +112,13 @@ TEST_CASE( "Int64" )
         valid = mp_apple_.read( value );
         REQUIRE( valid );
         REQUIRE( value == 1234 );
+
+        json = "{name:\"APPLE\", val:\"bob\"}";
+        result = modelDb_.fromJSON( json );
+        REQUIRE( result == false );
+        
+        result = modelDb_.fromJSON( json, &errorMsg );
+        REQUIRE( result == false );
     }
 
     REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );
