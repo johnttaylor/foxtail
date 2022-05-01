@@ -303,6 +303,7 @@ protected:
                             size_t        srcSize,
                             LockRequest_T lockRequest = eNO_REQUEST ) noexcept = 0;
 
+
 protected:
     /** This method is used to attach a subscriber to a Model Point.  Once
         attached the Subscriber will receive a change notification (aka a

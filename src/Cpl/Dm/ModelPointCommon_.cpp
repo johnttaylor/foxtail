@@ -141,6 +141,19 @@ uint16_t ModelPointCommon_::write( const void* srcData, size_t srcSize, LockRequ
     return result;
 }
 
+uint16_t ModelPointCommon_::copyFrom( const ModelPointCommon_& src, LockRequest_T lockRequest ) noexcept
+{
+    // Handle the src.invalid case
+    if ( src.isNotValid() )
+    {
+        return setInvalid();
+    }
+
+    m_modelDatabase.lock_();
+    uint16_t seqNum = write( src.m_dataPtr, src.m_dataSize, lockRequest );
+    m_modelDatabase.unlock_();
+    return seqNum;
+}
 
 uint16_t ModelPointCommon_::touch() noexcept
 {

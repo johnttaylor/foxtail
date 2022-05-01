@@ -88,6 +88,9 @@ protected:
     /// See Cpl::Dm::ModelPoint
     uint16_t write( const void* srcData, size_t srcSize, LockRequest_T lockRequest = eNO_REQUEST ) noexcept;
 
+    /// Updates the MP with the valid-state/data from 'src'. Note: the src.lock state is NOT copied
+    uint16_t copyFrom( const ModelPointCommon_& src, LockRequest_T lockRequest ) noexcept;
+
     /// See Cpl::Dm::ModelPoint
     void attach( SubscriberApi& observer, uint16_t initialSeqNumber=SEQUENCE_NUMBER_UNKNOWN ) noexcept;
 

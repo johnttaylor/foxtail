@@ -88,6 +88,12 @@ public:
     /// Resets the counter to zero (or to a specific value)
     virtual uint16_t reset( uint32_t newValue=0, LockRequest_T lockRequest = eNO_REQUEST ) noexcept;
 
+    /// Updates the MP with the valid-state/data from 'src'. Note: the src.lock state is NOT copied
+    inline uint16_t copyFrom( const RefCounter& src, LockRequest_T lockRequest ) noexcept
+    {
+        return Cpl::Dm::ModelPointCommon_::copyFrom( src, lockRequest );
+    }
+
     ///  See Cpl::Dm::ModelPoint.
     const char* getTypeAsText() const noexcept;
 

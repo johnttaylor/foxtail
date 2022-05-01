@@ -70,7 +70,7 @@ uint16_t ArrayBase_::write( void* srcData, size_t srcNumElements, size_t dstInde
     return ModelPointCommon_::write( &src, sizeof( src ), lockRequest );
 }
 
-uint16_t ArrayBase_::copyFrom( ArrayBase_& src, LockRequest_T lockRequest ) noexcept
+uint16_t ArrayBase_::copyFrom( const ArrayBase_& src, LockRequest_T lockRequest ) noexcept
 {
     // Handle the src.invalid case
     if ( src.isNotValid() )

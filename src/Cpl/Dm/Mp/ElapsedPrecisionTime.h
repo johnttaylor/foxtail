@@ -69,6 +69,12 @@ public:
         return Cpl::Dm::ModelPointCommon_::write( &newValue, sizeof( m_data ), lockRequest );
     }
 
+    /// Updates the MP with the valid-state/data from 'src'. Note: the src.lock state is NOT copied
+    inline uint16_t copyFrom( const ElapsedPrecisionTime& src, LockRequest_T lockRequest ) noexcept
+    {
+        return Cpl::Dm::ModelPointCommon_::copyFrom( src, lockRequest );
+    }
+
 public:
     /// Type safe subscriber
     typedef Cpl::Dm::Subscriber<ElapsedPrecisionTime> Observer;

@@ -94,7 +94,7 @@ uint16_t StringBase_::write( const char* srcData, size_t srcLenInBytesIncludingN
     return seqNum;
 }
 
-uint16_t StringBase_::copyFrom( StringBase_& src, LockRequest_T lockRequest ) noexcept
+uint16_t StringBase_::copyFrom( const StringBase_& src, LockRequest_T lockRequest ) noexcept
 {
     // Handle the src.invalid case
     if ( src.isNotValid() )

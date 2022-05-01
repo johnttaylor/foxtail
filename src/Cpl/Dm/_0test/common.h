@@ -303,7 +303,7 @@ public:
         , m_observerMp2( myMbox, *this, &GenericViewer::mpChanged )
         , m_observerMp3( myMbox, *this, &GenericViewer::mpChanged )
         , m_lastSeqNumber( ModelPoint::SEQUENCE_NUMBER_UNKNOWN )
-        , m_lastValid( OPTION_CPL_DM_MODEL_POINT_STATE_INVALID )
+        , m_lastValid( false )
         , m_done( false )
     {
         CPL_SYSTEM_TRACE_MSG( SECT_, ("GENERIC VIEWER(%p). mp1=%s", this, mp1.getName()) );

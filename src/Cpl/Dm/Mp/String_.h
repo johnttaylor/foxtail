@@ -83,7 +83,7 @@ public:
 
 protected:
     /// Updates the MP with the valid-state/data from 'src'. Note: the src.lock state is NOT copied
-    virtual uint16_t copyFrom( StringBase_& src, LockRequest_T lockRequest = eNO_REQUEST ) noexcept;
+    virtual uint16_t copyFrom( const StringBase_& src, LockRequest_T lockRequest = eNO_REQUEST ) noexcept;
 
     /// See Cpl::Dm::Point.  
     void setJSONVal( JsonDocument& doc ) noexcept;
