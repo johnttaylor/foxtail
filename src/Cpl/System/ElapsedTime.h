@@ -13,6 +13,7 @@
 /** @file */
 
 #include <stdint.h>
+#include <memory.h>
 
 
 /// 
@@ -68,6 +69,33 @@ public:
         /// Assign my value based on total milliseconds
         Precision_T& operator =( uint32_t milliseconds );
 
+
+    public:
+        /// Constructor (to ensure any pad bytes get zero'd)
+        Precision_T()
+        {
+            memset( (void*) this, 0, sizeof( Precision_T ) );   
+        }
+
+        Precision_T( unsigned long  seconds, uint16_t thousandths )
+        {
+            memset( (void*) this, 0, sizeof( Precision_T ) );
+            m_seconds     = seconds;
+            m_thousandths = thousandths;
+        }
+
+        /// Copy Constructor (to ensure any pad bytes get zero'd)
+        Precision_T( const Precision_T& other )
+        {
+            memcpy( (void*) this, (void*) &other, sizeof( Precision_T ) );
+        }
+
+        /// Copy operator
+        Precision_T& operator =( const Precision_T& other )
+        {
+            memcpy( (void*) this, (void*) &other, sizeof( Precision_T ) );
+            return *this;
+        }
     };
 
 

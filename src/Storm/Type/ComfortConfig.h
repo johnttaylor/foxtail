@@ -24,9 +24,15 @@ namespace Type {
  */
 struct ComfortStageParameters_T
 {
-    int         cph;         //!< Cycle-Per-Hour settings.   The actual type is: Storm::Type::Cph ('betterenums' do not play well with classes/struct)
     uint32_t    minOnTime;   //!< Minimum on time in seconds
     uint32_t    minOffTime;  //!< Minimum off time in seconds
+    int         cph;         //!< Cycle-Per-Hour settings.   The actual type is: Storm::Type::Cph ('betterenums' do not play well with classes/struct)
+
+    /// Constructor (to ensure any pad bytes get zero'd)
+    ComfortStageParameters_T()
+    {
+        memset( (void*) this, 0, sizeof( ComfortStageParameters_T ) );
+    }
 
     /** Method that limit/range checks the specified STAGE configuration. Invalid
         and/or out-of-range value are corrected, Returns true if one or more
@@ -43,6 +49,12 @@ struct ComfortConfig_T
     ComfortStageParameters_T compressorHeating;     //!< Parameters for compressor heating operation
     ComfortStageParameters_T indoorHeating;         //!< Parameters for indoor heating operation
 
+    /// Constructor (to ensure any pad bytes get zero'd)
+    ComfortConfig_T()
+    {
+        memset( (void*) this, 0, sizeof( ComfortConfig_T ) );
+    }
+    
     /** Method that limit/range checks the specified configuration. Invalid and/or
         out-of-range value are corrected, Returns true if one or more fields
         were corrected.

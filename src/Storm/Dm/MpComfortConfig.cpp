@@ -37,7 +37,6 @@ static void setDefaults( Storm::Type::ComfortStageParameters_T& parms )
 MpComfortConfig::MpComfortConfig( Cpl::Dm::ModelDatabase& myModelBase, const char* symbolicName )
     : ModelPointCommon_( myModelBase, symbolicName, &m_data, sizeof(m_data), true )
 {
-    memset( (void*) &m_data, 0, sizeof( m_data ) ); // Set all potential 'pad bytes' to zero so memcmp() will work correctly
     hookSetInvalid();
 }
 
@@ -51,51 +50,60 @@ void MpComfortConfig::hookSetInvalid() noexcept
     setDefaults( m_data.indoorHeating );
 }
 
-bool MpComfortConfig::read( Storm::Type::ComfortConfig_T& configuration, uint16_t* seqNumPtr ) const noexcept
-{
-    return ModelPointCommon_::read( &configuration, sizeof( Storm::Type::ComfortConfig_T ), seqNumPtr );
-}
-
-uint16_t MpComfortConfig::write( Storm::Type::ComfortConfig_T& newConfiguration, LockRequest_T lockRequest ) noexcept
-{
-    newConfiguration.validate( newConfiguration );
-    return ModelPointCommon_::write( &newConfiguration, sizeof( Storm::Type::ComfortConfig_T ), lockRequest );
-}
-
-uint16_t MpComfortConfig::writeCompressorCooling( Storm::Type::ComfortStageParameters_T newParameters, LockRequest_T lockRequest ) noexcept
+uint16_t MpComfortConfig::writeCompressorCooling( const Storm::Type::ComfortStageParameters_T newParameters, LockRequest_T lockRequest ) noexcept
 {
     m_modelDatabase.lock_();
 
-    Storm::Type::ComfortConfig_T src = m_data;
-    src.compressorCooling            = newParameters;
-    uint16_t result                  = write( src, lockRequest );
+    Storm::Type::ComfortConfig_T          src    = m_data;
+    Storm::Type::ComfortStageParameters_T newVal = newParameters;
+    newVal.validate( newVal );
+    src.compressorCooling = newVal;
+    uint16_t result       = write( src, lockRequest );
 
     m_modelDatabase.unlock_();
     return result;
 }
 
-uint16_t MpComfortConfig::writeCompressorHeating( Storm::Type::ComfortStageParameters_T newParameters, LockRequest_T lockRequest ) noexcept
+uint16_t MpComfortConfig::writeCompressorHeating( const Storm::Type::ComfortStageParameters_T newParameters, LockRequest_T lockRequest ) noexcept
 {
     m_modelDatabase.lock_();
 
-    Storm::Type::ComfortConfig_T src = m_data;
-    src.compressorHeating            = newParameters;
-    uint16_t result                  = write( src, lockRequest );
+    Storm::Type::ComfortConfig_T          src    = m_data;
+    Storm::Type::ComfortStageParameters_T newVal = newParameters;
+    newVal.validate( newVal );
+    src.compressorHeating = newVal;
+    uint16_t result       = write( src, lockRequest );
+    
+    m_modelDatabase.unlock_();
+    return result;
+}
+
+uint16_t MpComfortConfig::writeIndoorHeating( const Storm::Type::ComfortStageParameters_T newParameters, LockRequest_T lockRequest ) noexcept
+{
+    m_modelDatabase.lock_();
+
+    Storm::Type::ComfortConfig_T          src    = m_data;
+    Storm::Type::ComfortStageParameters_T newVal = newParameters;
+    newVal.validate( newVal );
+    src.indoorHeating = newVal;
+    uint16_t result   = write( src, lockRequest );
 
     m_modelDatabase.unlock_();
     return result;
 }
 
-uint16_t MpComfortConfig::writeIndoorHeating( Storm::Type::ComfortStageParameters_T newParameters, LockRequest_T lockRequest ) noexcept
+uint16_t MpComfortConfig::copyFrom( const MpComfortConfig& src, LockRequest_T lockRequest ) noexcept
 {
+    // Handle the src.invalid case
+    if ( src.isNotValid() )
+    {
+        return setInvalid();
+    }
+
     m_modelDatabase.lock_();
-
-    Storm::Type::ComfortConfig_T src = m_data;
-    src.indoorHeating                = newParameters;
-    uint16_t result                  = write( src, lockRequest );
-
+    uint16_t seqNum = write( src.m_data,  lockRequest );
     m_modelDatabase.unlock_();
-    return result;
+    return seqNum;
 }
 
 void MpComfortConfig::attach( Observer & observer, uint16_t initialSeqNumber ) noexcept

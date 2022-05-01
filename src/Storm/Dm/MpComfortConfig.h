@@ -31,7 +31,7 @@ namespace Dm {
     The toJSON()/fromJSON format is:
     \code
 
-    { name:"<mpname>", type:"<mptypestring>", valid:true|false, seqnum:nnnn, locked:true|false, val:{ "cmpCooling":{"stage":<num>, "cph":<enum>, "minOn":<secs> "minOff":<secs>}, 
+    { name:"<mpname>", type:"<mptypestring>", valid:true|false, seqnum:nnnn, locked:true|false, val:{ "cmpCooling":{"stage":<num>, "cph":<enum>, "minOn":<secs> "minOff":<secs>},
                                                                                                       "cmpHeating":{"stage":<num>, "cph":<enum>, "minOn":<secs> "minOff":<secs>},
                                                                                                       "indoorHeating":{"stage":<num>, "cph":<enum>, "minOn":<secs> "minOff":<secs>}}}
 
@@ -57,25 +57,36 @@ public:
 public:
     /** Type safe read of the Comfort Configuration
      */
-    virtual bool read( Storm::Type::ComfortConfig_T& configuration, uint16_t* seqNumPtr=0 ) const noexcept;
+    inline bool read( Storm::Type::ComfortConfig_T& configuration, uint16_t* seqNumPtr=0 ) const noexcept
+    {
+        return ModelPointCommon_::read( &configuration, sizeof( Storm::Type::ComfortConfig_T ), seqNumPtr );
+    }
 
     /** Updates the entire Comfort Configuration
      */
-    virtual uint16_t write( Storm::Type::ComfortConfig_T& newConfiguration, LockRequest_T lockRequest = eNO_REQUEST ) noexcept;
+    inline uint16_t write( const Storm::Type::ComfortConfig_T& newConfiguration, LockRequest_T lockRequest = eNO_REQUEST ) noexcept
+    {
+        Storm::Type::ComfortConfig_T newVale = newConfiguration;
+        Storm::Type::ComfortConfig_T::validate( newVale );
+        return ModelPointCommon_::write( &newConfiguration, sizeof( Storm::Type::ComfortConfig_T ), lockRequest );
+    }
 
     /** Updates only the cooling operation (i.e. this is a read-modify-write operation)
      */
-    virtual uint16_t writeCompressorCooling( Storm::Type::ComfortStageParameters_T newParameters, LockRequest_T lockRequest = eNO_REQUEST ) noexcept;
+    uint16_t writeCompressorCooling( const Storm::Type::ComfortStageParameters_T newParameters, LockRequest_T lockRequest = eNO_REQUEST ) noexcept;
 
     /** Updates only the compressor heating operation (i.e. this is a read-modify-write operation)
      */
-    virtual uint16_t writeCompressorHeating( Storm::Type::ComfortStageParameters_T newParameters, LockRequest_T lockRequest = eNO_REQUEST ) noexcept;
- 
+    uint16_t writeCompressorHeating( const Storm::Type::ComfortStageParameters_T newParameters, LockRequest_T lockRequest = eNO_REQUEST ) noexcept;
+
     /** Updates only the indoor heating operation (i.e. this is a read-modify-write operation)
      */
-    virtual uint16_t writeIndoorHeating( Storm::Type::ComfortStageParameters_T newParameters, LockRequest_T lockRequest = eNO_REQUEST ) noexcept;
+    uint16_t writeIndoorHeating( const Storm::Type::ComfortStageParameters_T newParameters, LockRequest_T lockRequest = eNO_REQUEST ) noexcept;
 
 
+public:
+    /// Updates the MP with the valid-state/data from 'src'. Note: the src.lock state is NOT copied
+    uint16_t copyFrom( const MpComfortConfig& src, LockRequest_T lockRequest = eNO_REQUEST ) noexcept;
 
 
 public:

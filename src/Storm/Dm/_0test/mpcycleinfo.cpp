@@ -12,6 +12,215 @@
 #include "Catch/catch.hpp"
 #include "Cpl/System/_testsupport/Shutdown_TS.h"
 #include "Cpl/System/Api.h"
+#include "Cpl/System/Trace.h"
+#include "Cpl/Text/FString.h"
+#include "Cpl/Text/DString.h"
+#include "Cpl/Math/real.h"
+#include "Cpl/Dm/ModelDatabase.h"
+#include "Storm/Dm/MpCycleInfo.h"
+#include "Storm/Constants.h"
+#include "common.h"
+#include <string.h>
+
+
+using namespace Storm::Dm;
+
+#define STRCMP(s1,s2)       (strcmp(s1,s2)==0)
+#define MAX_STR_LENG        1024
+#define SECT_               "_0test"
+
+#define SET_VALUES(v,bons,bonms, boffs,boffms, on,off,m)    v.beginOnTime = {bons,bonms}; v.beginOffTime = {boffs,boffms}; v.onTime = on; v.offTime = off; v.mode = m
+
+////////////////////////////////////////////////////////////////////////////////
+// Allocate/create my Model Database
+static Cpl::Dm::ModelDatabase   modelDb_( "ignoreThisParameter_usedToInvokeTheStaticConstructor" );
+
+// Allocate my Model Points
+static MpCycleInfo          mp_apple_( modelDb_, "APPLE" );
+static MpCycleInfo          mp_orange_( modelDb_, "ORANGE" );
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+//
+// Note: The bare minimum I need to test code that is 'new' to concrete MP type
+//
+TEST_CASE( "MpCycleInfo" )
+{
+    Cpl::System::Shutdown_TS::clearAndUseCounter();
+
+    Cpl::Text::FString<MAX_STR_LENG> errorMsg = "noerror";
+    char string[MAX_STR_LENG + 1];
+    bool truncated;
+    bool valid;
+    Storm::Type::CycleInfo_T value;
+    Storm::Type::CycleInfo_T expectedVal;
+    mp_apple_.setInvalid();
+
+    SECTION( "gets" )
+    {
+        // Gets...
+        const char* name = mp_apple_.getName();
+        REQUIRE( strcmp( name, "APPLE" ) == 0 );
+
+        size_t s = mp_apple_.getSize();
+        REQUIRE( s == sizeof( value ) );
+
+        s = mp_apple_.getExternalSize();
+        REQUIRE( s == sizeof( value ) + sizeof( bool ) );
+
+        const char* mpType = mp_apple_.getTypeAsText();
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("typeText: [%s])", mpType) );
+        REQUIRE( strcmp( mpType, "Storm::Dm::MpCycleInfo" ) == 0 );
+    }
+
+
+    SECTION( "read/writes" )
+    {
+        SET_VALUES( expectedVal, 1, 2, 3, 4, 4, 5, Storm::Type::CycleStatus::eOFF );
+        mp_apple_.write( expectedVal );
+        valid = mp_apple_.read( value );
+        REQUIRE( valid );
+        REQUIRE( memcmp( &value, &expectedVal, sizeof( value ) ) == 0 );
+
+        expectedVal.beginOffTime ={ 10,11 };
+        mp_apple_.setBeginOffTime( expectedVal.beginOffTime );
+        valid = mp_apple_.read( value );
+        REQUIRE( valid );
+        REQUIRE( memcmp( &value, &expectedVal, sizeof( value ) ) == 0 );
+
+        expectedVal.beginOnTime ={ 20,21 };
+        mp_apple_.setBeginOnTime( expectedVal.beginOnTime );
+        valid = mp_apple_.read( value );
+        REQUIRE( valid );
+        REQUIRE( memcmp( &value, &expectedVal, sizeof( value ) ) == 0 );
+
+        expectedVal.onTime = 30;
+        mp_apple_.setOnTime( expectedVal.onTime );
+        valid = mp_apple_.read( value );
+        REQUIRE( valid );
+        REQUIRE( memcmp( &value, &expectedVal, sizeof( value ) ) == 0 );
+
+        expectedVal.offTime = 40;
+        mp_apple_.setOffTime( expectedVal.offTime );
+        valid = mp_apple_.read( value );
+        REQUIRE( valid );
+        REQUIRE( memcmp( &value, &expectedVal, sizeof( value ) ) == 0 );
+
+        expectedVal.mode = Storm::Type::CycleStatus::eON_CYCLE;
+        mp_apple_.setMode( Storm::Type::CycleStatus::_from_integral_unchecked( expectedVal.mode ) );
+        valid = mp_apple_.read( value );
+        REQUIRE( valid );
+        REQUIRE( memcmp( &value, &expectedVal, sizeof( value ) ) == 0 );
+
+    }
+
+    SECTION( "copy" )
+    {
+        SET_VALUES( expectedVal, 1, 2, 3, 4, 4, 5, Storm::Type::CycleStatus::eOFF );
+        mp_apple_.write( expectedVal );
+        mp_orange_.copyFrom( mp_apple_ );
+        valid = mp_orange_.read( value );
+        REQUIRE( valid );
+        REQUIRE( memcmp( &value, &expectedVal, sizeof( value ) ) == 0 );
+
+        mp_orange_.setInvalid();
+        REQUIRE( mp_apple_.isNotValid() == false );
+        mp_apple_.copyFrom( mp_orange_ );
+        REQUIRE( mp_apple_.isNotValid() );
+    }
+    
+    SECTION( "toJSON-pretty" )
+    {
+        SET_VALUES( expectedVal, 2, 500, 4, 250, 5, 6, Storm::Type::CycleStatus::eOFF );
+        mp_apple_.write( expectedVal );
+        mp_apple_.toJSON( string, MAX_STR_LENG, truncated, true, true );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s])", string) );
+
+        StaticJsonDocument<1024> doc;
+        DeserializationError err = deserializeJson( doc, string );
+        REQUIRE( err == DeserializationError::Ok );
+        REQUIRE( doc["locked"] == false );
+        REQUIRE( doc["valid"] == true );
+        REQUIRE( doc["val"]["onTimeMsec"] == 5 );
+        REQUIRE( doc["val"]["offTimeMsec"] == 6 );
+        REQUIRE( STRCMP( doc["val"]["mode"], "eOFF" ) );
+        REQUIRE( Cpl::Math::areDoublesEqual( doc["val"]["beginOnTimeSec"].as<double>(), 2.5 ) );
+        REQUIRE( Cpl::Math::areDoublesEqual( doc["val"]["beginOffTimeSec"].as<double>(), 4.25 ) );
+    }
+
+    SECTION( "fromJSON" )
+    {
+        const char* json = "{name:\"APPLE\", val:{onTimeMsec:10,offTimeMsec:20,beginOnTimeSec:1.750,beginOffTimeSec:2.800,mode:\"eOFF_CYCLE\"}}";
+        bool result = modelDb_.fromJSON( json, &errorMsg );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("errorMsg: [%s])", errorMsg.getString()) );
+        REQUIRE( result == true );
+        valid = mp_apple_.read( value );
+        REQUIRE( valid );
+        SET_VALUES( expectedVal, 1,750, 2,800, 10, 20, Storm::Type::CycleStatus::eOFF_CYCLE );
+        REQUIRE( memcmp( &value, &expectedVal, sizeof( value ) ) == 0 );
+
+        json = "{name:\"APPLE\", val:{onTimeMsec:abc}}";
+        result = modelDb_.fromJSON( json, &errorMsg );
+        REQUIRE( result == false );
+        REQUIRE( errorMsg != "noerror" );
+
+        result = modelDb_.fromJSON( json );
+        REQUIRE( result == false );
+
+        json = "{name:\"APPLE\", val:{mode:\"abc\"}}";
+        result = modelDb_.fromJSON( json, &errorMsg );
+        REQUIRE( result == false );
+        REQUIRE( errorMsg != "noerror" );
+
+        result = modelDb_.fromJSON( json );
+        REQUIRE( result == false );
+    }
+
+    SECTION( "observer" )
+    {
+        Cpl::Dm::MailboxServer     t1Mbox;
+        Viewer<MpCycleInfo>    viewer_apple1( t1Mbox, Cpl::System::Thread::getCurrent(), mp_apple_ );
+        Cpl::System::Thread* t1 = Cpl::System::Thread::create( t1Mbox, "T1" );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("Created Viewer thread (%p)", t1) );
+
+        // NOTE: The MP MUST be in the INVALID state at the start of this test
+        viewer_apple1.open();
+        SET_VALUES( expectedVal, 500, 2, 250, 4, 5, 6, Storm::Type::CycleStatus::eOFF );
+        mp_apple_.write( expectedVal );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("Waiting for viewer signal...") );
+        Cpl::System::Thread::wait();
+        viewer_apple1.close();
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("Viewer closed.") );
+
+        // Shutdown threads
+        t1Mbox.pleaseStop();
+        Cpl::System::Api::sleep( 100 ); // allow time for threads to stop
+        REQUIRE( t1->isRunning() == false );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("Destroying Viewer thread (%p)...", t1) );
+        Cpl::System::Thread::destroy( *t1 );
+        Cpl::System::Api::sleep( 100 ); // allow time for threads to stop BEFORE the runnable object goes out of scope
+    }
+
+    REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );
+}
+
+#if 0
+/*-----------------------------------------------------------------------------
+* This file is part of the Colony.Core Project.  The Colony.Core Project is an
+* open source project with a BSD type of licensing agreement.  See the license
+* agreement (license.txt) in the top/ directory or on the Internet at
+* http://integerfox.com/colony.core/license.txt
+*
+* Copyright (c) 2014-2020  John T. Taylor
+*
+* Redistributions of the source code must retain the above copyright notice.
+*----------------------------------------------------------------------------*/
+
+#include "Catch/catch.hpp"
+#include "Cpl/System/_testsupport/Shutdown_TS.h"
+#include "Cpl/System/Api.h"
 #include "Cpl/Text/FString.h"
 #include "Cpl/Text/DString.h"
 #include "Cpl/Dm/ModelDatabase.h"
@@ -67,7 +276,7 @@ static MpCycleInfo              mp_apple_( modelDb_, info_mp_apple_ );
 static Cpl::Dm::StaticInfo      info_mp_orange_( "ORANGE" );
 static MpCycleInfo              mp_orange_( modelDb_, info_mp_orange_ );
 
-static bool compare( Storm::Type::CycleInfo_T d, Storm::Type::CycleStatus mode=Storm::Type::CycleStatus::eOFF, uint32_t onTime=0, uint32_t offTime=0, Cpl::System::ElapsedTime::Precision_T beginOnTime= { 0,0 }, Cpl::System::ElapsedTime::Precision_T beginOffTime= { 0,0 } )
+static bool compare( Storm::Type::CycleInfo_T d, Storm::Type::CycleStatus mode=Storm::Type::CycleStatus::eOFF, uint32_t onTime=0, uint32_t offTime=0, Cpl::System::ElapsedTime::Precision_T beginOnTime={ 0,0 }, Cpl::System::ElapsedTime::Precision_T beginOffTime={ 0,0 } )
 {
     return d.mode == mode && d.onTime == onTime && d.offTime == offTime && d.beginOnTime == beginOnTime && d.beginOffTime == beginOffTime;
 }
@@ -168,7 +377,7 @@ TEST_CASE( "MP CycleInfo" )
         REQUIRE( s == sizeof( Storm::Type::CycleInfo_T ) + sizeof( int8_t ) );
 
         const char* mpType = mp_apple_.getTypeAsText();
-        CPL_SYSTEM_TRACE_MSG( SECT_, ( "typeText: [%s])", mpType ) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("typeText: [%s])", mpType) );
         REQUIRE( strcmp( mpType, "Storm::Dm::MpCycleInfo" ) == 0 );
     }
 
@@ -288,7 +497,7 @@ TEST_CASE( "MP CycleInfo" )
             // Invalid (Default value)
             mp_apple_.setInvalid();
             mp_apple_.toJSON( string, MAX_STR_LENG, truncated, false );
-            CPL_SYSTEM_TRACE_MSG( SECT_, ( "toJSON: terse [%s])", string ) );
+            CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: terse [%s])", string) );
             REQUIRE( truncated == false );
 
             StaticJsonDocument<1024> doc;
@@ -306,7 +515,7 @@ TEST_CASE( "MP CycleInfo" )
             // Invalid (Default value)
             uint16_t seqnum = mp_apple_.setInvalid();
             mp_apple_.toJSON( string, MAX_STR_LENG, truncated );
-            CPL_SYSTEM_TRACE_MSG( SECT_, ( "toJSON: [%s])", string ) );
+            CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s])", string) );
             REQUIRE( truncated == false );
 
             StaticJsonDocument<1024> doc;
@@ -323,7 +532,7 @@ TEST_CASE( "MP CycleInfo" )
         {
             mp_apple_.applyLock();
             mp_apple_.toJSON( string, MAX_STR_LENG, truncated );
-            CPL_SYSTEM_TRACE_MSG( SECT_, ( "toJSON: [%s])", string ) );
+            CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s])", string) );
 
             StaticJsonDocument<1024> doc;
             DeserializationError err = deserializeJson( doc, string );
@@ -337,7 +546,7 @@ TEST_CASE( "MP CycleInfo" )
             mp_apple_.removeLock();
             uint16_t seqnum = mp_apple_.setInvalidState( 100 );
             mp_apple_.toJSON( string, MAX_STR_LENG, truncated );
-            CPL_SYSTEM_TRACE_MSG( SECT_, ( "toJSON: [%s])", string ) );
+            CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s])", string) );
 
             StaticJsonDocument<1024> doc;
             DeserializationError err = deserializeJson( doc, string );
@@ -352,7 +561,7 @@ TEST_CASE( "MP CycleInfo" )
             // Invalid (custom value) + Locked
             mp_apple_.applyLock();
             mp_apple_.toJSON( string, MAX_STR_LENG, truncated );
-            CPL_SYSTEM_TRACE_MSG( SECT_, ( "toJSON: [%s])", string ) );
+            CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s])", string) );
 
             StaticJsonDocument<1024> doc;
             DeserializationError err = deserializeJson( doc, string );
@@ -364,10 +573,10 @@ TEST_CASE( "MP CycleInfo" )
         SECTION( "Value" )
         {
             Storm::Type::CycleStatus mode  = Storm::Type::CycleStatus::eTRANSITIONING_DOWN;
-            Storm::Type::CycleInfo_T value = { {1,1}, {2,2}, 3, 4, mode };
+            Storm::Type::CycleInfo_T value ={ {1,1}, {2,2}, 3, 4, mode };
             uint16_t seqnum = mp_apple_.write( value, Cpl::Dm::ModelPoint::eUNLOCK );
             mp_apple_.toJSON( string, MAX_STR_LENG, truncated );
-            CPL_SYSTEM_TRACE_MSG( SECT_, ( "toJSON: [%s])", string ) );
+            CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s])", string) );
 
             StaticJsonDocument<1024> doc;
             DeserializationError err = deserializeJson( doc, string );
@@ -390,7 +599,7 @@ TEST_CASE( "MP CycleInfo" )
             Storm::Type::CycleStatus mode  = Storm::Type::CycleStatus::eTRANSITIONING_DOWN;
             mp_apple_.applyLock();
             mp_apple_.toJSON( string, MAX_STR_LENG, truncated );
-            CPL_SYSTEM_TRACE_MSG( SECT_, ( "toJSON: [%s])", string ) );
+            CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s])", string) );
 
             StaticJsonDocument<1024> doc;
             DeserializationError err = deserializeJson( doc, string );
@@ -427,7 +636,7 @@ TEST_CASE( "MP CycleInfo" )
         {
             const char* json = "{name:\"APPLE\", val:{onTimeMsec:6, offTimeMsec:5, beginOnTimeSec:4.5, beginOffTimeSec:3.3, mode:\"eON_CYCLE\" }}";
             bool result = modelDb_.fromJSON( json, &errorMsg, &mp, &seqNum2 );
-            CPL_SYSTEM_TRACE_MSG( SECT_, ( "fromSJON errorMsg=[%s])", errorMsg.getString() ) );
+            CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=[%s])", errorMsg.getString()) );
             REQUIRE( result == true );
             REQUIRE( seqNum2 == seqNum + 1 );
             Storm::Type::CycleInfo_T value;
@@ -447,28 +656,28 @@ TEST_CASE( "MP CycleInfo" )
             uint16_t seqNum = mp_apple_.write( value );
             const char* json   = "{name:\"APPLE\", val:\"abc\"}";
             bool        result = modelDb_.fromJSON( json, &errorMsg );
-            CPL_SYSTEM_TRACE_MSG( SECT_, ( "fromSJON errorMsg=(%s)", errorMsg.getString() ) );
+            CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=(%s)", errorMsg.getString()) );
             REQUIRE( result == true );
             REQUIRE( seqNum == mp_apple_.getSequenceNumber() ); // JSON parsing 'passed' -->but NO CHANGE to the actual MP.
 
             errorMsg = "noerror";
             json     = "{name:\"APPLE\"}";
             result   = modelDb_.fromJSON( json, &errorMsg );
-            CPL_SYSTEM_TRACE_MSG( SECT_, ( "fromSJON errorMsg=(%s)", errorMsg.getString() ) );
+            CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=(%s)", errorMsg.getString()) );
             REQUIRE( result == false );
             REQUIRE( errorMsg != "noerror" );
 
             errorMsg = "noerror";
             json     = "{namex:\"APPLE\"}";
             result   = modelDb_.fromJSON( json, &errorMsg );
-            CPL_SYSTEM_TRACE_MSG( SECT_, ( "fromSJON errorMsg=(%s)", errorMsg.getString() ) );
+            CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=(%s)", errorMsg.getString()) );
             REQUIRE( result == false );
             REQUIRE( errorMsg != "noerror" );
 
             errorMsg = "noerror";
             json     = "{name:\"APPLE\", val:a123}";
             result   = modelDb_.fromJSON( json, &errorMsg );
-            CPL_SYSTEM_TRACE_MSG( SECT_, ( "fromSJON errorMsg=(%s)", errorMsg.getString() ) );
+            CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=(%s)", errorMsg.getString()) );
             REQUIRE( result == false );
             REQUIRE( errorMsg != "noerror" );
 
@@ -476,7 +685,7 @@ TEST_CASE( "MP CycleInfo" )
             json     = "{name:\"APPLE\", val:{}}";
             seqNum   = mp_apple_.getSequenceNumber();
             result   = modelDb_.fromJSON( json, &errorMsg );
-            CPL_SYSTEM_TRACE_MSG( SECT_, ( "fromSJON errorMsg=(%s)", errorMsg.getString() ) );
+            CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=(%s)", errorMsg.getString()) );
             REQUIRE( result == true );
             REQUIRE( seqNum == mp_apple_.getSequenceNumber() ); // JSON parsing 'passed' -->but NO CHANGE to the actual MP.
 
@@ -484,14 +693,14 @@ TEST_CASE( "MP CycleInfo" )
             json     = "{name:\"APPLE\", val:{priAlarm:123}}";
             seqNum   = mp_apple_.getSequenceNumber();
             result   = modelDb_.fromJSON( json, &errorMsg );
-            CPL_SYSTEM_TRACE_MSG( SECT_, ( "fromSJON errorMsg =(%s)", errorMsg.getString() ) );
+            CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg =(%s)", errorMsg.getString()) );
             REQUIRE( result == true );
             REQUIRE( seqNum == mp_apple_.getSequenceNumber() ); // JSON parsing 'passed' -->but NO CHANGE to the actual MP.
 
             errorMsg = "noerror";
             json     = "{name:\"BOB\", invalid:1}";
             result   = modelDb_.fromJSON( json, &errorMsg );
-            CPL_SYSTEM_TRACE_MSG( SECT_, ( "fromSJON errorMsg=(%s)", errorMsg.getString() ) );
+            CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=(%s)", errorMsg.getString()) );
             REQUIRE( result == false );
         }
 
@@ -500,7 +709,7 @@ TEST_CASE( "MP CycleInfo" )
             uint16_t seqNum = mp_apple_.setOnTime( 666 );
             const char* json = "{name:\"APPLE\", val:{onTimeMsec:5}, invalid:1}";
             bool result = modelDb_.fromJSON( json, &errorMsg, &mp, &seqNum2 );
-            CPL_SYSTEM_TRACE_MSG( SECT_, ( "fromSJON errorMsg=[%s])", errorMsg.getString() ) );
+            CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=[%s])", errorMsg.getString()) );
             REQUIRE( result == true );
             REQUIRE( seqNum2 == seqNum + 1 );
             Storm::Type::CycleInfo_T value;
@@ -515,7 +724,7 @@ TEST_CASE( "MP CycleInfo" )
         {
             const char* json = "{name:\"APPLE\", val:{mode:\"eOFF_CYCLE\"}, locked:true}";
             bool result = modelDb_.fromJSON( json, &errorMsg );
-            CPL_SYSTEM_TRACE_MSG( SECT_, ( "fromSJON errorMsg=[%s])", errorMsg.getString() ) );
+            CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=[%s])", errorMsg.getString()) );
             REQUIRE( result == true );
             Storm::Type::CycleInfo_T value;
             int8_t           valid = mp_apple_.read( value );
@@ -526,7 +735,7 @@ TEST_CASE( "MP CycleInfo" )
 
             json   = "{name:\"APPLE\", invalid:21, locked:false}";
             result = modelDb_.fromJSON( json, &errorMsg );
-            CPL_SYSTEM_TRACE_MSG( SECT_, ( "fromSJON errorMsg=[%s])", errorMsg.getString() ) );
+            CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=[%s])", errorMsg.getString()) );
             REQUIRE( result == true );
             REQUIRE( mp_apple_.isNotValid() == true );
             REQUIRE( mp_apple_.isLocked() == false );
@@ -534,7 +743,7 @@ TEST_CASE( "MP CycleInfo" )
 
             json   = "{name:\"APPLE\", val:{mode:\"eON_CYCLE\"}, locked:true}";
             result = modelDb_.fromJSON( json, &errorMsg );
-            CPL_SYSTEM_TRACE_MSG( SECT_, ( "fromSJON errorMsg=[%s])", errorMsg.getString() ) );
+            CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=[%s])", errorMsg.getString()) );
             REQUIRE( result == true );
             REQUIRE( mp_apple_.isLocked() == true );
             valid = mp_apple_.read( value );
@@ -543,7 +752,7 @@ TEST_CASE( "MP CycleInfo" )
 
             json   = "{name:\"APPLE\", val:{mode:\"eOFF\"} }";
             result = modelDb_.fromJSON( json, &errorMsg );
-            CPL_SYSTEM_TRACE_MSG( SECT_, ( "fromSJON errorMsg=[%s])", errorMsg.getString() ) );
+            CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=[%s])", errorMsg.getString()) );
             REQUIRE( result == true );
             REQUIRE( mp_apple_.isLocked() == true );
             valid = mp_apple_.read( value );
@@ -552,7 +761,7 @@ TEST_CASE( "MP CycleInfo" )
 
             json   = "{name:\"APPLE\", locked:false}";
             result = modelDb_.fromJSON( json, &errorMsg );
-            CPL_SYSTEM_TRACE_MSG( SECT_, ( "fromSJON errorMsg=[%s])", errorMsg.getString() ) );
+            CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=[%s])", errorMsg.getString()) );
             REQUIRE( result == true );
             valid = mp_apple_.read( value );
             REQUIRE( Cpl::Dm::ModelPoint::IS_VALID( valid ) == true );
@@ -564,3 +773,4 @@ TEST_CASE( "MP CycleInfo" )
     REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );
 }
 
+#endif
