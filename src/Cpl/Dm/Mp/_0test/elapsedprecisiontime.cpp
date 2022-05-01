@@ -94,6 +94,20 @@ TEST_CASE( "ElapsedPrecisionTime" )
         REQUIRE( value == expectedVal );
     }
 
+    SECTION( "copy" )
+    {
+        expectedVal ={ 1,2 };
+        mp_apple_.write( expectedVal );
+        mp_orange_.copyFrom( mp_apple_ );
+        valid = mp_orange_.read( value );
+        REQUIRE( valid );
+        REQUIRE( value == expectedVal );
+
+        mp_apple_.setInvalid();
+        mp_orange_.copyFrom( mp_apple_ );
+        REQUIRE( mp_orange_.isNotValid() );
+    }
+    
     SECTION( "toJSON-pretty" )
     {
         expectedVal ={ 5,6 };

@@ -122,6 +122,20 @@ TEST_CASE( "Enum" )
         REQUIRE( value == +INITIAL_VALUE );
     }
 
+    SECTION( "copy" )
+    {
+        mp_apple_.write( MyEnum::eRED );
+        mp_orange_.copyFrom( mp_apple_ );
+        valid = mp_apple_.read( value );
+        REQUIRE( value == +MyEnum::eRED );
+        REQUIRE( valid );
+
+        mp_apple_.setInvalid();
+        mp_orange_.copyFrom( mp_apple_ );
+        REQUIRE( mp_orange_.isNotValid() );
+    }
+
+
     SECTION( "toJSON-pretty" )
     {
         mp_apple_.write( MyEnum::eBLUE );

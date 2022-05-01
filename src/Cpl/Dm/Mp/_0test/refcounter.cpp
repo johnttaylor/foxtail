@@ -125,6 +125,19 @@ TEST_CASE( "RefCounter" )
         REQUIRE( value == INITIAL_VALUE );
     }
 
+    SECTION( "copy" )
+    {
+        mp_apple_.reset( 10 );
+        mp_orange_.copyFrom( mp_apple_ );
+        valid = mp_orange_.read( value );
+        REQUIRE( valid );
+        REQUIRE( value == 10 );
+
+        mp_apple_.setInvalid();
+        mp_orange_.copyFrom( mp_apple_ );
+        REQUIRE( mp_orange_.isNotValid() );
+    }
+    
     SECTION( "observer" )
     {
         MailboxServer           t1Mbox;
