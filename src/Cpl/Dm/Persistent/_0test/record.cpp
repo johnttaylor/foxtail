@@ -121,15 +121,15 @@ TEST_CASE( "record" )
         recordServer.open();
         REQUIRE( uut.m_schemaChangeCount == 0 );
         uint32_t value;
-        int8_t   valid;
+        bool   valid;
         valid = mp_apple_.read( value );
-        REQUIRE( Cpl::Dm::ModelPoint::IS_VALID( valid ) );
+        REQUIRE( valid );
         REQUIRE( value == DEFAULT_APPLE );
         valid = mp_orange_.read( value );
-        REQUIRE( Cpl::Dm::ModelPoint::IS_VALID( valid ) );
+        REQUIRE( valid );
         REQUIRE( value == DEFAULT_ORANGE );
         valid = mp_plum_.read( value );
-        REQUIRE( Cpl::Dm::ModelPoint::IS_VALID( valid ) );
+        REQUIRE( valid );
         REQUIRE( value == DEFAULT_PLUM );
         
         // Update my data
@@ -149,15 +149,15 @@ TEST_CASE( "record" )
         recordServer.open();
         REQUIRE( uut.m_schemaChangeCount == 0 );
         uint32_t value;
-        int8_t   valid;
+        bool   valid;
         valid = mp_apple_.read( value );
-        REQUIRE( Cpl::Dm::ModelPoint::IS_VALID( valid ) );
+        REQUIRE( valid );
         REQUIRE( value == DEFAULT_APPLE+1 );
         valid = mp_orange_.read( value );
-        REQUIRE( Cpl::Dm::ModelPoint::IS_VALID( valid ) );
+        REQUIRE( valid );
         REQUIRE( value == DEFAULT_ORANGE+1 );
         valid = mp_plum_.read( value );
-        REQUIRE( Cpl::Dm::ModelPoint::IS_VALID( valid ) );
+        REQUIRE( valid );
         REQUIRE( value == DEFAULT_PLUM+1 );
    
         // Update Plum -->but persistent storage should NOT be update (i.e. no subscription to plum)
@@ -175,15 +175,15 @@ TEST_CASE( "record" )
         recordServer.open();
         REQUIRE( uut.m_schemaChangeCount == 0 );
         uint32_t value;
-        int8_t   valid;
+        bool   valid;
         valid = mp_apple_.read( value );
-        REQUIRE( Cpl::Dm::ModelPoint::IS_VALID( valid ) );
+        REQUIRE( valid );
         REQUIRE( value == DEFAULT_APPLE + 1 );
         valid = mp_orange_.read( value );
-        REQUIRE( Cpl::Dm::ModelPoint::IS_VALID( valid ) );
+        REQUIRE( valid );
         REQUIRE( value == DEFAULT_ORANGE + 1 );
         valid = mp_plum_.read( value );
-        REQUIRE( Cpl::Dm::ModelPoint::IS_VALID( valid ) );
+        REQUIRE( valid );
         REQUIRE( value == DEFAULT_PLUM + 1 );
 
         // Allow time for the changes to propagate and the data to be saved - WHICH won't happen beaus plum does not trigger a change notification
@@ -221,15 +221,15 @@ TEST_CASE( "record-badmajor" )
         REQUIRE( uut.m_schemaChangeCount == 1 );
         REQUIRE( uut.m_resetDataCount == 1 );
         uint32_t value;
-        int8_t   valid;
+        bool   valid;
         valid = mp_apple_.read( value );
-        REQUIRE( Cpl::Dm::ModelPoint::IS_VALID( valid ) );
+        REQUIRE( valid );
         REQUIRE( value == DEFAULT_APPLE);
         valid = mp_orange_.read( value );
-        REQUIRE( Cpl::Dm::ModelPoint::IS_VALID( valid ) );
+        REQUIRE( valid );
         REQUIRE( value == DEFAULT_ORANGE );
         valid = mp_plum_.read( value );
-        REQUIRE( Cpl::Dm::ModelPoint::IS_VALID( valid ) );
+        REQUIRE( valid );
         REQUIRE( value == DEFAULT_PLUM );
 
         // Update Apple -->but persistent storage should NOT be update (i.e. no subscription to plum)
@@ -271,15 +271,15 @@ TEST_CASE( "record-badminor" )
         REQUIRE( uut.m_schemaChangeCount == 1 );
         REQUIRE( uut.m_resetDataCount == 1 );
         uint32_t value;
-        int8_t   valid;
+        bool   valid;
         valid = mp_apple_.read( value );
-        REQUIRE( Cpl::Dm::ModelPoint::IS_VALID( valid ) );
+        REQUIRE( valid );
         REQUIRE( value == DEFAULT_APPLE );
         valid = mp_orange_.read( value );
-        REQUIRE( Cpl::Dm::ModelPoint::IS_VALID( valid ) );
+        REQUIRE( valid );
         REQUIRE( value == DEFAULT_ORANGE );
         valid = mp_plum_.read( value );
-        REQUIRE( Cpl::Dm::ModelPoint::IS_VALID( valid ) );
+        REQUIRE( valid );
         REQUIRE( value == DEFAULT_PLUM );
 
         // Update Apple -->but persistent storage should NOT be update (i.e. no subscription to plum)
@@ -323,15 +323,15 @@ TEST_CASE( "record-verify" )
         REQUIRE( uut.m_schemaChangeCount == 0 );
         REQUIRE( uut.m_resetDataCount == 0 );
         uint32_t value;
-        int8_t   valid;
+        bool   valid;
         valid = mp_apple_.read( value );
-        REQUIRE( Cpl::Dm::ModelPoint::IS_VALID( valid ) );
+        REQUIRE( valid );
         REQUIRE( value == DEFAULT_APPLE+1 );
         valid = mp_orange_.read( value );
-        REQUIRE( Cpl::Dm::ModelPoint::IS_VALID( valid ) );
+        REQUIRE( valid );
         REQUIRE( value == DEFAULT_ORANGE+1 );
         valid = mp_plum_.read( value );
-        REQUIRE( Cpl::Dm::ModelPoint::IS_VALID( valid ) );
+        REQUIRE( valid );
         REQUIRE( value == DEFAULT_PLUM+1 );
 
         recordServer.close();

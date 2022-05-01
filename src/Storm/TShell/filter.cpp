@@ -47,9 +47,9 @@ Cpl::TShell::Command::Result_T Filter::execute( Cpl::TShell::Context_& context, 
         Storm::Dm::MpSimpleAlarm::Data          alert;
         uint32_t                                maxHours;
         Cpl::System::ElapsedTime::Precision_T   elaspedTime;
-        if ( !Cpl::Dm::ModelPoint::IS_VALID( mp_airFilterAlert.read( alert ) ) ||
-             !Cpl::Dm::ModelPoint::IS_VALID( mp_maxAirFilterHours.read( maxHours ) ) ||
-             !Cpl::Dm::ModelPoint::IS_VALID( mp_airFilterOperationTime.read( elaspedTime ) ) )
+        if ( !mp_airFilterAlert.read( alert ) ||
+             !mp_maxAirFilterHours.read( maxHours ) ||
+             !mp_airFilterOperationTime.read( elaspedTime ) )
         {
             io &= context.writeFrame( "One more MP are invalid" );
         }
@@ -70,7 +70,7 @@ Cpl::TShell::Command::Result_T Filter::execute( Cpl::TShell::Context_& context, 
             {
                 outtext.format( "alert.active   = TRUE" );
                 io &= context.writeFrame( outtext.getString() );
-                outtext.format( "alert.acked    = %s", alert.acked? "TRUE": "false" );
+                outtext.format( "alert.acked    = %s", alert.acked ? "TRUE" : "false" );
                 io &= context.writeFrame( outtext.getString() );
                 outtext.format( "alert.critical = %s", alert.critical ? "TRUE" : "false" );
                 io &= context.writeFrame( outtext.getString() );
@@ -87,7 +87,7 @@ Cpl::TShell::Command::Result_T Filter::execute( Cpl::TShell::Context_& context, 
         mp_airFilterAlert.setAlarm( false );
         io &= context.writeFrame( "Air Filter Alert cleared." );
     }
-    
+
     // Acknowledge Alert
     else if ( numParms == 2 && tokens.getParameter( 1 )[0] == 'a' )
     {
