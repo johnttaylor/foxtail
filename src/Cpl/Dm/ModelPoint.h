@@ -16,7 +16,6 @@
 #include "colony_config.h"
 #include "Cpl/Container/Item.h"
 #include "Cpl/Text/String.h"
-#include "Cpl/Dm/StaticInfo.h"
 #include "Cpl/Dm/SubscriberApi.h"
 #include "Cpl/Json/Arduino.h"
 #include <stddef.h>

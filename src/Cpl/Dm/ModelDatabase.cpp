@@ -33,6 +33,7 @@ ModelDatabase::ModelDatabase() noexcept
 
 ModelDatabase::ModelDatabase( const char* ignoreThisParameter_usedToCreateAUniqueConstructor ) noexcept
     : m_list( ignoreThisParameter_usedToCreateAUniqueConstructor )
+    , m_listSorted( false )
 {
 }
 

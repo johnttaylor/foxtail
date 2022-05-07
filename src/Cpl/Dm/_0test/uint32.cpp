@@ -26,7 +26,7 @@
 
 
 #define NEW_LINE    "\r\n"
-#define EXPECTED_PRETTY "{" NEW_LINE "  \"name\": \"APPLE\"," NEW_LINE "  \"valid\": true," NEW_LINE "  \"type\": \"Cpl::Dm::Mp::Uint32\"," NEW_LINE "  \"seqnum\": 16," NEW_LINE "  \"locked\": false," NEW_LINE "  \"val\": 127" NEW_LINE "}"
+#define EXPECTED_PRETTY "{" NEW_LINE "  \"name\": \"APPLE\"," NEW_LINE "  \"valid\": true," NEW_LINE "  \"type\": \"Cpl::Dm::Mp::Uint32\"," NEW_LINE "  \"seqnum\": 18," NEW_LINE "  \"locked\": false," NEW_LINE "  \"val\": 127" NEW_LINE "}"
 
 #define STRCMP(s1,s2)  (strcmp(s1,s2)==0)
 
@@ -249,9 +249,9 @@ TEST_CASE( "uint32" )
         DeserializationError err = deserializeJson( doc, string );
         REQUIRE( err == DeserializationError::Ok );
         REQUIRE( STRCMP( doc["name"], "APPLE" ) );
-        REQUIRE( doc["type"].as<char*>() == 0 );
-        REQUIRE( doc["seqnum"].as<char*>() == 0 );
-        REQUIRE( doc["locked"].as<char*>() == 0 );
+        REQUIRE( doc["type"].as<const char*>() == 0 );
+        REQUIRE( doc["seqnum"].as<const char*>() == 0 );
+        REQUIRE( doc["locked"].as<const char*>() == 0 );
         REQUIRE( doc["valid"] == false );
     }
 
