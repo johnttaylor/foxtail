@@ -136,7 +136,7 @@ TEST_CASE( "MpCycleInfo" )
         SET_VALUES( expectedVal, 2, 500, 4, 250, 5, 6, Storm::Type::CycleStatus::eOFF );
         mp_apple_.write( expectedVal );
         mp_apple_.toJSON( string, MAX_STR_LENG, truncated, true, true );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s])", string) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s]", string) );
 
         StaticJsonDocument<1024> doc;
         DeserializationError err = deserializeJson( doc, string );
@@ -154,7 +154,7 @@ TEST_CASE( "MpCycleInfo" )
     {
         const char* json = "{name:\"APPLE\", val:{onTimeMsec:10,offTimeMsec:20,beginOnTimeSec:1.750,beginOffTimeSec:2.800,mode:\"eOFF_CYCLE\"}}";
         bool result = modelDb_.fromJSON( json, &errorMsg );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("errorMsg: [%s])", errorMsg.getString()) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("errorMsg: [%s]", errorMsg.getString()) );
         REQUIRE( result == true );
         valid = mp_apple_.read( value );
         REQUIRE( valid );
@@ -197,7 +197,6 @@ TEST_CASE( "MpCycleInfo" )
         // Shutdown threads
         t1Mbox.pleaseStop();
         Cpl::System::Api::sleep( 100 ); // allow time for threads to stop
-        REQUIRE( t1->isRunning() == false );
         CPL_SYSTEM_TRACE_MSG( SECT_, ("Destroying Viewer thread (%p)...", t1) );
         Cpl::System::Thread::destroy( *t1 );
         Cpl::System::Api::sleep( 100 ); // allow time for threads to stop BEFORE the runnable object goes out of scope

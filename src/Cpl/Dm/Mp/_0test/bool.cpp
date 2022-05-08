@@ -107,7 +107,7 @@ TEST_CASE( "Bool" )
     {
         mp_apple_.write( true );
         mp_apple_.toJSON( string, MAX_STR_LENG, truncated, true, true );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s])", string) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s]", string) );
 
         StaticJsonDocument<1024> doc;
         DeserializationError err = deserializeJson( doc, string );

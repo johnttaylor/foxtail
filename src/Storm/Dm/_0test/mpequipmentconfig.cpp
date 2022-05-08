@@ -55,7 +55,6 @@ TEST_CASE( "MpEquipmentConfig" )
     bool valid;
     Storm::Dm::MpEquipmentConfig::Data value;
     Storm::Dm::MpEquipmentConfig::Data expectedVal;
-    //mp_apple_.setInvalid();
 
     SECTION( "gets" )
     {
@@ -188,7 +187,7 @@ TEST_CASE( "MpEquipmentConfig" )
         expectedVal ={ Storm::Type::IduType::eAIR_HANDLER, Storm::Type::OduType::eAC, 1, 0, true };
         mp_apple_.write( expectedVal );
         mp_apple_.toJSON( string, MAX_STR_LENG, truncated, true, true );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s])", string) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s]", string) );
 
         StaticJsonDocument<1024> doc;
         DeserializationError err = deserializeJson( doc, string );
@@ -206,7 +205,7 @@ TEST_CASE( "MpEquipmentConfig" )
     {
         const char* json = "{name:\"APPLE\", val:{oduType:\"eAC\",iduType:\"eFURNACE\",vspBlower:false,numCompStages:0,numIduHeat:1}}";
         bool result = modelDb_.fromJSON( json, &errorMsg );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("errorMsg: [%s])", errorMsg.getString()) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("errorMsg: [%s]", errorMsg.getString()) );
         REQUIRE( result == true );
         valid = mp_apple_.read( value );
         REQUIRE( valid );

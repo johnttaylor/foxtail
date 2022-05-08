@@ -96,7 +96,7 @@ TEST_CASE( "Float" )
     {
         mp_apple_.write( 127 );
         mp_apple_.toJSON( string, MAX_STR_LENG, truncated, true, true );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s])", string) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s]", string) );
 
         StaticJsonDocument<1024> doc;
         DeserializationError err = deserializeJson( doc, string );

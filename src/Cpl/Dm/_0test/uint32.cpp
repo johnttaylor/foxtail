@@ -260,7 +260,7 @@ TEST_CASE( "uint32" )
         // Invalid (Default value)
         uint16_t seqnum = mp_apple_.setInvalid();
         mp_apple_.toJSON( string, MAX_STR_LENG, truncated );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s])", string) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s]", string) );
         REQUIRE( truncated == false );
 
         StaticJsonDocument<1024> doc;
@@ -277,7 +277,7 @@ TEST_CASE( "uint32" )
     {
         mp_apple_.applyLock();
         mp_apple_.toJSON( string, MAX_STR_LENG, truncated );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s])", string) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s]", string) );
 
         StaticJsonDocument<1024> doc;
         DeserializationError err = deserializeJson( doc, string );
@@ -290,7 +290,7 @@ TEST_CASE( "uint32" )
     {
         uint16_t seqnum = mp_apple_.write( 127, ModelPoint::eUNLOCK );
         mp_apple_.toJSON( string, MAX_STR_LENG, truncated );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s])", string) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s]", string) );
 
         StaticJsonDocument<1024> doc;
         DeserializationError err = deserializeJson( doc, string );
@@ -306,7 +306,7 @@ TEST_CASE( "uint32" )
     {
         uint16_t seqnum = mp_apple_.write( 127 );
         mp_apple_.toJSON( string, MAX_STR_LENG, truncated, true, true );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s])", string) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s]", string) );
         REQUIRE( strcmp( string, EXPECTED_PRETTY ) == 0 );
 
         StaticJsonDocument<1024> doc;
@@ -322,7 +322,7 @@ TEST_CASE( "uint32" )
     {
         mp_apple_.applyLock();
         mp_apple_.toJSON( string, MAX_STR_LENG, truncated );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s])", string) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s]", string) );
 
         StaticJsonDocument<1024> doc;
         DeserializationError err = deserializeJson( doc, string );

@@ -136,7 +136,7 @@ TEST_CASE( "MpComfortConfig" )
         SET_VALUES( expectedVal.indoorHeating, Storm::Type::Cph::e4CPH, 70, 80 );
         mp_apple_.write( expectedVal );
         mp_apple_.toJSON( string, MAX_STR_LENG, truncated, true, true );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s])", string) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s]", string) );
 
         StaticJsonDocument<1024> doc;
         DeserializationError err = deserializeJson( doc, string );
@@ -158,7 +158,7 @@ TEST_CASE( "MpComfortConfig" )
     {
         const char* json = "{name:\"APPLE\", val:{cmpCool:{cph:\"e4CPH\",minOn:70,minOff:80},cmpHeat:{cph:\"e6CPH\",minOn:10,minOff:20},indoorHeat:{cph:\"e5CPH\",minOn:50,minOff:60} }}";
         bool result = modelDb_.fromJSON( json, &errorMsg );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("errorMsg: [%s])", errorMsg.getString() ) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("errorMsg: [%s]", errorMsg.getString() ) );
         REQUIRE( result == true );
         valid = mp_apple_.read( value );
         REQUIRE( valid );

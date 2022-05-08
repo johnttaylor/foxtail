@@ -159,7 +159,7 @@ TEST_CASE( "MpEquipmentBeginTimes" )
         SET_VALUES( expectedVal.systemBeginOffTime, 26, 600 );
         mp_apple_.write( expectedVal );
         mp_apple_.toJSON( string, MAX_STR_LENG, truncated, true, true );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s])", string) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s]", string) );
 
         StaticJsonDocument<1024> doc;
         DeserializationError err = deserializeJson( doc, string );
@@ -178,7 +178,7 @@ TEST_CASE( "MpEquipmentBeginTimes" )
     {
         const char* json = "{name:\"APPLE\", val:{beginIndoorOnTimeSec:5.5,beginIndoorOffTimeSec:6.6,beginOutdoorOnTimeSec:7.7,beginOutdoorOffTimeSec:8.8,beginSystemOnTimeSec:9.9,beginSystemOffTimeSec:1.02}}";
         bool result = modelDb_.fromJSON( json, &errorMsg );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("errorMsg: [%s])", errorMsg.getString()) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("errorMsg: [%s]", errorMsg.getString()) );
         REQUIRE( result == true );
         valid = mp_apple_.read( value );
         REQUIRE( valid );
