@@ -148,7 +148,7 @@ TEST_CASE( "MP SimpleAlarm" )
         REQUIRE( s == sizeof( MpSimpleAlarm::Data ) + sizeof( int8_t ) );
 
         const char* mpType = mp_apple_.getTypeAsText();
-        CPL_SYSTEM_TRACE_MSG( SECT_, ( "typeText: [%s])", mpType ) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ( "typeText: [%s]", mpType ) );
         REQUIRE( strcmp( mpType, "Storm::Dm::MpSimpleAlarm" ) == 0 );
     }
 

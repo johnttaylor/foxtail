@@ -71,7 +71,7 @@ TEST_CASE( "uint32" )
         REQUIRE( s == sizeof( uint32_t ) + sizeof( bool ) );
 
         const char* mpType = mp_apple_.getTypeAsText();
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("typeText: [%s])", mpType) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("typeText: [%s]", mpType) );
         REQUIRE( strcmp( mpType, "Cpl::Dm::Mp::Uint32" ) == 0 );
     }
 

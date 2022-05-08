@@ -71,7 +71,7 @@ TEST_CASE( "MpFanMode" )
         REQUIRE( s == sizeof( value ) + sizeof( bool ) );
 
         const char* mpType = mp_apple_.getTypeAsText();
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("typeText: [%s])", mpType) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("typeText: [%s]", mpType) );
         REQUIRE( strcmp( mpType, "Storm::Dm::MpFanMode" ) == 0 );
     }
 

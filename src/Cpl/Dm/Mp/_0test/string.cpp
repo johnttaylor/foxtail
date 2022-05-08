@@ -102,7 +102,7 @@ TEST_CASE( "String" )
         REQUIRE( s == MY_UUT_DATA_SIZE + 1 + sizeof( bool ) );
 
         const char* mpType = mp_apple_.getTypeAsText();
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("typeText: [%s])", mpType) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("typeText: [%s]", mpType) );
         REQUIRE( strcmp( mpType, "Cpl::Dm::Mp::MyUut" ) == 0 );
     }
 

@@ -70,7 +70,7 @@ TEST_CASE( "ElapsedPrecisionTime" )
         REQUIRE( s == sizeof( value ) + sizeof( bool ) );
 
         const char* mpType = mp_apple_.getTypeAsText();
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("typeText: [%s])", mpType) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("typeText: [%s]", mpType) );
         REQUIRE( strcmp( mpType, "Cpl::Dm::Mp::ElapsedPrecisionTime" ) == 0 );
     }
 

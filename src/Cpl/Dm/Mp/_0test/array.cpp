@@ -108,7 +108,7 @@ TEST_CASE( "Array" )
         REQUIRE( s == MY_ARRAY_SIZE * sizeof( int ) + sizeof( bool ) + 2 * sizeof( size_t ) );
 
         const char* mpType = mp_apple_.getTypeAsText();
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("typeText: [%s])", mpType) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("typeText: [%s]", mpType) );
         REQUIRE( strcmp( mpType, "Cpl::Dm::Mp::MyUut" ) == 0 );
     }
 

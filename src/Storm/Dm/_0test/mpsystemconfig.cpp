@@ -142,7 +142,7 @@ TEST_CASE( "MP SystemConfig" )
         REQUIRE( s == sizeof( Storm::Type::SystemConfig_T ) + sizeof( int8_t ) );
 
         const char* mpType = mp_apple_.getTypeAsText();
-        CPL_SYSTEM_TRACE_MSG( SECT_, ( "typeText: [%s])", mpType ) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ( "typeText: [%s]", mpType ) );
         REQUIRE( strcmp( mpType, "Storm::Dm::MpSystemConfig" ) == 0 );
     }
 
