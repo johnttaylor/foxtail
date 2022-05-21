@@ -17,6 +17,9 @@ doskey whatcc=echo:%PIM_ENV_COMPILER%
 doskey killpy=taskkill /F /IM python.exe
 
 
+:: Make sure the Outcast environment is setup.  Assumes that the Outcast batch file is in command path
+call outcast.bat
+
 :: Set the NQBP_BIN path
 set NQBP_PKG_ROOT=%_HERE%
 set NQBP_WORK_ROOT=%_HERE%..\

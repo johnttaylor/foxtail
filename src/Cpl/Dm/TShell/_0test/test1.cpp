@@ -49,12 +49,6 @@ void shell_test( Cpl::Io::Input& infd, Cpl::Io::Output& outfd )
     printf( "valid=%d\n", valid );
     CPL_SYSTEM_ASSERT( value == 0x100 );
     CPL_SYSTEM_ASSERT( valid );
-    Cpl::Text::FString<128> valString;
-    valid = mp_plum_.read( valString );
-    printf( "valid=%d\n", valid );
-    CPL_SYSTEM_ASSERT( valString == "Hello Mr. Plum" );
-    CPL_SYSTEM_ASSERT( valid );
-    CPL_SYSTEM_ASSERT( mp_plum_.isLocked() );
 
     // Exit the application with a 'pass' result
     Cpl::System::Shutdown::success();
