@@ -35,8 +35,7 @@ namespace Itc {
  */
 class MailboxServer :
     public Mailbox,
-    public Cpl::System::EventLoop,
-    public Cpl::System::SharedEventHandlerApi
+    public Cpl::System::EventLoop
 {
 public:
     /** Constructor.  The argument 'timingTickInMsec' specifies the timing

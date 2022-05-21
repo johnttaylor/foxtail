@@ -32,7 +32,7 @@ StringBase_::StringBase_( Cpl::Dm::ModelDatabase& myModelBase,
 {
     // Clear the entire string INCLUDING the null terminator
     // NOTE: The Null terminator NEVER gets written over
-    memset( (void*) myDataPtr, 0, dataSizeInBytesIncludingNullTerminator+1 );
+    memset( (void*) myDataPtr, 0, dataSizeInBytesIncludingNullTerminator );
 }
 
 /// Constructor. Valid MP.  Requires an initial value

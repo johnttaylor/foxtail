@@ -45,7 +45,7 @@ public:
     /** This method 'dispatches' the processing associated with the specified
         Event based the list/array of callback functions.
      */
-    virtual void processEventFlag( uint8_t eventNumber ) const noexcept = 0;
+    virtual void processEventFlag( uint8_t eventNumber ) noexcept = 0;
 
 public:
     /// Virtual destructor
@@ -82,7 +82,7 @@ public:
     /** This method 'dispatches' the processing associated with the specified
         Event based the list/array of callback functions.
      */
-    void processEventFlag( uint8_t eventNumber ) const noexcept
+    void processEventFlag( uint8_t eventNumber ) noexcept
     {
         if ( eventNumber >= N || m_callbacks[eventNumber].callbackFunc == 0 )
         {

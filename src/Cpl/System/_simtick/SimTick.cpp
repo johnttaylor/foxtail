@@ -285,6 +285,9 @@ void SimTick::onThreadExit_( void ) noexcept
         simInfoPtr->m_ackPending  = false;
         tickSource_.signal();
     }
+
+    // Free the SimTick object
+    delete simInfoPtr;
 }
 
 
