@@ -96,15 +96,15 @@ bool MpSimpleAlarm::fromJSON_( JsonVariant& src, LockRequest_T lockRequest, uint
         Data updatedData = m_data;
 
         // Parse Fields
-        if ( src["active"].as<bool>() )
+        if ( src["active"].is<bool>() )
         {
             updatedData.active = src["active"];
         }
-        if ( src["ack"].as<bool>() )
+        if ( src["ack"].is<bool>() )
         {
             updatedData.acked = src["ack"];
         }
-        if ( src["critical"].as<bool>() )
+        if ( src["critical"].is<bool>() )
         {
             updatedData.critical = src["critical"];
         }

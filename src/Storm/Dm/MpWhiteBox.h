@@ -60,7 +60,7 @@ public:
      */
     inline bool read( Storm::Type::WhiteBox_T& dstSettings, uint16_t* seqNumPtr=0 ) const noexcept
     {
-        return ModelPointCommon_::read( &dst, sizeof( Storm::Type::WhiteBox_T ), seqNumPtr );
+        return ModelPointCommon_::read( &dstSettings, sizeof( Storm::Type::WhiteBox_T ), seqNumPtr );
     }
 
     /** Type safe write of all of the settings
@@ -69,10 +69,6 @@ public:
     {
         return ModelPointCommon_::write( &srcSettings, sizeof( Storm::Type::WhiteBox_T ), lockRequest );
     }
-
-    /** Type safe write of defeatEquipMinOffTime settings
-     */
-    uint16_t writeDefeatEquipMinOffTime( bool newValue, LockRequest_T lockRequest = eNO_REQUEST ) noexcept;
 
     /** Type safe method to reset all 'Pulse' flags/settings
      */

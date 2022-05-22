@@ -102,11 +102,11 @@ bool MpSetpoints::fromJSON_( JsonVariant & src, LockRequest_T lockRequest, uint1
         float heat = m_data.heatSetpt;
 
         // Parse Fields
-        if ( src["cool"].as<float>() )
+        if ( src["cool"].is<float>() )
         {
             cool = src["cool"];
         }
-        if ( src["heat"].as<float>() )
+        if ( src["heat"].is<float>() )
         {
             heat = src["heat"];
         }

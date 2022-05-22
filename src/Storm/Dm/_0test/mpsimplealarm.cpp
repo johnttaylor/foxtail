@@ -124,7 +124,7 @@ TEST_CASE( "MpSimpleAlarm" )
 
     SECTION( "toJSON-pretty" )
     {
-        expectedValue ={ true, false, true };
+        expectedValue ={ false, true, true };
         mp_apple_.write( expectedValue );
         mp_apple_.toJSON( string, MAX_STR_LENG, truncated, true, true );
         CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s]", string) );
@@ -134,14 +134,14 @@ TEST_CASE( "MpSimpleAlarm" )
         REQUIRE( err == DeserializationError::Ok );
         REQUIRE( doc["locked"] == false );
         REQUIRE( doc["valid"] == true );
-        REQUIRE( doc["active"] == true );
-        REQUIRE( doc["ack"] == false );
-        REQUIRE( doc["critical"] == true );
+        REQUIRE( doc["val"]["active"] == false );
+        REQUIRE( doc["val"]["ack"] == true );
+        REQUIRE( doc["val"]["critical"] == true );
     }
 
     SECTION( "fromJSON" )
     {
-        const char* json = "{name:\"APPLE\", val:{active:true,ack:false,critical:false}}";
+        const char* json = "{name:\"APPLE\", val:{\"active\":true,\"ack\":false,\"critical\":false}}";
         bool result = modelDb_.fromJSON( json, &errorMsg );
         CPL_SYSTEM_TRACE_MSG( SECT_, ("errorMsg: [%s]", errorMsg.getString()) );
         REQUIRE( result == true );
@@ -177,6 +177,7 @@ TEST_CASE( "MpSimpleAlarm" )
 
         // NOTE: The MP MUST be in the INVALID state at the start of this test
         mp_apple_.setInvalid();
+        viewer_apple1.open();
         expectedValue ={ true, false, true };
         mp_apple_.write( expectedValue );
         CPL_SYSTEM_TRACE_MSG( SECT_, ("Waiting for viewer signal...") );

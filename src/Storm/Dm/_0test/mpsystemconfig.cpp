@@ -62,6 +62,7 @@ bool isEqual( const Storm::Type::SystemConfig_T& op1, const Storm::Type::SystemC
         EQUALS( op1.stages[i].minIndoorFan, op2.stages[i].minIndoorFan );
         EQUALS( op1.stages[i].maxIndoorFan, op2.stages[i].maxIndoorFan );
     }
+    return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -199,14 +200,6 @@ TEST_CASE( "MpSystemConfig" )
         REQUIRE( value.stages[1].minOnTime == 11 );
         REQUIRE( value.stages[1].minOffTime == 22 );
         REQUIRE( value.stages[1].cph == Storm::Type::Cph::e5CPH );
-
-        json = "{name:\"APPLE\", val:{opMode:21}}";
-        result = modelDb_.fromJSON( json, &errorMsg );
-        REQUIRE( result == false );
-        REQUIRE( errorMsg != "noerror" );
-
-        result = modelDb_.fromJSON( json );
-        REQUIRE( result == false );
 
         json = "{name:\"APPLE\", val:\"abc\"}}";
         result = modelDb_.fromJSON( json, &errorMsg );

@@ -25,18 +25,6 @@ MpWhiteBox::MpWhiteBox( Cpl::Dm::ModelDatabase& myModelBase, const char* symboli
 }
 
 
-uint16_t MpWhiteBox::writeDefeatEquipMinOffTime( bool newValue, LockRequest_T lockRequest ) noexcept
-{
-    m_modelDatabase.lock_();
-
-    Storm::Type::WhiteBox_T src = m_data;
-    src.defeatEquipMinOffTime   = newValue;
-    uint16_t result             = ModelPointCommon_::write( &src, sizeof( Storm::Type::WhiteBox_T ), lockRequest );
-
-    m_modelDatabase.unlock_();
-    return result;
-}
-
 uint16_t MpWhiteBox::resetPulseSettings( LockRequest_T lockRequest ) noexcept
 {
     m_modelDatabase.lock_();
