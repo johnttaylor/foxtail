@@ -95,10 +95,6 @@ public:
     /// Constructor.  Valid MP
     MpSetpoints( Cpl::Dm::ModelDatabase& myModelBase, const char* symbolicName, float coolSetpt=OPTION_STORM_DM_MP_SETPOINTS_DEFAULT_COOLING, float heatSetpt=OPTION_STORM_DM_MP_SETPOINTS_DEFAULT_HEATING );
 
-public:
-    /// See Cpl::Dm::ModelPoint
-    uint16_t setInvalidState( int8_t newInvalidState, LockRequest_T lockRequest = eNO_REQUEST ) noexcept;
-
 
 public:
     /** Type safe read of the Cooling & Heating set-point
