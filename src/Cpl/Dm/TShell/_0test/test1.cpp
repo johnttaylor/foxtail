@@ -38,20 +38,20 @@ void shell_test( Cpl::Io::Input& infd, Cpl::Io::Output& outfd )
     // Start the scheduler
     Cpl::System::Api::enableScheduling();
 
-    // Give time for the commands to run
-    Cpl::System::Api::sleep( 3 * 1000 );
-    int32_t value;
-    bool valid = mp_apple_.read( value );
-    printf( "valid=%d\n", valid );
-    CPL_SYSTEM_ASSERT( value == 111 );
-    CPL_SYSTEM_ASSERT( valid );
-    valid = mp_orange_.read( value );
-    printf( "valid=%d\n", valid );
-    CPL_SYSTEM_ASSERT( value == 0x100 );
-    CPL_SYSTEM_ASSERT( valid );
-
-    // Exit the application with a 'pass' result
-    Cpl::System::Shutdown::success();
+	// Give time for the commands to run
+	Cpl::System::Api::sleep( 3 * 1000 );
+	int32_t value;
+	bool valid = mp_apple_.read( value );
+	printf( "valid=%d\n", valid );
+	CPL_SYSTEM_ASSERT( value == 111 );
+	CPL_SYSTEM_ASSERT( valid);
+	valid = mp_orange_.read( value );
+	printf( "valid=%d\n", valid );
+	CPL_SYSTEM_ASSERT( value == 32 );
+	CPL_SYSTEM_ASSERT( valid);
+	
+	// Exit the application with a 'pass' result
+	Cpl::System::Shutdown::success();
 }
 
 

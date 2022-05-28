@@ -134,12 +134,7 @@ public:
     uint32_t     m_expectedEvents;
 
     /// Constructor
-    MyMailboxServer( uint32_t expectedEvents)
-        : m_sigCount( 0 )
-        , m_sigCountUnexpected( 0 )
-        , m_expectedEvents( expectedEvents ) 
-    {
-    }
+    MyMailboxServer( uint32_t expectedEvents ):m_sigCount( 0 ), m_sigCountUnexpected( 0 ), m_expectedEvents( expectedEvents ) {}
 
 public:
     ///
