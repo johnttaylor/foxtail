@@ -21,22 +21,11 @@
 #include "Cpl/Dm/ModelPoint.h"
 
 
-/** Default Trace section used by/for the Helper methods
- */
+ /** Default Trace section used by/for the Helper methods
+  */
 #ifndef OPTION_CPL_CATCH_HELPERS_TRACE_SECT
 #define OPTION_CPL_CATCH_HELPERS_TRACE_SECT     "_0test"
 #endif
-
-
-/// Short-hand (for readability)
-#define MP_VALID_STATE     true
-
-/// Short-hand (for readability)
-#define MP_INVALID_STATE   false
-
-/// Short-hand (for readability)
-#define MP_IS_VALID(s)     s == true
-
 
 /*----------------------------------------------------------------------------*/
 /** This function performs a blocking wait by monitoring a Model Point for
@@ -54,7 +43,7 @@ bool minWaitOnModelPoint( MPTYPE& src, VALTYPE expectedVal, unsigned long minWai
     bool  valid = src.read( val );
     while ( maxWaitMs )
     {
-        if ( MP_IS_VALID( valid ) && val == expectedVal )
+        if ( valid && val == expectedVal )
         {
             // Return the last read value
             if ( lastVal )
@@ -89,7 +78,7 @@ bool minWaitOnEnumModelPoint( MPTYPE& src, VALTYPE expectedVal, unsigned long mi
     bool  valid = src.read( val );
     while ( maxWaitMs )
     {
-        if ( MP_IS_VALID( valid ) && val == expectedVal )
+        if ( valid && val == expectedVal )
         {
             // Return the last read value
             if ( lastVal )
@@ -130,7 +119,7 @@ bool minWaitOnModelPointValidState( MPTYPE& src, bool expectedValidState, unsign
             {
                 *lastVal = state;
             }
-           return true;
+            return true;
         }
 
         Cpl::System::Api::sleep( waitDelayMs );

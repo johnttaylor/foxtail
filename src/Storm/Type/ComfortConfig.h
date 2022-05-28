@@ -34,6 +34,16 @@ struct ComfortStageParameters_T
         memset( (void*) this, 0, sizeof( ComfortStageParameters_T ) );
     }
 
+    /// Constructor (to ensure any pad bytes get zero'd)
+    ComfortStageParameters_T( uint32_t minOnTime, uint32_t minOffTime, Storm::Type::Cph cph )
+    {
+        memset( (void*) this, 0, sizeof( ComfortStageParameters_T ) );
+        this->minOffTime = minOffTime;
+        this->minOnTime  = minOnTime;
+        this->cph        = cph;
+    }
+
+
     /** Method that limit/range checks the specified STAGE configuration. Invalid
         and/or out-of-range value are corrected, Returns true if one or more
         fields were corrected.

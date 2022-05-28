@@ -335,14 +335,14 @@ TEST_CASE( "MP Equipment Unit Config" )
         MpEquipmentConfig::Data value;
         uint16_t          seqNum;
         int8_t            valid = mp_orange_.read( value );
-        REQUIRE( Cpl::Dm::ModelPoint::IS_VALID( valid ) == true );
+        REQUIRE( valid == true );
         REQUIRE( value.hasVspBlower == true );
         REQUIRE( value.numIduHeatingStages == OPTION_STORM_MAX_ELECTRIC_HEATING_STAGES );
         REQUIRE( value.iduType == Storm::Type::IduType::eAIR_HANDLER );
         REQUIRE( value.numCompStages == 0 );
         REQUIRE( value.oduType == Storm::Type::OduType::eAC );
         valid = mp_apple_.read( value, &seqNum );
-        REQUIRE( Cpl::Dm::ModelPoint::IS_VALID( valid ) == true );
+        REQUIRE( valid == true );
         REQUIRE( value.hasVspBlower == false );
         REQUIRE( value.numIduHeatingStages == 1 );
         REQUIRE( value.iduType == Storm::Type::IduType::eFURNACE );
@@ -353,7 +353,7 @@ TEST_CASE( "MP Equipment Unit Config" )
         value = { Storm::Type::IduType::eAIR_HANDLER, Storm::Type::OduType::eAC, 1, 0, true };
         uint16_t seqNum2 = mp_apple_.write( value );
         valid = mp_apple_.read( value );
-        REQUIRE( Cpl::Dm::ModelPoint::IS_VALID( valid ) == true );
+        REQUIRE( valid == true );
         REQUIRE( value.hasVspBlower == true );
         REQUIRE( value.numIduHeatingStages == 0 );
         REQUIRE( value.iduType == Storm::Type::IduType::eAIR_HANDLER );
@@ -365,7 +365,7 @@ TEST_CASE( "MP Equipment Unit Config" )
         value = { Storm::Type::IduType::eAIR_HANDLER, Storm::Type::OduType::eHP, 10, 10, true };
         seqNum = mp_apple_.write( value );
         valid = mp_apple_.read( value );
-        REQUIRE( Cpl::Dm::ModelPoint::IS_VALID( valid ) == true );
+        REQUIRE( valid == true );
         REQUIRE( value.hasVspBlower == true );
         REQUIRE( value.numIduHeatingStages == OPTION_STORM_MAX_ELECTRIC_HEATING_STAGES );
         REQUIRE( value.iduType == Storm::Type::IduType::eAIR_HANDLER );
@@ -380,7 +380,7 @@ TEST_CASE( "MP Equipment Unit Config" )
         mp_apple_.readModifyWrite( callbackClient, Cpl::Dm::ModelPoint::eLOCK );
         valid         = mp_apple_.read( value );
         REQUIRE( mp_apple_.isNotValid() == false );
-        REQUIRE( Cpl::Dm::ModelPoint::IS_VALID( valid ) == true );
+        REQUIRE( valid == true );
         bool locked = mp_apple_.isLocked();
         REQUIRE( locked == true );
         REQUIRE( value.hasVspBlower == true );
@@ -395,7 +395,7 @@ TEST_CASE( "MP Equipment Unit Config" )
         mp_apple_.readModifyWrite( callbackClient, Cpl::Dm::ModelPoint::eUNLOCK );
         valid         = mp_apple_.read( value );
         REQUIRE( mp_apple_.isNotValid() == false );
-        REQUIRE( Cpl::Dm::ModelPoint::IS_VALID( valid ) == true );
+        REQUIRE( valid == true );
         REQUIRE( value.hasVspBlower == true );
         REQUIRE( value.numIduHeatingStages == OPTION_STORM_MAX_ELECTRIC_HEATING_STAGES );
         REQUIRE( value.iduType == Storm::Type::IduType::eAIR_HANDLER );
@@ -405,14 +405,14 @@ TEST_CASE( "MP Equipment Unit Config" )
         mp_apple_.setInvalidState( 112, Cpl::Dm::ModelPoint::eUNLOCK );
         REQUIRE( mp_apple_.isNotValid() == true );
         valid = mp_apple_.getValidState();
-        REQUIRE( Cpl::Dm::ModelPoint::IS_VALID( valid ) == false );
+        REQUIRE( valid == false );
         REQUIRE( valid == 112 );
 
         // Single writes
         mp_apple_.writeIndoorType( Storm::Type::IduType::eAIR_HANDLER );
         valid = mp_apple_.read( value );
         REQUIRE( mp_apple_.isNotValid() == false );
-        REQUIRE( Cpl::Dm::ModelPoint::IS_VALID( valid ) == true );
+        REQUIRE( valid == true );
         REQUIRE( value.hasVspBlower == OPTION_STORM_DM_EQUIPMENT_CONFIG_DEFAULT_VSPBLOWER );
         REQUIRE( value.numIduHeatingStages == 0 );
         REQUIRE( value.iduType == Storm::Type::IduType::eAIR_HANDLER );
@@ -420,7 +420,7 @@ TEST_CASE( "MP Equipment Unit Config" )
         mp_apple_.writeIndoorFanMotor( false );
         valid = mp_apple_.read( value );
         REQUIRE( mp_apple_.isNotValid() == false );
-        REQUIRE( Cpl::Dm::ModelPoint::IS_VALID( valid ) == true );
+        REQUIRE( valid == true );
         REQUIRE( value.hasVspBlower == false );
         REQUIRE( value.numIduHeatingStages == 0 );
         REQUIRE( value.iduType == Storm::Type::IduType::eAIR_HANDLER );
@@ -429,7 +429,7 @@ TEST_CASE( "MP Equipment Unit Config" )
         mp_apple_.writeIndoorHeatingStages( 0 );
         valid = mp_apple_.read( value );
         REQUIRE( mp_apple_.isNotValid() == false );
-        REQUIRE( Cpl::Dm::ModelPoint::IS_VALID( valid ) == true );
+        REQUIRE( valid == true );
         REQUIRE( value.hasVspBlower == false );
         REQUIRE( value.numIduHeatingStages == 0 );
         REQUIRE( value.iduType == Storm::Type::IduType::eAIR_HANDLER );
@@ -439,7 +439,7 @@ TEST_CASE( "MP Equipment Unit Config" )
         mp_apple_.writeIndoorHeatingStages( 30 );
         valid = mp_apple_.read( value );
         REQUIRE( mp_apple_.isNotValid() == false );
-        REQUIRE( Cpl::Dm::ModelPoint::IS_VALID( valid ) == true );
+        REQUIRE( valid == true );
         REQUIRE( value.hasVspBlower == false );
         REQUIRE( value.numIduHeatingStages == STORM_MAX_INDOOR_STAGES );
         REQUIRE( value.iduType == Storm::Type::IduType::eFURNACE );
@@ -448,7 +448,7 @@ TEST_CASE( "MP Equipment Unit Config" )
         mp_apple_.writeOutdoorType( Storm::Type::OduType::eHP );
         valid = mp_apple_.read( value );
         REQUIRE( mp_apple_.isNotValid() == false );
-        REQUIRE( Cpl::Dm::ModelPoint::IS_VALID( valid ) == true );
+        REQUIRE( valid == true );
         REQUIRE( value.numCompStages == 0 );
         REQUIRE( value.oduType == Storm::Type::OduType::eHP );
 
@@ -456,7 +456,7 @@ TEST_CASE( "MP Equipment Unit Config" )
         mp_apple_.writeCompressorStages( 0 );
         valid = mp_apple_.read( value );
         REQUIRE( mp_apple_.isNotValid() == false );
-        REQUIRE( Cpl::Dm::ModelPoint::IS_VALID( valid ) == true );
+        REQUIRE( valid == true );
         REQUIRE( value.numCompStages == 0 );
         REQUIRE( value.oduType == Storm::Type::OduType::eHP );
 
@@ -465,7 +465,7 @@ TEST_CASE( "MP Equipment Unit Config" )
         mp_apple_.writeCompressorStages( 3 );
         valid = mp_apple_.read( value );
         REQUIRE( mp_apple_.isNotValid() == false );
-        REQUIRE( Cpl::Dm::ModelPoint::IS_VALID( valid ) == true );
+        REQUIRE( valid == true );
         REQUIRE( value.numCompStages == 1 );
         REQUIRE( value.oduType == Storm::Type::OduType::eAC );
     }
@@ -522,7 +522,7 @@ TEST_CASE( "MP Equipment Unit Config" )
         REQUIRE( seqNum == seqNum2 + 1 );
         int8_t valid;
         valid = mp_apple_.read( value );
-        REQUIRE( Cpl::Dm::ModelPoint::IS_VALID( valid ) == true );
+        REQUIRE( valid == true );
         REQUIRE( mp_apple_.isNotValid() == false );
         REQUIRE( value.hasVspBlower == true );
         REQUIRE( value.numIduHeatingStages == 0 );
@@ -539,14 +539,14 @@ TEST_CASE( "MP Equipment Unit Config" )
         // Read import value/state
         valid = mp_apple_.read( value );
         REQUIRE( mp_apple_.isNotValid() == true );
-        REQUIRE( Cpl::Dm::ModelPoint::IS_VALID( valid ) == false );
+        REQUIRE( valid == false );
 
         // Update the MP
         value = { Storm::Type::IduType::eAIR_HANDLER, Storm::Type::OduType::eAC, 1, 1, false };
         seqNum = mp_apple_.write( value );
         REQUIRE( seqNum == seqNum2 + 1 );
         valid = mp_apple_.read( value );
-        REQUIRE( Cpl::Dm::ModelPoint::IS_VALID( valid ) == true );
+        REQUIRE( valid == true );
         REQUIRE( value.hasVspBlower == false );
         REQUIRE( value.numIduHeatingStages == OPTION_STORM_MAX_ELECTRIC_HEATING_STAGES );
         REQUIRE( value.iduType == Storm::Type::IduType::eAIR_HANDLER );
@@ -574,7 +574,7 @@ TEST_CASE( "MP Equipment Unit Config" )
         // Read import value/state
         valid = mp_apple_.read( value );
         REQUIRE( mp_apple_.isNotValid() == false );
-        REQUIRE( Cpl::Dm::ModelPoint::IS_VALID( valid ) == true );
+        REQUIRE( valid == true );
         REQUIRE( value.hasVspBlower == false );
         REQUIRE( value.numIduHeatingStages == OPTION_STORM_MAX_ELECTRIC_HEATING_STAGES );
         REQUIRE( value.iduType == Storm::Type::IduType::eAIR_HANDLER );
@@ -761,7 +761,7 @@ TEST_CASE( "MP Equipment Unit Config" )
             int8_t valid;
             valid = mp_apple_.read( value, &seqNum );
             REQUIRE( seqNum == seqNum2 );
-            REQUIRE( Cpl::Dm::ModelPoint::IS_VALID( valid ) );
+            REQUIRE( valid );
             REQUIRE( value.hasVspBlower == true );
             REQUIRE( value.numIduHeatingStages == STORM_MAX_INDOOR_STAGES );
             REQUIRE( value.iduType == Storm::Type::IduType::eFURNACE );
@@ -834,7 +834,7 @@ TEST_CASE( "MP Equipment Unit Config" )
             int8_t valid;
             valid = mp_apple_.read( value, &seqNum );
             REQUIRE( seqNum == seqNum2 );
-            REQUIRE( Cpl::Dm::ModelPoint::IS_VALID( valid ) == false );
+            REQUIRE( valid == false );
             REQUIRE( errorMsg == "noerror" );
             REQUIRE( mp == &mp_apple_ );
         }
@@ -848,7 +848,7 @@ TEST_CASE( "MP Equipment Unit Config" )
             int8_t valid;
             MpEquipmentConfig::Data value;
             valid = mp_apple_.read( value );
-            REQUIRE( Cpl::Dm::ModelPoint::IS_VALID( valid ) == true );
+            REQUIRE( valid == true );
             REQUIRE( errorMsg == "noerror" );
             REQUIRE( mp_apple_.isLocked() == true );
             REQUIRE( value.hasVspBlower == true );
@@ -869,7 +869,7 @@ TEST_CASE( "MP Equipment Unit Config" )
             REQUIRE( result == true );
             REQUIRE( mp_apple_.isLocked() == true );
             valid = mp_apple_.read( value );
-            REQUIRE( Cpl::Dm::ModelPoint::IS_VALID( valid ) == true );
+            REQUIRE( valid == true );
             REQUIRE( value.hasVspBlower == OPTION_STORM_DM_EQUIPMENT_CONFIG_DEFAULT_VSPBLOWER );
             REQUIRE( value.numIduHeatingStages == 0 );
             REQUIRE( value.iduType == OPTION_STORM_DM_EQUIPMENT_CONFIG_DEFAULT_IDUTYPE );
@@ -879,7 +879,7 @@ TEST_CASE( "MP Equipment Unit Config" )
             CPL_SYSTEM_TRACE_MSG( SECT_, ( "fromSJON errorMsg=[%s])", errorMsg.getString() ) );
             REQUIRE( result == true );
             valid = mp_apple_.read( value );
-            REQUIRE( Cpl::Dm::ModelPoint::IS_VALID( valid ) == true );
+            REQUIRE( valid == true );
             REQUIRE( value.hasVspBlower == OPTION_STORM_DM_EQUIPMENT_CONFIG_DEFAULT_VSPBLOWER );
             REQUIRE( value.numIduHeatingStages == 0 );
             REQUIRE( value.iduType == OPTION_STORM_DM_EQUIPMENT_CONFIG_DEFAULT_IDUTYPE );
