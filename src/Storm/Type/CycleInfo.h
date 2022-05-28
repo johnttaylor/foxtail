@@ -38,7 +38,7 @@ struct CycleInfo_T
     }
 
     /// Copy Constructor (to ensure any pad bytes get zero'd)
-    CycleInfo_T( CycleInfo_T& other )
+    CycleInfo_T( const CycleInfo_T& other )
     {
         memcpy( (void*) this, (void*) &other, sizeof( CycleInfo_T ) );
     }

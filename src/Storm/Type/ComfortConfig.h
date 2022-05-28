@@ -43,6 +43,20 @@ struct ComfortStageParameters_T
         this->cph        = cph;
     }
 
+    /// Copy Constructor (to ensure any pad bytes get zero'd)
+    ComfortStageParameters_T( const ComfortStageParameters_T & other )
+    {
+        memcpy( (void*) this, (void*) &other, sizeof( ComfortStageParameters_T ) );
+    }
+
+    /// Copy operator
+    ComfortStageParameters_T& operator =( const ComfortStageParameters_T & other )
+    {
+        memcpy( (void*) this, (void*) &other, sizeof( ComfortStageParameters_T ) );
+        return *this;
+    }
+
+
 
     /** Method that limit/range checks the specified STAGE configuration. Invalid
         and/or out-of-range value are corrected, Returns true if one or more
@@ -64,7 +78,16 @@ struct ComfortConfig_T
     {
         memset( (void*) this, 0, sizeof( ComfortConfig_T ) );
     }
-    
+
+    /// Constructor (to ensure any pad bytes get zero'd)
+    ComfortConfig_T( ComfortStageParameters_T compressorCooling, ComfortStageParameters_T compressorHeating, ComfortStageParameters_T indoorHeating )
+    {
+        memset( (void*) this, 0, sizeof( ComfortConfig_T ) );
+        this->compressorCooling = compressorCooling;
+        this->compressorHeating = compressorHeating;
+        this->indoorHeating     = indoorHeating;
+    }
+
     /** Method that limit/range checks the specified configuration. Invalid and/or
         out-of-range value are corrected, Returns true if one or more fields
         were corrected.
