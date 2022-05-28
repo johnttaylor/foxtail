@@ -341,7 +341,7 @@ TEST_CASE( "uint32" )
 
         const char* json = "{name:\"APPLE\", val:1234}";
         bool result = modelDb_.fromJSON( json, &errorMsg, &mp, &seqNum2 );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=[%s])", errorMsg.getString()) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=[%s]", errorMsg.getString()) );
         REQUIRE( result == true );
         REQUIRE( seqNum2 == seqNum + 1 );
         uint32_t value;
@@ -361,7 +361,7 @@ TEST_CASE( "uint32" )
 
         const char* json   = "{name:\"APPLE\", val:\"abc\"}";
         bool        result = modelDb_.fromJSON( json, &errorMsg );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=[%s])", errorMsg.getString()) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=[%s]", errorMsg.getString()) );
         REQUIRE( result == false );
         REQUIRE( mp_apple_.isNotValid() );
         REQUIRE( errorMsg != "noerror" );
@@ -369,7 +369,7 @@ TEST_CASE( "uint32" )
         errorMsg = "noerror";
         json     = "{name:\"APPLE\"}";
         result   = modelDb_.fromJSON( json, &errorMsg );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=[%s])", errorMsg.getString()) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=[%s]", errorMsg.getString()) );
         REQUIRE( result == false );
         REQUIRE( mp_apple_.isNotValid() );
         REQUIRE( errorMsg != "noerror" );
@@ -377,7 +377,7 @@ TEST_CASE( "uint32" )
         errorMsg = "noerror";
         json     = "{namex:\"APPLE\"}";
         result   = modelDb_.fromJSON( json, &errorMsg );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=[%s])", errorMsg.getString()) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=[%s]", errorMsg.getString()) );
         REQUIRE( result == false );
         REQUIRE( errorMsg != "noerror" );
         REQUIRE( mp_apple_.isNotValid() );
@@ -385,7 +385,7 @@ TEST_CASE( "uint32" )
         errorMsg = "noerror";
         json     = "{name:\"APPLE\", val:a123}";
         result   = modelDb_.fromJSON( json, &errorMsg );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=[%s])", errorMsg.getString()) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=[%s]", errorMsg.getString()) );
         REQUIRE( result == false );
         REQUIRE( mp_apple_.isNotValid() );
         REQUIRE( errorMsg != "noerror" );
@@ -393,7 +393,7 @@ TEST_CASE( "uint32" )
         errorMsg = "noerror";
         json     = "{name:\"APPLE\", val:123a}";
         result   = modelDb_.fromJSON( json, &errorMsg );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=[%s])", errorMsg.getString()) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=[%s]", errorMsg.getString()) );
         REQUIRE( result == false );
         REQUIRE( mp_apple_.isNotValid() );
         REQUIRE( errorMsg != "noerror" );
@@ -409,28 +409,28 @@ TEST_CASE( "uint32" )
         errorMsg = "noerror";
         json     = "{name:\"APPLE\", val:8589934591}";  // Exceed range of the uint32_t
         result   = modelDb_.fromJSON( json, &errorMsg );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=[%s])", errorMsg.getString()) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=[%s]", errorMsg.getString()) );
         REQUIRE( result == false );
         REQUIRE( mp_apple_.isNotValid() );
         REQUIRE( errorMsg != "noerror" );
 
         json     = "{name:\"APPLE\", val:\"hello\"}";  // Exceed range of the uint32_t
         result   = modelDb_.fromJSON( json );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=[%s])", errorMsg.getString()) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=[%s]", errorMsg.getString()) );
         REQUIRE( result == false );
         REQUIRE( mp_apple_.isNotValid() );
 
         errorMsg = "noerror";
         json     = "{name:\"BOB\", valid:false}";
         result   = modelDb_.fromJSON( json, &errorMsg );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=[%s])", errorMsg.getString()) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=[%s]", errorMsg.getString()) );
         REQUIRE( result == false );
         REQUIRE( mp_apple_.isNotValid() );
         REQUIRE( errorMsg != "noerror" );
 
         json     = "name:\"BOB\", valid:false}";
         result   = modelDb_.fromJSON( json );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=[%s])", errorMsg.getString()) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=[%s]", errorMsg.getString()) );
         REQUIRE( result == false );
         REQUIRE( mp_apple_.isNotValid() );
     }
@@ -444,7 +444,7 @@ TEST_CASE( "uint32" )
         seqNum = mp_apple_.write( 12 );
         const char* json = "{name:\"APPLE\", val:4321, valid:false}";
         bool result = modelDb_.fromJSON( json, &errorMsg, &mp, &seqNum2 );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=[%s])", errorMsg.getString()) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=[%s]", errorMsg.getString()) );
         REQUIRE( result == true );
         REQUIRE( seqNum2 == seqNum + 1 );
         uint32_t value;
@@ -463,7 +463,7 @@ TEST_CASE( "uint32" )
 
         const char* json = "{name:\"APPLE\", val:4321, locked:true}";
         bool result = modelDb_.fromJSON( json, &errorMsg );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=[%s])", errorMsg.getString()) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=[%s]", errorMsg.getString()) );
         REQUIRE( result == true );
         uint32_t value;
         bool   valid = mp_apple_.read( value );
@@ -474,14 +474,14 @@ TEST_CASE( "uint32" )
 
         json   = "{name:\"APPLE\", valid:false, locked:false}";
         result = modelDb_.fromJSON( json, &errorMsg );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=[%s])", errorMsg.getString()) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=[%s]", errorMsg.getString()) );
         REQUIRE( result == true );
         REQUIRE( mp_apple_.isNotValid() == true );
         REQUIRE( mp_apple_.isLocked() == false );
 
         json   = "{name:\"APPLE\", val:21, locked:true}";
         result = modelDb_.fromJSON( json );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=[%s])", errorMsg.getString()) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=[%s]", errorMsg.getString()) );
         REQUIRE( result == true );
         REQUIRE( mp_apple_.isLocked() == true );
         valid = mp_apple_.read( value );
@@ -490,7 +490,7 @@ TEST_CASE( "uint32" )
 
         json   = "{name:\"APPLE\", val:42 }";
         result = modelDb_.fromJSON( json, &errorMsg );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=[%s])", errorMsg.getString()) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=[%s]", errorMsg.getString()) );
         REQUIRE( result == true );
         REQUIRE( mp_apple_.isLocked() == true );
         valid = mp_apple_.read( value );
@@ -499,7 +499,7 @@ TEST_CASE( "uint32" )
 
         json   = "{name:\"APPLE\", locked:false}";
         result = modelDb_.fromJSON( json, &errorMsg );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=[%s])", errorMsg.getString()) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("fromSJON errorMsg=[%s]", errorMsg.getString()) );
         REQUIRE( result == true );
         valid = mp_apple_.read( value );
         REQUIRE( valid == true );

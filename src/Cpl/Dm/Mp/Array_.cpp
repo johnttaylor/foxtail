@@ -64,7 +64,7 @@ bool ArrayBase_::read( void* dstData, size_t dstNumElements, size_t srcIndex, ui
     return ModelPointCommon_::read( &dst, sizeof( dst ), seqNumPtr );
 }
 
-uint16_t ArrayBase_::write( void* srcData, size_t srcNumElements, size_t dstIndex, LockRequest_T lockRequest ) noexcept
+uint16_t ArrayBase_::write( const void* srcData, size_t srcNumElements, size_t dstIndex, LockRequest_T lockRequest ) noexcept
 {
     MetaData_T src ={ (uint8_t*) srcData, srcNumElements, dstIndex };
     return ModelPointCommon_::write( &src, sizeof( src ), lockRequest );

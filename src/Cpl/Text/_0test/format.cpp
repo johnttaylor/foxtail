@@ -82,11 +82,38 @@ TEST_CASE( "format", "[format]" )
 		REQUIRE( result == false );
 	}
 
-	SECTION( "bufferToViewer...." )
-	{
-		uint8_t buffer[5] ={ 0, 0xAA, 0x55, 0xF0, 0x31 };
-		DString    s1;
-		FString<3> s2;
+    SECTION( "bufferToASCIIBinary...." )
+    {
+        uint8_t buffer[5] = { 0x84, 0x4a, 0, 0, 0x01 };
+
+        DString    s1;
+        FString<3> s2;
+
+        bool result = bufferToAsciiBinary( buffer, 2, s1 );
+        REQUIRE( s1 == "1000010001001010" );
+        REQUIRE( result == true );
+        bufferToAsciiBinary( buffer, 2, s1, false, true );
+        REQUIRE( s1 == "0100101010000100" );
+
+
+        s1 = "buffer=";
+        bufferToAsciiBinary( buffer, 2, s1, true, true );
+        REQUIRE( s1 == "buffer=0100101010000100" );
+
+        s1 = "no change";
+        bufferToAsciiBinary( 0, sizeof( buffer ), s1 );
+        REQUIRE( s1 == "no change" );
+        bufferToAsciiBinary( buffer, 0, s1 );
+        REQUIRE( s1 == "no change" );
+        result = bufferToAsciiBinary( buffer, sizeof( buffer ), s2 );
+        REQUIRE( result == false );
+    }
+
+    SECTION( "bufferToViewer...." )
+    {
+        uint8_t buffer[5] = { 0, 0xAA, 0x55, 0xF0, 0x31 };
+        DString    s1;
+        FString<3> s2;
 
 		bool result = bufferToViewer( buffer, sizeof( buffer ), s1, sizeof( buffer ) );
 		REQUIRE( s1 == "00AA55F031    ..U.1" );

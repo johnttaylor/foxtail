@@ -54,7 +54,7 @@ TEST_CASE( "mvc" )
     Cpl::System::Thread* t2 = Cpl::System::Thread::create( t2Mbox_, "T2" );
 
     // Create my viewers, writers
-#define NUM_INSTANCES   8
+#define NUM_INSTANCES   9
     Viewer viewer_apple1( t1Mbox_, Cpl::System::Thread::getCurrent(), mp_apple_, VIEWER_APPLE1_END_VALUE );
     Writer writer_apple1( t2Mbox_, Cpl::System::Thread::getCurrent(), mp_apple_, 10, 1, VIEWER_APPLE1_END_VALUE, 1 );
 

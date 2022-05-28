@@ -95,7 +95,7 @@ protected:
         only partially initialized AND then MP is now in the valid
         state!
     */
-    virtual uint16_t write( void* srcData, size_t srcNumElements, size_t dstIndex = 0, Cpl::Dm::ModelPoint::LockRequest_T lockRequest = Cpl::Dm::ModelPoint::eNO_REQUEST ) noexcept;
+    virtual uint16_t write( const void* srcData, size_t srcNumElements, size_t dstIndex = 0, Cpl::Dm::ModelPoint::LockRequest_T lockRequest = Cpl::Dm::ModelPoint::eNO_REQUEST ) noexcept;
 
     /// Updates the MP with the valid-state/data from 'src'. Note: the src.lock state is NOT copied
     virtual uint16_t copyFrom( const ArrayBase_& src, Cpl::Dm::ModelPoint::LockRequest_T lockRequest = Cpl::Dm::ModelPoint::eNO_REQUEST ) noexcept;
@@ -171,7 +171,7 @@ public:
     }
 
     /// Type safe write. See Cpl::Dm::ModelPoint
-    inline uint16_t write( ELEMTYPE* srcArray, size_t srcNumElements, size_t dstIndex = 0, Cpl::Dm::ModelPoint::LockRequest_T lockRequest = Cpl::Dm::ModelPoint::eNO_REQUEST ) noexcept
+    inline uint16_t write( const ELEMTYPE* srcArray, size_t srcNumElements, size_t dstIndex = 0, Cpl::Dm::ModelPoint::LockRequest_T lockRequest = Cpl::Dm::ModelPoint::eNO_REQUEST ) noexcept
     {
         return ArrayBase_::write( srcArray, srcNumElements, dstIndex, lockRequest );
     }

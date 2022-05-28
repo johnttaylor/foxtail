@@ -114,6 +114,9 @@ TEST_CASE( "record" )
         Cpl::Io::File::Api::remove( FILE_NAME_REGION1 );
         Cpl::Io::File::Api::remove( FILE_NAME_REGION2 );
 
+        size_t recSize = uut.getRecordSize();
+        REQUIRE( recSize == 2 + 5*3 );
+
         // No persistent data - and force NO-UPDATE
         uut.m_resetDataResult = false;
         recordServer.open();
@@ -237,10 +240,7 @@ TEST_CASE( "record" )
         mp_plum_.increment();
 
         // Flush the record
-        Cpl::Dm::Persistent::FlushRequest::Payload      payload;
-        Cpl::Itc::SyncReturnHandler                     srh;
-        Cpl::Dm::Persistent::FlushRequest::FlushMsg     msg( uut, payload, srh );
-        recordServer.postSync( msg );
+        REQUIRE( uut.flush( recordServer ) );
 
         // Allow time for the changes to propagate and the data to be saved 
         Cpl::System::Api::sleep( 1000 );
@@ -267,6 +267,53 @@ TEST_CASE( "record" )
 
         recordServer.close();
     }
+
+    SECTION( "Erase" )
+    {
+        // Previous data
+        uut.m_resetDataCount = 0;
+        recordServer.open();
+        REQUIRE( uut.m_resetDataCount == 0 );
+        REQUIRE( uut.m_schemaChangeCount == 0 );
+        uint32_t value;
+        bool     valid;
+        valid = mp_apple_.read( value );
+        REQUIRE( valid );
+        REQUIRE( value == DEFAULT_APPLE + 1 );
+        valid = mp_orange_.read( value );
+        REQUIRE( valid );
+        REQUIRE( value == DEFAULT_ORANGE + 1 );
+        valid = mp_plum_.read( value );
+        REQUIRE( valid );
+        REQUIRE( value == DEFAULT_PLUM + 2 );
+
+        // Flush the record
+        REQUIRE( uut.erase( recordServer ) );
+
+        recordServer.close();
+    }
+
+    SECTION( "Verify Erase" )
+    {
+        // Previous data
+        uut.m_resetDataCount = 0;
+        recordServer.open();
+        REQUIRE( uut.m_resetDataCount == 1 );
+        uint32_t value;
+        bool     valid;
+        valid = mp_apple_.read( value );
+        REQUIRE( valid );
+        REQUIRE( value == DEFAULT_APPLE );
+        valid = mp_orange_.read( value );
+        REQUIRE( valid );
+        REQUIRE( value == DEFAULT_ORANGE );
+        valid = mp_plum_.read( value );
+        REQUIRE( valid );
+        REQUIRE( value == DEFAULT_PLUM );
+
+        recordServer.close();
+    }
+
     Cpl::System::Thread::destroy( *t1 );
     Cpl::System::Api::sleep( 1000 );
     REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );

@@ -16,6 +16,15 @@
 #include "Cpl/Itc/CloseSync.h"
 
 
+/// Macro to help shutdown the observer thread
+#define WAIT_FOR_THREAD_TO_STOP(t)      for ( int i=0; i < 200; i++ ) \
+                                        { \
+                                            Cpl::System::Api::sleep( 50 ); \
+                                            if ( t->isRunning() == false ) \
+                                            { \
+                                                break; \
+                                            } \
+                                        }
 
 
 template< class MPTYPE>
@@ -43,7 +52,7 @@ public:
     ///
     void request( Cpl::Itc::OpenRequest::OpenMsg& msg )
     {
-        m_mp.attach( m_observerMp1 );
+        m_mp.attach( m_observerMp1, m_mp.getSequenceNumber() );
         msg.returnToSender();
     }
 

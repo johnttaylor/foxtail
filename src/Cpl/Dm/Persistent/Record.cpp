@@ -12,6 +12,8 @@
 #include "Record.h"
 #include "Cpl/System/Assert.h"
 #include "Cpl/System/Trace.h"
+#include "Cpl/Itc/SyncReturnHandler.h"
+
 
 #define SECT_ "Cpl::Dm::Persistent"
 
@@ -66,6 +68,7 @@ void Record::start( Cpl::Dm::MailboxServer& myMbox ) noexcept
         // Record was successfully loaded -->allow for optional child class processing
         else
         {
+            CPL_SYSTEM_TRACE_MSG( SECT_, ( "Initial loadData() succeeded! mp[0]=%s", m_items[0].mpPtr->getName() ) );
             hookProcessPostRecordLoaded();
         }
 
@@ -120,7 +123,6 @@ void Record::stop() noexcept
         m_chunkHandler.stop();
     }
 }
-
 
 //////////////////////////////////////////////////////
 size_t Record::getRecordSize() noexcept
@@ -218,7 +220,32 @@ void Record::dataChanged( Cpl::Dm::ModelPoint& point ) noexcept
 
 void Record::request( FlushMsg& msg )
 {
-    CPL_SYSTEM_TRACE_MSG( SECT_, ( "Flush Request" ) );
     msg.getPayload().m_success = m_chunkHandler.updateData( *this );
+    CPL_SYSTEM_TRACE_MSG( SECT_, ( "Flush Request. mp[0]=%s. success=%d", m_items[0].mpPtr->getName(), msg.getPayload().m_success ) );
     msg.returnToSender();
+}
+
+void Record::request( EraseMsg& msg )
+{
+    msg.getPayload().m_success = m_chunkHandler.updateData( *this, 0, true );
+    CPL_SYSTEM_TRACE_MSG( SECT_, ( "Erase Request. mp[0]=%s. success=%d", m_items[0].mpPtr->getName(), msg.getPayload().m_success ) );
+    msg.returnToSender();
+}
+
+bool Record::flush( Cpl::Persistent::RecordServer& myRecordsServer ) noexcept
+{
+    Cpl::Dm::Persistent::FlushRequest::Payload      payload;
+    Cpl::Itc::SyncReturnHandler                     srh;
+    Cpl::Dm::Persistent::FlushRequest::FlushMsg     msg( *this, payload, srh );
+    myRecordsServer.postSync( msg );
+    return payload.m_success;
+}
+
+bool Record::erase( Cpl::Persistent::RecordServer& myRecordsServer ) noexcept
+{
+    Cpl::Dm::Persistent::EraseRequest::Payload    payload;
+    Cpl::Itc::SyncReturnHandler                   srh;
+    Cpl::Dm::Persistent::EraseRequest::EraseMsg   msg( *this, payload, srh );
+    myRecordsServer.postSync( msg );
+    return payload.m_success;
 }

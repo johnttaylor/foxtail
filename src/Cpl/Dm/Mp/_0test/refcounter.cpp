@@ -38,6 +38,10 @@ static ModelDatabase    modelDb_( "ignoreThisParameter_usedToInvokeTheStaticCons
 static Mp::RefCounter       mp_apple_( modelDb_, "APPLE" );
 static Mp::RefCounter       mp_orange_( modelDb_, "ORANGE", INITIAL_VALUE );
 
+// Don't let the Runnable object go out of scope before its thread has actually terminated!
+static MailboxServer         t1Mbox_;
+
+
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -140,10 +144,10 @@ TEST_CASE( "RefCounter" )
     
     SECTION( "observer" )
     {
-        MailboxServer           t1Mbox;
-        Viewer<Mp::RefCounter>  viewer_apple1( t1Mbox, Cpl::System::Thread::getCurrent(), mp_apple_ );
-        Cpl::System::Thread*    t1 = Cpl::System::Thread::create( t1Mbox, "T1" );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("Created Viewer thread (%p)", t1) );
+        CPL_SYSTEM_TRACE_SCOPE( SECT_, "observer test" );
+        Viewer<Mp::RefCounter>  viewer_apple1( t1Mbox_, Cpl::System::Thread::getCurrent(), mp_apple_ );
+        Cpl::System::Thread*    t1 = Cpl::System::Thread::create( t1Mbox_, "T1" );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ( "Created Viewer thread (%p)", t1 ) );
 
         // NOTE: The MP MUST be in the INVALID state at the start of this test
         viewer_apple1.open();
@@ -152,12 +156,10 @@ TEST_CASE( "RefCounter" )
         viewer_apple1.close();
 
         // Shutdown threads
-        t1Mbox.pleaseStop();
-        Cpl::System::Api::sleep( 100 ); // allow time for threads to stop
-        REQUIRE( t1->isRunning() == false );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("Destroying Viewer thread (%p)...", t1) );
+        t1Mbox_.pleaseStop();
+        WAIT_FOR_THREAD_TO_STOP( t1 );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ( "Destroying Viewer thread (%p)...", t1 ) );
         Cpl::System::Thread::destroy( *t1 );
-        Cpl::System::Api::sleep( 100 ); // allow time for threads to stop BEFORE the runnable object goes out of scope
     }
 
     SECTION( "toJSON-pretty" )

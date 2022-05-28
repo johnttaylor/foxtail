@@ -13,11 +13,13 @@
 /** @file */
 
 #include "Cpl/Persistent/Record.h"
+#include "Cpl/Persistent/RecordServer.h"
 #include "Cpl/Persistent/Chunk.h"
 #include "Cpl/Persistent/Payload.h"
 #include "Cpl/Dm/ModelPoint.h"
 #include "Cpl/Dm/SubscriberComposer.h"
 #include "Cpl/Dm/Persistent/FlushRequest.h"
+#include "Cpl/Dm/Persistent/EraseRequest.h"
 
 ///
 namespace Cpl {
@@ -31,7 +33,7 @@ namespace Persistent {
     child class is needed to provide the specifics of 'resetting' the Record's
     data.
  */
-class Record: public Cpl::Persistent::Record, public Cpl::Persistent::Payload, public FlushRequest
+class Record: public Cpl::Persistent::Record, public Cpl::Persistent::Payload, public FlushRequest, public EraseRequest
 {
 public:
     /** This data structure associates a Data Model subscriber instance with a
@@ -80,9 +82,24 @@ public:
     size_t getRecordSize() noexcept;
 
 public:
+    /** Synchronous Flush/update of the Record to persistent storage.
+        Note: Use this method with CAUTION.  The call will BLOCK the calling 
+        thread for an undetermined amount of time!!
+     */
+    bool flush( Cpl::Persistent::RecordServer& myRecordsServer ) noexcept;
+
+    /** Synchronous Invalidate/logically-erase of the Record in persistent storage.
+        Note: Use this method with CAUTION.  The call will BLOCK the calling 
+        thread for an undetermined amount of time!!
+     */
+    bool erase( Cpl::Persistent::RecordServer& myRecordsServer ) noexcept;
+
+public:
     /// See Cpl::Dm::Persistent::FlushRequest
     void request( FlushMsg& msg );
 
+    /// See Cpl::Dm::Persistent::EraseRequest
+    void request( EraseMsg& msg );
 
 protected:
     /** This method is responsible for updating all of the Model Points in
