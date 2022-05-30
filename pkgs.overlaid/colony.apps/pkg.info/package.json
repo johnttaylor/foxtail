@@ -2,25 +2,9 @@
   "dependencies": {
     "strong": [
       {
-        "pkgname": "colony.arduino",
-        "pkgtype": "overlay",
-        "adoptedDate": "Sun Dec 12 16:49:15 2021",
-        "parentDir": null,
-        "version": {
-          "semanticVersion": "1.0.1",
-          "branch": null,
-          "tag": "OUTCAST2-main-1.0.1"
-        },
-        "repo": {
-          "name": "colony.arduino",
-          "type": "git",
-          "origin": "https://github.com/johnttaylor"
-        }
-      },
-      {
         "pkgname": "colony.bsp",
         "pkgtype": "overlay",
-        "adoptedDate": "Sat May 21 19:19:51 2022",
+        "adoptedDate": "Sun Dec  5 14:33:52 2021",
         "parentDir": null,
         "version": {
           "semanticVersion": "0.1.0",
@@ -34,9 +18,25 @@
         }
       },
       {
+        "pkgname": "colony.arduino",
+        "pkgtype": "overlay",
+        "adoptedDate": "Sun Dec  5 20:25:54 2021",
+        "parentDir": null,
+        "version": {
+          "semanticVersion": "1.0.1",
+          "branch": null,
+          "tag": "OUTCAST2-main-1.0.1"
+        },
+        "repo": {
+          "name": "colony.arduino",
+          "type": "git",
+          "origin": "https://github.com/johnttaylor"
+        }
+      },
+      {
         "pkgname": "colony.core",
         "pkgtype": "overlay",
-        "adoptedDate": "Mon May 30 18:18:27 2022",
+        "adoptedDate": "Mon May 30 18:37:22 2022",
         "parentDir": null,
         "version": {
           "semanticVersion": "3.0.0",
@@ -52,7 +52,7 @@
       {
         "pkgname": "nqbp",
         "pkgtype": "foreign",
-        "adoptedDate": "Mon May 30 18:20:47 2022",
+        "adoptedDate": "Mon May 30 18:39:32 2022",
         "parentDir": "xsrc",
         "version": {
           "semanticVersion": "2.2.1",
@@ -66,25 +66,9 @@
         }
       },
       {
-        "pkgname": "catch",
-        "pkgtype": "overlay",
-        "adoptedDate": "Mon May 30 18:22:09 2022",
-        "parentDir": null,
-        "version": {
-          "semanticVersion": "2.13.7b",
-          "branch": null,
-          "tag": "OUTCAST2-main-2.13.7b"
-        },
-        "repo": {
-          "name": "catch",
-          "type": "git",
-          "origin": "https://github.com/johnttaylor"
-        }
-      },
-      {
         "pkgname": "ratt",
         "pkgtype": "readonly",
-        "adoptedDate": "Mon May 30 18:42:34 2022",
+        "adoptedDate": "Mon May 30 18:42:13 2022",
         "parentDir": "xsrc",
         "version": {
           "semanticVersion": "1.0.1",
@@ -98,17 +82,17 @@
         }
       },
       {
-        "pkgname": "colony.apps",
+        "pkgname": "catch",
         "pkgtype": "overlay",
-        "adoptedDate": "Mon May 30 19:45:45 2022",
+        "adoptedDate": "Mon May 30 18:52:19 2022",
         "parentDir": null,
         "version": {
-          "semanticVersion": "2.0.0",
+          "semanticVersion": "2.13.7b",
           "branch": null,
-          "tag": "OUTCAST2-main-2.0.0"
+          "tag": "OUTCAST2-main-2.13.7b"
         },
         "repo": {
-          "name": "colony.apps",
+          "name": "catch",
           "type": "git",
           "origin": "https://github.com/johnttaylor"
         }
@@ -118,9 +102,9 @@
   },
   "directories": {
     "primary": [
+      "projects",
       "src",
-      "tests",
-      "projects"
+      "tests"
     ],
     "adoptedExtras": [
       "docs",
@@ -128,19 +112,31 @@
     ]
   },
   "info": {
-    "pkgname": "foxtail",
-    "desc": "Experiments, sandbox, etc. for process control...",
+    "pkgname": "colony.apps",
+    "desc": "Example Applications, Applets, etc. built on top of the Colony.* Packages",
     "owner": "John Taylor",
     "email": "john.t.taylor@gmail.com",
     "url": "url",
     "repo": {
-      "name": "foxtail",
+      "name": "colony.apps",
       "type": "git",
       "origin": "https://github.com/johnttaylor"
     }
   },
   "publish": {
-    "current": null,
-    "history": []
+    "current": {
+      "comment": "Pickup latest Model Point changes (from Colony.core - this is breaking change)",
+      "version": "2.0.0",
+      "date": "Mon May 30 19:39:37 2022",
+      "timestamp": 1653939577
+    },
+    "history": [
+      {
+        "comment": "Publish as an Outcast2 package",
+        "version": "1.0.0",
+        "date": "Sun Dec  5 18:54:30 2021",
+        "timestamp": 1638730470
+      }
+    ]
   }
 }
