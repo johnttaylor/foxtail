@@ -18,22 +18,6 @@
         }
       },
       {
-        "pkgname": "colony.core",
-        "pkgtype": "overlay",
-        "adoptedDate": "Sun Dec 12 16:48:50 2021",
-        "parentDir": null,
-        "version": {
-          "semanticVersion": "2.0.2",
-          "branch": null,
-          "tag": "OUTCAST2-main-2.0.2"
-        },
-        "repo": {
-          "name": "colony.core",
-          "type": "git",
-          "origin": "https://github.com/johnttaylor"
-        }
-      },
-      {
         "pkgname": "colony.arduino",
         "pkgtype": "overlay",
         "adoptedDate": "Sun Dec 12 16:49:15 2021",
@@ -64,22 +48,6 @@
           "type": "git",
           "origin": "https://github.com/johnttaylor"
         }
-      },
-      {
-        "pkgname": "ratt",
-        "pkgtype": "foreign",
-        "adoptedDate": "Sat May 28 17:41:52 2022",
-        "parentDir": "xsrc",
-        "version": {
-          "semanticVersion": "1.0.0",
-          "branch": null,
-          "tag": "OUTCAST2-main-1.0.0"
-        },
-        "repo": {
-          "name": "ratt",
-          "type": "git",
-          "origin": "https://github.com/johnttaylor"
-        }
       }
     ],
     "weak": [
@@ -95,22 +63,6 @@
         },
         "repo": {
           "name": "catch",
-          "type": "git",
-          "origin": "https://github.com/johnttaylor"
-        }
-      },
-      {
-        "pkgname": "nqbp",
-        "pkgtype": "foreign",
-        "adoptedDate": "Sun Dec 12 16:51:28 2021",
-        "parentDir": "xsrc",
-        "version": {
-          "semanticVersion": "2.2.0",
-          "branch": null,
-          "tag": "OUTCAST2-main-2.2.0"
-        },
-        "repo": {
-          "name": "nqbp",
           "type": "git",
           "origin": "https://github.com/johnttaylor"
         }
