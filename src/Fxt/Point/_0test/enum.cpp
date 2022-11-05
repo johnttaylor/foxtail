@@ -35,12 +35,14 @@ class MyEnum : public Enum_<MyColors>
 {
 public:
     /// Constructor. Invalid Point.
-    MyEnum( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData ) : Enum_<MyColors>( pointId, pointName, allocatorForPointStatefulData )
+    MyEnum( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData ) 
+        : Enum_<MyColors>( db, pointId, pointName, allocatorForPointStatefulData )
     {
     }
 
     /// Constructor. Valid Point.  Requires an initial value
-    MyEnum( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, MyColors initialValue ) :Enum_<MyColors>( pointId, pointName, allocatorForPointStatefulData, initialValue )
+    MyEnum( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, MyColors initialValue ) 
+        :Enum_<MyColors>( db, pointId, pointName, allocatorForPointStatefulData, initialValue )
     {
     }
 
@@ -57,12 +59,13 @@ public:
     const char* getType() const noexcept { return "Fxt::Point::MyEnum"; }
 
     /// Creates a concrete instance in the invalid state
-    static Api* create( Cpl::Memory::Allocator&             allocatorForPoints,
+    static Api* create( DatabaseApi&                        db, 
+                        Cpl::Memory::Allocator&             allocatorForPoints,
                         uint32_t                            pointId,
                         const char*                         pointName,
                         Cpl::Memory::ContiguousAllocator&   allocatorForPointStatefulData )
     {
-        return PointCommon_::create<MyEnum>( allocatorForPoints, pointId, pointName, allocatorForPointStatefulData );
+        return PointCommon_::create<MyEnum>( db, allocatorForPoints, pointId, pointName, allocatorForPointStatefulData );
     }
 };
 
@@ -92,9 +95,9 @@ TEST_CASE( "Enum" )
     bool                     valid;
     MyColors                 value = MyColors::eBLUE;
 
-    MyEnum* apple = new(std::nothrow) MyEnum( APPLE_ID, APPLE_LABEL, stateHeap );
+    MyEnum* apple = new(std::nothrow) MyEnum( db, APPLE_ID, APPLE_LABEL, stateHeap );
     REQUIRE( apple );
-    MyEnum* orange = new(std::nothrow) MyEnum( ORANGE_ID, ORANGE_LABEL, stateHeap, ORANGE_INIT_VAL );
+    MyEnum* orange = new(std::nothrow) MyEnum( db, ORANGE_ID, ORANGE_LABEL, stateHeap, ORANGE_INIT_VAL );
     REQUIRE( orange );
 
 
@@ -145,8 +148,6 @@ TEST_CASE( "Enum" )
         char buffer[256];
         bool truncated;
         apple->write( MyColors::eRED );
-        REQUIRE( db.add( *apple ) );
-        REQUIRE( db.add( *orange ) );
 
         bool result = db.toJSON( APPLE_ID, buffer, sizeof( buffer ), truncated );
         CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s]", buffer) );
@@ -263,8 +264,6 @@ TEST_CASE( "Enum" )
 
     SECTION( "database" )
     {
-        REQUIRE( db.add( *apple ) );
-        REQUIRE( db.add( *orange ) );
         REQUIRE( db.add( *orange ) == false );
 
         REQUIRE( db.lookupById( ORANGE_ID ) == orange );

@@ -38,17 +38,19 @@ class Uint32 : public BasicInteger_<uint32_t>
 public:
     /** Constructor. Invalid Point.
      */
-    Uint32( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData ) : BasicInteger_<uint32_t>(pointId, pointName, allocatorForPointStatefulData ) {}
+    Uint32( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData )
+        : BasicInteger_<uint32_t>( db, pointId, pointName, allocatorForPointStatefulData ) {}
 
     /// Constructor. Valid Point.  Requires an initial value
-    Uint32( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, uint32_t initialValue ) : BasicInteger_<uint32_t>( pointId, pointName, allocatorForPointStatefulData, initialValue ) {}
+    Uint32( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, uint32_t initialValue )
+        : BasicInteger_<uint32_t>( db, pointId, pointName, allocatorForPointStatefulData, initialValue ) {}
 
 public:
     /// Pull in overloaded methods from base class
     using BasicInteger_<uint32_t>::write;
 
     /// Updates the MP's data from 'src'. Note: The lock state of 'src' is NOT-USED/IGNORED
-    void write( Uint32& src, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept 
+    void write( Uint32& src, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
         updateFrom( &(((Basic_<uint32_t>::Stateful_T*)(src.m_state))->data), sizeof( uint32_t ), src.isNotValid(), lockRequest );
     }
@@ -59,12 +61,13 @@ public:
 
 public:
     /// Creates a concrete instance in the invalid state
-    static Api* create( Cpl::Memory::Allocator&             allocatorForPoints,
+    static Api* create( DatabaseApi&                        db,
+                        Cpl::Memory::Allocator&             allocatorForPoints,
                         uint32_t                            pointId,
                         const char*                         pointName,
-                        Cpl::Memory::ContiguousAllocator&   allocatorForPointStatefulData ) 
-    { 
-        return PointCommon_::create<Uint32>( allocatorForPoints, pointId, pointName, allocatorForPointStatefulData );
+                        Cpl::Memory::ContiguousAllocator&   allocatorForPointStatefulData )
+    {
+        return PointCommon_::create<Uint32>( db, allocatorForPoints, pointId, pointName, allocatorForPointStatefulData );
     }
 };
 

@@ -47,9 +47,9 @@ TEST_CASE( "Int8" )
     bool                     valid;
     int8_t                   value;
 
-    Int8* apple = new(std::nothrow) Int8( APPLE_ID, APPLE_LABEL, stateHeap );
+    Int8* apple = new(std::nothrow) Int8( db, APPLE_ID, APPLE_LABEL, stateHeap );
     REQUIRE( apple );
-    Int8* orange = new(std::nothrow) Int8( ORANGE_ID, ORANGE_LABEL, stateHeap, ORANGE_INIT_VAL );
+    Int8* orange = new(std::nothrow) Int8( db, ORANGE_ID, ORANGE_LABEL, stateHeap, ORANGE_INIT_VAL );
     REQUIRE( orange );
 
 
@@ -145,8 +145,6 @@ TEST_CASE( "Int8" )
         char buffer[256];
         bool truncated;
         apple->write( 127 );
-        REQUIRE( db.add( *apple ) );
-        REQUIRE( db.add( *orange ) );
 
         bool result = db.toJSON( APPLE_ID, buffer, sizeof( buffer ), truncated );
         CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s]", buffer) );
@@ -256,8 +254,6 @@ TEST_CASE( "Int8" )
 
     SECTION( "database" )
     {
-        REQUIRE( db.add( *apple ) );
-        REQUIRE( db.add( *orange ) );
         REQUIRE( db.add( *orange ) == false );
 
         REQUIRE( db.lookupById( ORANGE_ID ) == orange );

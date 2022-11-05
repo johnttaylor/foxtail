@@ -33,19 +33,19 @@
 /// ERROR Code: Configuration contains the wrong GUID (i.e. the JSON object calls out a different card type)
 #define FXT_CARD_ERR_GUID_WRONG_TYPE            4
 
-/// ERROR Code: Configuration does NOT contain a LocalId value
-#define FXT_CARD_ERR_CARD_MISSING_LOCAL_ID      5
+/// ERROR Code: Configuration does NOT contain a ID value
+#define FXT_CARD_ERR_CARD_MISSING_ID            5
 
 /// ERROR Code: Unable to allocate memory for the card's name
 #define FXT_CARD_ERR_MEMORY_CARD_NAME           6
 
 /// ERROR Code: Configuration does NOT contain a LocalId value for one of it Points
-#define FXT_CARD_ERR_POINT_MISSING_LOCAL_ID     7
+#define FXT_CARD_ERR_POINT_MISSING_ID           7
 
-/// ERROR Code: Configuration contains TOO many input Points (max is 32)
+/// ERROR Code: Configuration contains TOO many input Points
 #define FXT_CARD_ERR_TOO_MANY_INPUT_POINTS      8
 
-/// ERROR Code: Configuration contains TOO many output Points (max is 32)
+/// ERROR Code: Configuration contains TOO many output Points
 #define FXT_CARD_ERR_TOO_MANY_OUTPUT_POINTS     9
 
 /// ERROR Code: Configuration contains duplicate or our-of-range Channel IDs
@@ -75,6 +75,7 @@ namespace Card {
     Note: IO Cards support being in a Container - however 'that' container
           is the Card Database.  This means if the application wants to maintain
           a list of IO Cards - it must provide its own wrapper.
+
  */
 class Api : public Cpl::Container::Item
 {
@@ -127,16 +128,18 @@ public:
 
 
 public:
-    /// This method returns the card's 'User facing local ID'
-    virtual uint32_t getLocalId() const noexcept = 0;
+    /// This method returns the Card's unique numeric id
+    virtual uint16_t getId() const noexcept = 0;
 
-    /// This method returns the card's text name/label (as defined by the user)
+    /** This method returns the Card's symbolic name (not guaranteed to be unique).
+        If no name as been assigned, the method returns an empty string.
+     */    
     virtual const char* getName() const noexcept = 0;
 
     /** This method returns the card's GUID (that identifies its type) as a
         text string in 8-4-4-4-12 format
      */
-    virtual const char* getGuid() const noexcept = 0;
+    virtual const char* getTypeGuid() const noexcept = 0;
 
     /// Returns the card's 'human readable' type name (note: this is NOT guaranteed to be unique)
     virtual const char* getTypeName() const noexcept = 0;
@@ -145,7 +148,7 @@ public:
     virtual uint16_t getSlot() const noexcept = 0;
 
 public:
-    /** This method returns the current error state/number of the card.  A value
+    /** This method returns the current error state of the card.  A value
         of zero/ERR_NO_ERROR indicates the card is operating properly
      */
     virtual uint32_t getErrorCode() const noexcept = 0;

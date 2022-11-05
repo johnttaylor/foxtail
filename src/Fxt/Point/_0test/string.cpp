@@ -36,14 +36,14 @@ class String16 : public String_<16>
 {
 public:
     /// Constructor. Invalid Point.
-    String16( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData ) 
-        : String_<16>( pointId, pointName, allocatorForPointStatefulData )
+    String16( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData ) 
+        : String_<16>( db, pointId, pointName, allocatorForPointStatefulData )
     {
     }
 
     /// Constructor. Valid Point.  Requires an initial value
-    String16( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, const char* initialValue ) 
-        :String_<16>( pointId, pointName, allocatorForPointStatefulData, initialValue )
+    String16( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, const char* initialValue )
+        :String_<16>( db, pointId, pointName, allocatorForPointStatefulData, initialValue )
     {
     }
 
@@ -51,12 +51,13 @@ public:
     const char* getType() const noexcept { return "Fxt::Point::String16"; }
 
     /// Creates a concrete instance in the invalid state
-    static Api* create( Cpl::Memory::Allocator&             allocatorForPoints,
+    static Api* create( DatabaseApi&                        db, 
+                        Cpl::Memory::Allocator&             allocatorForPoints,
                         uint32_t                            pointId,
                         const char*                         pointName,
                         Cpl::Memory::ContiguousAllocator&   allocatorForPointStatefulData )
     {
-        return PointCommon_::create<String16>( allocatorForPoints, pointId, pointName, allocatorForPointStatefulData );
+        return PointCommon_::create<String16>( db, allocatorForPoints, pointId, pointName, allocatorForPointStatefulData );
     }
 };
 
@@ -86,9 +87,9 @@ TEST_CASE( "String16" )
     char                     buffer[16 + 1];
     Cpl::Text::FString<16>   value;
 
-    String16* apple = new(std::nothrow) String16( APPLE_ID, APPLE_LABEL, stateHeap );
+    String16* apple = new(std::nothrow) String16( db, APPLE_ID, APPLE_LABEL, stateHeap );
     REQUIRE( apple );
-    String16* orange = new(std::nothrow) String16( ORANGE_ID, ORANGE_LABEL, stateHeap, ORANGE_INIT_VAL );
+    String16* orange = new(std::nothrow) String16( db, ORANGE_ID, ORANGE_LABEL, stateHeap, ORANGE_INIT_VAL );
     REQUIRE( orange );
 
 
@@ -138,8 +139,6 @@ TEST_CASE( "String16" )
         char buffer[256];
         bool truncated;
         apple->write( "Hello JSON" );
-        REQUIRE( db.add( *apple ) );
-        REQUIRE( db.add( *orange ) );
 
         bool result = db.toJSON( APPLE_ID, buffer, sizeof( buffer ), truncated );
         CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s]", buffer) );
@@ -250,8 +249,6 @@ TEST_CASE( "String16" )
 
     SECTION( "database" )
     {
-        REQUIRE( db.add( *apple ) );
-        REQUIRE( db.add( *orange ) );
         REQUIRE( db.add( *orange ) == false );
 
         REQUIRE( db.lookupById( ORANGE_ID ) == orange );

@@ -50,8 +50,11 @@ template<int N>
 class Database : public DatabaseApi
 {
 public:
-    /// Constructor
+    /// Constructor.  Use this constructor when creating the instance AFTER main() executes
     Database() noexcept;
+
+    /// Constructor.  Use this constructor when creating a static instance, i.e. BEFORE main() executes
+    Database( const char* dummyArgUsedToCreateStaticConstructorSignature ) noexcept;
 
 public:
     /// See Fxt::Point::DatabaseApi
@@ -145,6 +148,12 @@ template <int N>
 Database<N>::Database( void ) noexcept
 {
     memset( m_points, 0, sizeof( m_points ) );
+}
+
+template <int N>
+Database<N>::Database( const char* dummyArgUsedToCreateStaticConstructorSignature ) noexcept
+{
+    // Nothing needed since I am statically allocated and memory is all zeros at this point
 }
 
 template <int N>

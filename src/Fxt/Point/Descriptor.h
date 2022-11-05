@@ -13,6 +13,7 @@
 /** @file */
 
 #include "Fxt/Point/Api.h"
+#include "Fxt/Point/DatabaseApi.h"
 #include "Fxt/Point/SetterApi.h"
 #include "Cpl/Memory/ContiguousAllocator.h"
 
@@ -22,17 +23,18 @@ namespace Fxt {
 namespace Point {
 
 
-/** This concrete class provides a mapping of 'User facing point ID' of a Point
-    to the its actual runtime instance pointer.  An instance also contains
-    additional information such as:
-        - A Factory function to create the point
-        - A SetterApi instance if the Point is an 'Auto Data' Point
+/** This concrete class necessary information needed to construct a Point. This
+    includes:
+        - Symbolic Point name
+        - The memory Allocator used when creating the Point
+        - A Factory function to create the point (which defines/specifies the Point's type)
+        - A optional SetterApi instance (used to set a Point's value from another Point's value)
  */
 class Descriptor 
 {
 public:
     /// Define the function signature for creating a concrete point
-    typedef Fxt::Point::Api* (*CreateFunc_T)( Cpl::Memory::Allocator& allocatorForPoints, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData );
+    typedef Fxt::Point::Api* (*CreateFunc_T)(DatabaseApi& db, Cpl::Memory::Allocator& allocatorForPoints, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData );
 
 public:
     /// Constructor
@@ -41,17 +43,15 @@ public:
         , m_initialValue( setter )
         , m_pointName( symbolicName )
         , m_pointId( pointId )
-        , m_pointInstance( nullptr )
     {
     }
 
-    /// Default constructor.  If use, then the configure() method MUST be called prior any other methods being called
+    /// Default constructor.  If used, then the configure() method MUST be called prior any other methods being called
     Descriptor()
         : m_createMethod( nullptr )
         , m_initialValue( nullptr )
         , m_pointName( nullptr )
         , m_pointId( 0 )
-        , m_pointInstance( nullptr )
     {
     }
 
@@ -69,17 +69,13 @@ public:
         method returns the point instance when successful; else nullptr (e.g. 
         insufficient memory) is returned.
      */
-    Fxt::Point::Api* createPoint( Cpl::Memory::Allocator& allocatorForPoints, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData )
+    Fxt::Point::Api* createPoint( DatabaseApi& db, Cpl::Memory::Allocator& allocatorForPoints, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData )
     {
-        m_pointInstance = (m_createMethod) (allocatorForPoints, m_pointId, m_pointName, allocatorForPointStatefulData );
-        return m_pointInstance;
+        return (m_createMethod) (db, allocatorForPoints, m_pointId, m_pointName, allocatorForPointStatefulData);
     }
 
 public:
-    /// Data accessor
-    inline Fxt::Point::Api* getPointInstance() { return m_pointInstance; }
-
-    /// Data accessor. If getPoint() returns zero/nullptr then this value has no meaning
+    /// Data accessor. 
     inline uint32_t         getPointId() { return m_pointId; }
 
     /// Data accessor.  
@@ -102,9 +98,6 @@ protected:
 
     /// The Point identifier.
     uint32_t                    m_pointId;
-    
-    /// Contains the pointer to the Point (is zero until created) 
-    Fxt::Point::Api*            m_pointInstance;
 };
 
 

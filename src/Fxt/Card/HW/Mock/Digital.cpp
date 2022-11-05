@@ -24,8 +24,7 @@ static const char emptyString_[1] ={ '\0' };
 ///////////////////////////////////////////////////////////////////////////////
 Digital::Digital( JsonVariant&                                          cardObject,
                   PointAllocators_T&                                    pointAllocators,
-                  Fxt::Point::Database&                                 pointDatabase,
-                  Cpl::Container::Dictionary<Fxt::Point::Descriptor>&   descriptorDatabase,
+                  Fxt::Point::DatabaseApi&                              pointDatabase,
                   Cpl::Memory::ContiguousAllocator&                     generalAllocator )
     : Fxt::Card::Common_( generalAllocator )
     , m_initInputVals( 0 )
@@ -45,7 +44,7 @@ Digital::Digital( JsonVariant&                                          cardObje
     memset( &m_outputChannels, 0xFF, sizeof( m_outputChannels ) );
 
     parseConfiguration( cardObject );
-    createPoints( descriptorDatabase, pointDatabase, pointAllocators );
+    createPoints( pointDatabase, pointDatabase, pointAllocators );
 }
 
 Digital::~Digital()
@@ -125,14 +124,14 @@ bool Digital::createDescriptors( Fxt::Point::Descriptor* descriptorList[], Chann
     // Initialize the descriptor elements
     for ( size_t i=0; i < numDescriptors; i++ )
     {
-        if ( json[i]["localId"].isNull() )
+        if ( json[i]["id"].isNull() )
         {
-            m_error = FXT_CARD_ERR_POINT_MISSING_LOCAL_ID;
+            m_error = FXT_CARD_ERR_POINT_MISSING_ID;
             return false;
         }
 
         // Parse ID, Channel, and Name
-        uint32_t    localId       = json[i]["localId"];
+        uint32_t    localId       = json[i]["id"];
         uint16_t    channel       = json[i]["channel"] | (MAX_CHANNELS + 1);
         if ( channel > MAX_CHANNELS )
         {
@@ -166,7 +165,9 @@ bool Digital::createDescriptors( Fxt::Point::Descriptor* descriptorList[], Chann
     return true;
 }
 
-void Digital::createPoints( Cpl::Container::Dictionary<Fxt::Point::Descriptor>& descriptorDb, Fxt::Point::Database& pointDb, PointAllocators_T& allocators ) noexcept
+void Digital::createPoints( Cpl::Container::Dictionary<Fxt::Point::Descriptor>& descriptorDb, 
+                            Fxt::Point::DatabaseApi&                            pointDb, 
+                            PointAllocators_T&                                  allocators ) noexcept
 {
     // Create Input points
     if ( m_numInputs > 0 )
@@ -175,7 +176,7 @@ void Digital::createPoints( Cpl::Container::Dictionary<Fxt::Point::Descriptor>& 
         m_banks.internalInputs->populate( m_inDescriptors, *allocators.internalInputs, pointDb );
         for ( size_t i=0; i < m_numInputs; i++ )
         {
-            m_inputChannels[i].point = (Cpl::Point::Bool*) m_inDescriptors[i]->getPoint();
+            m_inputChannels[i].point = (Fxt::Point::Bool*) m_inDescriptors[i]->getPoint();
         }
 
         // Create IO Registers

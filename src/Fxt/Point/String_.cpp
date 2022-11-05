@@ -22,8 +22,8 @@ using namespace Fxt::Point;
 
 
 ///////////////////////////////////////////////////////////////////////////////
-StringBase_::StringBase_( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, size_t sizeofData )
-    : Fxt::Point::PointCommon_( pointId, pointName, sizeofData )
+StringBase_::StringBase_( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, size_t sizeofData )
+    : Fxt::Point::PointCommon_( db, pointId, pointName, sizeofData )
 {
     m_state = allocatorForPointStatefulData.allocate( sizeofData );
     if ( m_state )
@@ -38,8 +38,8 @@ StringBase_::StringBase_( uint32_t pointId, const char* pointName, Cpl::Memory::
 }
 
 /// Constructor. Valid Point.  Requires an initial value
-StringBase_::StringBase_( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, size_t sizeofData, const char* initialValue )
-    : Fxt::Point::PointCommon_( pointId, pointName, sizeofData )
+StringBase_::StringBase_( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, size_t sizeofData, const char* initialValue )
+    : Fxt::Point::PointCommon_( db, pointId, pointName, sizeofData )
 {
     m_state = allocatorForPointStatefulData.allocate( sizeofData );
     if ( m_state )

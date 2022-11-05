@@ -38,10 +38,10 @@ class StringBase_ : public Fxt::Point::PointCommon_
 protected:
     /** Constructor. Invalid Point.
      */
-    StringBase_( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, size_t sizeofData );
+    StringBase_( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, size_t sizeofData );
 
     /// Constructor. Valid Point.  Requires an initial value
-    StringBase_( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, size_t sizeofData, const char* initialValue );
+    StringBase_( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, size_t sizeofData, const char* initialValue );
 
 
 public:
@@ -111,14 +111,14 @@ class String_ : public StringBase_
 protected:
     /** Constructor. Invalid Point.
      */
-    String_( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData )
-        : StringBase_( pointId, pointName, allocatorForPointStatefulData, sizeof( StateBlock_T) )
+    String_( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData )
+        : StringBase_( db, pointId, pointName, allocatorForPointStatefulData, sizeof( StateBlock_T) )
     {
     }
 
     /// Constructor. Valid Point.  Requires an initial value
-    String_( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, const char* initialValue )
-        : StringBase_( pointId, pointName, allocatorForPointStatefulData, sizeof( StateBlock_T ), initialValue )
+    String_( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, const char* initialValue )
+        : StringBase_( db, pointId, pointName, allocatorForPointStatefulData, sizeof( StateBlock_T ), initialValue )
     {
     }
 

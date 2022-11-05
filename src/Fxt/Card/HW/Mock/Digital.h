@@ -15,10 +15,10 @@
 
 #include "Fxt/Card/Common_.h"
 #include "Cpl/Json/Arduino.h"
-#include "Cpl/Point/Bool.h"
+#include "Fxt/Point/Bool.h"
 #include "Fxt/Point/BankApi.h"
 #include "Cpl/Memory/ContiguousAllocator.h"
-#include "Cpl/Container/Dictionary.h"
+#include "Cpl/System/Mutex.h"
 
 ///
 namespace Fxt {
@@ -50,16 +50,18 @@ namespace Mock {
     JSON Definition
     --------------------
     {
-      "guid": "59d33888-62c7-45b2-a4d4-9dbc55914ed3",   // Identifies the card type.  Value comes from the Supported/Available-card-list
-      "slot": 0,                                        // Physical identifier, e.g. its the card position in the Node's physical chassis
-      "localId": 0,                                     // Local ID assigned to the card
       "name": "My Digital Card",                        // Text label for the card
-      "initialInputValueMask":  0,                      // unsigned 32bit long mask used to set the initial input values.  Bit N == channel N. 0=Signal Low, 1=Signal High
+      "id": 0,                                          // ID assigned to the card
+      "type": "59d33888-62c7-45b2-a4d4-9dbc55914ed3",   // Identifies the card type.  Value comes from the Supported/Available-card-list
+      "typename": "Fxt::Card::HW::Mock::Digital",       // Human readable type name
+      "slot": 0,                                        // Physical identifier, e.g. its the card position in the Node's physical chassis
+      "scannerIdRef: 0                                  // ID Reference of the scanner instance that scans this card
+      "initialInputValueMask":  0,                      // unsigned 32bit long mask used to set the initial input values.  LSb == channel 0. 0=Signal Low, 1=Signal High
       "points": {
         "inputs": [                                     // Inputs. The card supports 0 to 32 input points
           {
             "channel": 0,                               // Physical identifier, e.g. terminal/wiring connection number on the card
-            "localId": 0,                               // Local ID assigned to the Virtual Point that represents the input value
+            "id": 0,                                    // ID assigned to the Virtual Point that represents the input value
             "name": "My input point0 name"              // Text label for the input signal
           },
           ...
@@ -67,7 +69,7 @@ namespace Mock {
         "outputs": [                                    // Outputs. The card supports 0 to 32 output points
           {
             "channel": 0,                               // Physical identifier, e.g. terminal/wiring connection number on the card
-            "localId": 0,                               // Local ID assigned to the Virtual Point that represents the output value
+            "id": 0,                                    // ID assigned to the Virtual Point that represents the output value
             "name": "My output point0 name"             // Text label for the output signal
           },
           ...
@@ -97,8 +99,7 @@ public:
     /// Constructor
     Digital( JsonVariant&                                          cardObject,
              PointAllocators_T&                                    pointAllocators,
-             Fxt::Point::Database&                                 pointDatabase,
-             Cpl::Container::Dictionary<Fxt::Point::Descriptor>&   descriptorDatabase,
+             Fxt::Point::DatabaseApi&                              pointDatabase,
              Cpl::Memory::ContiguousAllocator&                     allocator );
 
     /// Destructor
@@ -144,8 +145,8 @@ protected:
     /// Contains the channel to internal point instance mapping
     struct ChannelInfo_T
     {
-        uint16_t            channel;        //!< Channel number of the signal
-        Cpl::Point::Bool*   point;          //!< Internal point associated with the channel
+        Fxt::Point::Bool*   point;          //!< Internal point associated with the channel
+        uint8_t             channel;        //!< Channel number of the signal
     };
 
 protected:
@@ -156,10 +157,10 @@ protected:
     virtual bool createDescriptors( Fxt::Point::Descriptor* descriptorList[], ChannelInfo_T* channels, JsonArray& json, size_t numDescriptors, uint32_t errCode ) noexcept;
 
     /// Helper method to create the point instances
-    virtual void createPoints( Cpl::Container::Dictionary<Fxt::Point::Descriptor>& descriptorDb, Fxt::Point::Database& pointDb, PointAllocators_T& allocators ) noexcept;
+    virtual void createPoints( Fxt::Point::DatabaseApi& pointDb, PointAllocators_T& allocators ) noexcept;
 
     /// Helper method that returns a Point handle for the specified channel.  Returns nullptr if not match found
-    Cpl::Point::Bool* getPointByChannel( ChannelInfo_T * channels, uint16_t channelIndex ) noexcept;
+    Fxt::Point::Bool* getPointByChannel( ChannelInfo_T * channels, uint16_t channelIndex ) noexcept;
 
     /// Helper method that updates individual Bool Points based on the current input mask value
     void maskToPoints() noexcept;
@@ -168,6 +169,9 @@ protected:
     bool pointsToMask() noexcept;
 
 protected:
+    /// Mutex to provide thread safety for the application driving/reading the mocked IO
+    Cpl::System::Mutex                  m_lock;
+
     /// List of Input Descriptors (allocate space for max IO plus a list-terminator)
     Fxt::Point::Descriptor*             m_inDescriptors[MAX_CHANNELS + 1];
 
@@ -190,10 +194,10 @@ protected:
     uint32_t                            m_outputVals;
 
     /// Number of Inputs
-    size_t                              m_numInputs;
+    uint8_t                             m_numInputs;
 
     /// Number of Outputs
-    size_t                              m_numOutputs;
+    uint8_t                             m_numOutputs;
 };
 
 

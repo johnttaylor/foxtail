@@ -35,6 +35,31 @@ namespace Card {
     Note: Factories support being in a Container - however 'that' container
           is the Card Database.  This means if the application what to maintain
           a list of factories - it must provide its own wrapper.
+
+    \code
+    Required/Defined JSON fields/structure:
+       {
+          "name":           "<human readable name for the card - not required to be unique>",
+          "id":             <ID.  Must be unique. Range: 0-64K>,
+          "type":           "<Card's Type GUID: 8-4-4-4-12 format>",
+          "typeName":       "<OPTIONAL: human readable card type>",
+          "slot":           <chasis slot number. Range: 0-255>,
+          "scannerIdRef":   <ID Reference to the Scanner instance that scans this card. Range: 0-255>,
+          "points": {
+             "<groupingName>": [ // Array of points with the same Fxt::Point type, e.g "analogInputs", "digitalOutputs", etc.
+               {
+                 "channel": <reference to a phyiscal terminal/connector as a number: Range: 0-N>,
+                 "id":      <ID.  Must be unique.  Range: 0-4GB>,
+                 "name":    "<human readable name for the point/channel/IO>"
+                 "default": { // OPTIONAL initial value/state specifier for the Point
+                   "val": <point value as defined by the Point type's fromJSON syntax>
+                 }
+               },
+             "<grouping2Name>":[{..},...]
+          }
+       }
+
+   \endcode
  */
 class FactoryApi: public Cpl::Container::Item
 {
@@ -48,8 +73,7 @@ public:
         construct a Point Descriptor for each internal Point and each 
         external/visible/Register Point created by the IO card.
 
-        NOTE: Only the 'Virtual Points' are accessible via Point Descriptors/
-              'User Facing Local IDs'.
+        NOTE: Only the 'Virtual Points' are accessible via Point Descriptors
 
         Note: The IO Card is responsible for allocating the memory for the
               Point Descriptors and the memory must stay in scope until the

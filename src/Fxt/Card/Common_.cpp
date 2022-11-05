@@ -16,9 +16,6 @@
 #include "Fxt/Point/Bank.h"
 #include <new>
 
-#define CREATE_BANK(b)      memBank = allocator.allocate( sizeof( Fxt::Point::Bank ) ); \
-                            if ( memBank == nullptr ) { m_error = FXT_CARD_ERR_MEMORY_POINT_BANKS; } \
-                            else { b = new(memBank) Fxt::Point::Bank(); }
 
 #define DESTROY_BANK(b)     if ( b != nullptr ) {b->~Bank();}
 
@@ -32,19 +29,17 @@ Common_::Common_( Cpl::Memory::ContiguousAllocator& allocator )
     : m_allocator( allocator )
     , m_error( 0 )
     , m_cardName( nullptr )
-    , m_localId( 0 )
+    , m_id( 0 )
     , m_slotNumber( 0 )
     , m_started( false )
 {
     CPL_SYSTEM_ASSERT( cardName );
-
-    void* memBank;
-    CREATE_BANK( m_banks.internalInputs );
-    CREATE_BANK( m_banks.registerInputs );
-    CREATE_BANK( m_banks.virtualInputs );
-    CREATE_BANK( m_banks.internalOutputs );
-    CREATE_BANK( m_banks.registerOutputs );
-    CREATE_BANK( m_banks.virtualOutputs );
+    m_banks.internalInputs  = createBank( allocator );
+    m_banks.registerInputs  = createBank( allocator );
+    m_banks.virtualInputs   = createBank( allocator );
+    m_banks.internalOutputs = createBank( allocator );
+    m_banks.registerOutputs = createBank( allocator );
+    m_banks.virtualOutputs  = createBank( allocator );
 }
 
 Common_::~Common_()
@@ -55,6 +50,18 @@ Common_::~Common_()
     DESTROY_BANK( m_banks.internalOutputs );
     DESTROY_BANK( m_banks.registerOutputs );
     DESTROY_BANK( m_banks.virtualOutputs );
+}
+
+Fxt::Point::Bank* Common_::createBank( Cpl::Memory::ContiguousAllocator & allocator )
+{
+    void* memory = allocator.allocate( sizeof( Fxt::Point::Bank ) );
+    if ( memory == nullptr )
+    {
+        m_error = FXT_CARD_ERR_MEMORY_POINT_BANKS;
+        return nullptr;
+    }
+
+    return new(memory) Fxt::Point::Bank();
 }
 
 //////////////////////////////////////////////////
@@ -83,9 +90,9 @@ bool Common_::isStarted() const noexcept
     return m_started;
 }
 
-uint32_t Common_::getLocalId() const noexcept
+uint16_t Common_::getId() const noexcept
 {
-    return m_localId;
+    return m_id;
 }
 
 const char* Common_::getName() const noexcept
@@ -106,45 +113,41 @@ uint16_t Common_::getSlot() const noexcept
 //////////////////////////////////////////////////
 bool Common_::scanInputs() noexcept
 {
-    Cpl::System::Mutex::ScopeBlock criticalSection( m_registerLock );
-    return m_banks.virtualInputs->copyFrom( *m_banks.registerInputs );
+    return m_banks.virtualInputs->copyStatefulMemoryFrom( *m_banks.registerInputs );
 }
 
 bool Common_::flushOutputs() noexcept
 {
-    Cpl::System::Mutex::ScopeBlock criticalSection( m_registerLock );
-    return m_banks.registerOutputs->copyFrom( *m_banks.virtualOutputs );
+    return m_banks.registerOutputs->copyStatefulMemoryFrom( *m_banks.virtualOutputs );
 }
 
 bool Common_::updateInputRegisters() noexcept
 {
-    Cpl::System::Mutex::ScopeBlock criticalSection( m_registerLock );
-    return m_banks.registerInputs->copyFrom( *m_banks.internalInputs );
+    return m_banks.registerInputs->copyStatefulMemoryFrom( *m_banks.internalInputs );
 }
 
 bool Common_::readOutputRegisters() noexcept
 {
-    Cpl::System::Mutex::ScopeBlock criticalSection( m_registerLock );
-    return m_banks.internalOutputs->copyFrom( *m_banks.registerOutputs );
+    return m_banks.internalOutputs->copyStatefulMemoryFrom( *m_banks.registerOutputs );
 }
 
 
 bool Common_::parseCommon( JsonVariant& obj, const char* expectedGuid ) noexcept
 {
     // Validate the card type
-    if ( obj["guid"].isNull() || strcmp( obj["guid"], expectedGuid ) != 0 )
+    if ( obj["type"].isNull() || strcmp( obj["type"], expectedGuid ) != 0 )
     {
         m_error = FXT_CARD_ERR_GUID_WRONG_TYPE;
         return false;
     }
 
-    // Ensure that a LocalId has been assigned
-    if ( obj["localId"].isNull() )
+    // Ensure that a Id has been assigned
+    if ( obj["id"].isNull() )
     {
-        m_error = FXT_CARD_ERR_CARD_MISSING_LOCAL_ID;
+        m_error = FXT_CARD_ERR_CARD_MISSING_ID;
         return false;
     }
-    m_localId = obj["localId"];
+    m_id = obj["id"];
 
     // Ensure that a Slot ID has been assigned
     if ( obj["slot"].isNull() )

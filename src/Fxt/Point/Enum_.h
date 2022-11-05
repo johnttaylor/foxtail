@@ -48,14 +48,14 @@ public:
 
 protected:
     /// Constructor: Invalid MP
-    Enum_( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData )
-        :Basic_<BETTERENUM_TYPE>( pointId, sizeof(StateBlock_T), pointName, allocatorForPointStatefulData )
+    Enum_( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData )
+        :Basic_<BETTERENUM_TYPE>( db, pointId, sizeof(StateBlock_T), pointName, allocatorForPointStatefulData )
     {
     }
 
     /// Constructor: Valid MP (requires initial value)
-    Enum_( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, BETTERENUM_TYPE initialValue )
-        :Basic_<BETTERENUM_TYPE>( pointId, sizeof( StateBlock_T ), pointName, allocatorForPointStatefulData, initialValue )
+    Enum_( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, BETTERENUM_TYPE initialValue )
+        :Basic_<BETTERENUM_TYPE>( db, pointId, sizeof( StateBlock_T ), pointName, allocatorForPointStatefulData, initialValue )
     {
     }
 

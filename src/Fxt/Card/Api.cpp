@@ -26,9 +26,9 @@ const char* Api::getErrorText( uint32_t errCode ) const noexcept
     case FXT_CARD_ERR_MEMORY_INPUT_DESCRIPTORS:  return "Unable to allocate memory for the card's Input Point Descriptors.";
     case FXT_CARD_ERR_MEMORY_OUTPUT_DESCRIPTORS: return "Unable to allocate memory for the card's Output Point Descriptors.";
     case FXT_CARD_ERR_GUID_WRONG_TYPE:           return "Configuration contains the wrong GUID (i.e. the JSON object calls out a different card type).";
-    case FXT_CARD_ERR_CARD_MISSING_LOCAL_ID:     return "Configuration does NOT contain a LocalId value for the card.";
+    case FXT_CARD_ERR_CARD_MISSING_ID:           return "Configuration does NOT contain a ID value for the card.";
     case FXT_CARD_ERR_MEMORY_CARD_NAME:          return "Unable to allocate memory for the card's name.";
-    case FXT_CARD_ERR_POINT_MISSING_LOCAL_ID:    return "Configuration does NOT contain a LocalId value for one of it Points.";
+    case FXT_CARD_ERR_POINT_MISSING_ID:          return "Configuration does NOT contain a LocalId value for one of it Points.";
     case FXT_CARD_ERR_TOO_MANY_INPUT_POINTS:     return "Configuration contains TOO many input Points.";
     case FXT_CARD_ERR_TOO_MANY_OUTPUT_POINTS:    return "Configuration contains TOO many output Points.";
     case FXT_CARD_ERR_BAD_CHANNEL_ASSIGNMENTS:   return "Configuration contains duplicate or our-of-range Channel IDs.";

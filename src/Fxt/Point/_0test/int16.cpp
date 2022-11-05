@@ -45,11 +45,11 @@ TEST_CASE( "Int16" )
     Database<MAX_POINTS>     db;
     Cpl::Memory::LeanHeap    stateHeap( stateHeapMemory_, sizeof( stateHeapMemory_ ) );
     bool                     valid;
-    int16_t                   value;
+    int16_t                  value;
 
-    Int16* apple = new(std::nothrow) Int16( APPLE_ID, APPLE_LABEL, stateHeap );
+    Int16* apple = new(std::nothrow) Int16( db, APPLE_ID, APPLE_LABEL, stateHeap );
     REQUIRE( apple );
-    Int16* orange = new(std::nothrow) Int16( ORANGE_ID, ORANGE_LABEL, stateHeap, ORANGE_INIT_VAL );
+    Int16* orange = new(std::nothrow) Int16( db, ORANGE_ID, ORANGE_LABEL, stateHeap, ORANGE_INIT_VAL );
     REQUIRE( orange );
 
 
@@ -145,8 +145,6 @@ TEST_CASE( "Int16" )
         char buffer[256];
         bool truncated;
         apple->write( 127 );
-        REQUIRE( db.add( *apple ) );
-        REQUIRE( db.add( *orange ) );
 
         bool result = db.toJSON( APPLE_ID, buffer, sizeof( buffer ), truncated );
         CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s]", buffer) );
@@ -256,8 +254,6 @@ TEST_CASE( "Int16" )
 
     SECTION( "database" )
     {
-        REQUIRE( db.add( *apple ) );
-        REQUIRE( db.add( *orange ) );
         REQUIRE( db.add( *orange ) == false );
 
         REQUIRE( db.lookupById( ORANGE_ID ) == orange );

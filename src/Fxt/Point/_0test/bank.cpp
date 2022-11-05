@@ -41,7 +41,10 @@ static Descriptor       orange3_( 8, "ORANGE", Fxt::Point::Int64::create );
 static Descriptor       cherry3_( 9, "CHERRY", Fxt::Point::Uint32::create );
 static Descriptor       lime3_( 10, "LIME", Fxt::Point::Int64::create );
 
-#define MEM_SIZE        (sizeof( Fxt::Point::Uint32 ) * 2 + sizeof( Fxt::Point::Int64 ) * 2 + (sizeof( size_t ) - 1)) / sizeof( size_t )
+#define ELEM_SIZE_AS_SIZET(elemSize)    (((elemSize)+sizeof( size_t ) - 1) / sizeof(size_t))
+
+#define MEM_SIZE        (ELEM_SIZE_AS_SIZET( sizeof(Fxt::Point::Uint32) ) * 2 + ELEM_SIZE_AS_SIZET( sizeof(Fxt::Point::Int64) ) * 2 )
+
 static size_t           heapMemory_[MEM_SIZE];
 static size_t           heapMemory2_[MEM_SIZE];
 static size_t           heapMemory3_[MEM_SIZE];
@@ -55,8 +58,8 @@ static size_t           tempBuffer_[MEM_SIZE];
 TEST_CASE( "Bank" )
 {
     Cpl::System::Shutdown_TS::clearAndUseCounter();
-    Cpl::Memory::LeanHeap            stateHeap1( heapMemory4_, sizeof( heapMemory4_ ) );
-    Cpl::Memory::LeanHeap            stateHeap2( heapMemory5_, sizeof( heapMemory5_ ) );
+    Cpl::Memory::LeanHeap stateHeap1( heapMemory4_, sizeof( heapMemory4_ ) );
+    Cpl::Memory::LeanHeap stateHeap2( heapMemory5_, sizeof( heapMemory5_ ) );
 
     SECTION( "create" )
     {

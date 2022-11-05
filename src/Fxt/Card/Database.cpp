@@ -37,7 +37,7 @@ Api* Database::lookupCard( uint32_t cardLocalId ) noexcept
     Api* item  = m_cards.first();
     while ( item )
     {
-        if ( item->getLocalId() == cardLocalId )
+        if ( item->getId() == cardLocalId )
         {
             return item;
         }

@@ -46,15 +46,15 @@ TEST_CASE( "Bool" )
     Database<MAX_POINTS>     db;
     Cpl::Memory::LeanHeap    stateHeap( stateHeapMemory_, sizeof( stateHeapMemory_ ) );
     bool                     valid;
-    bool                   value;
+    bool                     value;
     CPL_SYSTEM_TRACE_MSG( SECT_, ("heap size=%d, StateBlock_T size=%d, SIZE_AS_SIZET=%d",
                                    sizeof( stateHeapMemory_ ),
                                    sizeof( Bool::StateBlock_T ),
                                    ELEM_SIZE_AS_SIZET( sizeof( Bool::StateBlock_T ) )) );
 
-    Bool* apple = new(std::nothrow) Bool( APPLE_ID, APPLE_LABEL, stateHeap );
+    Bool* apple = new(std::nothrow) Bool( db, APPLE_ID, APPLE_LABEL, stateHeap );
     REQUIRE( apple );
-    Bool* orange = new(std::nothrow) Bool( ORANGE_ID, ORANGE_LABEL, stateHeap, ORANGE_INIT_VAL );
+    Bool* orange = new(std::nothrow) Bool( db, ORANGE_ID, ORANGE_LABEL, stateHeap, ORANGE_INIT_VAL );
     REQUIRE( orange );
 
 
@@ -110,8 +110,6 @@ TEST_CASE( "Bool" )
         char buffer[256];
         bool truncated;
         apple->write( true );
-        REQUIRE( db.add( *apple ) );
-        REQUIRE( db.add( *orange ) );
 
         bool result = db.toJSON( APPLE_ID, buffer, sizeof( buffer ), truncated );
         CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s]", buffer) );
@@ -217,8 +215,6 @@ TEST_CASE( "Bool" )
 
     SECTION( "database" )
     {
-        REQUIRE( db.add( *apple ) );
-        REQUIRE( db.add( *orange ) );
         REQUIRE( db.add( *orange ) == false );
 
         REQUIRE( db.lookupById( ORANGE_ID ) == orange );

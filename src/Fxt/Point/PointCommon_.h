@@ -14,6 +14,7 @@
 
 
 #include "Fxt/Point/Api.h"
+#include "Fxt/Point/DatabaseApi.h"
 #include "Cpl/Memory/ContiguousAllocator.h"
 
 
@@ -36,7 +37,7 @@ class PointCommon_ : public Fxt::Point::Api
 {
 protected:
     /// Constructor
-    PointCommon_( uint32_t pointId, const char* pointName, size_t stateSize  );
+    PointCommon_( DatabaseApi& db, uint32_t pointId, const char* pointName, size_t stateSize  );
 
     /// Helper method to 'completed' the initialization after the Stateful memory has been allocated
     virtual void finishInit( bool isValid ) noexcept;
@@ -96,7 +97,8 @@ protected:
 protected:
     /// Creates a concrete instance in the invalid state
     template <class T>
-    static Api* create( Cpl::Memory::Allocator&             allocatorForPoints, 
+    static Api* create( DatabaseApi&                        db, 
+                        Cpl::Memory::Allocator&             allocatorForPoints,
                         uint32_t                            pointId, 
                         const char*                         pointName,
                         Cpl::Memory::ContiguousAllocator&   allocatorForPointStatefulData )
@@ -104,7 +106,7 @@ protected:
         void* memPtr = allocatorForPoints.allocate( sizeof( T ) );
         if ( memPtr )
         {
-            return new(memPtr) T( pointId, pointName, allocatorForPointStatefulData );
+            return new(memPtr) T( db, pointId, pointName, allocatorForPointStatefulData );
         }
         return nullptr;
     }

@@ -47,9 +47,9 @@ TEST_CASE( "Double" )
     bool                     valid;
     double                   value;
 
-    Double* apple = new(std::nothrow) Double( APPLE_ID, APPLE_LABEL, stateHeap );
+    Double* apple = new(std::nothrow) Double( db, APPLE_ID, APPLE_LABEL, stateHeap );
     REQUIRE( apple );
-    Double* orange = new(std::nothrow) Double( ORANGE_ID, ORANGE_LABEL, stateHeap, ORANGE_INIT_VAL );
+    Double* orange = new(std::nothrow) Double( db, ORANGE_ID, ORANGE_LABEL, stateHeap, ORANGE_INIT_VAL );
     REQUIRE( orange );
 
 
@@ -119,8 +119,6 @@ TEST_CASE( "Double" )
         bool truncated;
         Cpl::Text::FString<100> errMsg;
         apple->write( 127.3 );
-        REQUIRE( db.add( *apple ) );
-        REQUIRE( db.add( *orange ) );
 
         bool result = db.toJSON( APPLE_ID, buffer, sizeof( buffer ), truncated );
         CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s]", buffer) );
@@ -223,8 +221,6 @@ TEST_CASE( "Double" )
 
     SECTION( "database" )
     {
-        REQUIRE( db.add( *apple ) );
-        REQUIRE( db.add( *orange ) );
         REQUIRE( db.add( *orange ) == false );
 
         REQUIRE( db.lookupById( ORANGE_ID ) == orange );

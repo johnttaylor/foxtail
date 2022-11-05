@@ -49,8 +49,8 @@ public:
 
 protected:
     /// Constructor: Invalid MP
-    Basic_( uint32_t pointId, size_t stateSize, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData )
-        :Fxt::Point::PointCommon_( pointId, pointName, stateSize )
+    Basic_( DatabaseApi& db, uint32_t pointId, size_t stateSize, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData )
+        :Fxt::Point::PointCommon_( db, pointId, pointName, stateSize )
     {
         m_state = allocatorForPointStatefulData.allocate( sizeof( StateBlock_T ) );
         if ( m_state )
@@ -65,8 +65,8 @@ protected:
     }
 
     /// Constructor: Valid MP (requires initial value)
-    Basic_( uint32_t pointId, size_t stateSize, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, ELEMTYPE initialValue )
-        :Fxt::Point::PointCommon_( pointId, pointName, stateSize )
+    Basic_( DatabaseApi& db, uint32_t pointId, size_t stateSize, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, ELEMTYPE initialValue )
+        :Fxt::Point::PointCommon_( db, pointId, pointName, stateSize )
     {
         m_state = allocatorForPointStatefulData.allocate( sizeof( StateBlock_T ) );
         if ( m_state )
@@ -134,14 +134,14 @@ public:
 
 protected:
     /// Constructor: Invalid MP
-    BasicInteger_( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData )
-        :Basic_<ELEMTYPE>( pointId, sizeof( StateBlock_T), pointName, allocatorForPointStatefulData )
+    BasicInteger_( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData )
+        :Basic_<ELEMTYPE>( db, pointId, sizeof( StateBlock_T ), pointName, allocatorForPointStatefulData )
     {
     }
 
     /// Constructor: Valid MP (requires initial value)
-    BasicInteger_( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, ELEMTYPE initialValue )
-        :Basic_<ELEMTYPE>( pointId, sizeof( StateBlock_T ), pointName, allocatorForPointStatefulData, initialValue )
+    BasicInteger_( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, ELEMTYPE initialValue )
+        :Basic_<ELEMTYPE>( db, pointId, sizeof( StateBlock_T ), pointName, allocatorForPointStatefulData, initialValue )
     {
     }
 
@@ -184,7 +184,7 @@ public:
     {
         write( ((StateBlock_T*) PointCommon_::m_state)->data ^ (((ELEMTYPE) 1) << bitNum), lockRequest );
     }
-    
+
     /// Atomic bit clear.  'bitNum==0' is the Least significant bit
     void bitClear( unsigned bitNum, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
@@ -270,14 +270,14 @@ public:
 
 protected:
     /// Constructor: Invalid MP
-    BasicReal_( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData )
-        :Basic_<ELEMTYPE>( pointId, sizeof( StateBlock_T ), pointName, allocatorForPointStatefulData )
+    BasicReal_( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData )
+        :Basic_<ELEMTYPE>( db, pointId, sizeof( StateBlock_T ), pointName, allocatorForPointStatefulData )
     {
     }
 
     /// Constructor: Valid MP (requires initial value)
-    BasicReal_( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, ELEMTYPE initialValue )
-        :Basic_<ELEMTYPE>( pointId, sizeof( StateBlock_T ), pointName, allocatorForPointStatefulData, initialValue )
+    BasicReal_( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, ELEMTYPE initialValue )
+        :Basic_<ELEMTYPE>( db, pointId, sizeof( StateBlock_T ), pointName, allocatorForPointStatefulData, initialValue )
     {
     }
 

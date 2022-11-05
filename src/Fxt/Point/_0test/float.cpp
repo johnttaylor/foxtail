@@ -46,11 +46,11 @@ TEST_CASE( "Float" )
     Database<MAX_POINTS>     db;
     Cpl::Memory::LeanHeap    stateHeap( stateHeapMemory_, sizeof( stateHeapMemory_ ) );
     bool                     valid;
-    float                   value;
+    float                    value;
 
-    Float* apple = new(std::nothrow) Float( APPLE_ID, APPLE_LABEL, stateHeap );
+    Float* apple = new(std::nothrow) Float( db, APPLE_ID, APPLE_LABEL, stateHeap );
     REQUIRE( apple );
-    Float* orange = new(std::nothrow) Float( ORANGE_ID, ORANGE_LABEL, stateHeap, ORANGE_INIT_VAL );
+    Float* orange = new(std::nothrow) Float( db, ORANGE_ID, ORANGE_LABEL, stateHeap, ORANGE_INIT_VAL );
     REQUIRE( orange );
 
 
@@ -120,8 +120,6 @@ TEST_CASE( "Float" )
         bool truncated;
         Cpl::Text::FString<100> errMsg;
         apple->write( 127.3F );
-        REQUIRE( db.add( *apple ) );
-        REQUIRE( db.add( *orange ) );
 
         bool result = db.toJSON( APPLE_ID, buffer, sizeof( buffer ), truncated );
         CPL_SYSTEM_TRACE_MSG( SECT_, ("toJSON: [%s]", buffer) );
@@ -224,8 +222,6 @@ TEST_CASE( "Float" )
 
     SECTION( "database" )
     {
-        REQUIRE( db.add( *apple ) );
-        REQUIRE( db.add( *orange ) );
         REQUIRE( db.add( *orange ) == false );
 
         REQUIRE( db.lookupById( ORANGE_ID ) == orange );

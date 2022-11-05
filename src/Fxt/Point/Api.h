@@ -163,7 +163,7 @@ protected:
 
 public:
     /** This method has PACKAGE Scope, i.e. it is intended to be ONLY accessible
-        by other classes in the Cpl::Point namespace.  The Application should
+        by other classes in the Fxt::Point namespace.  The Application should
         NEVER call this method.
 
         This method is used to unconditionally update the Point's data.
@@ -179,7 +179,7 @@ public:
 
 
     /** This method has PACKAGE Scope, i.e. it is intended to be ONLY accessible
-        by other classes in the Cpl::Point namespace.  The Application should
+        by other classes in the Fxt::Point namespace.  The Application should
         NEVER call this method.
 
         This method is used update's the caller's 'Point Data' with the Model
@@ -196,12 +196,14 @@ public:
 
 
     /** This method has PACKAGE Scope, i.e. it is intended to be ONLY accessible
-        by other classes in the Cpl::Point namespace.  The Application should
+        by other classes in the Fxt::Point namespace.  The Application should
         NEVER call this method.
 
         This method attempts to convert JSON object 'src' to its binary format
         and copies the result to the Point's internal data. The expected
-        format of the JSON string is specific to the concrete leaf class.
+        JSON object is the "val":<value> key/value pair object. The format
+        of <value> (e.g numeric, string, object, etc.) is specific to the 
+        concrete leaf class.
 
         See Fxt::Point::ModelDatabaseApi::fromJSON() method for JSON format.
      */
@@ -211,13 +213,14 @@ public:
 
 
     /** This method has PACKAGE Scope, i.e. it is intended to be ONLY accessible
-        by other classes in the Cpl::Point namespace.  The Application should
+        by other classes in the Fxt::Point namespace.  The Application should
         NEVER call this method.
 
-        This method converts the Points data to a JSON object.  If the point
-        does not support serializing to a JSON object then false is returned;
-        else true is returned.  This method is ONLY called if the Point is in
-        the valid state.
+        This method converts the Points data to a JSON object.  The output will
+        a key/value object of: "val":<value>. If the point does not support 
+        serializing to a JSON object then false is returned; else true is 
+        returned.  This method is ONLY called if the Point is in the valid 
+        state.
 
         See Fxt::Point::ModelDatabaseApi::fromJSON() method for JSON format.
      */
@@ -225,7 +228,7 @@ public:
 
 
     /** This method has PACKAGE Scope, i.e. it is intended to be ONLY accessible
-        by other classes in the Cpl::Point namespace.  The Application should
+        by other classes in the Fxt::Point namespace.  The Application should
         NEVER call this method.
 
         This method returns a pointer to the start of Point's 'Stateful' data.

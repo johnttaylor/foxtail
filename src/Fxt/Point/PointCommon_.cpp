@@ -17,12 +17,15 @@ using namespace Fxt::Point;
 #define METAPTR     ((PointCommon_::Metadata_T*)(m_state))
 
 ////////////////////////
-PointCommon_::PointCommon_( uint32_t pointId, const char* pointName, size_t stateSize )
+PointCommon_::PointCommon_( DatabaseApi& db, uint32_t pointId, const char* pointName, size_t stateSize )
     : m_id( pointId )
     , m_state( nullptr )
     , m_stateSize( stateSize )
     , m_name( pointName )
 {
+    // Auto register with the database
+    db.add( *this );
+
     if ( m_name == nullptr )
     {
         m_name = "";

@@ -42,8 +42,18 @@ bool Bank::populate( Descriptor*                       listOfDescriptorPointers[
     Descriptor* itemPtr = *listOfDescriptorPointers;
     while ( itemPtr  )
     {
+        // Fail if the point already exists
+        if ( dbForPoints.lookupById( itemPtr->getPointId() ) != nullptr )
+        {
+            // Error: Duplicate POINT ID
+            m_memSize  = 0;
+            m_memStart = nullptr;
+            CPL_SYSTEM_TRACE_MSG( SECT_, ("Point ALREADY exists in the database. pointID: %lu", itemPtr->getPointId()) );
+            return false;
+        }
+
         // Create the next point
-        Api* point = itemPtr->createPoint( allocatorForPoints, allocatorForPointStatefulData );
+        Api* point = itemPtr->createPoint( dbForPoints, allocatorForPoints, allocatorForPointStatefulData );
         if ( point == nullptr )
         {
             // Error: allocator is out-of-space
@@ -53,13 +63,13 @@ bool Bank::populate( Descriptor*                       listOfDescriptorPointers[
             return false;
         }
 
-        // Add the point to the database
-        if ( !dbForPoints.add( *point ) )
+        // Validate that the point was added to the database
+        if ( dbForPoints.lookupById( itemPtr->getPointId() ) == nullptr )
         {
-            // Error: database is out-of-space
+            // Error: database out-of-space
             m_memSize  = 0;
             m_memStart = nullptr;
-            CPL_SYSTEM_TRACE_MSG( SECT_, ("Failed to add Point to the database. pointID: %lu", itemPtr->getPointId()) );
+            CPL_SYSTEM_TRACE_MSG( SECT_, ("Point was NOT added to the DB (i.e. DB out-of-space). pointID: %lu", itemPtr->getPointId()) );
             return false;
         }
 

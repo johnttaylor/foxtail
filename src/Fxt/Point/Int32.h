@@ -38,10 +38,12 @@ class Int32 : public BasicInteger_<int32_t>
 public:
     /** Constructor. Invalid Point.
      */
-    Int32( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData ) : BasicInteger_<int32_t>(pointId, pointName, allocatorForPointStatefulData ) {}
+    Int32( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData ) 
+        : BasicInteger_<int32_t>(db, pointId, pointName, allocatorForPointStatefulData ) {}
 
     /// Constructor. Valid Point.  Requires an initial value
-    Int32( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, int32_t initialValue ) : BasicInteger_<int32_t>( pointId, pointName, allocatorForPointStatefulData, initialValue ) {}
+    Int32( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, int32_t initialValue ) 
+        : BasicInteger_<int32_t>( db, pointId, pointName, allocatorForPointStatefulData, initialValue ) {}
 
 public:
     /// Pull in overloaded methods from base class
@@ -59,12 +61,13 @@ public:
 
 public:
     /// Creates a concrete instance in the invalid state
-    static Api* create( Cpl::Memory::Allocator&             allocatorForPoints,
+    static Api* create( DatabaseApi&                        db, 
+                        Cpl::Memory::Allocator&             allocatorForPoints,
                         uint32_t                            pointId,
                         const char*                         pointName,
                         Cpl::Memory::ContiguousAllocator&   allocatorForPointStatefulData ) 
     { 
-        return PointCommon_::create<Int32>( allocatorForPoints, pointId, pointName, allocatorForPointStatefulData );
+        return PointCommon_::create<Int32>( db, allocatorForPoints, pointId, pointName, allocatorForPointStatefulData );
     }
 };
 

@@ -38,7 +38,7 @@ public:
     /** This method looks-up the IO card by its 'User facing local ID'.  If the 
         IO Card ID cannot be found, THEN the method returns 0.
      */
-    virtual Api* lookupCard( uint32_t cardLocalId ) noexcept = 0;
+    virtual Api* lookupCard( uint16_t cardId ) noexcept = 0;
 
     /** This method returns a pointer to the first IO Card in the Database. If 
         there are no IO Cards in the Database, THEN the method returns 0.
@@ -79,7 +79,7 @@ public:
         other classes in the Fxt::Card namespace.  It is ONLY public to avoid
         the tight coupling of C++ friend mechanism.
 
-        This method inserts a IO Card instance t into the Model Database.
+        This method inserts a IO Card instance into the Model Database.
      */
     virtual void insert_( Api& cardToAdd ) noexcept = 0;
 
@@ -87,7 +87,7 @@ public:
         other classes in the Fxt::Card namespace.  It is ONLY public to avoid
         the tight coupling of C++ friend mechanism.
 
-        This method removes a IO Card instance t from the Model Database.
+        This method removes a IO Card instance from the Model Database.
      */
     virtual void remove_( Api& cardToRemove ) noexcept = 0;
 
@@ -100,6 +100,13 @@ public:
      */
     virtual void insert_( FactoryApi& cardFactoryToAdd ) noexcept = 0;
 
+    /** This method has 'PACKAGE Scope' in that is should only be called by
+        other classes in the Fxt::Card namespace.  It is ONLY public to avoid
+        the tight coupling of C++ friend mechanism.
+
+        This method removes a IO Card factory from the Model Database.
+     */
+    virtual void remove_( FactoryApi& cardFactoryToRemove ) noexcept = 0;
 
 public:
     /// Virtual destructor to make the compiler happy
