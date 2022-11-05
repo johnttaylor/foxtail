@@ -49,22 +49,26 @@ public:
 protected:
     /// Constructor: Invalid MP
     Enum_( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData )
-        :Basic_<BETTERENUM_TYPE>( pointId, pointName, allocatorForPointStatefulData )
+        :Basic_<BETTERENUM_TYPE>( pointId, sizeof(StateBlock_T), pointName, allocatorForPointStatefulData )
     {
     }
 
     /// Constructor: Valid MP (requires initial value)
     Enum_( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, BETTERENUM_TYPE initialValue )
-        :Basic_<BETTERENUM_TYPE>( pointId, pointName, allocatorForPointStatefulData, initialValue )
+        :Basic_<BETTERENUM_TYPE>( pointId, sizeof( StateBlock_T ), pointName, allocatorForPointStatefulData, initialValue )
     {
     }
 
 public:
-    /// Type safe write. See Fxt::Dm::ModelPoint
-    virtual void write( BETTERENUM_TYPE newValue, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::LockRequest_T::eNO_REQUEST ) noexcept
+    /// Pull in overloaded methods from base class
+    using Basic_<BETTERENUM_TYPE>::write;
+
+    /// Updates the MP's data from 'src'. Note: The lock state of 'src' is NOT-USED/IGNORED
+    void write( Enum_& src, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
-        PointCommon_::write( &newValue, sizeof( BETTERENUM_TYPE ), lockRequest );
+        updateFrom( &(((StateBlock_T*) (src.m_state))->data), sizeof( BETTERENUM_TYPE ), src.isNotValid(), lockRequest );
     }
+
 
 public:
     /// See Fxt::Dm::Point.  

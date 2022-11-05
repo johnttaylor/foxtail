@@ -23,7 +23,7 @@ using namespace Fxt::Point;
 
 ///////////////////////////////////////////////////////////////////////////////
 StringBase_::StringBase_( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, size_t sizeofData )
-    : Fxt::Point::PointCommon_( pointId, pointName )
+    : Fxt::Point::PointCommon_( pointId, pointName, sizeofData )
 {
     m_state = allocatorForPointStatefulData.allocate( sizeofData );
     if ( m_state )
@@ -39,7 +39,7 @@ StringBase_::StringBase_( uint32_t pointId, const char* pointName, Cpl::Memory::
 
 /// Constructor. Valid Point.  Requires an initial value
 StringBase_::StringBase_( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, size_t sizeofData, const char* initialValue )
-    : Fxt::Point::PointCommon_( pointId, pointName )
+    : Fxt::Point::PointCommon_( pointId, pointName, sizeofData )
 {
     m_state = allocatorForPointStatefulData.allocate( sizeofData );
     if ( m_state )
@@ -59,18 +59,18 @@ bool StringBase_::read( Cpl::Text::String& dstData ) const noexcept
 {
     int   dstLen;
     char* dstPtr = dstData.getBuffer( dstLen );  // Note: 'dstLen' does NOT include the null terminator, i.e. the actual available storage is dstLen+1
-    return Fxt::Point::PointCommon_::read( dstPtr, dstLen + 1 );  
+    return readData( dstPtr, dstLen + 1 );
 }
 
 bool StringBase_::read( char* dstData, size_t dstSizeInBytes ) const noexcept
 {
-    return Fxt::Point::PointCommon_::read( dstData, dstSizeInBytes );
+    return readData( dstData, dstSizeInBytes );
 }
 
 void StringBase_::write( const char* srcString, Fxt::Point::Api::LockRequest_T lockRequest ) noexcept
 {
     // Note: The copyDataFrom_() method ensures that there are no buffer/data overruns
-    Fxt::Point::PointCommon_::write( srcString, strlen( srcString ), lockRequest );
+    writeData( srcString, strlen( srcString ), lockRequest );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -103,7 +103,7 @@ void StringBase_::copyDataTo_( void* dstData, size_t dstSize ) const noexcept
 {
     char* dstPtr = (char*) dstData;
     dstPtr[0]    = '\0';
-    strncat( dstPtr, ((BaseStateful_T*) m_state)->data, dstSize-1 );
+    strncat( dstPtr, ((BaseStateful_T*) m_state)->data, dstSize - 1 );
 }
 
 void StringBase_::copyDataFrom_( const void* srcData, size_t srcSize ) noexcept

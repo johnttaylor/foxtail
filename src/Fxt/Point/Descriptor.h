@@ -27,8 +27,6 @@ namespace Point {
     additional information such as:
         - A Factory function to create the point
         - A SetterApi instance if the Point is an 'Auto Data' Point
-
-    This class is NOT thread-safe.
  */
 class Descriptor 
 {

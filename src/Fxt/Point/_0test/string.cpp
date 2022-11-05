@@ -36,22 +36,15 @@ class String16 : public String_<16>
 {
 public:
     /// Constructor. Invalid Point.
-    String16( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData ) : String_<16>( pointId, pointName, allocatorForPointStatefulData )
+    String16( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData ) 
+        : String_<16>( pointId, pointName, allocatorForPointStatefulData )
     {
     }
 
     /// Constructor. Valid Point.  Requires an initial value
-    String16( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, const char* initialValue ) :String_<16>( pointId, pointName, allocatorForPointStatefulData, initialValue )
+    String16( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, const char* initialValue ) 
+        :String_<16>( pointId, pointName, allocatorForPointStatefulData, initialValue )
     {
-    }
-
-    /// Pull in overloaded methods from base class
-    using StringBase_::write;
-
-    /// Updates the MP's data from 'src'
-    virtual void write( String16& src, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
-    {
-        updateFrom( &(((StateBlock_T*) (src.m_state))->data), sizeof( (((StateBlock_T*) (src.m_state))->data) ), src.isNotValid(), lockRequest );
     }
 
     ///  See Cpl::Dm::ModelPoint.
@@ -80,7 +73,8 @@ public:
 #define ORANGE_ID       1
 #define ORANGE_LABEL    "ORANGE"
 
-static size_t stateHeapMemory_[(sizeof( String16::StateBlock_T ) * MAX_POINTS + sizeof( size_t ) - 1) / sizeof( size_t )];
+#define ELEM_SIZE_AS_SIZET(elemSize)    (((elemSize)+sizeof( size_t ) - 1) / sizeof(size_t))
+static size_t stateHeapMemory_[ELEM_SIZE_AS_SIZET( sizeof( String16::StateBlock_T ) ) * MAX_POINTS];
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE( "String16" )

@@ -38,13 +38,12 @@ namespace Point {
         o A Point has inherit valid/invalid state respect to its data.  The
           valid/invalid state is meta data and not associated with a specific
           value of its data
-        o A Point can be locked.  Any write operations to a locked point will
+        o A Point can be locked. Any write operations to a locked point will
           silently fail (i.e. its current value when locked will not be
           changed).
         o A Point can serialize/deserialize to/from a JSON string.
-        o A Point is type safe.  This means that child classes - per 'data
-          type' - are required.  Each Point type can have methods unique to its
-          type.
+        o A Point is type safe.  This means that child classes, per 'data type',
+          are required.  Each Point type can have methods unique to its type.
         o Points are NOT THREAD SAFE.
  */
 class Api
@@ -137,7 +136,7 @@ protected:
         2) The data size of the 'dstSize' is ALWAYS honored when coping the
            data from the Point
      */
-    virtual bool read( void* dstData, size_t dstSize ) const noexcept = 0;
+    virtual bool readData( void* dstData, size_t dstSize ) const noexcept = 0;
 
     /** This method writes the caller Point memory buffer to the Point's
         internal data.
@@ -156,9 +155,9 @@ protected:
         2) The data size of the Model Points data instance is ALWAYS honored
            when coping the data from 'srcData'
      */
-    virtual void write( const void*   srcData,
-                        size_t        srcSize,
-                        LockRequest_T lockRequest = eNO_REQUEST ) noexcept = 0;
+    virtual void writeData( const void*   srcData,
+                            size_t        srcSize,
+                            LockRequest_T lockRequest = eNO_REQUEST ) noexcept = 0;
 
 
 
@@ -168,8 +167,6 @@ public:
         NEVER call this method.
 
         This method is used to unconditionally update the Point's data.
-
-        This method is NOT Thread Safe.
 
         Notes:
         1) The assumption is that Point Data instance and 'src' are the
@@ -187,8 +184,6 @@ public:
 
         This method is used update's the caller's 'Point Data' with the Model
         Point's data.
-
-        This method is NOT Thread Safe.
 
         Notes:
         1) The assumption is that Point Data instance and 'dst' are the

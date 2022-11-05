@@ -48,7 +48,7 @@ public:
     using BasicInteger_<int32_t>::write;
 
     /// Updates the MP's data from 'src'. Note: The lock state of 'src' is NOT-USED/IGNORED
-    virtual void write( Int32& src, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept 
+    void write( Int32& src, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept 
     {
         updateFrom( &(((Basic_<int32_t>::Stateful_T*)(src.m_state))->data), sizeof( int32_t ), src.isNotValid(), lockRequest );
     }

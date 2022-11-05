@@ -17,9 +17,10 @@ using namespace Fxt::Point;
 #define METAPTR     ((PointCommon_::Metadata_T*)(m_state))
 
 ////////////////////////
-PointCommon_::PointCommon_( uint32_t pointId, const char* pointName )
+PointCommon_::PointCommon_( uint32_t pointId, const char* pointName, size_t stateSize )
     : m_id( pointId )
     , m_state( nullptr )
+    , m_stateSize( stateSize )
     , m_name( pointName )
 {
     if ( m_name == nullptr )
@@ -41,6 +42,11 @@ void PointCommon_::finishInit( bool isValid ) noexcept
 void* PointCommon_::getStartOfStatefulMemory_() const noexcept
 {
     return m_state;
+}
+
+size_t PointCommon_::getStatefulMemorySize() const noexcept
+{
+    return m_stateSize;
 }
 
 uint32_t PointCommon_::getId() const noexcept
@@ -79,10 +85,14 @@ void PointCommon_::setInvalid( LockRequest_T lockRequest ) noexcept
     if ( METAPTR && testAndUpdateLock( lockRequest ) )
     {
         METAPTR->valid = false;
+        if ( m_state )
+        {
+            memset( m_state, 0, m_stateSize );
+        }
     }
 }
 
-bool PointCommon_::read( void* dstData, size_t dstSize ) const noexcept
+bool PointCommon_::readData( void* dstData, size_t dstSize ) const noexcept
 {
     // Return invalid if memory allocation failed
     if ( !METAPTR )
@@ -97,13 +107,16 @@ bool PointCommon_::read( void* dstData, size_t dstSize ) const noexcept
     return METAPTR->valid;
 }
 
-void PointCommon_::write( const void* srcData, size_t srcSize, LockRequest_T lockRequest ) noexcept
+void PointCommon_::writeData( const void* srcData, size_t srcSize, LockRequest_T lockRequest ) noexcept
 {
-    // Note: testAndUpdateLock() always returns false if METAPTR is NULL
-    if ( srcData && testAndUpdateLock( lockRequest ) )
+    // Skip if the memory allocation failed
+    if ( METAPTR )
     {
-        copyDataFrom_( srcData, srcSize );
-        METAPTR->valid = true;
+        if ( srcData && testAndUpdateLock( lockRequest ) )
+        {
+            copyDataFrom_( srcData, srcSize );
+            METAPTR->valid = true;
+        }
     }
 }
 
@@ -115,7 +128,7 @@ void PointCommon_::updateFrom( const void* srcData, size_t srcSize, bool isNotVa
     }
     else
     {
-        write( srcData, srcSize, lockRequest );
+        writeData( srcData, srcSize, lockRequest );
     }
 }
 
@@ -155,12 +168,12 @@ bool PointCommon_::testAndUpdateLock( LockRequest_T lockRequest ) noexcept
     if ( lockRequest == eUNLOCK )
     {
         METAPTR->locked = false;
-        result = true;
+        result          = true;
     }
     else if ( lockRequest == eLOCK )
     {
         METAPTR->locked = true;
-        result = true;
+        result          = true;
     }
     else
     {

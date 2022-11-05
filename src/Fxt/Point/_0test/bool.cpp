@@ -35,7 +35,9 @@ using namespace Fxt::Point;
 #define ORANGE_ID       1
 #define ORANGE_LABEL    "ORANGE"
 
-static size_t stateHeapMemory_[(sizeof( Bool::StateBlock_T ) * MAX_POINTS + sizeof( size_t ) - 1) / sizeof( size_t )];
+#define ELEM_SIZE_AS_SIZET(elemSize)    (((elemSize)+sizeof( size_t ) - 1) / sizeof(size_t))
+static size_t stateHeapMemory_[ELEM_SIZE_AS_SIZET( sizeof( Bool::StateBlock_T ) ) * MAX_POINTS];
+
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE( "Bool" )
@@ -45,6 +47,10 @@ TEST_CASE( "Bool" )
     Cpl::Memory::LeanHeap    stateHeap( stateHeapMemory_, sizeof( stateHeapMemory_ ) );
     bool                     valid;
     bool                   value;
+    CPL_SYSTEM_TRACE_MSG( SECT_, ("heap size=%d, StateBlock_T size=%d, SIZE_AS_SIZET=%d",
+                                   sizeof( stateHeapMemory_ ),
+                                   sizeof( Bool::StateBlock_T ),
+                                   ELEM_SIZE_AS_SIZET( sizeof( Bool::StateBlock_T ) )) );
 
     Bool* apple = new(std::nothrow) Bool( APPLE_ID, APPLE_LABEL, stateHeap );
     REQUIRE( apple );
@@ -71,7 +77,7 @@ TEST_CASE( "Bool" )
 
         apple->set();
         valid = apple->read( value );
-        REQUIRE( valid  );
+        REQUIRE( valid );
         REQUIRE( value == true );
 
         apple->clear();
@@ -79,7 +85,7 @@ TEST_CASE( "Bool" )
         REQUIRE( valid );
         REQUIRE( value == false );
 
-        REQUIRE( apple->getStatefulMemorySize() >= (sizeof( bool ) + sizeof(bool)*2) );
+        REQUIRE( apple->getStatefulMemorySize() >= (sizeof( bool ) + sizeof( bool ) * 2) );
     }
 
     SECTION( "write2" )
@@ -174,7 +180,7 @@ TEST_CASE( "Bool" )
         REQUIRE( result == false );
 
         // ERROR
-        result = db.toJSON( ORANGE_ID+2, buffer, sizeof( buffer ), truncated, false );
+        result = db.toJSON( ORANGE_ID + 2, buffer, sizeof( buffer ), truncated, false );
         REQUIRE( result == false );
 
         // ERROR
@@ -204,7 +210,7 @@ TEST_CASE( "Bool" )
         REQUIRE( errMsg != "NOERROR" );
 
         // ERROR
-        result = db.fromJSON( "{\"id\":0}");
+        result = db.fromJSON( "{\"id\":0}" );
         REQUIRE( result == false );
     }
 
@@ -217,13 +223,13 @@ TEST_CASE( "Bool" )
 
         REQUIRE( db.lookupById( ORANGE_ID ) == orange );
         REQUIRE( db.lookupById( APPLE_ID ) == apple );
-        REQUIRE( db.lookupById( ORANGE_ID+2 ) == nullptr );
+        REQUIRE( db.lookupById( ORANGE_ID + 2 ) == nullptr );
 
         REQUIRE( db.first() == apple );
         REQUIRE( db.next( *apple ) == orange );
         REQUIRE( db.next( *orange ) == nullptr );
     }
-    
+
     delete apple;
     delete orange;
     REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );

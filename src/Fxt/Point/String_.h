@@ -46,13 +46,13 @@ protected:
 
 public:
     /// Type safe read. See Fxt::Point::Api.
-    virtual bool read( Cpl::Text::String& dstData ) const noexcept;
+    bool read( Cpl::Text::String& dstData ) const noexcept;
 
     /// Type safe read. See Fxt::Point::Api. Note: 'dstSizeInBytes' is assumed to include the storage for the null terminator
-    virtual bool read( char* dstData, size_t dstSizeInBytes ) const noexcept;
+    bool read( char* dstData, size_t dstSizeInBytes ) const noexcept;
 
     /// Type safe write. See Fxt::Point::Api
-    virtual void write( const char* srcString, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept;
+    void write( const char* srcString, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept;
 
     /// Returns the size WITHOUT the null terminator of the string storage
     virtual size_t getMaxLength() const noexcept = 0;
@@ -123,24 +123,18 @@ protected:
     }
 
 public:
+    /// Pull in overloaded methods from base class
+    using StringBase_::write;
+
     /// Updates the MP's data from 'src'. 
-    void write( MyString& src, Cpl::Point::Api::LockRequest_T lockRequest = Cpl::Point::Api::eNO_REQUEST ) noexcept
+    void write( String_<S>& src, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
-        if ( src.isNotValid() )
-        {
-            setInvalid();
-        }
-        else
-        {
-            String_<STR_LEN>::write( src.m_data, lockRequest );
-        }
+        updateFrom( &(((StateBlock_T*)(src.m_state))->data), sizeof( int8_t ), src.isNotValid(), lockRequest );
     }
+
 
     /// See Fxt::Point::StringBase_
     size_t getMaxLength() const noexcept { return S; }
-
-    /// See Fxt::Point::Api.  
-    size_t getStatefulMemorySize() const noexcept { return sizeof( StateBlock_T ); }
 
 
 public:

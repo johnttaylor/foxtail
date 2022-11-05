@@ -65,7 +65,7 @@ public:
     virtual const void* getStartOfStatefulMemory() const noexcept = 0;
 
     /** This method copies the Bank's 'point stateful memory' to the specified 
-        destination. The method returns if the copy operation is successful; 
+        destination. The method returns true if the copy operation is successful; 
         else false (e.g. 'dst' size is less than the Bank's point memory) is 
         returned.
      */

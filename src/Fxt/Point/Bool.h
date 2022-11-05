@@ -42,17 +42,16 @@ public:
 public:
     /** Constructor. Invalid Point.
      */
-    Bool( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData ) : Basic_<bool>(pointId, pointName, allocatorForPointStatefulData ) {}
+    Bool( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData ) 
+        : Basic_<bool>(pointId, sizeof(StateBlock_T), pointName, allocatorForPointStatefulData ) {}
 
     /// Constructor. Valid Point.  Requires an initial value
-    Bool( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, bool initialValue ) : Basic_<bool>( pointId, pointName, allocatorForPointStatefulData, initialValue ) {}
+    Bool( uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, bool initialValue ) 
+        : Basic_<bool>( pointId, sizeof( StateBlock_T ), pointName, allocatorForPointStatefulData, initialValue ) {}
 
 public:
-    /// Type safe write. See Fxt::Point::Api
-    virtual void write( bool newValue, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
-    {
-        Fxt::Point::PointCommon_::write( &newValue, sizeof( bool ), lockRequest );
-    }
+    /// Pull in overloaded methods from base class
+    using Basic_<bool>::write;
 
     /// Short-cut for writing true
     inline void set( Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept { write( true, lockRequest ); }
@@ -61,7 +60,7 @@ public:
     inline void clear( Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept { write( false, lockRequest ); }
 
     /// Updates the MP's data from 'src'. Note: The lock state of 'src' is NOT-USED/IGNORED
-    virtual void write( Bool& src, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept 
+    void write( Bool& src, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept 
     {
         updateFrom( &(((StateBlock_T*)(src.m_state))->data), sizeof( bool ), src.isNotValid(), lockRequest );
     }

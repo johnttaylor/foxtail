@@ -36,7 +36,7 @@ class PointCommon_ : public Fxt::Point::Api
 {
 protected:
     /// Constructor
-    PointCommon_( uint32_t pointId, const char* pointName  );
+    PointCommon_( uint32_t pointId, const char* pointName, size_t stateSize  );
 
     /// Helper method to 'completed' the initialization after the Stateful memory has been allocated
     virtual void finishInit( bool isValid ) noexcept;
@@ -51,6 +51,9 @@ public:
     /// See Fxt::Point::Api
     void getMetadata( bool& isValid, bool& isLocked ) const noexcept;
 
+    /// See Fxt::Point::Api.  
+    size_t getStatefulMemorySize() const noexcept;
+
     /// See Fxt::Point::Api
     void setInvalid( LockRequest_T lockRequest = eNO_REQUEST ) noexcept;
 
@@ -64,14 +67,15 @@ public:
     void setLockState( LockRequest_T lockRequest ) noexcept;
 
 public:
+    /// See Fxt::Point::Api
     void* getStartOfStatefulMemory_() const noexcept;
 
 protected:
     /// See Fxt::Point::Api
-    bool read( void* dstData, size_t dstSize ) const noexcept;
+    bool readData( void* dstData, size_t dstSize ) const noexcept;
 
     /// See Fxt::Point::Api
-    void write( const void* srcData, size_t srcSize, LockRequest_T lockRequest = eNO_REQUEST ) noexcept;
+    void writeData( const void* srcData, size_t srcSize, LockRequest_T lockRequest = eNO_REQUEST ) noexcept;
 
 protected:
     /** Internal helper method that manages testing and updating the locked
@@ -85,8 +89,6 @@ protected:
            put into the locked state.
         3) If 'lockRequest' is eUNLOCK, the method always returns true and
            the Point is left in the unlocked state.
-
-        This method is NOT thread safe.
      */
     virtual bool testAndUpdateLock( LockRequest_T lockRequest ) noexcept;
 
@@ -124,8 +126,13 @@ protected:
     /// The point's 'data' and meta-data that is dynamically allocated. The Meta-data is REQUIRED to be first elements in the allocate chunk of memory
     void*       m_state;
 
+    /// Number of bytes in of the data pointed to by m_state
+    size_t      m_stateSize;
+
     /// The point's 'label. The constructor ensures that a null name is 'converted' to an empty string.
     const char* m_name;
+
+    
 };
 
 };      // end namespaces

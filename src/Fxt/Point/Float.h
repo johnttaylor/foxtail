@@ -48,7 +48,7 @@ public:
     using BasicReal_<float>::write;
 
     /// Updates the MP's data from 'src'. Note: The lock state of 'src' is NOT-USED/IGNORED
-    virtual void write( Float& src, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
+    void write( Float& src, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
         updateFrom( &(((Basic_<float>::Stateful_T*)(src.m_state))->data), sizeof( float ), src.isNotValid(), lockRequest );
     }

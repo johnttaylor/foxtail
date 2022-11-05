@@ -79,7 +79,9 @@ public:
 #define ORANGE_ID       1
 #define ORANGE_LABEL    "ORANGE"
 
-static size_t stateHeapMemory_[(sizeof( MyEnum::StateBlock_T ) * MAX_POINTS + sizeof( size_t ) - 1) / sizeof( size_t )];
+
+#define ELEM_SIZE_AS_SIZET(elemSize)    (((elemSize)+sizeof( size_t ) - 1) / sizeof(size_t))
+static size_t stateHeapMemory_[ELEM_SIZE_AS_SIZET( sizeof( MyEnum::StateBlock_T ) ) * MAX_POINTS];
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE( "Enum" )
