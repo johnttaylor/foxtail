@@ -33,13 +33,13 @@
 /// ERROR Code: Configuration contains the wrong GUID (i.e. the JSON object calls out a different card type)
 #define FXT_CARD_ERR_GUID_WRONG_TYPE            4
 
-/// ERROR Code: Configuration does NOT contain a ID value
+/// ERROR Code: Configuration does NOT contain a valid ID value
 #define FXT_CARD_ERR_CARD_MISSING_ID            5
 
 /// ERROR Code: Unable to allocate memory for the card's name
 #define FXT_CARD_ERR_MEMORY_CARD_NAME           6
 
-/// ERROR Code: Configuration does NOT contain a LocalId value for one of it Points
+/// ERROR Code: Configuration does NOT contain a valid ID value for one of it Points
 #define FXT_CARD_ERR_POINT_MISSING_ID           7
 
 /// ERROR Code: Configuration contains TOO many input Points

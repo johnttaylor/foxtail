@@ -18,12 +18,10 @@
 using namespace Fxt::Card;
 
 FactoryCommon_::FactoryCommon_( Fxt::Card::DatabaseApi&                             cardDb,
-                                Cpl::Container::Dictionary<Fxt::Point::Descriptor>& descriptorDatabase,
-                                Fxt::Point::Database&                               pointDatabase,
+                                Fxt::Point::DatabaseApi&                            pointDatabase,
                                 PointAllocators_T&                                  pointAllocators,
                                 Cpl::Memory::ContiguousAllocator&                   allocatorForCard )
     : m_cardDb( cardDb )
-    , m_descriptorDatabase( descriptorDatabase )
     , m_pointDatabase( pointDatabase )
     , m_pointAllocators( pointAllocators )
     , m_allocatorForCard( allocatorForCard )

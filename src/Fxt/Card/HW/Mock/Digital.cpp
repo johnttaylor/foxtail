@@ -38,13 +38,17 @@ Digital::Digital( JsonVariant&                                          cardObje
     CPL_SYSTEM_ASSERT( pointAllocators.registerOutputs );
     CPL_SYSTEM_ASSERT( pointAllocators.virtualOutputs );
 
-    memset( &m_inDescriptors, 0, sizeof( m_inDescriptors ) );
-    memset( &m_outDescriptors, 0, sizeof( m_outDescriptors ) );
+    memset( &m_externalInDescriptors, 0, sizeof( m_externalInDescriptors ) );
+    memset( &m_ioRegInDescriptors, 0, sizeof( m_ioRegInDescriptors ) );
+    memset( &m_intennalInDescriptors, 0, sizeof( m_intennalInDescriptors ) );
+    memset( &m_externalOutDescriptors, 0, sizeof( m_externalOutDescriptors ) );
+    memset( &m_ioRegOutDescriptors, 0, sizeof( m_ioRegOutDescriptors ) );
+    memset( &m_intennalOutDescriptors, 0, sizeof( m_intennalOutDescriptors ) );
     memset( &m_inputChannels, 0xFF, sizeof( m_inputChannels ) );
     memset( &m_outputChannels, 0xFF, sizeof( m_outputChannels ) );
 
     parseConfiguration( cardObject );
-    createPoints( pointDatabase, pointDatabase, pointAllocators );
+    createPoints( pointDatabase, pointAllocators, generalAllocator );
 }
 
 Digital::~Digital()
@@ -119,20 +123,23 @@ void Digital::parseConfiguration( JsonVariant& obj ) noexcept
     }
 }
 
-bool Digital::createDescriptors( Fxt::Point::Descriptor* descriptorList[], ChannelInfo_T* channels, JsonArray& json, size_t numDescriptors, uint32_t errCode ) noexcept
+#define INVALID_POINT_ID        ((uint32_t)-1)
+
+bool Digital::createDescriptors( ChannelInfo_T* channels, JsonArray& json, size_t numDescriptors, uint32_t errCode ) noexcept
 {
     // Initialize the descriptor elements
     for ( size_t i=0; i < numDescriptors; i++ )
     {
-        if ( json[i]["id"].isNull() )
+        // Parse ID, Channel, and Name
+        uint32_t id         = json[i]["id"] | INVALID_POINT_ID;
+        uint32_t ioRegId    = json[i]["idRegId"] | INVALID_POINT_ID;
+        uint32_t internalId = json[i]["internalId"] | INVALID_POINT_ID;
+        uint16_t channel    = json[i]["channel"] | (MAX_CHANNELS + 1);
+        if ( id == INVALID_POINT_ID || ioRegId == INVALID_POINT_ID || internalId == INVALID_POINT_ID )
         {
             m_error = FXT_CARD_ERR_POINT_MISSING_ID;
             return false;
         }
-
-        // Parse ID, Channel, and Name
-        uint32_t    localId       = json[i]["id"];
-        uint16_t    channel       = json[i]["channel"] | (MAX_CHANNELS + 1);
         if ( channel > MAX_CHANNELS )
         {
             m_error = FXT_CARD_ERR_BAD_CHANNEL_ASSIGNMENTS;
@@ -160,31 +167,31 @@ bool Digital::createDescriptors( Fxt::Point::Descriptor* descriptorList[], Chann
             m_error = errCode;
             return false;
         }
-        descriptorList[i] = new(memDescriptor) Fxt::Point::Descriptor( nameMemoryPtr, localId, Cpl::Point::Bool::create );
+        descriptorList[i] = new(memDescriptor) Fxt::Point::Descriptor( nameMemoryPtr, localId, Fxt::Point::Bool::create );
     }
     return true;
 }
 
-void Digital::createPoints( Cpl::Container::Dictionary<Fxt::Point::Descriptor>& descriptorDb, 
-                            Fxt::Point::DatabaseApi&                            pointDb, 
-                            PointAllocators_T&                                  allocators ) noexcept
+void Digital::createPoints( Fxt::Point::DatabaseApi&          pointDb,
+                            PointAllocators_T&                pointAllocators,
+                            Cpl::Memory::ContiguousAllocator& generalAllocator ) noexcept
 {
     // Create Input points
     if ( m_numInputs > 0 )
     {
         // Create internal Points
-        m_banks.internalInputs->populate( m_inDescriptors, *allocators.internalInputs, pointDb );
+        m_banks.internalInputs->populate( m_inDescriptors, *pointAllocators.internalInputs, pointDb, generalAllocator );
         for ( size_t i=0; i < m_numInputs; i++ )
         {
             m_inputChannels[i].point = (Fxt::Point::Bool*) m_inDescriptors[i]->getPoint();
         }
 
         // Create IO Registers
-        m_banks.registerInputs->populate( m_inDescriptors, *allocators.registerInputs, pointDb );
+        m_banks.registerInputs->populate( m_inDescriptors, *pointAllocators.registerInputs, pointDb, generalAllocator );
 
         // Create visible Points. This must be done LAST so that the descriptors 
         // contain the 'correct' Point references for the 'visible' points
-        m_banks.virtualInputs->populate( m_inDescriptors, *allocators.virtualInputs, pointDb );
+        m_banks.virtualInputs->populate( m_inDescriptors, *pointAllocators.virtualInputs, pointDb, generalAllocator );
         for ( size_t i=0; i < m_numInputs; i++ )
         {
             descriptorDb.insert( *(m_inDescriptors[i]) );

@@ -44,40 +44,6 @@ namespace Mock {
     The semantics with the Application is that the Application is RESPONSIBLE for
     freeing/recycling the memory in the Contiguous Allocator when Card(s) are
     deleted.
-
-    \code
-
-    JSON Definition
-    --------------------
-    {
-      "name": "My Digital Card",                        // Text label for the card
-      "id": 0,                                          // ID assigned to the card
-      "type": "59d33888-62c7-45b2-a4d4-9dbc55914ed3",   // Identifies the card type.  Value comes from the Supported/Available-card-list
-      "typename": "Fxt::Card::HW::Mock::Digital",       // Human readable type name
-      "slot": 0,                                        // Physical identifier, e.g. its the card position in the Node's physical chassis
-      "scannerIdRef: 0                                  // ID Reference of the scanner instance that scans this card
-      "initialInputValueMask":  0,                      // unsigned 32bit long mask used to set the initial input values.  LSb == channel 0. 0=Signal Low, 1=Signal High
-      "points": {
-        "inputs": [                                     // Inputs. The card supports 0 to 32 input points
-          {
-            "channel": 0,                               // Physical identifier, e.g. terminal/wiring connection number on the card
-            "id": 0,                                    // ID assigned to the Virtual Point that represents the input value
-            "name": "My input point0 name"              // Text label for the input signal
-          },
-          ...
-        ],
-        "outputs": [                                    // Outputs. The card supports 0 to 32 output points
-          {
-            "channel": 0,                               // Physical identifier, e.g. terminal/wiring connection number on the card
-            "id": 0,                                    // ID assigned to the Virtual Point that represents the output value
-            "name": "My output point0 name"             // Text label for the output signal
-          },
-          ...
-        ]
-      }
-    }
-
-    \endcode
  */
 class Digital : public Fxt::Card::Common_
 {
@@ -154,10 +120,12 @@ protected:
     virtual void parseConfiguration( JsonVariant& obj ) noexcept;
 
     /// Helper method to create Point descriptors
-    virtual bool createDescriptors( Fxt::Point::Descriptor* descriptorList[], ChannelInfo_T* channels, JsonArray& json, size_t numDescriptors, uint32_t errCode ) noexcept;
+    virtual bool createDescriptors( ChannelInfo_T* channels, JsonArray& json, size_t numDescriptors, uint32_t errCode ) noexcept;
 
     /// Helper method to create the point instances
-    virtual void createPoints( Fxt::Point::DatabaseApi& pointDb, PointAllocators_T& allocators ) noexcept;
+    virtual void createPoints( Fxt::Point::DatabaseApi&          pointDb, 
+                               PointAllocators_T&                pointAllocators,
+                               Cpl::Memory::ContiguousAllocator& generalAllocator ) noexcept;
 
     /// Helper method that returns a Point handle for the specified channel.  Returns nullptr if not match found
     Fxt::Point::Bool* getPointByChannel( ChannelInfo_T * channels, uint16_t channelIndex ) noexcept;
@@ -172,11 +140,23 @@ protected:
     /// Mutex to provide thread safety for the application driving/reading the mocked IO
     Cpl::System::Mutex                  m_lock;
 
-    /// List of Input Descriptors (allocate space for max IO plus a list-terminator)
-    Fxt::Point::Descriptor*             m_inDescriptors[MAX_CHANNELS + 1];
+    /// List of 'visible' Input Descriptors (allocate space for max IO plus a list-terminator)
+    Fxt::Point::Descriptor*             m_externalInDescriptors[MAX_CHANNELS + 1];
 
-    /// Output Descriptors (allocate space for max IO plus a list-terminator)
-    Fxt::Point::Descriptor*             m_outDescriptors[MAX_CHANNELS + 1];
+    /// List of IO Register Input Descriptors (allocate space for max IO plus a list-terminator)
+    Fxt::Point::Descriptor*             m_ioRegInDescriptors[MAX_CHANNELS+1];
+
+    /// List of Internal Input Descriptors (allocate space for max IO plus a list-terminator)
+    Fxt::Point::Descriptor*             m_intennalInDescriptors[MAX_CHANNELS + 1];
+
+    /// List of 'visible' Output Descriptors (allocate space for max IO plus a list-terminator)
+    Fxt::Point::Descriptor*             m_externalOutDescriptors[MAX_CHANNELS + 1];
+
+    /// List of IO Register Output Descriptors (allocate space for max IO plus a list-terminator)
+    Fxt::Point::Descriptor*             m_ioRegOutDescriptors[MAX_CHANNELS + 1];
+
+    /// List of Internal Output Descriptors (allocate space for max IO plus a list-terminator)
+    Fxt::Point::Descriptor*             m_intennalOutDescriptors[MAX_CHANNELS + 1];
 
     /// Maps a channel id/index to an Internal Input Point
     ChannelInfo_T                       m_inputChannels[MAX_CHANNELS];

@@ -48,10 +48,12 @@ namespace Card {
           "points": {
              "<groupingName>": [ // Array of points with the same Fxt::Point type, e.g "analogInputs", "digitalOutputs", etc.
                {
-                 "channel": <reference to a phyiscal terminal/connector as a number: Range: 0-N>,
-                 "id":      <ID.  Must be unique.  Range: 0-4GB>,
-                 "name":    "<human readable name for the point/channel/IO>"
-                 "default": { // OPTIONAL initial value/state specifier for the Point
+                 "channel":    <reference to a phyiscal terminal/connector as a number: Range: 0-N>,
+                 "id":         <System/Visible/Public ID.  Must be unique.  Range: 0-4GB>,
+                 "ioRegId":    <The ID of the Point's IO register. Must be unique.  Range: 0-4GB>,
+                 "internalId": <The ID of the Point's internal register. Must be unique.  Range: 0-4GB>,
+                 "name":       "<human readable name for the point/channel/IO>"
+                 "default": {  // OPTIONAL initial value/state specifier for the Point
                    "val": <point value as defined by the Point type's fromJSON syntax>
                  }
                },

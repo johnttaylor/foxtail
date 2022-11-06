@@ -32,8 +32,7 @@ class FactoryCommon_ : public Fxt::Card::FactoryApi
 public:
     /// Constructor
     FactoryCommon_( Fxt::Card::DatabaseApi&                             cardDb,
-                    Cpl::Container::Dictionary<Fxt::Point::Descriptor>& descriptorDatabase,
-                    Fxt::Point::Database&                               pointDatabase,
+                    Fxt::Point::DatabaseApi&                            pointDatabase,
                     PointAllocators_T&                                  pointAllocators,
                     Cpl::Memory::ContiguousAllocator&                   allocatorForCard );
 
@@ -49,11 +48,8 @@ protected:
     /// Card database
     Fxt::Card::DatabaseApi&                             m_cardDb;
 
-    /// Point Descriptor Database
-    Cpl::Container::Dictionary<Fxt::Point::Descriptor>& m_descriptorDatabase;
-    
     /// Point instance database
-    Fxt::Point::Database&                               m_pointDatabase;
+    Fxt::Point::DatabaseApi&                            m_pointDatabase;
 
     /// Point Allocators
     PointAllocators_T&                                  m_pointAllocators;

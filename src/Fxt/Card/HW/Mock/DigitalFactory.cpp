@@ -18,12 +18,11 @@
 using namespace Fxt::Card::HW::Mock;
 
 
-DigitalFactory::DigitalFactory( Fxt::Card::DatabaseApi&                             cardDb,
-                                Cpl::Container::Dictionary<Fxt::Point::Descriptor>& descriptorDatabase,
-                                Fxt::Point::Database&                               pointDatabase,
-                                PointAllocators_T&                                  pointAllocators,
-                                Cpl::Memory::ContiguousAllocator&                   allocatorForCard )
-    :FactoryCommon_( cardDb, descriptorDatabase, pointDatabase, pointAllocators, allocatorForCard )
+DigitalFactory::DigitalFactory( Fxt::Card::DatabaseApi&            cardDb,
+                                Fxt::Point::DatabaseApi&           pointDatabase,
+                                PointAllocators_T&                 pointAllocators,
+                                Cpl::Memory::ContiguousAllocator&  allocatorForCard )
+    :FactoryCommon_( cardDb, pointDatabase, pointAllocators, allocatorForCard )
 {
     cardDb.insert_( *this );
 }
