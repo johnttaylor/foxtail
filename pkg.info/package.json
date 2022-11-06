@@ -2,6 +2,40 @@
   "dependencies": {
     "strong": [
       {
+        "pkgname": "colony.core",
+        "pkgtype": "overlay",
+        "adoptedDate": "Sun Nov  6 23:23:08 2022",
+        "parentDir": null,
+        "version": {
+          "semanticVersion": "4.2.2",
+          "branch": null,
+          "tag": "OUTCAST2-main-4.2.2"
+        },
+        "repo": {
+          "name": "colony.core",
+          "type": "git",
+          "origin": "https://github.com/johnttaylor"
+        }
+      },
+      {
+        "pkgname": "colony.bsp",
+        "pkgtype": "overlay",
+        "adoptedDate": "Sun Nov  6 23:27:07 2022",
+        "parentDir": null,
+        "version": {
+          "semanticVersion": "0.1.1",
+          "branch": null,
+          "tag": "OUTCAST2-main-0.1.1"
+        },
+        "repo": {
+          "name": "colony.bsp",
+          "type": "git",
+          "origin": "https://github.com/johnttaylor"
+        }
+      }
+    ],
+    "weak": [
+      {
         "pkgname": "catch",
         "pkgtype": "overlay",
         "adoptedDate": "Mon May 30 18:22:09 2022",
@@ -32,25 +66,8 @@
           "type": "git",
           "origin": "https://github.com/johnttaylor"
         }
-      },
-      {
-        "pkgname": "colony.core",
-        "pkgtype": "overlay",
-        "adoptedDate": "Sun Nov  6 23:23:08 2022",
-        "parentDir": null,
-        "version": {
-          "semanticVersion": "4.2.2",
-          "branch": null,
-          "tag": "OUTCAST2-main-4.2.2"
-        },
-        "repo": {
-          "name": "colony.core",
-          "type": "git",
-          "origin": "https://github.com/johnttaylor"
-        }
       }
-    ],
-    "weak": []
+    ]
   },
   "directories": {
     "primary": [
