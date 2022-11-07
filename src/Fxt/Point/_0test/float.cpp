@@ -233,7 +233,5 @@ TEST_CASE( "Float" )
         REQUIRE( db.next( *orange ) == nullptr );
     }
 
-    delete apple;
-    delete orange;
     REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );
 }

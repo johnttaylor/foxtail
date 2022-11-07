@@ -42,7 +42,6 @@ static Descriptor       cherry3_( 9, "CHERRY", Fxt::Point::Uint32::create );
 static Descriptor       lime3_( 10, "LIME", Fxt::Point::Int64::create );
 
 #define ELEM_SIZE_AS_SIZET(elemSize)    (((elemSize)+sizeof( size_t ) - 1) / sizeof(size_t))
-
 #define MEM_SIZE        (ELEM_SIZE_AS_SIZET( sizeof(Fxt::Point::Uint32) ) * 2 + ELEM_SIZE_AS_SIZET( sizeof(Fxt::Point::Int64) ) * 2 )
 
 static size_t           heapMemory_[MEM_SIZE];

@@ -38,16 +38,19 @@ namespace Mock {
       "type": "59d33888-62c7-45b2-a4d4-9dbc55914ed3",   // Identifies the card type.  Value comes from the Supported/Available-card-list
       "typename": "Fxt::Card::HW::Mock::Digital",       // Human readable type name
       "slot": 0,                                        // Physical identifier, e.g. its the card position in the Node's physical chassis
-      "scannerIdRef: 0                                  // ID Reference of the scanner instance that scans this card
-      "initialInputValueMask":  0,                      // unsigned 32bit long mask used to set the initial input values.  LSb == channel 0. 0=Signal Low, 1=Signal High
       "points": {
         "inputs": [                                     // Inputs. The card supports 0 to 32 input points
           {
-            "channel": 0,                               // Physical identifier, e.g. terminal/wiring connection number on the card
+            "channel": 0,                               // Physical identifier, e.g. terminal/wiring connection number on the card. Range: 1 to 32
             "id": 0,                                    // ID assigned to the Virtual Point that represents the input value
             "ioRegId": 0,                               // The ID of the Point's IO register.
             "internalId": 0,                            // The ID of the Point's internal register.
             "name": "My input point0 name"              // Text label for the input signal
+            "initial": {                                 
+              "valid": true|false                       // Initial valid state for the internal point
+              "val": true|false                         // Initial value for the input point. Only required when 'valid' is true
+              "id": 0                                   // The ID of the internal point that is used store the initial value in binary form
+            }
           },
           ...
         ],

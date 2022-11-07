@@ -237,6 +237,31 @@ public:
     */
     virtual void* getStartOfStatefulMemory_() const noexcept = 0;
 
+    /** This method has PACKAGE Scope, i.e. it is intended to be ONLY accessible
+       by other classes in the Fxt::Point namespace.  The Application should
+       NEVER call this method.
+
+       This method updates the model point valid state and data value from an
+       'source'.  Typically the 'source' is another Model Point
+    */   
+    virtual void updateFrom_( const void* srcData, size_t srcSize, bool isNotValid, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept = 0;;
+
+    /** This method has PACKAGE Scope, i.e. it is intended to be ONLY accessible
+        by other classes in the Fxt::Point namespace.  The Application should
+        NEVER call this method.
+        
+        This method returns a pointer to the start of the Point's data
+    */
+    virtual void* getDataPointer_() noexcept = 0;
+
+    /** This method has PACKAGE Scope, i.e. it is intended to be ONLY accessible
+        by other classes in the Fxt::Point namespace.  The Application should
+        NEVER call this method.
+
+        This method returns the size, in bytes, of the Point's data
+    */
+    virtual size_t getDataSize_() noexcept = 0;
+
 public:
     /// Virtual destructor to make the compiler happy
     virtual ~Api() {}

@@ -14,7 +14,7 @@
 
 #include "Fxt/Point/Api.h"
 #include "Fxt/Point/DatabaseApi.h"
-#include "Fxt/Point/SetterApi.h"
+#include "Fxt/Point/Setter.h"
 #include "Cpl/Memory/ContiguousAllocator.h"
 
 ///
@@ -28,7 +28,7 @@ namespace Point {
         - Symbolic Point name
         - The memory Allocator used when creating the Point
         - A Factory function to create the point (which defines/specifies the Point's type)
-        - A optional SetterApi instance (used to set a Point's value from another Point's value)
+        - A optional Setter instance used to set the Point's initial value (from another Point's value)
  */
 class Descriptor 
 {
@@ -38,7 +38,7 @@ public:
 
 public:
     /// Constructor
-    Descriptor( uint32_t pointId, const char* symbolicName, CreateFunc_T createFunction, SetterApi* setter=nullptr )
+    Descriptor( uint32_t pointId, const char* symbolicName, CreateFunc_T createFunction, Setter* setter=nullptr )
         : m_createMethod( createFunction )
         , m_initialValue( setter )
         , m_pointName( symbolicName )
@@ -56,7 +56,7 @@ public:
     }
 
     /// Configure the Descriptor after it has been constructed using the default constructor
-    void configure( uint32_t pointId, const char* symbolicName, CreateFunc_T createFunction, SetterApi* setter=nullptr ) noexcept
+    void configure( uint32_t pointId, const char* symbolicName, CreateFunc_T createFunction, Setter* setter=nullptr ) noexcept
     {
         m_pointId      = pointId;
         m_pointName    = symbolicName;
@@ -76,13 +76,13 @@ public:
 
 public:
     /// Data accessor. 
-    inline uint32_t         getPointId() { return m_pointId; }
+    inline uint32_t     getPointId() { return m_pointId; }
 
     /// Data accessor.  
-    inline const char*      getSymbolicName() { return m_pointName; }
+    inline const char*  getSymbolicName() { return m_pointName; }
 
     /// Data accessor.  If null, then the Point has no associated Setter
-    inline SetterApi*       getSetter() { return m_initialValue; }
+    inline Setter*      getSetter() { return m_initialValue; }
 
 
 
@@ -91,7 +91,7 @@ protected:
     CreateFunc_T                m_createMethod;
 
     /// Setter associated with the Point.  If no setter is needed for the point the value will be zero/nullptr
-    SetterApi*                  m_initialValue;  
+    Setter*                     m_initialValue;  
 
     /// The Point name/label
     const char*                 m_pointName;

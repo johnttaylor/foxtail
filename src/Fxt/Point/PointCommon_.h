@@ -71,6 +71,9 @@ public:
     /// See Fxt::Point::Api
     void* getStartOfStatefulMemory_() const noexcept;
 
+    /// See Fxt::Point::Api
+    void updateFrom_( const void* srcData, size_t srcSize, bool isNotValid, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept;
+
 protected:
     /// See Fxt::Point::Api
     bool readData( void* dstData, size_t dstSize ) const noexcept;
@@ -111,17 +114,16 @@ protected:
         return nullptr;
     }
 
-    /// Helper function to Update the MP's data from 'src'
-    void updateFrom( const void* srcData, size_t srcSize, bool isNotValid, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept;
 
-protected:
+public:
     /// Structure for meta-data
     struct Metadata_T
     {
-        bool valid;     //!< The point's valid/not-valid state
-        bool locked;    //!< The point's locked state
+        bool  valid;        //!< The point's valid/not-valid state
+        bool  locked;       //!< The point's locked state
     };
 
+protected:
     /// The Point's unique numeric ID
     uint32_t    m_id;
 

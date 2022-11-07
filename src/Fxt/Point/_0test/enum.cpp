@@ -52,7 +52,7 @@ public:
     /// Updates the MP's data from 'src'
     virtual void write( MyEnum& src, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
-        updateFrom( &(((StateBlock_T*) (src.m_state))->data), sizeof( MyColors ), src.isNotValid(), lockRequest );
+        updateFrom_( &(((StateBlock_T*) (src.m_state))->data), sizeof( MyColors ), src.isNotValid(), lockRequest );
     }
 
     ///  See Cpl::Dm::ModelPoint.
@@ -275,7 +275,5 @@ TEST_CASE( "Enum" )
         REQUIRE( db.next( *orange ) == nullptr );
     }
 
-    delete apple;
-    delete orange;
     REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );
 }

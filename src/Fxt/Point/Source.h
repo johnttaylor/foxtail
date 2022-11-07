@@ -12,7 +12,7 @@
 *----------------------------------------------------------------------------*/
 /** @file */
 
-#include "Fxt/Point/SetterApi.h"
+#include "Fxt/Point/Setter.h"
 
 ///
 namespace Fxt {
@@ -20,20 +20,20 @@ namespace Fxt {
 namespace Point {
 
 
-/** This concrete template class implements the SetterApi.  The 'source' value for
+/** This concrete template class implements the Setter.  The 'source' value for
     the setValue() method is separate point instance.
 
     Template args: class "P" is the type of the 'source point'
  */
 template <class P>
-class Source : public SetterApi
+class Source : public Setter
 {
 public:
     /// Constructor
     Source( P& src ) :m_src( &src ){}
     
 public:
-    /// See Fxt::Point::SetterApi
+    /// See Fxt::Point::Setter
     void setValue( Fxt::Point::Api* dstPt ) noexcept
     {
         ((P*) dstPt)->write( m_src );

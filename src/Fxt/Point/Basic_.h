@@ -97,7 +97,7 @@ protected:
     /** See Fxt::Point::Api.  It is the caller's responsibility to
         NOT call this method if m_data is null.
 
-        Note: The PointCommon_.read() will not call this method if the m_state
+        Note: The PointCommon_.readData() will not call this method if the m_state
               is null.
      */
     void copyDataTo_( void* dstData, size_t dstSize ) const noexcept
@@ -109,13 +109,25 @@ protected:
     /** See Fxt::Point::Api.  It is the caller's responsibility to
         NOT call this method if m_data is null.
 
-        Note: The PointCommon_.write() will not call this method if the m_state
+        Note: The PointCommon_.writeData() will not call this method if the m_state
               is null.
      */
     void copyDataFrom_( const void* srcData, size_t srcSize ) noexcept
     {
         CPL_SYSTEM_ASSERT( srcSize == sizeof( ELEMTYPE ) );
         ((StateBlock_T*) m_state)->data = *((ELEMTYPE*) srcData);
+    }
+
+    /// See Fxt::Point::Api.
+    void* getDataPointer_() noexcept
+    {
+        return &(((StateBlock_T*) m_state)->data);
+    }
+
+    /// See Fxt::Point::Api.
+    size_t getDataSize_() noexcept
+    {
+        return sizeof( ELEMTYPE );
     }
 };
 

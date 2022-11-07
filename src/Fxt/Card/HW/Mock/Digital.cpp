@@ -59,13 +59,30 @@ Digital::~Digital()
     // Destroy any created Descriptors
     for ( unsigned i=0; i < MAX_CHANNELS; i++ )
     {
-        if ( m_inDescriptors[i] != nullptr )
+        if ( m_externalInDescriptors[i] != nullptr )
         {
-            m_inDescriptors[i]->~Descriptor();
+            m_externalInDescriptors[i]->~Descriptor();
         }
-        if ( m_outDescriptors[i] != nullptr )
+        if ( m_ioRegInDescriptors[i] != nullptr )
         {
-            m_outDescriptors[i]->~Descriptor();
+            m_ioRegInDescriptors[i]->~Descriptor();
+        }
+        if ( m_intennalInDescriptors[i] != nullptr )
+        {
+            m_intennalInDescriptors[i]->~Descriptor();
+        }
+
+        if ( m_externalOutDescriptors[i] != nullptr )
+        {
+            m_externalOutDescriptors[i]->~Descriptor();
+        }
+        if ( m_ioRegOutDescriptors[i] != nullptr )
+        {
+            m_ioRegOutDescriptors[i]->~Descriptor();
+        }
+        if ( m_intennalOutDescriptors[i] != nullptr )
+        {
+            m_intennalOutDescriptors[i]->~Descriptor();
         }
     }
 }
@@ -125,7 +142,13 @@ void Digital::parseConfiguration( JsonVariant& obj ) noexcept
 
 #define INVALID_POINT_ID        ((uint32_t)-1)
 
-bool Digital::createDescriptors( ChannelInfo_T* channels, JsonArray& json, size_t numDescriptors, uint32_t errCode ) noexcept
+bool Digital::createDescriptors( Fxt::Point::Descriptor* externalDesc[],
+                                 Fxt::Point::Descriptor* ioRegDesc[],
+                                 Fxt::Point::Descriptor* internalDesc[],
+                                 uint32_t                channels[], 
+                                 JsonArray&              json, 
+                                 size_t                  numDescriptors, 
+                                 uint32_t                errCode ) noexcept
 {
     // Initialize the descriptor elements
     for ( size_t i=0; i < numDescriptors; i++ )
@@ -140,17 +163,19 @@ bool Digital::createDescriptors( ChannelInfo_T* channels, JsonArray& json, size_
             m_error = FXT_CARD_ERR_POINT_MISSING_ID;
             return false;
         }
-        if ( channel > MAX_CHANNELS )
+        if ( channel > MAX_CHANNELS || channel == 0 )
         {
             m_error = FXT_CARD_ERR_BAD_CHANNEL_ASSIGNMENTS;
             return false;
         }
-        if ( channels[i].channel != 0xFFFF )
+        if ( channels[channel] != INVALID_POINT_ID )
         {
             m_error = FXT_CARD_ERR_BAD_CHANNEL_ASSIGNMENTS;
             return false;
         }
-        channels[i].channel = channel;
+        channels[channel-1]       = internalId;
+
+        // Parse and Allocate memory for the point name
         const char* name          = json[i]["name"] | emptyString_;
         char*       nameMemoryPtr = (char*) m_allocator.allocate( strlen( name ) + 1 );
         if ( nameMemoryPtr == nullptr )
@@ -160,14 +185,36 @@ bool Digital::createDescriptors( ChannelInfo_T* channels, JsonArray& json, size_
         }
         strcpy( nameMemoryPtr, name );
 
-        // Create the descriptor
+        // Create external Register descriptor
         Fxt::Point::Descriptor* memDescriptor = (Fxt::Point::Descriptor*) m_allocator.allocate( sizeof( Fxt::Point::Descriptor ) );
         if ( memDescriptor == nullptr )
         {
             m_error = errCode;
             return false;
         }
-        descriptorList[i] = new(memDescriptor) Fxt::Point::Descriptor( nameMemoryPtr, localId, Fxt::Point::Bool::create );
+        externalDesc[i] = new(memDescriptor) Fxt::Point::Descriptor( id, nameMemoryPtr, Fxt::Point::Bool::create );
+
+        // Create IO Register descriptor
+        memDescriptor = (Fxt::Point::Descriptor*) m_allocator.allocate( sizeof( Fxt::Point::Descriptor ) );
+        if ( memDescriptor == nullptr )
+        {
+            m_error = errCode;
+            return false;
+        }
+        ioRegDesc[i] = new(memDescriptor) Fxt::Point::Descriptor( ioRegId, nameMemoryPtr, Fxt::Point::Bool::create );
+
+        // Create internal Register descriptor
+        memDescriptor = (Fxt::Point::Descriptor*) m_allocator.allocate( sizeof( Fxt::Point::Descriptor ) );
+        if ( memDescriptor == nullptr )
+        {
+            m_error = errCode;
+            return false;
+        }
+        internalDesc[i] = new(memDescriptor) Fxt::Point::Descriptor( internalId, nameMemoryPtr, Fxt::Point::Bool::create );
+  
+        // TODO: Create Setter when there is "initial":{obj} object
+        // Get JSON
+        // Call Setter::create()
     }
     return true;
 }

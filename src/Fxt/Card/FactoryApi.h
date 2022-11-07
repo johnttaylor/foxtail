@@ -53,8 +53,10 @@ namespace Card {
                  "ioRegId":    <The ID of the Point's IO register. Must be unique.  Range: 0-4GB>,
                  "internalId": <The ID of the Point's internal register. Must be unique.  Range: 0-4GB>,
                  "name":       "<human readable name for the point/channel/IO>"
-                 "default": {  // OPTIONAL initial value/state specifier for the Point
-                   "val": <point value as defined by the Point type's fromJSON syntax>
+                 "initial": {           // OPTIONAL initial value/state specifier for the Point
+                   "valid": true|false  // Initial valid state for the internal point
+                   "val":               <point value as defined by the Point type's fromJSON syntax - only required when 'valid' is 'true'>
+                   "id":                <The ID of the internal 'setter' point that is used store the initial value in binary form>
                  }
                },
              "<grouping2Name>":[{..},...]

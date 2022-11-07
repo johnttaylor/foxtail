@@ -158,11 +158,11 @@ protected:
     /// List of Internal Output Descriptors (allocate space for max IO plus a list-terminator)
     Fxt::Point::Descriptor*             m_intennalOutDescriptors[MAX_CHANNELS + 1];
 
-    /// Maps a channel id/index to an Internal Input Point
-    ChannelInfo_T                       m_inputChannels[MAX_CHANNELS];
+    /// Point IDs of the Internal Register Input Points
+    uint32_t                            m_inputChannels[MAX_CHANNELS];
 
-    /// Maps a channel id/index to an Internal Output Point
-    ChannelInfo_T                       m_outputChannels[MAX_CHANNELS];
+    /// Point IDs of the Internal Register Output Points
+    uint32_t                            m_outputChannels[MAX_CHANNELS];
 
     /// Initial (when start() is called) input values
     uint32_t                            m_initInputVals;

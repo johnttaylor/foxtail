@@ -129,20 +129,32 @@ public:
     /// Updates the MP's data from 'src'. 
     void write( String_<S>& src, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
-        updateFrom( &(((StateBlock_T*)(src.m_state))->data), sizeof( int8_t ), src.isNotValid(), lockRequest );
+        updateFrom_( &(((StateBlock_T*)(src.m_state))->data), sizeof( int8_t ), src.isNotValid(), lockRequest );
     }
 
 
     /// See Fxt::Point::StringBase_
     size_t getMaxLength() const noexcept { return S; }
 
+public:
+    /// See Fxt::Point::Api.
+    void* getDataPointer_() noexcept
+    {
+        return ((StateBlock_T*) (m_state))->data;
+    }
+
+    /// See Fxt::Point::Api.
+    size_t getDataSize_() noexcept
+    {
+        return S+1;
+    }
 
 public:
     /// The Point's Stateful data
     struct StateBlock_T
     {
         Metadata_T  meta;           //!< The Point's meta-data. THIS MUST BE THE FIRST ELEMENT in the structure
-        char        data[S + 1];    //!< The Point's 'data'
+        char        data[S + 1];    //!< The Point's 'data' with storage for the null terminator
     };
 };
 

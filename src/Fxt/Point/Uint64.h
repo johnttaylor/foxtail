@@ -52,7 +52,7 @@ public:
     /// Updates the MP's data from 'src'. Note: The lock state of 'src' is NOT-USED/IGNORED
     void write( Uint64& src, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
-        updateFrom( &(((Basic_<uint64_t>::Stateful_T*)(src.m_state))->data), sizeof( uint64_t ), src.isNotValid(), lockRequest );
+        updateFrom_( &(((Basic_<uint64_t>::Stateful_T*)(src.m_state))->data), sizeof( uint64_t ), src.isNotValid(), lockRequest );
     }
 
 public:
