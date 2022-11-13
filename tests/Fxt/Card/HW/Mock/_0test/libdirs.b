@@ -1,11 +1,10 @@
 # Unit under test
-src/Fxt/Card/HW/Mock < Digital.cpp DigitalFactory.cpp
+src/Fxt/Card/HW/Mock 
 
 # tests
 src/Fxt/Card/HW/Mock/_0test
 
-src/Fxt/Point
 src/Fxt/Card
-src/Cpl/Point
+src/Fxt/Point
 src/Cpl/Io/Stdio/_ansi
 

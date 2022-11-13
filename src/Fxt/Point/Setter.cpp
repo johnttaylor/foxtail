@@ -26,6 +26,20 @@ Setter::Setter( Fxt::Point::Api* srcPoint )
 {
 }
 
+Setter::~Setter()
+{
+    // Call the destructor on the internal point.  Note: The application's frees the physical memory
+    if ( m_srcPoint )
+    {
+        m_srcPoint->~Api();
+    }
+}
+
+size_t Setter::getInternalPointId() const noexcept
+{
+    return m_srcPoint == nullptr ? Fxt::Point::Api::INVALID_ID : m_srcPoint->getId();
+}
+
 void Setter::setValue( Fxt::Point::Api& dstPoint ) noexcept
 {
     // Do nothing if source point was never supplied
@@ -56,8 +70,8 @@ Setter* Setter::create( DatabaseApi&                         db,
     }
 
     // Parse the Valid/Invalid state
-    JsonVariant validKey = valueSrc["valid"];
-    if ( validKey.isNull() == false && validKey.as<bool>() == false )
+    JsonVariant valid = valueSrc["valid"];
+    if ( valid.isNull() == false && valid.as<bool>() == false )
     {
         // Setter/initial value is the 'invalid-state'
         srcPoint->setInvalid( Api::eLOCK );
@@ -67,7 +81,8 @@ Setter* Setter::create( DatabaseApi&                         db,
     else
     {
         Cpl::Text::FString<128> errMsg;
-        if ( !srcPoint->fromJSON_( valueSrc, Api::eLOCK, &errMsg ) )
+        JsonVariant val = valueSrc["val"];
+        if ( !srcPoint->fromJSON_( val, Api::eLOCK, &errMsg ) )
         {
             CPL_SYSTEM_TRACE_MSG( SECT_, ("Failed to parse 'val' object for the Setter point.id=%lu err=%s", pointId, errMsg.getString()) );
             return nullptr;

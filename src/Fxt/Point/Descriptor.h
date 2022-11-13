@@ -55,6 +55,18 @@ public:
     {
     }
 
+    /// Destructor
+    ~Descriptor()
+    {
+        // Destroy the setter (if I had one).  Note: The Application is responsible for freeing the physical memory
+        if ( m_initialValue )
+        {
+            m_initialValue->~Setter();
+        }
+    }
+
+public:
+
     /// Configure the Descriptor after it has been constructed using the default constructor
     void configure( uint32_t pointId, const char* symbolicName, CreateFunc_T createFunction, Setter* setter=nullptr ) noexcept
     {

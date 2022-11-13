@@ -79,6 +79,8 @@ public:
     /// See Fxt::Point::DatabaseApi
     bool add( Api& pointInstanceToAdd ) noexcept;
 
+    /// See Fxt::Point::DatabaseApi
+    void clearPoints() noexcept;
 
 public:
     /** This method has 'PACKAGE Scope' in that is should only be called by
@@ -196,6 +198,22 @@ bool Database<N>::add( Api& pointToAdd ) noexcept
     m_points[id] = &pointToAdd;
     return true;
 }
+
+template <int N>
+void Database<N>::clearPoints() noexcept
+{
+    // Walk all possible points
+    for ( int i=0; i < N; i++ )
+    {
+        // Call the Point's destructor and then remove the point from the DB
+        if ( m_points[i] != nullptr )
+        {
+            m_points[i]->~Api();
+            m_points[i] = nullptr;
+        }
+    }
+}
+
 
 template <int N>
 void Database<N>::globalLock_() noexcept

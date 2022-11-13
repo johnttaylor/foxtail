@@ -68,6 +68,15 @@ public:
     */
     virtual Fxt::Point::Api* next( Fxt::Point::Api& currentPoint ) const noexcept = 0;
 
+public:
+    /** This method is use clear/empties/resets the Point Database.  This method
+        is responsible for calling the destructor on all existing points
+        prior to resetting.
+
+        Note: Freeing of the Point memory is the responsibility application since
+              the memory comes from the application's allocators
+     */
+    virtual void clearPoints() noexcept = 0;
 
 public:
     /** This method converts the Point's data to JSON string and

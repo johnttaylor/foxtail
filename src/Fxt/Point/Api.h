@@ -57,6 +57,9 @@ public:
         eUNLOCK,                //!< Request to unlock the Point.  If the Point is already unlocked - the request is ignored and the update operation is completed
     };
 
+    /// Invalid Point ID
+    static constexpr uint32_t INVALID_ID = 0xFFFFFFFF;
+
 public:
     /** This method returns the Point unique numeric id
      */

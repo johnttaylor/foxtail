@@ -35,6 +35,18 @@ namespace Card {
 class DatabaseApi
 {
 public:
+    /** This method attempts to parse the provided JSON Object that represents
+        a CARD and create binary representation of the defined card.  If there
+        is an error (e.g. card not supported, missing key/value pairs, etc.) the
+        method returns false; else true is returned.  See the Fxt::Card::FactoryApi
+        interface for the required JSON Object fields.
+
+        This method should ONLY be called after all Factory instances have been
+        registered with the Card Database.
+     */
+    virtual bool createCardfromJSON( JsonVariant cardObj ) noexcept = 0;
+
+public:
     /** This method looks-up the IO card by its 'User facing local ID'.  If the 
         IO Card ID cannot be found, THEN the method returns 0.
      */
@@ -50,6 +62,15 @@ public:
      */
     virtual Api* getNextCard( Api& currentCard ) noexcept = 0;
 
+public:
+    /** This method is use clear/empties/resets the Card Database.  This method 
+        is responsible for calling the destructor on all existing cards
+        prior to resetting.  
+        
+        Note: Freeing of the Point memory is the responsibility application since 
+              the memory comes from the application's allocators
+     */
+    virtual void clearCards() noexcept = 0;
 
 public:
     /** This method looks-up the IO card Factory by its GUID.  If the

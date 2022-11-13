@@ -15,7 +15,6 @@
 
 #include "Fxt/Card/FactoryApi.h"
 #include "Fxt/Card/Database.h"
-#include "Cpl/Container/Dictionary.h"
 #include "Cpl/Memory/ContiguousAllocator.h"
 
 ///
@@ -31,10 +30,10 @@ class FactoryCommon_ : public Fxt::Card::FactoryApi
 {
 public:
     /// Constructor
-    FactoryCommon_( Fxt::Card::DatabaseApi&                             cardDb,
-                    Fxt::Point::DatabaseApi&                            pointDatabase,
-                    PointAllocators_T&                                  pointAllocators,
-                    Cpl::Memory::ContiguousAllocator&                   allocatorForCard );
+    FactoryCommon_( Fxt::Card::DatabaseApi&             cardDb,
+                    Cpl::Memory::ContiguousAllocator&   generalAllocator,
+                    Cpl::Memory::ContiguousAllocator&   statefulDataAllocator,
+                    Fxt::Point::DatabaseApi&            dbForPoints );
 
     /// Destructor
     ~FactoryCommon_();
@@ -43,19 +42,27 @@ public:
     /// See Fxt::Card::FactoryApi
     void destroy( Api& cardToDestory ) noexcept;
 
+protected:
+    /** Helper method to parse basic/common fields for a card.  Returns the
+        card name if successful; else nullptr is returned.  Other fields are
+        returned via the function arguments.
+     */
+    const char* parseBasicFields( JsonVariant& obj,
+                                  uint16_t&    cardId,
+                                  uint16_t&    slotNumber ) noexcept;
 
 protected:
     /// Card database
-    Fxt::Card::DatabaseApi&                             m_cardDb;
+    Fxt::Card::DatabaseApi&             m_cardDb;
 
     /// Point instance database
-    Fxt::Point::DatabaseApi&                            m_pointDatabase;
+    Fxt::Point::DatabaseApi&            m_pointDb;
 
-    /// Point Allocators
-    PointAllocators_T&                                  m_pointAllocators;
+    /// General Allocator
+    Cpl::Memory::ContiguousAllocator&   m_generalAllocator;
     
-    /// General pupose allocator (i.e. everything BUT points)
-    Cpl::Memory::ContiguousAllocator&                   m_allocatorForCard;
+    /// Stateful data allocator
+    Cpl::Memory::ContiguousAllocator&   m_statefulDataAllocator;
 };
 
 

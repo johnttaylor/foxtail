@@ -41,12 +41,19 @@ public:
     /// Constructor
     Setter( Fxt::Point::Api* srcPoint=nullptr );
 
+    /// Destructor
+    ~Setter();
+
 public:
     /** This method update the data/state of 'dstPoint'.  The value/state
         being written is dependent on the concrete instance.
      */
     void setValue( Fxt::Point::Api& dstPoint ) noexcept;
 
+    /** Returns the Point ID of the internal point used to store the 
+        'set value'
+     */
+    size_t getInternalPointId() const noexcept;
 
 public:
     /** This method is used to create the internal point that is used to

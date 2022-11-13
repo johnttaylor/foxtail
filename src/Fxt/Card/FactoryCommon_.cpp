@@ -17,15 +17,17 @@
 ///
 using namespace Fxt::Card;
 
-FactoryCommon_::FactoryCommon_( Fxt::Card::DatabaseApi&                             cardDb,
-                                Fxt::Point::DatabaseApi&                            pointDatabase,
-                                PointAllocators_T&                                  pointAllocators,
-                                Cpl::Memory::ContiguousAllocator&                   allocatorForCard )
+FactoryCommon_::FactoryCommon_( Fxt::Card::DatabaseApi&             cardDb,
+                                Cpl::Memory::ContiguousAllocator&   generalAllocator,
+                                Cpl::Memory::ContiguousAllocator&   statefulDataAllocator,
+                                Fxt::Point::DatabaseApi&            m_pointDb )
     : m_cardDb( cardDb )
-    , m_pointDatabase( pointDatabase )
-    , m_pointAllocators( pointAllocators )
-    , m_allocatorForCard( allocatorForCard )
+    , m_pointDb( m_pointDb )
+    , m_generalAllocator( generalAllocator )
+    , m_statefulDataAllocator( statefulDataAllocator )
 {
+    // Auto register the card factory
+    cardDb.insert_( *this );
 }
 
 FactoryCommon_::~FactoryCommon_()
@@ -37,4 +39,37 @@ void FactoryCommon_::destroy( Api& cardToDestory ) noexcept
 {
     // Call the card's destructor. Note: The Application is still responsible for 'freeing/reseting' the card's memory allocator
     cardToDestory.~Api();
+}
+
+const char* FactoryCommon_::parseBasicFields( JsonVariant& obj,
+                                              uint16_t&    cardId,
+                                              uint16_t&    slotNumber ) noexcept
+{
+    // Ensure that a Id has been assigned
+    if ( obj["id"].isNull() )
+    {
+        return nullptr;
+    }
+    cardId = obj["id"];
+
+    // Ensure that a Slot ID has been assigned
+    if ( obj["slot"].isNull() )
+    {
+        return nullptr;
+    }
+    slotNumber = obj["slot"];
+
+    // Get the Text label
+    const char* name = obj["name"];
+    if ( name == nullptr )
+    {
+        return nullptr;
+    }
+    char* memory4Name = (char*) m_generalAllocator.allocate( strlen( name ) + 1 );
+    if ( memory4Name == nullptr )
+    {
+        return nullptr;
+    }
+    strcpy( memory4Name, name );
+    return memory4Name;
 }

@@ -16,6 +16,8 @@ using namespace Fxt::Point;
 
 #define METAPTR     ((PointCommon_::Metadata_T*)(m_state))
 
+constexpr uint32_t Fxt::Point::Api::INVALID_ID;
+
 ////////////////////////
 PointCommon_::PointCommon_( DatabaseApi& db, uint32_t pointId, const char* pointName, size_t stateSize )
     : m_id( pointId )

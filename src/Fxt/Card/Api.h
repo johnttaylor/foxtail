@@ -24,38 +24,41 @@
 /// ERROR Code: Unable to allocate memory for the card's Point Banks
 #define FXT_CARD_ERR_MEMORY_POINT_BANKS         1
 
-/// ERROR Code: Unable to allocate memory for the card's Input Point Descriptors
-#define FXT_CARD_ERR_MEMORY_INPUT_DESCRIPTORS   2
-
-/// ERROR Code: Unable to allocate memory for the card's Output Point Descriptors
-#define FXT_CARD_ERR_MEMORY_OUTPUT_DESCRIPTORS  3
+/// ERROR Code: Out-of-memory when parsing/creating Descriptors
+#define FXT_CARD_ERR_MEMORY_DESCRIPTORS         2
 
 /// ERROR Code: Configuration contains the wrong GUID (i.e. the JSON object calls out a different card type)
-#define FXT_CARD_ERR_GUID_WRONG_TYPE            4
+#define FXT_CARD_ERR_GUID_WRONG_TYPE            3
 
 /// ERROR Code: Configuration does NOT contain a valid ID value
-#define FXT_CARD_ERR_CARD_MISSING_ID            5
+#define FXT_CARD_ERR_CARD_MISSING_ID            4
 
 /// ERROR Code: Unable to allocate memory for the card's name
-#define FXT_CARD_ERR_MEMORY_CARD_NAME           6
+#define FXT_CARD_ERR_MEMORY_CARD_NAME           5
 
 /// ERROR Code: Configuration does NOT contain a valid ID value for one of it Points
-#define FXT_CARD_ERR_POINT_MISSING_ID           7
+#define FXT_CARD_ERR_POINT_MISSING_ID           6
 
 /// ERROR Code: Configuration contains TOO many input Points
-#define FXT_CARD_ERR_TOO_MANY_INPUT_POINTS      8
+#define FXT_CARD_ERR_TOO_MANY_INPUT_POINTS      7
 
 /// ERROR Code: Configuration contains TOO many output Points
-#define FXT_CARD_ERR_TOO_MANY_OUTPUT_POINTS     9
+#define FXT_CARD_ERR_TOO_MANY_OUTPUT_POINTS     8
 
 /// ERROR Code: Configuration contains duplicate or our-of-range Channel IDs
-#define FXT_CARD_ERR_BAD_CHANNEL_ASSIGNMENTS    10
+#define FXT_CARD_ERR_BAD_CHANNEL_ASSIGNMENTS    9
 
 /// ERROR Code: Configuration does NOT contain a Slot ID
-#define FXT_CARD_ERR_CARD_MISSING_SLOT_ID       11
+#define FXT_CARD_ERR_CARD_MISSING_SLOT_ID       10
 
 /// ERROR Code: Configuration does NOT contain a Card name
-#define FXT_CARD_ERR_CARD_MISSING_NAME          12
+#define FXT_CARD_ERR_CARD_MISSING_NAME          11
+
+/// ERROR Code: Error occurred while parsing/creating input descriptor(s)
+#define FXT_CARD_ERR_CARD_INPUT_DESCRIPTOR      12
+
+/// ERROR Code: Error occurred while parsing/creating output descriptor(s)
+#define FXT_CARD_ERR_CARD_OUTPUT_DESCRIPTOR     13
 
 /// ERROR Code: Code to use for the start of card-specific Error codes
 #define FXT_CARD_ERR_START_CARD_SPECIFIC        100
@@ -157,7 +160,7 @@ public:
         error code.  If the specified error code is not-valid/out-of-range for
         the card, a null pointer is returned.
      */
-    virtual const char* getErrorText( uint32_t errCode ) const noexcept;
+    static const char* getErrorText( uint32_t errCode ) noexcept;
 
 public:
     /// Virtual destructor to make the compiler happy

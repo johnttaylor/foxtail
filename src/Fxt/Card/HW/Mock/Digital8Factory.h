@@ -1,5 +1,5 @@
-#ifndef Fxt_Card_HW_Mock_DigitalFactory_h_
-#define Fxt_Card_HW_Mock_DigitalFactory_h_
+#ifndef Fxt_Card_HW_Mock_Digital8Factory_h_
+#define Fxt_Card_HW_Mock_Digital8Factory_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -13,7 +13,7 @@
 /** @file */
 
 #include "Fxt/Card/FactoryCommon_.h"
-#include "Fxt/Card/HW/Mock/Digital.h"
+#include "Fxt/Card/HW/Mock/Digital8.h"
 
 ///
 namespace Fxt {
@@ -25,7 +25,7 @@ namespace HW {
 namespace Mock {
 
 
-/** This concrete class implements the Factory API to create a Mock Digital
+/** This concrete class implements the Factory API to create a Mock Digital8
     card.
 
     \code
@@ -36,33 +36,34 @@ namespace Mock {
       "name": "My Digital Card",                        // Text label for the card
       "id": 0,                                          // ID assigned to the card
       "type": "59d33888-62c7-45b2-a4d4-9dbc55914ed3",   // Identifies the card type.  Value comes from the Supported/Available-card-list
-      "typename": "Fxt::Card::HW::Mock::Digital",       // Human readable type name
+      "typename": "Fxt::Card::HW::Mock::Digital8",      // Human readable type name
       "slot": 0,                                        // Physical identifier, e.g. its the card position in the Node's physical chassis
       "points": {
-        "inputs": [                                     // Inputs. The card supports 0 to 32 input points
+        "inputs": [                                     // Inputs. The card supports 8 input points that is exposed a single Byte
           {
-            "channel": 0,                               // Physical identifier, e.g. terminal/wiring connection number on the card. Range: 1 to 32
+            "channel": 1                                // Always set to 1
             "id": 0,                                    // ID assigned to the Virtual Point that represents the input value
             "ioRegId": 0,                               // The ID of the Point's IO register.
-            "internalId": 0,                            // The ID of the Point's internal register.
-            "name": "My input point0 name"              // Text label for the input signal
-            "initial": {                                 
-              "valid": true|false                       // Initial valid state for the internal point
-              "val": true|false                         // Initial value for the input point. Only required when 'valid' is true
+            "name": "My input name"                     // Text label for the 8 input signals
+            "initial": {                                // OPTIONAL.  If not used, the IO Register point defaults to the invalid state.
+              "valid": true|false,                      // Initial valid state for the IO Register point
+              "val":  <num>                             // Initial value for the input point. Only required when 'valid' is true
               "id": 0                                   // The ID of the internal point that is used store the initial value in binary form
             }
-          },
-          ...
+          }
         ],
         "outputs": [                                    // Outputs. The card supports 0 to 32 output points
           {
-            "channel": 0,                               // Physical identifier, e.g. terminal/wiring connection number on the card
+            "channel": 1                                // Always set to 1
             "id": 0,                                    // ID assigned to the Virtual Point that represents the output value
             "ioRegId": 0,                               // The ID of the Point's IO register.
-            "internalId": 0,                            // The ID of the Point's internal register.
-            "name": "My output point0 name"             // Text label for the output signal
-          },
-          ...
+            "name": "My output name"                    // Text label for the 8 output signals
+            "initial": {                                // OPTIONAL.  If not used, the IO Register point defaults to the invalid state.
+              "valid": true|false,                      // Initial valid state for the IO Register point
+              "val":  <num>                             // Initial value for the input point. Only required when 'valid' is true
+              "id": 0                                   // The ID of the internal point that is used store the initial value in binary form
+            }
+          }
         ]
       }
     }
@@ -70,24 +71,24 @@ namespace Mock {
     \endcode
 
  */
-class DigitalFactory : public Fxt::Card::FactoryCommon_
+class Digital8Factory : public Fxt::Card::FactoryCommon_
 {
 public:
     /// Constructor
-    DigitalFactory( Fxt::Card::DatabaseApi&            cardDb,
-                    Fxt::Point::DatabaseApi&           pointDatabase,
-                    PointAllocators_T&                 pointAllocators,
-                    Cpl::Memory::ContiguousAllocator&  allocatorForCard );
+    Digital8Factory( Fxt::Card::DatabaseApi&             cardDb,
+                     Cpl::Memory::ContiguousAllocator&   generalAllocator,
+                     Cpl::Memory::ContiguousAllocator&   statefulDataAllocator,
+                     Fxt::Point::DatabaseApi&            dbForPoints );
 
     /// Destructor
-    ~DigitalFactory();
+    ~Digital8Factory();
 
 public:
     /// See Fxt::Card::FactoryApi
     bool create( JsonVariant& cardObject ) noexcept;
 
     /// See Fxt::Card::FactoryApi
-    const char* getGuid() const noexcept { return Digital::GUID_STRING; }
+    const char* getGuid() const noexcept { return Digital8::GUID_STRING; }
 };
 
 

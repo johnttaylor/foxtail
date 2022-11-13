@@ -14,8 +14,11 @@
 
 
 #include "Fxt/Card/Api.h"
-#include "Fxt/Card/Banks.h"
+#include "Fxt/Point/Bank.h"
+#include "Fxt/Point/DatabaseApi.h"
+#include "Fxt/Point/Descriptor.h"
 #include "Cpl/Json/Arduino.h"
+#include "Cpl/Memory/ContiguousAllocator.h"
 
 ///
 namespace Fxt {
@@ -31,7 +34,12 @@ public:
 
 public:
     /// Constructor
-    Common_( Cpl::Memory::ContiguousAllocator& allocator );
+    Common_( Cpl::Memory::ContiguousAllocator&  generalAllocator,
+             Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+             Fxt::Point::DatabaseApi&           dbForPoints,
+             uint16_t                           cardId,
+             uint16_t                           slotNumber,
+             const char*                        cardName );
 
     /// Destructor
     ~Common_();
@@ -65,30 +73,47 @@ public:
     uint16_t getSlot() const noexcept;
 
 protected:
-    /// Updates the IO Registers from the Internal Card Inputs
-    virtual bool updateInputRegisters() noexcept;
-
-    /// Updates the Internal Card Outputs from the IO Registers
-    virtual bool readOutputRegisters() noexcept;
-
-    /// Parses/extracts the Card's slot number and name from the JSON config
-    virtual bool parseCommon( JsonVariant& jsonConfigObject, const char* expectedGuid ) noexcept;
-
-    /// Helper method to allocate a bank instance
-    Fxt::Point::Bank* createBank( Cpl::Memory::ContiguousAllocator& allocator );
-
+    /// Helper method to create descriptor instances
+    bool createDescriptors( Fxt::Point::Descriptor::CreateFunc_T createFunc,
+                            Fxt::Point::Descriptor*              vpointDesc[],
+                            Fxt::Point::Descriptor*              ioRegDesc[],
+                            uint16_t                             channelIds[],
+                            JsonArray&                           json,
+                            size_t                               numDescriptors,
+                            uint32_t                             errCode ) noexcept;
+    
+    /** Helper method to set an initial value from a 'setter'.  If the 
+        the descriptor has no 'setter' then nothing is done
+     */
+    void setInitialValue( Fxt::Point::Descriptor& descriptor ) noexcept;
+    
 protected:
-    /// Allocator for all thing dynamic - except for Points
-    Cpl::Memory::ContiguousAllocator&   m_allocator;
+    /// Handle to the Point data base
+    Fxt::Point::DatabaseApi&            m_dbForPoints; 
 
-    /// Point Banks
-    Banks_T                             m_banks;
+    /// General purpose allocator
+    Cpl::Memory::ContiguousAllocator&   m_generalAllocator;
+
+    /// Allocator for a Point's stateful data
+    Cpl::Memory::ContiguousAllocator&   m_statefulDataAllocator;
+    
+    /// Bank for the Card's Input IO Register Points
+    Fxt::Point::Bank                    m_registerInputs;
+
+    /// Bank for the Card's Input Virtual Points
+    Fxt::Point::Bank                    m_virtualInputs;          
+
+    /// Bank for the Card's Output IO Register Points
+    Fxt::Point::Bank                    m_registerOutputs;        
+    
+    /// Bank for the Card's OUtput Virtual Points
+    Fxt::Point::Bank                    m_virtualOutputs;         
 
     /// Error state. A value of 0 indicates NO error
     uint32_t                            m_error;
 
     /// The card's runtime name
-    char*                               m_cardName;
+    const char*                         m_cardName;
 
     /// The card's 'User facing local ID'
     uint16_t                            m_id;

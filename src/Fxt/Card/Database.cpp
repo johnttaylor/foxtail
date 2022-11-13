@@ -32,12 +32,12 @@ Database::Database( const char* ignoreThisParameter_usedToCreateAUniqueConstruct
 
 
 ///////////////////////////////////////////////////////////////////////////////
-Api* Database::lookupCard( uint32_t cardLocalId ) noexcept
+Api* Database::lookupCard( uint32_t cardId ) noexcept
 {
     Api* item  = m_cards.first();
     while ( item )
     {
-        if ( item->getId() == cardLocalId )
+        if ( item->getId() == cardId )
         {
             return item;
         }
@@ -83,6 +83,19 @@ FactoryApi* Database::getFirstFactory() noexcept
 FactoryApi* Database::getNextFactory( FactoryApi& currentFactory ) noexcept
 {
     return m_factories.next( currentFactory );
+}
+
+
+void Database::clearCards() noexcept
+{
+    // Drain the list 
+    Api* item = m_cards.get();
+    while ( item )
+    {
+        // Call the Card destructor (but do not free the memory)
+        item->~Api();
+        item = m_cards.get();
+    }
 }
 
 

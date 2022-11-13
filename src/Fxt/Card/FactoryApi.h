@@ -15,10 +15,8 @@
 #include "Cpl/Container/Item.h"
 #include "Cpl/Memory/Allocator.h"
 #include "Cpl/Json/Arduino.h"
-#include "Cpl/Container/Dictionary.h"
 #include "Fxt/Point/Bank.h"
 #include "Fxt/Card/Api.h"
-#include "Fxt/Card/Banks.h"
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -48,11 +46,10 @@ namespace Card {
           "points": {
              "<groupingName>": [ // Array of points with the same Fxt::Point type, e.g "analogInputs", "digitalOutputs", etc.
                {
-                 "channel":    <reference to a phyiscal terminal/connector as a number: Range: 0-N>,
-                 "id":         <System/Visible/Public ID.  Must be unique.  Range: 0-4GB>,
-                 "ioRegId":    <The ID of the Point's IO register. Must be unique.  Range: 0-4GB>,
-                 "internalId": <The ID of the Point's internal register. Must be unique.  Range: 0-4GB>,
-                 "name":       "<human readable name for the point/channel/IO>"
+                 "channel":             <reference to a physical terminal/connector as a number. Range: 1 to N>
+                 "id":                  <Virtual Point ID.  Must be unique.  Range: 0-4GB>,
+                 "ioRegId":             <The ID of the Point's IO register. Must be unique.  Range: 0-4GB>,
+                 "name":                "<human readable name for the point/channel/IO>"
                  "initial": {           // OPTIONAL initial value/state specifier for the Point
                    "valid": true|false  // Initial valid state for the internal point
                    "val":               <point value as defined by the Point type's fromJSON syntax - only required when 'valid' is 'true'>

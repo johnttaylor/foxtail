@@ -49,7 +49,7 @@ public:
         is returned.
      */
     virtual bool populate( Descriptor*                       listOfDescriptorPointers[], 
-                           Cpl::Memory::ContiguousAllocator& allocatorForPoints, 
+                           Cpl::Memory::ContiguousAllocator& generalAllocator,
                            Fxt::Point::DatabaseApi&          dbForPoints,
                            Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData ) noexcept = 0;
 
