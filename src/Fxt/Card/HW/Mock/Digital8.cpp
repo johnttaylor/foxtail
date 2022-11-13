@@ -13,6 +13,7 @@
 
 #include "Digital8.h"
 #include "Cpl/System/Assert.h"
+#include "Fxt/Point/Uint8.h"
 #include <stdint.h>
 #include <new>
 
@@ -154,8 +155,8 @@ bool Digital8::start() noexcept
     }
 
     // Set the initial IO Register values
-    setInitialValue( *m_ioRegInDescriptors[0] );
-    setInitialValue( *m_ioRegOutDescriptors[0] );
+    setInitialValue( m_ioRegInDescriptors[0] );
+    setInitialValue( m_ioRegOutDescriptors[0] );
 
     // Call the parent's method do complete the start-up actions
     return Common_::start();
@@ -202,12 +203,11 @@ void Digital8::toggleInputs( uint8_t bitMaskToXOR )
     ioRegPtr->maskXor( bitMaskToXOR );
 }
 
-bool Digital8::getOutputs( uint8_t & valueMask )
+bool Digital8::getOutputs( uint8_t& valueMask )
 {
     Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
-    Fxt::Point::Uint8* ioRegPtr = (Fxt::Point::Uint8*) m_dbForPoints.lookupById( m_ioRegInDescriptors[0]->getPointId() );
-    uint8_t val = 0;
-    if ( ioRegPtr->read( val ) )
+    Fxt::Point::Uint8* ioRegPtr = (Fxt::Point::Uint8*) m_dbForPoints.lookupById( m_ioRegOutDescriptors[0]->getPointId() );
+    if ( ioRegPtr->read( valueMask ) )
     {
         return true;
     }

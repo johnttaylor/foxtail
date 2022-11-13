@@ -82,9 +82,10 @@ protected:
                             size_t                               numDescriptors ) noexcept;
     
     /** Helper method to set an initial value from a 'setter'.  If the 
-        the descriptor has no 'setter' then nothing is done
+        the descriptor is null or the descriptor has no 'setter' then nothing 
+        is done
      */
-    void setInitialValue( Fxt::Point::Descriptor& descriptor ) noexcept;
+    void setInitialValue( Fxt::Point::Descriptor* descriptor ) noexcept;
     
 protected:
     /// Handle to the Point data base

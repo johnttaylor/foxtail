@@ -13,6 +13,7 @@
 #include "Cpl/System/_testsupport/Shutdown_TS.h"
 #include "Fxt/Card/HW/Mock/Digital8.h"
 #include "Fxt/Point/Database.h"
+#include "Fxt/Point/Uint8.h"
 #include "Cpl/Memory/LeanHeap.h"
 #include "Cpl/System/Trace.h"
 #include <string.h>
@@ -67,7 +68,7 @@ static size_t statefulHeap_[10000];
 #define MAX_POINTS      100
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE( "Digitl8" )
+TEST_CASE( "Digital8" )
 {
     Cpl::System::Shutdown_TS::clearAndUseCounter();
     Cpl::Memory::LeanHeap generalAllocator( generalHeap_, sizeof( generalHeap_ ) );
@@ -91,7 +92,7 @@ TEST_CASE( "Digitl8" )
                       cardObj );
 
         REQUIRE( uut.getErrorCode() == FXT_CARD_ERR_NO_ERROR );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", Fxt::Card::Api::getErrorText( uut.getErrorCode() ) ));
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", Fxt::Card::Api::getErrorText( uut.getErrorCode() )) );
 
         REQUIRE( strcmp( uut.getTypeName(), Digital8::TYPE_NAME ) == 0 );
         REQUIRE( strcmp( uut.getTypeGuid(), Digital8::GUID_STRING ) == 0 );
@@ -123,7 +124,7 @@ TEST_CASE( "Digitl8" )
         REQUIRE( uut.isStarted() == false );
         REQUIRE( uut.start() );
         REQUIRE( uut.isStarted() );
-        
+
         pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 2 );
         uint8_t pointVal = 0;
         REQUIRE( pointPtr->read( pointVal ) );
@@ -134,7 +135,7 @@ TEST_CASE( "Digitl8" )
         REQUIRE( pointPtr->read( pointVal ) );
         REQUIRE( pointVal == 1 );
 
-        
+
         uut.scanInputs();
         pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 1 );
         REQUIRE( pointPtr->read( pointVal ) );
@@ -152,7 +153,7 @@ TEST_CASE( "Digitl8" )
         pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 4 );
         REQUIRE( pointPtr->read( pointVal ) );
         REQUIRE( pointVal == 32 );
-        
+
         pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 3 );
         pointPtr->setInvalid();
         uut.flushOutputs();
@@ -163,6 +164,44 @@ TEST_CASE( "Digitl8" )
         REQUIRE( uut.isStarted() == false );
     }
 
+
+    SECTION( "app interface" )
+    {
+        StaticJsonDocument<10240> doc;
+        DeserializationError err = deserializeJson( doc, CARD_DEFINTION );
+        REQUIRE( err == DeserializationError::Ok );
+
+        JsonVariant cardObj = doc["cards"][0];
+        Digital8 uut( generalAllocator,
+                      statefulAllocator,
+                      pointDb,
+                      11,
+                      22,
+                      "bob",
+                      cardObj );
+
+        REQUIRE( uut.getErrorCode() == FXT_CARD_ERR_NO_ERROR );
+        REQUIRE( uut.start() );
+
+        uut.setInputBit( 1 );
+        Fxt::Point::Uint8* pointPtr   = (Fxt::Point::Uint8*) pointDb.lookupById( 2 );
+        uint8_t            pointValue = 0;
+        REQUIRE( pointPtr->read( pointValue ) );
+        REQUIRE( pointValue == 0x82 );
+        uut.toggleInputBit( 7 );
+        REQUIRE( pointPtr->read( pointValue ) );
+        REQUIRE( pointValue == 0x02 );
+        uut.setInputBit( 0 );
+        uut.clearInputBit( 1 );
+        REQUIRE( pointPtr->read( pointValue ) );
+        REQUIRE( pointValue == 0x01 );
+
+        pointPtr   = (Fxt::Point::Uint8*) pointDb.lookupById( 3 );
+        pointPtr->write( 0xAA );
+        uut.flushOutputs();
+        REQUIRE( uut.getOutputs( pointValue ) );
+        REQUIRE( pointValue == 0xAA );
+    }
 
     REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );
 }

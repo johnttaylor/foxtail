@@ -1,5 +1,5 @@
-#ifndef Fxt_Card_HW_Mock_Digital8Factory_h_
-#define Fxt_Card_HW_Mock_Digital8Factory_h_
+#ifndef Fxt_Card_HW_Mock_Analog8Factory_h_
+#define Fxt_Card_HW_Mock_Analog8Factory_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -13,7 +13,7 @@
 /** @file */
 
 #include "Fxt/Card/FactoryCommon_.h"
-#include "Fxt/Card/HW/Mock/Digital8.h"
+#include "Fxt/Card/HW/Mock/AnalogIn8.h"
 
 ///
 namespace Fxt {
@@ -25,28 +25,29 @@ namespace HW {
 namespace Mock {
 
 
-/** This concrete class implements the Factory API to create a Mock Digital8
+/** This concrete class implements the Factory API to create a Mock Analog8
     card.
 
+
  */
-class Digital8Factory : public Fxt::Card::FactoryCommon_
+class AnalogIn8Factory : public Fxt::Card::FactoryCommon_
 {
 public:
     /// Constructor
-    Digital8Factory( Fxt::Card::DatabaseApi&             cardDb,
-                     Cpl::Memory::ContiguousAllocator&   generalAllocator,
-                     Cpl::Memory::ContiguousAllocator&   statefulDataAllocator,
-                     Fxt::Point::DatabaseApi&            dbForPoints );
+    AnalogIn8Factory( Fxt::Card::DatabaseApi&             cardDb,
+                      Cpl::Memory::ContiguousAllocator&   generalAllocator,
+                      Cpl::Memory::ContiguousAllocator&   statefulDataAllocator,
+                      Fxt::Point::DatabaseApi&            dbForPoints );
 
     /// Destructor
-    ~Digital8Factory();
+    ~AnalogIn8Factory();
 
 public:
     /// See Fxt::Card::FactoryApi
     Api* create( JsonVariant& cardObject, uint32_t& cardErrorCode ) noexcept;
 
     /// See Fxt::Card::FactoryApi
-    const char* getGuid() const noexcept { return Digital8::GUID_STRING; }
+    const char* getGuid() const noexcept { return AnalogIn8::GUID_STRING; }
 };
 
 

@@ -201,17 +201,20 @@ bool Common_::createDescriptors( Fxt::Point::Descriptor::CreateFunc_T createFunc
     return true;
 }
 
-void Common_::setInitialValue( Fxt::Point::Descriptor& descriptor ) noexcept
+void Common_::setInitialValue( Fxt::Point::Descriptor* descriptor ) noexcept
 {
-    // Set the initial INPUT value (if one was provided)
-    Fxt::Point::Setter* setterPtr = descriptor.getSetter();
-    if ( setterPtr )
+    if ( descriptor != nullptr )
     {
-        Fxt::Point::Api* ioRegPtr = m_dbForPoints.lookupById( descriptor.getPointId() );
-        if ( ioRegPtr )
+        // Set the initial INPUT value (if one was provided)
+        Fxt::Point::Setter* setterPtr = descriptor->getSetter();
+        if ( setterPtr )
         {
-            // Set the IO Register state
-            setterPtr->setValue( *ioRegPtr );
+            Fxt::Point::Api* ioRegPtr = m_dbForPoints.lookupById( descriptor->getPointId() );
+            if ( ioRegPtr )
+            {
+                // Set the IO Register state
+                setterPtr->setValue( *ioRegPtr );
+            }
         }
     }
 }

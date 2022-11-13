@@ -15,7 +15,6 @@
 
 #include "Fxt/Card/Common_.h"
 #include "Cpl/Json/Arduino.h"
-#include "Fxt/Point/Uint8.h"
 #include "Cpl/System/Mutex.h"
 
 ///
@@ -60,8 +59,8 @@ namespace Mock {
             "internalId": 0,                            // The ID of the Point's internal register.
             "name": "My input name"                     // Text label for the 8 input signals
             "initial": {
-              "valid": <num>                            // Initial valid state for the IO Register point
-              "val": true|false                         // Initial value for the input point. Only required when 'valid' is true
+              "valid": true|false                       // Initial valid state for the IO Register point
+              "val": <integer>                          // Initial value for the input point. Only required when 'valid' is true
               "id": 0                                   // The ID of the internal point that is used store the initial value in binary form
             }
           }
@@ -74,8 +73,8 @@ namespace Mock {
             "internalId": 0,                            // The ID of the Point's internal register.
             "name": "My output name"                    // Text label for the 8 output signals
             "initial": {
-              "valid": <num>                            // Initial valid state for the IO Register point
-              "val": true|false                         // Initial value for the output point. Only required when 'valid' is true
+              "valid": true|false                       // Initial valid state for the IO Register point
+              "val": <integer>                          // Initial value for the input point. Only required when 'valid' is true
               "id": 0                                   // The ID of the internal point that is used store the initial value in binary form
             }
           }
