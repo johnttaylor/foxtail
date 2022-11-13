@@ -32,8 +32,7 @@ class DatabaseApi
 public:
     /** This method performs a generic looks-up of a Point instance by
         its numeric Identifier and returns a pointer to the instance.  If the
-        Point identifier cannot be found and 'fatalOnNotFound' is true than a
-        fatal error is generated; else nullptr is returned
+        Point identifier cannot be found a nullptr is returned.
 
         This method is ONLY okay to call from ANY thread AFTER the Point database
         has been populated.
@@ -44,29 +43,11 @@ public:
     */
     virtual Fxt::Point::Api* lookupById( uint32_t pointIdToFind ) const noexcept = 0;
 
-    /** This method returns the 'first' Point instance in the data base.  If
-        the database is empty, a nullptr is returned.
-
-        Note: There is NO guarantees with respect to the order of the Points
-              in the database
-
-        This method is not type-safe because it returns point to the Point base
-        class (which does not have the read/write operations).  The application
-        is required to properly down case the pointer to appropriate child class.
+    /** This method returns the maximum number of Points that the database
+        can store.
     */
-    virtual Fxt::Point::Api* first() const noexcept = 0;
+    virtual size_t getMaxNumPoints() const noexcept = 0;
 
-    /** This method returns the 'next' Point instance in the data base.  If
-        there are no more instances in the database, a nullptr is returned.
-
-        Note: There is NO guarantees with respect to the order of the Points
-              in the database
-
-        This method is not type-safe because it returns point to the Point base
-        class (which does not have the read/write operations).  The application
-        is required to properly down case the pointer to appropriate child class.
-    */
-    virtual Fxt::Point::Api* next( Fxt::Point::Api& currentPoint ) const noexcept = 0;
 
 public:
     /** This method is use clear/empties/resets the Point Database.  This method
@@ -115,7 +96,8 @@ public:
                          char*            dst,
                          size_t           dstSize,
                          bool&            truncated,
-                         bool             verbose = true ) noexcept = 0;
+                         bool             verbose = true,
+                         bool             pretty  = true) noexcept = 0;
 
     /** This method attempts to convert the null terminated JSON formated 'src'
         string to its binary format and copies the result to the Point's

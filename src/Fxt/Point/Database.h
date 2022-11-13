@@ -61,17 +61,18 @@ public:
     Fxt::Point::Api* lookupById( uint32_t pointIdToFind ) const noexcept;
 
     /// See Fxt::Point::DatabaseApi
-    Fxt::Point::Api* first() const noexcept;
-    
+    size_t getMaxNumPoints() const noexcept;
+
     /// See Fxt::Point::DatabaseApi
     Fxt::Point::Api* next( Fxt::Point::Api& currentPoint ) const noexcept;
-    
+
     /// See Fxt::Point::DatabaseApi
     bool toJSON( uint32_t         pointId,
                  char*            dst,
                  size_t           dstSize,
                  bool&            truncated,
-                 bool             verbose = true ) noexcept;
+                 bool             verbose = true,
+                 bool             pretty  = true ) noexcept;
 
     /// See Fxt::Point::DatabaseApi
     bool fromJSON( const char* src, Cpl::Text::String* errorMsg=0 ) noexcept;
@@ -169,20 +170,9 @@ Fxt::Point::Api* Database<N>::lookupById( uint32_t pointIdToFind ) const noexcep
 }
 
 template <int N>
-Fxt::Point::Api* Database<N>::first() const noexcept
+size_t Database<N>::getMaxNumPoints() const noexcept
 {
-    return m_points[0];
-}
-
-template <int N>
-Fxt::Point::Api* Database<N>::next( Fxt::Point::Api& currentPoint ) const noexcept
-{
-    uint32_t nextId = currentPoint.getId() + 1;
-    if ( nextId >= N )
-    {
-        return nullptr;
-    }
-    return m_points[nextId];
+    return N;
 }
 
 template <int N>
@@ -232,7 +222,8 @@ bool Database<N>::toJSON( uint32_t         pointId,
                           char*            dst,
                           size_t           dstSize,
                           bool&            truncated,
-                          bool             verbose ) noexcept
+                          bool             verbose,
+                          bool             pretty ) noexcept
 {
     // Get the point instance
     Api* point = lookupById( pointId );
@@ -269,8 +260,18 @@ bool Database<N>::toJSON( uint32_t         pointId,
     // Generate the actual output string 
     if ( result )
     {
-        size_t jsonLen   = measureJson( Database<N>::g_doc_ );
-        size_t outputLen = serializeJson( Database<N>::g_doc_, dst, dstSize );
+        size_t jsonLen;
+        size_t outputLen;
+        if ( !pretty )
+        {
+            jsonLen   = measureJson( Database<N>::g_doc_ );
+            outputLen = serializeJson( Database<N>::g_doc_, dst, dstSize );
+        }
+        else
+        {
+            jsonLen   = measureJsonPretty( Database<N>::g_doc_ );
+            outputLen = serializeJsonPretty( Database<N>::g_doc_, dst, dstSize );
+        }
         truncated = outputLen == jsonLen ? false : true;
     }
 
