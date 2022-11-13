@@ -1,5 +1,5 @@
-#ifndef Fxt_Card_DatabaseApi_h_
-#define Fxt_Card_DatabaseApi_h_
+#ifndef Fxt_Card_FactoryDatabaseApi_h_
+#define Fxt_Card_FactoryDatabaseApi_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -22,17 +22,15 @@ namespace Fxt {
 namespace Card {
 
 
-/** This abstract class defines the interface for the IO Card Database.  The
-    database contains the list of all currently created IO Cards.  It also
-    contains the list of all support IO Card type (aka. factory instances)
-    for the HW platform.
+/** This abstract class defines the interface for the IO Card Factory Database.  
+    The database contains the list of Factory instances for all support IO
+    card types.
 
-    Note: There is no guaranteed order to the IO Card and IO Card Factory
-          lists.
+    Note: There is no guaranteed order IO Card Factory list.
 
     The semantics of the Database interface is NOT thread safe.
  */
-class DatabaseApi
+class FactoryDatabaseApi
 {
 public:
     /** This method attempts to parse the provided JSON Object that represents
@@ -51,32 +49,6 @@ public:
     virtual Api* createCardfromJSON( JsonVariant cardObj, uint32_t cardErrorCode ) noexcept = 0;
 
 public:
-    /** This method looks-up the IO card by its 'User facing local ID'.  If the 
-        IO Card ID cannot be found, THEN the method returns 0.
-     */
-    virtual Api* lookupCard( uint16_t cardId ) noexcept = 0;
-
-    /** This method returns a pointer to the first IO Card in the Database. If 
-        there are no IO Cards in the Database, THEN the method returns 0.
-     */
-    virtual Api* getFirstCard() noexcept = 0;
-
-    /** This method returns the next IO Card in the Database. If 'currentCard' 
-        is the last IO Card in the Database the method returns 0.
-     */
-    virtual Api* getNextCard( Api& currentCard ) noexcept = 0;
-
-public:
-    /** This method is use clear/empties/resets the Card Database.  This method 
-        is responsible for calling the destructor on all existing cards
-        prior to resetting.  
-        
-        Note: Freeing of the Point memory is the responsibility application since 
-              the memory comes from the application's allocators
-     */
-    virtual void clearCards() noexcept = 0;
-
-public:
     /** This method looks-up the IO card Factory by its GUID.  If the
         IO Card Factory GUID cannot be found (i.e. card type not supported by
         the platform), THEN the method returns 0.
@@ -84,37 +56,20 @@ public:
         The 'guidCardTypeId' is null terminated string contain a 8-4-4-4-12 
         formated GUID.
      */
-    virtual FactoryApi* lookupFactory( const char* guidCardTypeId ) noexcept = 0;
+    virtual FactoryApi* lookup( const char* guidCardTypeId ) noexcept = 0;
 
     /** This method returns a pointer to the first IO Card Factory in the 
         Database. If there are no IO Card Factories in the Database, THEN the 
         method returns 0.
      */
-    virtual FactoryApi* getFirstFactory() noexcept = 0;
+    virtual FactoryApi* first() noexcept = 0;
 
     /** This method returns the next IO Card Factory in the Database. If 
         'currentFactory' is the last IO Card Factory in the Database the method 
         returns 0.
      */
-    virtual FactoryApi* getNextFactory( FactoryApi& currentFactory ) noexcept = 0;
+    virtual FactoryApi* next( FactoryApi& currentFactory ) noexcept = 0;
 
-
-public:
-    /** This method has 'PACKAGE Scope' in that is should only be called by
-        other classes in the Fxt::Card namespace.  It is ONLY public to avoid
-        the tight coupling of C++ friend mechanism.
-
-        This method inserts a IO Card instance into the Model Database.
-     */
-    virtual void insert_( Api& cardToAdd ) noexcept = 0;
-
-    /** This method has 'PACKAGE Scope' in that is should only be called by
-        other classes in the Fxt::Card namespace.  It is ONLY public to avoid
-        the tight coupling of C++ friend mechanism.
-
-        This method removes a IO Card instance from the Model Database.
-     */
-    virtual void remove_( Api& cardToRemove ) noexcept = 0;
 
 public:
     /** This method has 'PACKAGE Scope' in that is should only be called by
@@ -135,7 +90,7 @@ public:
 
 public:
     /// Virtual destructor to make the compiler happy
-    virtual ~DatabaseApi() {}
+    virtual ~FactoryDatabaseApi() {}
 };
 
 

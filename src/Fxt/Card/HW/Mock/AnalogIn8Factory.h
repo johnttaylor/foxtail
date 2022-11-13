@@ -34,7 +34,7 @@ class AnalogIn8Factory : public Fxt::Card::FactoryCommon_
 {
 public:
     /// Constructor
-    AnalogIn8Factory( Fxt::Card::DatabaseApi&             cardDb,
+    AnalogIn8Factory( FactoryDatabaseApi&                 factoryDatabase,
                       Cpl::Memory::ContiguousAllocator&   generalAllocator,
                       Cpl::Memory::ContiguousAllocator&   statefulDataAllocator,
                       Fxt::Point::DatabaseApi&            dbForPoints );

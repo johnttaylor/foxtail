@@ -11,27 +11,25 @@
 /** @file */
 
 
-#include "Database.h"
+#include "FactoryDatabase.h"
 #include "Cpl/System/Assert.h"
 
 ///
 using namespace Fxt::Card;
 
 ///////////////////////////////////////////////////////////////////////////////
-Database::Database() noexcept
-    : m_cards()
-    , m_factories()
+FactoryDatabase::FactoryDatabase() noexcept
+    : m_factories()
 {
 }
 
-Database::Database( const char* ignoreThisParameter_usedToCreateAUniqueConstructor ) noexcept
-    : m_cards( ignoreThisParameter_usedToCreateAUniqueConstructor )
-    , m_factories( ignoreThisParameter_usedToCreateAUniqueConstructor )
+FactoryDatabase::FactoryDatabase( const char* ignoreThisParameter_usedToCreateAUniqueConstructor ) noexcept
+    : m_factories( ignoreThisParameter_usedToCreateAUniqueConstructor )
 {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-Api* Database::createCardfromJSON( JsonVariant cardObj, uint32_t cardErrorCode ) noexcept
+Api* FactoryDatabase::createCardfromJSON( JsonVariant cardObj, uint32_t cardErrorCode ) noexcept
 {
     // Ensure that a Id has been assigned
     const char* typeGuid = cardObj["type"];
@@ -41,7 +39,7 @@ Api* Database::createCardfromJSON( JsonVariant cardObj, uint32_t cardErrorCode )
         return nullptr;
     }
     
-    FactoryApi* factory = lookupFactory( typeGuid );
+    FactoryApi* factory = lookup( typeGuid );
     if ( factory == nullptr )
     {
         cardErrorCode = FXT_CARD_ERR_UNKNOWN_GUID;
@@ -53,32 +51,7 @@ Api* Database::createCardfromJSON( JsonVariant cardObj, uint32_t cardErrorCode )
 
 
 ///////////////////////////////////////////////////////////////////////////////
-Api* Database::lookupCard( uint16_t cardId ) noexcept
-{
-    Api* item  = m_cards.first();
-    while ( item )
-    {
-        if ( item->getId() == cardId )
-        {
-            return item;
-        }
-        item = m_cards.next( *item );
-    }
-
-    return nullptr;
-}
-
-Api* Database::getFirstCard() noexcept
-{
-    return m_cards.first();
-}
-
-Api* Database::getNextCard( Api& currentCard ) noexcept
-{
-    return m_cards.next( currentCard );
-}
-
-FactoryApi* Database::lookupFactory( const char* guidCardTypeId ) noexcept
+FactoryApi* FactoryDatabase::lookup( const char* guidCardTypeId ) noexcept
 {
     if ( guidCardTypeId )
     {
@@ -96,48 +69,23 @@ FactoryApi* Database::lookupFactory( const char* guidCardTypeId ) noexcept
     return nullptr;
 }
 
-FactoryApi* Database::getFirstFactory() noexcept
+///////////////////////////////////////////////////////////////////////////////
+FactoryApi* FactoryDatabase::first() noexcept
 {
     return m_factories.first();
 }
 
-FactoryApi* Database::getNextFactory( FactoryApi& currentFactory ) noexcept
+FactoryApi* FactoryDatabase::next( FactoryApi& currentFactory ) noexcept
 {
     return m_factories.next( currentFactory );
 }
 
-
-void Database::clearCards() noexcept
-{
-    // Drain the list 
-    Api* item = m_cards.get();
-    while ( item )
-    {
-        // Call the Card destructor (but do not free the memory)
-        item->~Api();
-        item = m_cards.get();
-    }
-}
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-void Database::insert_( Api& cardToAdd ) noexcept
-{
-    m_cards.put( cardToAdd );
-}
-
-void Database::remove_( Api& cardToRemove ) noexcept
-{
-    m_cards.remove( cardToRemove );
-}
-
-void Database::insert_( FactoryApi& cardFactoryToAdd ) noexcept
+void FactoryDatabase::insert_( FactoryApi& cardFactoryToAdd ) noexcept
 {
     m_factories.put( cardFactoryToAdd );
 }
 
-void Database::remove_( FactoryApi& cardFactoryToRemove ) noexcept
+void FactoryDatabase::remove_( FactoryApi& cardFactoryToRemove ) noexcept
 {
     m_factories.remove( cardFactoryToRemove );
 }

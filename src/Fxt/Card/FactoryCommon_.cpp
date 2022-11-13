@@ -17,17 +17,16 @@
 ///
 using namespace Fxt::Card;
 
-FactoryCommon_::FactoryCommon_( Fxt::Card::DatabaseApi&             cardDb,
+FactoryCommon_::FactoryCommon_( FactoryDatabaseApi&                 factoryDatabase, 
                                 Cpl::Memory::ContiguousAllocator&   generalAllocator,
                                 Cpl::Memory::ContiguousAllocator&   statefulDataAllocator,
                                 Fxt::Point::DatabaseApi&            m_pointDb )
-    : m_cardDb( cardDb )
-    , m_pointDb( m_pointDb )
+    : m_pointDb( m_pointDb )
     , m_generalAllocator( generalAllocator )
     , m_statefulDataAllocator( statefulDataAllocator )
 {
-    // Auto register the card factory
-    cardDb.insert_( *this );
+    // Auto register with factory database
+    factoryDatabase.insert_( *this );
 }
 
 FactoryCommon_::~FactoryCommon_()

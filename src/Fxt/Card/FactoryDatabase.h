@@ -1,5 +1,5 @@
-#ifndef Fxt_Card_Database_h_
-#define Fxt_Card_Database_h_
+#ifndef Fxt_Card_FactoryDatabase_h_
+#define Fxt_Card_FactoryDatabase_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -13,8 +13,9 @@
 /** @file */
 
 
-#include "Fxt/Card/DatabaseApi.h"
+#include "Fxt/Card/FactoryDatabaseApi.h"
 #include "Cpl/Container/SList.h"
+#include <Fxt/Point/Database.h>
 
 ///
 namespace Fxt {
@@ -22,15 +23,15 @@ namespace Fxt {
 namespace Card {
 
 
-/** This concrete class implements the DatabaseApi
+/** This concrete class implements the FactoryDatabaseApi
 
     NOTE: This class is NOT thread safe
  */
-class Database : public DatabaseApi
+class FactoryDatabase : public FactoryDatabaseApi
 {
 public:
     /// Constructor
-    Database() noexcept;
+    FactoryDatabase() noexcept;
 
     /** This is a special constructor for when the Database is
         statically declared (i.e. it is initialized as part of C++ startup 
@@ -40,60 +41,39 @@ public:
         something to ensure my internal list is properly initialized for this 
         scenario - hence this constructor.
      */
-    Database( const char* ignoreThisParameter_usedToCreateAUniqueConstructor ) noexcept;
+    FactoryDatabase( const char* ignoreThisParameter_usedToCreateAUniqueConstructor ) noexcept;
 
 
 public:
-    /// See Fxt::Card::DatabaseApi
-    Api* lookupCard( uint16_t cardId ) noexcept;
+    /// See Fxt::Card::FactoryDatabaseApi
+    FactoryApi* lookup( const char* guidCardTypeId ) noexcept;
 
-    /// See Fxt::Card::DatabaseApi
-    Api* getFirstCard() noexcept;
+    /// See Fxt::Card::FactoryDatabaseApi
+    FactoryApi* first() noexcept;
 
-    /// See Fxt::Card::DatabaseApi
-    Api* getNextCard( Api& currentCard ) noexcept;
-
-    /// See Fxt::Card::DatabaseApi
-    FactoryApi* lookupFactory( const char* guidCardTypeId ) noexcept;
-
-    /// See Fxt::Card::DatabaseApi
-    FactoryApi* getFirstFactory() noexcept;
-
-    /// See Fxt::Card::DatabaseApi
-    FactoryApi* getNextFactory( FactoryApi& currentFactory ) noexcept;
-
-    /// See Fxt::Card::DatabaseApi
-    void clearCards() noexcept;
+    /// See Fxt::Card::FactoryDatabaseApi
+    FactoryApi* next( FactoryApi& currentFactory ) noexcept;
 
 public:
-    /// See Fxt::Card::DatabaseApi
+    /// See Fxt::Card::FactoryDatabaseApi
     Api* createCardfromJSON( JsonVariant cardObj, uint32_t cardErrorCode ) noexcept;
 
 public:
-    /// See Fxt::Card::DatabaseApi
-    void insert_( Api& cardToAdd ) noexcept;
-
-    /// See Fxt::Card::DatabaseApi
-    void remove_( Api& cardToRemove ) noexcept;
-
-    /// See Fxt::Card::DatabaseApi
+    /// See Fxt::Card::FactoryDatabaseApi
     void insert_( FactoryApi& cardFactoryToAdd ) noexcept;
 
-    /// See Fxt::Card::DatabaseApi
+    /// See Fxt::Card::FactoryDatabaseApi
     void remove_( FactoryApi& cardFactoryToRemove ) noexcept;
 
 private:
     /// Prevent access to the copy constructor -->Databases can not be copied!
-    Database( const Database& m );
+    FactoryDatabase( const FactoryDatabaseApi& m );
 
     /// Prevent access to the assignment operator -->Databases can not be copied!
-    const Database& operator=( const Database& m );
+    const FactoryDatabase& operator=( const FactoryDatabaseApi& m );
 
 
 protected:
-    /// List of active IO cards
-    Cpl::Container::SList<Api>          m_cards;
-
     /// List of supported IO card Factories
     Cpl::Container::SList<FactoryApi>   m_factories;
 };

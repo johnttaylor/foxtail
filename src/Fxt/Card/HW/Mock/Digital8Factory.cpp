@@ -19,11 +19,11 @@
 using namespace Fxt::Card::HW::Mock;
 
 
-Digital8Factory::Digital8Factory( Fxt::Card::DatabaseApi&             cardDb,
+Digital8Factory::Digital8Factory( FactoryDatabaseApi&                 factoryDatabase,
                                   Cpl::Memory::ContiguousAllocator&   generalAllocator,
                                   Cpl::Memory::ContiguousAllocator&   statefulDataAllocator,
                                   Fxt::Point::DatabaseApi&            dbForPoints )
-    :FactoryCommon_( cardDb, generalAllocator, statefulDataAllocator, dbForPoints )
+    :FactoryCommon_( factoryDatabase, generalAllocator, statefulDataAllocator, dbForPoints )
 {
 }
 
@@ -59,7 +59,6 @@ Fxt::Card::Api* Digital8Factory::create( JsonVariant& cardObject, uint32_t& card
                                                     cardName,
                                                     cardObject );
 
-    m_cardDb.insert_( *card );
     cardErrorCode = FXT_CARD_ERR_NO_ERROR;
     return card;
 }

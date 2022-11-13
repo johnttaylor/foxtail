@@ -15,7 +15,7 @@
 #include "Fxt/Card/HW/Mock/AnalogIn8Factory.h"
 #include "Fxt/Point/Uint8.h"
 #include "Fxt/Point/Database.h"
-#include "Fxt/Card/Database.h"
+#include "Fxt/Card/FactoryDatabase.h"
 #include "Cpl/Memory/LeanHeap.h"
 #include "Cpl/System/Trace.h"
 #include <string.h>
@@ -85,8 +85,8 @@ TEST_CASE( "AnalogIn8Factory" )
     Cpl::Memory::LeanHeap            generalAllocator( generalHeap_, sizeof( generalHeap_ ) );
     Cpl::Memory::LeanHeap            statefulAllocator( statefulHeap_, sizeof( statefulHeap_ ) );
     Fxt::Point::Database<MAX_POINTS> pointDb;
-    Fxt::Card::Database              cardDb;
-    AnalogIn8Factory                 uut( cardDb, generalAllocator, statefulAllocator, pointDb );
+    Fxt::Card::FactoryDatabase       cardFactoryDb;
+    AnalogIn8Factory                 uut( cardFactoryDb, generalAllocator, statefulAllocator, pointDb );
     uint32_t                         cardErrorCode;
 
     SECTION( "create/destroy card" )
@@ -103,7 +103,6 @@ TEST_CASE( "AnalogIn8Factory" )
 
         REQUIRE( strcmp( uut.getGuid(), card->getTypeGuid() ) == 0 );
 
-        REQUIRE( cardDb.lookupCard( 11 ) == card );
         REQUIRE( strcmp( card->getTypeName(), AnalogIn8::TYPE_NAME ) == 0 );
         REQUIRE( strcmp( card->getTypeGuid(), AnalogIn8::GUID_STRING ) == 0 );
 

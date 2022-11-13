@@ -33,7 +33,7 @@ class Digital8Factory : public Fxt::Card::FactoryCommon_
 {
 public:
     /// Constructor
-    Digital8Factory( Fxt::Card::DatabaseApi&             cardDb,
+    Digital8Factory( FactoryDatabaseApi&                 factoryDatabase,
                      Cpl::Memory::ContiguousAllocator&   generalAllocator,
                      Cpl::Memory::ContiguousAllocator&   statefulDataAllocator,
                      Fxt::Point::DatabaseApi&            dbForPoints );

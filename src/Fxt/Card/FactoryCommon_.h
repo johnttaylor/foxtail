@@ -14,7 +14,7 @@
 
 
 #include "Fxt/Card/FactoryApi.h"
-#include "Fxt/Card/Database.h"
+#include "Fxt/Card/FactoryDatabaseApi.h"
 #include "Cpl/Memory/ContiguousAllocator.h"
 
 ///
@@ -30,7 +30,7 @@ class FactoryCommon_ : public Fxt::Card::FactoryApi
 {
 public:
     /// Constructor
-    FactoryCommon_( Fxt::Card::DatabaseApi&             cardDb,
+    FactoryCommon_( FactoryDatabaseApi&                 factoryDatabase,
                     Cpl::Memory::ContiguousAllocator&   generalAllocator,
                     Cpl::Memory::ContiguousAllocator&   statefulDataAllocator,
                     Fxt::Point::DatabaseApi&            dbForPoints );
@@ -53,15 +53,12 @@ protected:
                                   uint32_t&    errorCode ) noexcept;
 
 protected:
-    /// Card database
-    Fxt::Card::DatabaseApi&             m_cardDb;
-
     /// Point instance database
     Fxt::Point::DatabaseApi&            m_pointDb;
 
     /// General Allocator
     Cpl::Memory::ContiguousAllocator&   m_generalAllocator;
-    
+
     /// Stateful data allocator
     Cpl::Memory::ContiguousAllocator&   m_statefulDataAllocator;
 };
