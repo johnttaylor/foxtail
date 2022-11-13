@@ -80,10 +80,12 @@ public:
               Point Descriptors and the memory must stay in scope until the
               IO card is destroyed.
  
-        The method returns true when successful; else false (e.g. out-of-memory)
-        is returned.
+        The method returns a pointer to the created card when successful; else 
+        if an error occurred (e.g. out-of-memory) nullptr is returned.
+        When an error occurs, the 'cardErrorCode' argument is updated with 
+        details of the error.
       */
-    virtual bool create( JsonVariant& cardObject ) noexcept = 0;
+    virtual Api* create( JsonVariant& cardObject, uint32_t& cardErrorCode ) noexcept = 0;
 
 
     /** This method is used to destroy/free an IO card.  

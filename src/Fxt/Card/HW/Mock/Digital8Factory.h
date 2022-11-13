@@ -85,7 +85,7 @@ public:
 
 public:
     /// See Fxt::Card::FactoryApi
-    bool create( JsonVariant& cardObject ) noexcept;
+    Api* create( JsonVariant& cardObject, uint32_t& cardErrorCode ) noexcept;
 
     /// See Fxt::Card::FactoryApi
     const char* getGuid() const noexcept { return Digital8::GUID_STRING; }

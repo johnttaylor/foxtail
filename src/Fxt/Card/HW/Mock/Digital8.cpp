@@ -94,8 +94,7 @@ bool Digital8::parseConfiguration( JsonVariant& obj ) noexcept
                                      m_ioRegInDescriptors,
                                      dummyChannellist,
                                      inputs,
-                                     numInputs,
-                                     FXT_CARD_ERR_CARD_INPUT_DESCRIPTOR ) )
+                                     numInputs ) )
             {
                 return false;
             }
@@ -121,8 +120,7 @@ bool Digital8::parseConfiguration( JsonVariant& obj ) noexcept
                                      m_ioRegOutDescriptors,
                                      dummyChannellist,
                                      outputs,
-                                     numOutputs,
-                                     FXT_CARD_ERR_CARD_OUTPUT_DESCRIPTOR ) )
+                                     numOutputs) )
             {
                 return false;
             }

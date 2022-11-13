@@ -30,9 +30,30 @@ Database::Database( const char* ignoreThisParameter_usedToCreateAUniqueConstruct
 {
 }
 
+///////////////////////////////////////////////////////////////////////////////
+Api* Database::createCardfromJSON( JsonVariant cardObj, uint32_t cardErrorCode ) noexcept
+{
+    // Ensure that a Id has been assigned
+    const char* typeGuid = cardObj["type"];
+    if ( typeGuid == nullptr )
+    {
+        cardErrorCode = FXT_CARD_ERR_UNKNOWN_GUID;
+        return nullptr;
+    }
+    
+    FactoryApi* factory = lookupFactory( typeGuid );
+    if ( factory == nullptr )
+    {
+        cardErrorCode = FXT_CARD_ERR_UNKNOWN_GUID;
+        return nullptr;
+    }
+
+    return factory->create( cardObj, cardErrorCode );
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
-Api* Database::lookupCard( uint32_t cardId ) noexcept
+Api* Database::lookupCard( uint16_t cardId ) noexcept
 {
     Api* item  = m_cards.first();
     while ( item )
@@ -114,4 +135,9 @@ void Database::remove_( Api& cardToRemove ) noexcept
 void Database::insert_( FactoryApi& cardFactoryToAdd ) noexcept
 {
     m_factories.put( cardFactoryToAdd );
+}
+
+void Database::remove_( FactoryApi& cardFactoryToRemove ) noexcept
+{
+    m_factories.remove( cardFactoryToRemove );
 }

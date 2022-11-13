@@ -31,22 +31,23 @@ Digital8Factory::~Digital8Factory()
 {
 }
 
-bool Digital8Factory::create( JsonVariant& cardObject ) noexcept
+Fxt::Card::Api* Digital8Factory::create( JsonVariant& cardObject, uint32_t& cardErrorCode ) noexcept
 {
     // Allocate memory for the card
     void* memCardInstance = m_generalAllocator.allocate( sizeof( Digital8 ) );
     if ( memCardInstance == nullptr )
     {
-        return false;
+        cardErrorCode = FXT_CARD_ERR_CARD_MEMORY;
+        return nullptr;
     }
 
     // Get basic info about the card
     uint16_t    cardId;
     uint16_t    slotNumber;
-    const char* cardName = parseBasicFields( cardObject, cardId, slotNumber );
+    const char* cardName = parseBasicFields( cardObject, cardId, slotNumber, cardErrorCode );
     if ( cardName == nullptr )
     {
-        return false; 
+        return nullptr;
     }
     
     // Create the card
@@ -59,5 +60,6 @@ bool Digital8Factory::create( JsonVariant& cardObject ) noexcept
                                                     cardObject );
 
     m_cardDb.insert_( *card );
-    return true;
+    cardErrorCode = FXT_CARD_ERR_NO_ERROR;
+    return card;
 }

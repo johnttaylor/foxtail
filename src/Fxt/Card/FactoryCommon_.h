@@ -49,7 +49,8 @@ protected:
      */
     const char* parseBasicFields( JsonVariant& obj,
                                   uint16_t&    cardId,
-                                  uint16_t&    slotNumber ) noexcept;
+                                  uint16_t&    slotNumber,
+                                  uint32_t&    errorCode ) noexcept;
 
 protected:
     /// Card database

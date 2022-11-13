@@ -79,8 +79,7 @@ protected:
                             Fxt::Point::Descriptor*              ioRegDesc[],
                             uint16_t                             channelIds[],
                             JsonArray&                           json,
-                            size_t                               numDescriptors,
-                            uint32_t                             errCode ) noexcept;
+                            size_t                               numDescriptors ) noexcept;
     
     /** Helper method to set an initial value from a 'setter'.  If the 
         the descriptor has no 'setter' then nothing is done

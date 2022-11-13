@@ -38,13 +38,17 @@ public:
     /** This method attempts to parse the provided JSON Object that represents
         a CARD and create binary representation of the defined card.  If there
         is an error (e.g. card not supported, missing key/value pairs, etc.) the
-        method returns false; else true is returned.  See the Fxt::Card::FactoryApi
-        interface for the required JSON Object fields.
+        method returns nullptr; else a pointer to the newly created card object
+        is returned.  When an error occurs, details about the specific card error
+        is returned via 'cardErrorode' argument.
+        
+        See the Fxt::Card::FactoryApi interface for the required JSON Object 
+        fields.
 
         This method should ONLY be called after all Factory instances have been
         registered with the Card Database.
      */
-    virtual bool createCardfromJSON( JsonVariant cardObj ) noexcept = 0;
+    virtual Api* createCardfromJSON( JsonVariant cardObj, uint32_t cardErrorCode ) noexcept = 0;
 
 public:
     /** This method looks-up the IO card by its 'User facing local ID'.  If the 

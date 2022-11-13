@@ -12,7 +12,6 @@
 #include "Catch/catch.hpp"
 #include "Cpl/System/_testsupport/Shutdown_TS.h"
 #include "Fxt/Card/HW/Mock/Digital8.h"
-#include "Fxt/Card/HW/Mock/Digital8Factory.h"
 #include "Fxt/Point/Database.h"
 #include "Cpl/Memory/LeanHeap.h"
 #include "Cpl/System/Trace.h"

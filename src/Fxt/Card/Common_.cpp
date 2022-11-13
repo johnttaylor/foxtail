@@ -111,8 +111,7 @@ bool Common_::createDescriptors( Fxt::Point::Descriptor::CreateFunc_T createFunc
                                  Fxt::Point::Descriptor*              ioRegDesc[],
                                  uint16_t                             channelIds[],
                                  JsonArray&                           json,
-                                 size_t                               numDescriptors,
-                                 uint32_t                             errCode ) noexcept
+                                 size_t                               numDescriptors ) noexcept
 {
     // Initialize the descriptor elements
     for ( size_t i=0; i < numDescriptors; i++ )
@@ -149,7 +148,7 @@ bool Common_::createDescriptors( Fxt::Point::Descriptor::CreateFunc_T createFunc
         char*       nameMemoryPtr = (char*) m_generalAllocator.allocate( strlen( name ) + 1 );
         if ( nameMemoryPtr == nullptr )
         {
-            m_error = errCode;
+            m_error = FXT_CARD_ERR_MEMORY_DESCRIPTOR_NAME;
             return false;
         }
         strcpy( nameMemoryPtr, name );
@@ -158,7 +157,7 @@ bool Common_::createDescriptors( Fxt::Point::Descriptor::CreateFunc_T createFunc
         Fxt::Point::Descriptor* memDescriptor = (Fxt::Point::Descriptor*) m_generalAllocator.allocate( sizeof( Fxt::Point::Descriptor ) );
         if ( memDescriptor == nullptr )
         {
-            m_error = errCode;
+            m_error = FXT_CARD_ERR_MEMORY_DESCRIPTORS;
             return false;
         }
         vpointDesc[i] = new(memDescriptor) Fxt::Point::Descriptor( id, nameMemoryPtr, createFunc );
@@ -184,7 +183,7 @@ bool Common_::createDescriptors( Fxt::Point::Descriptor::CreateFunc_T createFunc
                                                  setterObj );
             if ( setter == nullptr )
             {
-                m_error = errCode;
+                m_error = FXT_CARD_ERR_CARD_SETTER_ERROR;
                 return false;
             }
         }
@@ -194,7 +193,7 @@ bool Common_::createDescriptors( Fxt::Point::Descriptor::CreateFunc_T createFunc
         memDescriptor = (Fxt::Point::Descriptor*) m_generalAllocator.allocate( sizeof( Fxt::Point::Descriptor ) );
         if ( memDescriptor == nullptr )
         {
-            m_error = errCode;
+            m_error = FXT_CARD_ERR_MEMORY_DESCRIPTORS;
             return false;
         }
         ioRegDesc[i] = new(memDescriptor) Fxt::Point::Descriptor( ioRegId, nameMemoryPtr, createFunc, setter );

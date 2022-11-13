@@ -43,11 +43,13 @@ void FactoryCommon_::destroy( Api& cardToDestory ) noexcept
 
 const char* FactoryCommon_::parseBasicFields( JsonVariant& obj,
                                               uint16_t&    cardId,
-                                              uint16_t&    slotNumber ) noexcept
+                                              uint16_t&    slotNumber,
+                                              uint32_t&    errorCode ) noexcept
 {
     // Ensure that a Id has been assigned
     if ( obj["id"].isNull() )
     {
+        errorCode = FXT_CARD_ERR_CARD_MISSING_ID;
         return nullptr;
     }
     cardId = obj["id"];
@@ -55,6 +57,7 @@ const char* FactoryCommon_::parseBasicFields( JsonVariant& obj,
     // Ensure that a Slot ID has been assigned
     if ( obj["slot"].isNull() )
     {
+        errorCode = FXT_CARD_ERR_CARD_MISSING_SLOT_ID;
         return nullptr;
     }
     slotNumber = obj["slot"];
@@ -63,11 +66,13 @@ const char* FactoryCommon_::parseBasicFields( JsonVariant& obj,
     const char* name = obj["name"];
     if ( name == nullptr )
     {
+        errorCode = FXT_CARD_ERR_CARD_MISSING_NAME;
         return nullptr;
     }
     char* memory4Name = (char*) m_generalAllocator.allocate( strlen( name ) + 1 );
     if ( memory4Name == nullptr )
     {
+        errorCode = FXT_CARD_ERR_MEMORY_CARD_NAME;
         return nullptr;
     }
     strcpy( memory4Name, name );

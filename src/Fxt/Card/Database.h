@@ -45,7 +45,7 @@ public:
 
 public:
     /// See Fxt::Card::DatabaseApi
-    Api* lookupCard( uint32_t cardId ) noexcept;
+    Api* lookupCard( uint16_t cardId ) noexcept;
 
     /// See Fxt::Card::DatabaseApi
     Api* getFirstCard() noexcept;
@@ -67,6 +67,10 @@ public:
 
 public:
     /// See Fxt::Card::DatabaseApi
+    Api* createCardfromJSON( JsonVariant cardObj, uint32_t cardErrorCode ) noexcept;
+
+public:
+    /// See Fxt::Card::DatabaseApi
     void insert_( Api& cardToAdd ) noexcept;
 
     /// See Fxt::Card::DatabaseApi
@@ -74,6 +78,9 @@ public:
 
     /// See Fxt::Card::DatabaseApi
     void insert_( FactoryApi& cardFactoryToAdd ) noexcept;
+
+    /// See Fxt::Card::DatabaseApi
+    void remove_( FactoryApi& cardFactoryToRemove ) noexcept;
 
 private:
     /// Prevent access to the copy constructor -->Databases can not be copied!

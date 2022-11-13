@@ -21,14 +21,14 @@
 /// ERROR Code: NO Error, i.e. the card is operating properly
 #define FXT_CARD_ERR_NO_ERROR                   0
 
-/// ERROR Code: Unable to allocate memory for the card's Point Banks
-#define FXT_CARD_ERR_MEMORY_POINT_BANKS         1
+/// ERROR Code: Unable to allocate memory for the card
+#define FXT_CARD_ERR_CARD_MEMORY                1
 
 /// ERROR Code: Out-of-memory when parsing/creating Descriptors
 #define FXT_CARD_ERR_MEMORY_DESCRIPTORS         2
 
-/// ERROR Code: Configuration contains the wrong GUID (i.e. the JSON object calls out a different card type)
-#define FXT_CARD_ERR_GUID_WRONG_TYPE            3
+/// ERROR Code: Configuration contains the unknown/unsupported card type GUID 
+#define FXT_CARD_ERR_UNKNOWN_GUID               3
 
 /// ERROR Code: Configuration does NOT contain a valid ID value
 #define FXT_CARD_ERR_CARD_MISSING_ID            4
@@ -54,14 +54,15 @@
 /// ERROR Code: Configuration does NOT contain a Card name
 #define FXT_CARD_ERR_CARD_MISSING_NAME          11
 
-/// ERROR Code: Error occurred while parsing/creating input descriptor(s)
-#define FXT_CARD_ERR_CARD_INPUT_DESCRIPTOR      12
+/// ERROR Code: Error occurred while parsing/creating a Setter instance
+#define FXT_CARD_ERR_CARD_SETTER_ERROR          12
 
-/// ERROR Code: Error occurred while parsing/creating output descriptor(s)
-#define FXT_CARD_ERR_CARD_OUTPUT_DESCRIPTOR     13
+/// ERROR Code: Out-of-memory when parsing/creating a Descriptor's name
+#define FXT_CARD_ERR_MEMORY_DESCRIPTOR_NAME     13
+
 
 /// ERROR Code: Code to use for the start of card-specific Error codes
-#define FXT_CARD_ERR_START_CARD_SPECIFIC        100
+#define FXT_CARD_ERR_START_CARD_SPECIFIC        0x8000
 
 
 ///
@@ -82,6 +83,10 @@ namespace Card {
  */
 class Api : public Cpl::Container::Item
 {
+public:
+    /// Invalid Point ID
+    static constexpr uint16_t INVALID_ID = 0xFFFF;
+
 public:
     /** This method is used to start/activate the IO card.  If the card fails
         to be started the method returns false; else true is returned.
