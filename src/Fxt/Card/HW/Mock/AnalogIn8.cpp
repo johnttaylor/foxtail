@@ -20,8 +20,6 @@
 ///
 using namespace Fxt::Card::HW::Mock;
 
-static const char emptyString_[1] ={ '\0' };
-
 ///////////////////////////////////////////////////////////////////////////////
 AnalogIn8::AnalogIn8( DatabaseApi&                       cardDb,
                       Cpl::Memory::ContiguousAllocator&  generalAllocator,

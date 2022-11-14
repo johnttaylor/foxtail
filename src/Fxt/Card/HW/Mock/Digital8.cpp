@@ -20,7 +20,6 @@
 ///
 using namespace Fxt::Card::HW::Mock;
 
-static const char emptyString_[1] ={ '\0' };
 
 ///////////////////////////////////////////////////////////////////////////////
 Digital8::Digital8( DatabaseApi&                       cardDb,

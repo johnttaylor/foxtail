@@ -18,10 +18,6 @@
 #include <new>
 
 
-#define DESTROY_BANK(b)     if ( b != nullptr ) {b->~Bank();}
-
-static const char emptyString_[1] ={ '\0' };
-
 ///
 using namespace Fxt::Card;
 
@@ -137,7 +133,7 @@ bool Common_::createDescriptors( Fxt::Point::Descriptor::CreateFunc_T createFunc
         }
 
         // Parse and Allocate memory for the point name
-        const char* name          = json[i]["name"] | emptyString_;
+        const char* name          = json[i]["name"];
         char*       nameMemoryPtr = (char*) m_generalAllocator.allocate( strlen( name ) + 1 );
         if ( nameMemoryPtr == nullptr )
         {
