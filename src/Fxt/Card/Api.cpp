@@ -21,7 +21,7 @@ using namespace Fxt::Card;
 constexpr uint16_t Fxt::Card::Api::INVALID_ID;
 
 
-const char* Api::getErrorText( uint32_t errCode ) noexcept
+const char* Api::getErrorText( Err_T errCode ) noexcept
 {
     switch ( errCode )
     {
@@ -29,16 +29,14 @@ const char* Api::getErrorText( uint32_t errCode ) noexcept
     case FXT_CARD_ERR_MEMORY_DESCRIPTORS:        return "Unable to allocate memory when parsing/creating Point descriptors.";
     case FXT_CARD_ERR_UNKNOWN_GUID:              return "Configuration contains the unknown/unsupported card type GUID";
     case FXT_CARD_ERR_CARD_MISSING_ID:           return "Configuration does NOT contain a ID value for the card.";
-    case FXT_CARD_ERR_MEMORY_CARD_NAME:          return "Unable to allocate memory for the card's name.";
     case FXT_CARD_ERR_POINT_MISSING_ID:          return "Configuration does NOT contain a LocalId value for one of it Points.";
     case FXT_CARD_ERR_TOO_MANY_INPUT_POINTS:     return "Configuration contains TOO many input Points.";
     case FXT_CARD_ERR_TOO_MANY_OUTPUT_POINTS:    return "Configuration contains TOO many output Points.";
     case FXT_CARD_ERR_BAD_CHANNEL_ASSIGNMENTS:   return "Configuration contains duplicate or our-of-range Channel IDs.";
-    case FXT_CARD_ERR_CARD_MISSING_SLOT_ID:      return "Configuration does NOT contain a SlotID value for the card.";
-    case FXT_CARD_ERR_CARD_MISSING_NAME:         return "Configuration does NOT contain a text Name/label for the card.";
     case FXT_CARD_ERR_CARD_SETTER_ERROR:         return "Unable to parse/create a Setter point.";
     case FXT_CARD_ERR_CARD_MEMORY:               return "Unable to allocate memory for the card";
     case FXT_CARD_ERR_MEMORY_DESCRIPTOR_NAME:    return "Unable to allocate memory for a Descriptor's name";
+    case FXT_CARD_ERR_CARD_INVALID_ID:           return "The Card ID is invalid or out-of-range.";
     default:
         return nullptr;
     }

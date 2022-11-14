@@ -15,6 +15,7 @@
 
 #include "Fxt/Card/FactoryApi.h"
 #include "Fxt/Card/FactoryDatabaseApi.h"
+#include "Fxt/Point/DatabaseApi.h"
 #include "Cpl/Memory/ContiguousAllocator.h"
 
 ///
@@ -44,13 +45,11 @@ public:
 
 protected:
     /** Helper method to parse basic/common fields for a card.  Returns the
-        card name if successful; else nullptr is returned.  Other fields are
-        returned via the function arguments.
+        FXT_CARD_ERR_NO_ERROR if successful; else error code is returned.
+        Field(s) are returned via the function arguments.
      */
-    const char* parseBasicFields( JsonVariant& obj,
-                                  uint16_t&    cardId,
-                                  uint16_t&    slotNumber,
-                                  uint32_t&    errorCode ) noexcept;
+    Api::Err_T parseBasicFields( JsonVariant& obj,
+                                 uint16_t&    cardId ) noexcept;
 
 protected:
     /// Point instance database

@@ -15,7 +15,6 @@
 #include "colony_config.h"
 #include "Fxt/Point/DatabaseApi.h"
 #include "Cpl/Json/Arduino.h"
-#include "Cpl/Container/Dictionary.h"
 #include "Cpl/System/Mutex.h"
 
 
@@ -62,9 +61,6 @@ public:
 
     /// See Fxt::Point::DatabaseApi
     size_t getMaxNumPoints() const noexcept;
-
-    /// See Fxt::Point::DatabaseApi
-    Fxt::Point::Api* next( Fxt::Point::Api& currentPoint ) const noexcept;
 
     /// See Fxt::Point::DatabaseApi
     bool toJSON( uint32_t         pointId,
@@ -125,10 +121,10 @@ public:
 
 private:
     /// Prevent access to the copy constructor -->Point Databases can not be copied!
-    Database( const Database& m );
+    Database( const DatabaseApi& m );
 
     /// Prevent access to the assignment operator -->Point Databases can not be copied!
-    const Database& operator=( const Database& m );
+    const Database& operator=( const DatabaseApi& m );
 
 protected:
     /// Memory for Point table.  Note: A Point ID is its index into m_points.

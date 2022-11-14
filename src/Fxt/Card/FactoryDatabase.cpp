@@ -29,7 +29,7 @@ FactoryDatabase::FactoryDatabase( const char* ignoreThisParameter_usedToCreateAU
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-Api* FactoryDatabase::createCardfromJSON( JsonVariant cardObj, uint32_t cardErrorCode ) noexcept
+Api* FactoryDatabase::createCardfromJSON( DatabaseApi& cardDb, JsonVariant cardObj, Api::Err_T& cardErrorCode ) noexcept
 {
     // Ensure that a Id has been assigned
     const char* typeGuid = cardObj["type"];
@@ -46,7 +46,7 @@ Api* FactoryDatabase::createCardfromJSON( JsonVariant cardObj, uint32_t cardErro
         return nullptr;
     }
 
-    return factory->create( cardObj, cardErrorCode );
+    return factory->create( cardDb, cardObj, cardErrorCode );
 }
 
 

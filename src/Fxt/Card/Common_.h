@@ -14,6 +14,7 @@
 
 
 #include "Fxt/Card/Api.h"
+#include "Fxt/Card/DatabaseApi.h"
 #include "Fxt/Point/Bank.h"
 #include "Fxt/Point/DatabaseApi.h"
 #include "Fxt/Point/Descriptor.h"
@@ -34,12 +35,11 @@ public:
 
 public:
     /// Constructor
-    Common_( Cpl::Memory::ContiguousAllocator&  generalAllocator,
+    Common_( DatabaseApi&                       cardDb,
+             Cpl::Memory::ContiguousAllocator&  generalAllocator,
              Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
              Fxt::Point::DatabaseApi&           dbForPoints,
-             uint16_t                           cardId,
-             uint16_t                           slotNumber,
-             const char*                        cardName );
+             uint16_t                           cardId );
 
     /// Destructor
     ~Common_();
@@ -58,19 +58,14 @@ public:
     uint16_t getId() const noexcept;
 
     /// See Fxt::Card::Api
-    const char* getName() const noexcept;
-
-    /// See Fxt::Card::Api
     bool scanInputs() noexcept;
 
     /// See Fxt::Card::Api
     bool flushOutputs() noexcept;
 
     /// See Fxt::Card::Api
-    uint32_t getErrorCode() const noexcept;
+    Err_T getErrorCode() const noexcept;
 
-    /// See Fxt::Card::Api
-    uint16_t getSlot() const noexcept;
 
 protected:
     /// Helper method to create descriptor instances
@@ -110,16 +105,10 @@ protected:
     Fxt::Point::Bank                    m_virtualOutputs;         
 
     /// Error state. A value of 0 indicates NO error
-    uint32_t                            m_error;
+    Err_T                               m_error;
 
-    /// The card's runtime name
-    const char*                         m_cardName;
-
-    /// The card's 'User facing local ID'
+    /// The card's ID
     uint16_t                            m_id;
-
-    /// The card's slot number/identifier
-    uint16_t                            m_slotNumber;
 
     /// My started state
     bool                                m_started;

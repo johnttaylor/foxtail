@@ -42,6 +42,8 @@ namespace Mock {
     freeing/recycling the memory in the Contiguous Allocator when Card(s) are
     deleted.
 
+    \code
+
     JSON Definition
     --------------------
     {
@@ -102,12 +104,11 @@ public:
 
 public:
     /// Constructor
-    Digital8( Cpl::Memory::ContiguousAllocator&  generalAllocator,
+    Digital8( DatabaseApi&                       cardDb,
+              Cpl::Memory::ContiguousAllocator&  generalAllocator,
               Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
               Fxt::Point::DatabaseApi&           dbForPoints,
               uint16_t                           cardId,
-              uint16_t                           slotNumber,
-              const char*                        cardName,
               JsonVariant&                       cardObject );
 
     /// Destructor

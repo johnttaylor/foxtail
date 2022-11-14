@@ -25,7 +25,7 @@ namespace Point {
     Database.  A Point Database is a collection of instantiated Points.
 
     Unless explicitly commented - the Database Interface can ONLY be called 
-    from the "Point Thread"
+    from the "Chassis Thread"
  */
 class DatabaseApi
 {

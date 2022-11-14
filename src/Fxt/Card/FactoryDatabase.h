@@ -1,5 +1,5 @@
-#ifndef Fxt_Card_FactoryDatabase_h_
-#define Fxt_Card_FactoryDatabase_h_
+#ifndef Fxt_CardFactoryDatabase_h_
+#define Fxt_CardFactoryDatabase_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -15,7 +15,6 @@
 
 #include "Fxt/Card/FactoryDatabaseApi.h"
 #include "Cpl/Container/SList.h"
-#include <Fxt/Point/Database.h>
 
 ///
 namespace Fxt {
@@ -56,7 +55,7 @@ public:
 
 public:
     /// See Fxt::Card::FactoryDatabaseApi
-    Api* createCardfromJSON( JsonVariant cardObj, uint32_t cardErrorCode ) noexcept;
+    Api* createCardfromJSON( DatabaseApi& cardDb, JsonVariant cardObj, Api::Err_T& cardErrorCode ) noexcept;
 
 public:
     /// See Fxt::Card::FactoryDatabaseApi

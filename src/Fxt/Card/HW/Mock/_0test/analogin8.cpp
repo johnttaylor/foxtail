@@ -12,6 +12,7 @@
 #include "Catch/catch.hpp"
 #include "Cpl/System/_testsupport/Shutdown_TS.h"
 #include "Fxt/Card/HW/Mock/AnalogIn8.h"
+#include "Fxt/Card/Database.h"
 #include "Fxt/Point/Float.h"
 #include "Fxt/Point/Database.h"
 #include "Cpl/Memory/LeanHeap.h"
@@ -28,7 +29,7 @@ using namespace Fxt::Card::HW::Mock;
 #define CARD_DEFINTION     "{\"cards\":[" \
                            "{" \
                            "  \"name\": \"bob\"," \
-                           "  \"id\": 11," \
+                           "  \"id\": 1," \
                            "  \"type\": \"1968f533-e323-4ae4-8493-9a572f3bd195\"," \
                            "  \"typename\": \"Fxt::Card::HW::Mock::AnalogIn8\"," \
                            "  \"slot\": 22," \
@@ -76,6 +77,7 @@ static size_t generalHeap_[10000];
 static size_t statefulHeap_[10000];
 
 #define MAX_POINTS      100
+#define MAX_CARDS       3
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE( "AnalogIn8" )
@@ -84,6 +86,7 @@ TEST_CASE( "AnalogIn8" )
     Cpl::Memory::LeanHeap generalAllocator( generalHeap_, sizeof( generalHeap_ ) );
     Cpl::Memory::LeanHeap statefulAllocator( statefulHeap_, sizeof( statefulHeap_ ) );
     Fxt::Point::Database<MAX_POINTS> pointDb;
+    Fxt::Card::Database<MAX_CARDS>   cardDb;
 
 
     SECTION( "create card" )
@@ -93,23 +96,20 @@ TEST_CASE( "AnalogIn8" )
         REQUIRE( err == DeserializationError::Ok );
 
         JsonVariant cardObj = doc["cards"][0];
-        AnalogIn8 uut( generalAllocator,
-                      statefulAllocator,
-                      pointDb,
-                      11,
-                      22,
-                      "bob",
-                      cardObj );
+        AnalogIn8 uut( cardDb,
+                       generalAllocator,
+                       statefulAllocator,
+                       pointDb,
+                       1,
+                       cardObj );
 
         REQUIRE( uut.getErrorCode() == FXT_CARD_ERR_NO_ERROR );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", Fxt::Card::Api::getErrorText( uut.getErrorCode() ) ));
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", Fxt::Card::Api::getErrorText( uut.getErrorCode() )) );
 
         REQUIRE( strcmp( uut.getTypeName(), AnalogIn8::TYPE_NAME ) == 0 );
         REQUIRE( strcmp( uut.getTypeGuid(), AnalogIn8::GUID_STRING ) == 0 );
 
-        REQUIRE( uut.getId() == 11 );
-        REQUIRE( uut.getSlot() == 22 );
-        REQUIRE( strcmp( uut.getName(), "bob" ) == 0 );
+        REQUIRE( uut.getId() == 1 );
 
         Fxt::Point::Float* pointPtr = (Fxt::Point::Float*) pointDb.lookupById( 1 );
         REQUIRE( pointPtr );
@@ -144,7 +144,7 @@ TEST_CASE( "AnalogIn8" )
         REQUIRE( uut.isStarted() == false );
         REQUIRE( uut.start() );
         REQUIRE( uut.isStarted() );
-        
+
         pointPtr = (Fxt::Point::Float*) pointDb.lookupById( 2 );
         float pointVal = 0;
         REQUIRE( pointPtr->read( pointVal ) );
@@ -181,7 +181,7 @@ TEST_CASE( "AnalogIn8" )
         REQUIRE( pointPtr->isNotValid() );
         pointPtr = (Fxt::Point::Float*) pointDb.lookupById( 3 );
         REQUIRE( pointPtr->read( pointVal ) );
-        REQUIRE( Cpl::Math::areFloatsEqual( pointVal, 3.5F) );
+        REQUIRE( Cpl::Math::areFloatsEqual( pointVal, 3.5F ) );
         pointPtr = (Fxt::Point::Float*) pointDb.lookupById( 5 );
         REQUIRE( pointPtr->read( pointVal ) );
         REQUIRE( Cpl::Math::areFloatsEqual( pointVal, 0.0F ) );
@@ -226,16 +226,15 @@ TEST_CASE( "AnalogIn8" )
         REQUIRE( err == DeserializationError::Ok );
 
         JsonVariant cardObj = doc["cards"][0];
-        AnalogIn8 uut( generalAllocator,
+        AnalogIn8 uut( cardDb,
+                       generalAllocator,
                        statefulAllocator,
                        pointDb,
-                       11,
-                       22,
-                       "bob",
+                       1,
                        cardObj );
 
         REQUIRE( uut.getErrorCode() == FXT_CARD_ERR_NO_ERROR );
-        
+
         REQUIRE( uut.start() );
 
         uut.setInputs( 1, 22.2F );

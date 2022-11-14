@@ -23,14 +23,13 @@ using namespace Fxt::Card::HW::Mock;
 static const char emptyString_[1] ={ '\0' };
 
 ///////////////////////////////////////////////////////////////////////////////
-AnalogIn8::AnalogIn8( Cpl::Memory::ContiguousAllocator&  generalAllocator,
+AnalogIn8::AnalogIn8( DatabaseApi&                       cardDb,
+                      Cpl::Memory::ContiguousAllocator&  generalAllocator,
                       Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
                       Fxt::Point::DatabaseApi&           dbForPoints,
                       uint16_t                           cardId,
-                      uint16_t                           slotNumber,
-                      const char*                        cardName,
                       JsonVariant&                       cardObject )
-    : Fxt::Card::Common_( generalAllocator, statefulDataAllocator, dbForPoints, cardId, slotNumber, cardName )
+    : Fxt::Card::Common_( cardDb, generalAllocator, statefulDataAllocator, dbForPoints, cardId )
 {
     memset( &m_virtualInDescriptors, 0, sizeof( m_virtualInDescriptors ) );
     memset( &m_ioRegInDescriptors, 0, sizeof( m_ioRegInDescriptors ) );

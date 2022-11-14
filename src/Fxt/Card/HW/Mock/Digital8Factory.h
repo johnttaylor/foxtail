@@ -27,7 +27,6 @@ namespace Mock {
 
 /** This concrete class implements the Factory API to create a Mock Digital8
     card.
-
  */
 class Digital8Factory : public Fxt::Card::FactoryCommon_
 {
@@ -43,7 +42,9 @@ public:
 
 public:
     /// See Fxt::Card::FactoryApi
-    Api* create( JsonVariant& cardObject, uint32_t& cardErrorCode ) noexcept;
+    Api* create( DatabaseApi& cardDb,
+                 JsonVariant& cardObject, 
+                 Api::Err_T&  cardErrorCode ) noexcept;
 
     /// See Fxt::Card::FactoryApi
     const char* getGuid() const noexcept { return Digital8::GUID_STRING; }

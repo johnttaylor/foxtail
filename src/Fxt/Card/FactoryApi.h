@@ -17,6 +17,7 @@
 #include "Cpl/Json/Arduino.h"
 #include "Fxt/Point/Bank.h"
 #include "Fxt/Card/Api.h"
+#include "Fxt/Card/DatabaseApi.h"
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -31,7 +32,7 @@ namespace Card {
     The semantics of the Factory interface is NOT thread safe.
 
     Note: Factories support being in a Container - however 'that' container
-          is the Card Database.  This means if the application what to maintain
+          is the Factory Database.  This means if the application what to maintain
           a list of factories - it must provide its own wrapper.
 
     \code
@@ -42,7 +43,6 @@ namespace Card {
           "type":           "<Card's Type GUID: 8-4-4-4-12 format>",
           "typeName":       "<OPTIONAL: human readable card type>",
           "slot":           <chasis slot number. Range: 0-255>,
-          "scannerIdRef":   <ID Reference to the Scanner instance that scans this card. Range: 0-255>,
           "points": {
              "<groupingName>": [ // Array of points with the same Fxt::Point type, e.g "analogInputs", "digitalOutputs", etc.
                {
@@ -85,7 +85,9 @@ public:
         When an error occurs, the 'cardErrorCode' argument is updated with 
         details of the error.
       */
-    virtual Api* create( JsonVariant& cardObject, uint32_t& cardErrorCode ) noexcept = 0;
+    virtual Api* create( DatabaseApi& cardDb, 
+                         JsonVariant& cardObject, 
+                         Api::Err_T&  cardErrorCode ) noexcept = 0;
 
 
     /** This method is used to destroy/free an IO card.  

@@ -44,9 +44,9 @@ public:
         fields.
 
         This method should ONLY be called after all Factory instances have been
-        registered with the Card Database.
+        registered with the Factory Database.
      */
-    virtual Api* createCardfromJSON( JsonVariant cardObj, uint32_t cardErrorCode ) noexcept = 0;
+    virtual Api* createCardfromJSON( DatabaseApi& cardDb, JsonVariant cardObj, Api::Err_T& cardErrorCode ) noexcept = 0;
 
 public:
     /** This method looks-up the IO card Factory by its GUID.  If the
@@ -76,7 +76,7 @@ public:
         other classes in the Fxt::Card namespace.  It is ONLY public to avoid
         the tight coupling of C++ friend mechanism.
 
-        This method inserts a IO Card Factory instance t into the Model Database.
+        This method inserts a IO Card Factory instance t into the Database.
      */
     virtual void insert_( FactoryApi& cardFactoryToAdd ) noexcept = 0;
 
@@ -84,7 +84,7 @@ public:
         other classes in the Fxt::Card namespace.  It is ONLY public to avoid
         the tight coupling of C++ friend mechanism.
 
-        This method removes a IO Card factory from the Model Database.
+        This method removes a IO Card factory from the Database.
      */
     virtual void remove_( FactoryApi& cardFactoryToRemove ) noexcept = 0;
 

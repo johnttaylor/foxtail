@@ -31,7 +31,9 @@ Digital8Factory::~Digital8Factory()
 {
 }
 
-Fxt::Card::Api* Digital8Factory::create( JsonVariant& cardObject, uint32_t& cardErrorCode ) noexcept
+Fxt::Card::Api* Digital8Factory::create( DatabaseApi& cardDb,
+                                         JsonVariant& cardObject,
+                                         Api::Err_T&  cardErrorCode ) noexcept
 {
     // Allocate memory for the card
     void* memCardInstance = m_generalAllocator.allocate( sizeof( Digital8 ) );
@@ -42,23 +44,21 @@ Fxt::Card::Api* Digital8Factory::create( JsonVariant& cardObject, uint32_t& card
     }
 
     // Get basic info about the card
-    uint16_t    cardId;
-    uint16_t    slotNumber;
-    const char* cardName = parseBasicFields( cardObject, cardId, slotNumber, cardErrorCode );
-    if ( cardName == nullptr )
+    uint16_t cardId;
+    cardErrorCode = parseBasicFields( cardObject, cardId );
+    if ( cardErrorCode == FXT_CARD_ERR_NO_ERROR )
     {
-        return nullptr;
-    }
-    
-    // Create the card
-    Digital8* card = new(memCardInstance) Digital8( m_generalAllocator,
-                                                    m_statefulDataAllocator,
-                                                    m_pointDb,
-                                                    cardId,
-                                                    slotNumber,
-                                                    cardName,
-                                                    cardObject );
 
-    cardErrorCode = FXT_CARD_ERR_NO_ERROR;
-    return card;
+        // Create the card
+        Digital8* card = new(memCardInstance) Digital8( cardDb,
+                                                        m_generalAllocator,
+                                                        m_statefulDataAllocator,
+                                                        m_pointDb,
+                                                        cardId,
+                                                        cardObject );
+        cardErrorCode = card->getErrorCode();
+        return card;
+    }
+
+    return nullptr;
 }

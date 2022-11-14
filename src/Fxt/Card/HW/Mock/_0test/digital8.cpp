@@ -12,6 +12,7 @@
 #include "Catch/catch.hpp"
 #include "Cpl/System/_testsupport/Shutdown_TS.h"
 #include "Fxt/Card/HW/Mock/Digital8.h"
+#include "Fxt/Card/Database.h"
 #include "Fxt/Point/Database.h"
 #include "Fxt/Point/Uint8.h"
 #include "Cpl/Memory/LeanHeap.h"
@@ -66,6 +67,7 @@ static size_t generalHeap_[10000];
 static size_t statefulHeap_[10000];
 
 #define MAX_POINTS      100
+#define MAX_CARDS       3
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE( "Digital8" )
@@ -74,6 +76,7 @@ TEST_CASE( "Digital8" )
     Cpl::Memory::LeanHeap generalAllocator( generalHeap_, sizeof( generalHeap_ ) );
     Cpl::Memory::LeanHeap statefulAllocator( statefulHeap_, sizeof( statefulHeap_ ) );
     Fxt::Point::Database<MAX_POINTS> pointDb;
+    Fxt::Card::Database<MAX_CARDS>   cardDb;
 
 
     SECTION( "create card" )
@@ -83,12 +86,11 @@ TEST_CASE( "Digital8" )
         REQUIRE( err == DeserializationError::Ok );
 
         JsonVariant cardObj = doc["cards"][0];
-        Digital8 uut( generalAllocator,
+        Digital8 uut( cardDb,
+                      generalAllocator,
                       statefulAllocator,
                       pointDb,
-                      11,
-                      22,
-                      "bob",
+                      0,
                       cardObj );
 
         REQUIRE( uut.getErrorCode() == FXT_CARD_ERR_NO_ERROR );
@@ -97,9 +99,7 @@ TEST_CASE( "Digital8" )
         REQUIRE( strcmp( uut.getTypeName(), Digital8::TYPE_NAME ) == 0 );
         REQUIRE( strcmp( uut.getTypeGuid(), Digital8::GUID_STRING ) == 0 );
 
-        REQUIRE( uut.getId() == 11 );
-        REQUIRE( uut.getSlot() == 22 );
-        REQUIRE( strcmp( uut.getName(), "bob" ) == 0 );
+        REQUIRE( uut.getId() == 0 );
 
         Fxt::Point::Uint8* pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 1 );
         REQUIRE( pointPtr );
@@ -172,12 +172,11 @@ TEST_CASE( "Digital8" )
         REQUIRE( err == DeserializationError::Ok );
 
         JsonVariant cardObj = doc["cards"][0];
-        Digital8 uut( generalAllocator,
+        Digital8 uut( cardDb,
+                      generalAllocator,
                       statefulAllocator,
                       pointDb,
-                      11,
-                      22,
-                      "bob",
+                      0,
                       cardObj );
 
         REQUIRE( uut.getErrorCode() == FXT_CARD_ERR_NO_ERROR );

@@ -17,7 +17,7 @@
 ///
 using namespace Fxt::Card;
 
-FactoryCommon_::FactoryCommon_( FactoryDatabaseApi&                 factoryDatabase, 
+FactoryCommon_::FactoryCommon_( FactoryDatabaseApi&                 factoryDatabase,
                                 Cpl::Memory::ContiguousAllocator&   generalAllocator,
                                 Cpl::Memory::ContiguousAllocator&   statefulDataAllocator,
                                 Fxt::Point::DatabaseApi&            m_pointDb )
@@ -40,40 +40,15 @@ void FactoryCommon_::destroy( Api& cardToDestory ) noexcept
     cardToDestory.~Api();
 }
 
-const char* FactoryCommon_::parseBasicFields( JsonVariant& obj,
-                                              uint16_t&    cardId,
-                                              uint16_t&    slotNumber,
-                                              uint32_t&    errorCode ) noexcept
+Api::Err_T FactoryCommon_::parseBasicFields( JsonVariant& obj,
+                                             uint16_t&    cardId ) noexcept
 {
     // Ensure that a Id has been assigned
     if ( obj["id"].isNull() )
     {
-        errorCode = FXT_CARD_ERR_CARD_MISSING_ID;
-        return nullptr;
+        return FXT_CARD_ERR_CARD_MISSING_ID;
     }
+
     cardId = obj["id"];
-
-    // Ensure that a Slot ID has been assigned
-    if ( obj["slot"].isNull() )
-    {
-        errorCode = FXT_CARD_ERR_CARD_MISSING_SLOT_ID;
-        return nullptr;
-    }
-    slotNumber = obj["slot"];
-
-    // Get the Text label
-    const char* name = obj["name"];
-    if ( name == nullptr )
-    {
-        errorCode = FXT_CARD_ERR_CARD_MISSING_NAME;
-        return nullptr;
-    }
-    char* memory4Name = (char*) m_generalAllocator.allocate( strlen( name ) + 1 );
-    if ( memory4Name == nullptr )
-    {
-        errorCode = FXT_CARD_ERR_MEMORY_CARD_NAME;
-        return nullptr;
-    }
-    strcpy( memory4Name, name );
-    return memory4Name;
+    return FXT_CARD_ERR_NO_ERROR;
 }
