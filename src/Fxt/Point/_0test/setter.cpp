@@ -88,7 +88,9 @@ TEST_CASE( "Setter" )
         REQUIRE( err == DeserializationError::Ok );
         REQUIRE( doc["val"] == 32 );
 
-        Setter* uut = Setter::create( db, Int32::create, SETTER_ID, SETTER_LABEL, heapAllocator, stateHeap, doc["val"].as<JsonVariant>() );
+        JsonObject valObject = doc.as<JsonObject>();
+        Setter* uut = Setter::create( db, Int32::create, SETTER_ID, SETTER_LABEL, heapAllocator, stateHeap, valObject );
+        REQUIRE( uut );
         uut->setValue( *orange );
         valid = orange->read( value );
         REQUIRE( valid == true );

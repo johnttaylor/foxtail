@@ -46,7 +46,12 @@ public:
         This method should ONLY be called after all Factory instances have been
         registered with the Factory Database.
      */
-    virtual Api* createCardfromJSON( DatabaseApi& cardDb, JsonVariant cardObj, Api::Err_T& cardErrorCode ) noexcept = 0;
+    virtual Api* createCardfromJSON( DatabaseApi&                       cardDb, 
+                                     JsonVariant                        cardObj, 
+                                     Cpl::Memory::ContiguousAllocator&  generalAllocator,
+                                     Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                                     Fxt::Point::DatabaseApi&           dbForPoints, 
+                                     Api::Err_T&                        cardErrorCode ) noexcept = 0;
 
 public:
     /** This method looks-up the IO card Factory by its GUID.  If the

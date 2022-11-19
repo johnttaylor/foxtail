@@ -22,8 +22,8 @@ namespace Fxt {
 namespace Component {
 
 
-/** This abstract class defines the interface for the Component Factory Database.  
-    The database contains the list of Factory instances for all supported 
+/** This abstract class defines the interface for the Component Factory Database.
+    The database contains the list of Factory instances for all supported
     Components
 
     Note: There is no guaranteed order Component Factory list.
@@ -34,39 +34,48 @@ class FactoryDatabaseApi
 {
 public:
     /** This method attempts to parse the provided JSON Object that represents
-        a Component and create binary representation of the defined component.  
-        If there is an error (e.g. component not supported, missing key/value 
-        pairs, etc.) the method returns nullptr; else a pointer to the newly 
-        created component object is returned.  When an error occurs, details 
-        about the specific component error is returned via 'componentErrorode' 
+        a Component and create binary representation of the defined component.
+        If there is an error (e.g. component not supported, missing key/value
+        pairs, etc.) the method returns nullptr; else a pointer to the newly
+        created component object is returned.  When an error occurs, details
+        about the specific component error is returned via 'componentErrorode'
         argument.
-        
-        See the Fxt::Component::FactoryApi interface for the required JSON Object 
+
+        The method also return's the Component's execution order via the argument
+        list.
+
+        See the Fxt::Component::FactoryApi interface for the required JSON Object
         fields.
 
         This method should ONLY be called after all Factory instances have been
         registered with the Factory Database.
      */
-    virtual Api* createComponentfromJSON( JsonVariant cardObj, uint32_t componentErrorode ) noexcept = 0;
+    virtual Api* createComponentfromJSON( JsonVariant&                       componentObject,
+                                          Fxt::Point::BankApi&               statePointBank,
+                                          Cpl::Memory::ContiguousAllocator&  generalAllocator,
+                                          Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                                          Fxt::Point::DatabaseApi&           dbForPoints,
+                                          uint16_t&                          exeOrder,
+                                          Api::Err_T&                        componentErrorCode ) noexcept = 0;
 
 public:
     /** This method looks-up the Component Factory by its GUID.  If the
         Component Factory GUID cannot be found (i.e. card type not supported by
         the platform), THEN the method returns 0.
 
-        The 'guidCardTypeId' is null terminated string contain a 8-4-4-4-12 
+        The 'guidCardTypeId' is null terminated string contain a 8-4-4-4-12
         formated GUID.
      */
     virtual FactoryApi* lookup( const char* guidComponentTypeId ) noexcept = 0;
 
-    /** This method returns a pointer to the first Component Factory in the 
-        Database. If there are no Component Factories in the Database, THEN the 
+    /** This method returns a pointer to the first Component Factory in the
+        Database. If there are no Component Factories in the Database, THEN the
         method returns 0.
      */
     virtual FactoryApi* first() noexcept = 0;
 
-    /** This method returns the next Component Factory in the Database. If 
-        'currentFactory' is the last Component Factory in the Database the method 
+    /** This method returns the next Component Factory in the Database. If
+        'currentFactory' is the last Component Factory in the Database the method
         returns 0.
      */
     virtual FactoryApi* next( FactoryApi& currentFactory ) noexcept = 0;

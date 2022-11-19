@@ -1,5 +1,5 @@
-#ifndef Fxt_Card_Hw_Mock_Digital8_h_
-#define Fxt_Card_Hw_Mock_Digital8_h_
+#ifndef Fxt_Card_Mock_Digital8_h_
+#define Fxt_Card_Mock_Digital8_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -21,8 +21,6 @@
 namespace Fxt {
 ///
 namespace Card {
-///
-namespace HW {
 ///
 namespace Mock {
 
@@ -50,7 +48,7 @@ namespace Mock {
       "name": "My Digital Card",                        // Text label for the card
       "id": 0,                                          // ID assigned to the card
       "type": "59d33888-62c7-45b2-a4d4-9dbc55914ed3",   // Identifies the card type.  Value comes from the Supported/Available-card-list
-      "typename": "Fxt::Card::HW::Mock::Digital8",      // Human readable type name
+      "typename": "Fxt::Card::Mock::Digital8",          // Human readable type name
       "slot": 0,                                        // Physical identifier, e.g. its the card position in the Node's physical chassis
       "points": {
         "inputs": [                                     // Inputs. The card supports 8 input points that is exposed a single Byte
@@ -93,7 +91,7 @@ public:
     static constexpr const char* GUID_STRING = "59d33888-62c7-45b2-a4d4-9dbc55914ed3";
 
     /// Type name for the card
-    static constexpr const char* TYPE_NAME   = "Fxt::Card::HW::Mock::Digital8";
+    static constexpr const char* TYPE_NAME   = "Fxt::Card::Mock::Digital8";
 
 public:
 
@@ -178,7 +176,6 @@ protected:
 
 
 };      // end namespaces
-};
 };
 };
 #endif  // end header latch

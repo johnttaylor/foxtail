@@ -33,11 +33,11 @@ public:
     FactoryDatabase() noexcept;
 
     /** This is a special constructor for when the Database is
-        statically declared (i.e. it is initialized as part of C++ startup 
-        BEFORE main() is executed.  C/C++ does NOT guarantee the order of static 
-        initializers.  Since the Database contains a list of IO Card factory 
-        that are typically statically created/initialized - we need to do 
-        something to ensure my internal list is properly initialized for this 
+        statically declared (i.e. it is initialized as part of C++ startup
+        BEFORE main() is executed.  C/C++ does NOT guarantee the order of static
+        initializers.  Since the Database contains a list of IO Card factory
+        that are typically statically created/initialized - we need to do
+        something to ensure my internal list is properly initialized for this
         scenario - hence this constructor.
      */
     FactoryDatabase( const char* ignoreThisParameter_usedToCreateAUniqueConstructor ) noexcept;
@@ -55,7 +55,12 @@ public:
 
 public:
     /// See Fxt::Card::FactoryDatabaseApi
-    Api* createCardfromJSON( DatabaseApi& cardDb, JsonVariant cardObj, Api::Err_T& cardErrorCode ) noexcept;
+    Api* createCardfromJSON( DatabaseApi&                       cardDb,
+                             JsonVariant                        cardObj,
+                             Cpl::Memory::ContiguousAllocator&  generalAllocator,
+                             Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                             Fxt::Point::DatabaseApi&           dbForPoints,
+                             Api::Err_T&                        cardErrorCode ) noexcept;
 
 public:
     /// See Fxt::Card::FactoryDatabaseApi

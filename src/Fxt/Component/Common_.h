@@ -30,29 +30,23 @@ class Common_ : public Api
 {
 public:
     /// Constructor
-    Common_( uint16_t exeOrder );
+    Common_();
 
     /// Destructor
     ~Common_();
 
 public:
     /// See Fxt::Component::Api
-    bool start( uint64_t currentElapsedTimeUsec ) noexcept;
+    Err_T start( uint64_t currentElapsedTimeUsec ) noexcept;
 
     /// See Fxt::Component::Api
-    bool stop() noexcept;
+    void stop() noexcept;
 
     /// See Fxt::Component::Api
     bool isStarted() const noexcept;
 
     /// See Fxt::Component::Api
-    uint16_t getId() const noexcept;
-
-    /// See Fxt::Component::Api
     Err_T getErrorCode() const noexcept;
-
-    /// See Fxt::Component::Api
-    uint16_t getExecutionOrder() const noexcept;
 
 protected:
     /// Helper method to extract Point references
@@ -73,10 +67,7 @@ protected:
     uint64_t                            m_lastExeCycleTimeUsec;
 
     /// Error state. A value of 0 indicates NO error
-    uint16_t                            m_error;
-
-    /// The Component's execution order
-    uint16_t                            m_exeOrder;
+    Err_T                               m_error;
 };
 
 

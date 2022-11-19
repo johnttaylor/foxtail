@@ -93,14 +93,21 @@ public:
               Point Descriptors and the memory must stay in scope until the
               IO card is destroyed.
  
+        The method returns the Component's execution order index via the 'exeOrder'
+        function argument.
+
         The method returns a pointer to the created card when successful; else 
         if an error occurred (e.g. out-of-memory) nullptr is returned.
         When an error occurs, the 'cardErrorCode' argument is updated with 
         details of the error.
       */
-    virtual Api* create( Fxt::Point::BankApi& statePointBank, 
-                         JsonVariant&         componentObject, 
-                         uint32_t&            componentErrorCode ) noexcept = 0;
+    virtual Api* create( Fxt::Point::BankApi&               statePointBank, 
+                         JsonVariant&                       componentObject, 
+                         Api::Err_T&                        componentErrorCode,
+                         Cpl::Memory::ContiguousAllocator&  generalAllocator,
+                         Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                         Fxt::Point::DatabaseApi&           dbForPoints,
+                         uint16_t&                          exeOrder ) noexcept = 0;
 
 
     /** This method is used to destroy/free an IO card.  

@@ -13,14 +13,14 @@
 /** @file */
 
 
-#include "Fxt/Card/FactoryDatabaseApi.h"
+#include "Fxt/Component/FactoryDatabaseApi.h"
 #include "Cpl/Container/SList.h"
 #include <Fxt/Point/Database.h>
 
 ///
 namespace Fxt {
 ///
-namespace Card {
+namespace Component {
 
 
 /** This concrete class implements the FactoryDatabaseApi
@@ -45,25 +45,31 @@ public:
 
 
 public:
-    /// See Fxt::Card::FactoryDatabaseApi
-    FactoryApi* lookup( const char* guidCardTypeId ) noexcept;
+    /// See Fxt::Component::FactoryDatabaseApi
+    FactoryApi* lookup( const char* guidComponentTypeId ) noexcept;
 
-    /// See Fxt::Card::FactoryDatabaseApi
+    /// See Fxt::Component::FactoryDatabaseApi
     FactoryApi* first() noexcept;
 
-    /// See Fxt::Card::FactoryDatabaseApi
+    /// See Fxt::Component::FactoryDatabaseApi
     FactoryApi* next( FactoryApi& currentFactory ) noexcept;
 
 public:
-    /// See Fxt::Card::FactoryDatabaseApi
-    Api* createCardfromJSON( JsonVariant cardObj, uint32_t cardErrorCode ) noexcept;
+    /// See Fxt::Component::FactoryDatabaseApi
+    Api* createComponentfromJSON( JsonVariant&                       componentObject,
+                                  Fxt::Point::BankApi&               statePointBank,
+                                  Cpl::Memory::ContiguousAllocator&  generalAllocator,
+                                  Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                                  Fxt::Point::DatabaseApi&           dbForPoints,
+                                  uint16_t&                          exeOrder,
+                                  Api::Err_T&                        componentErrorCode ) noexcept;
 
 public:
-    /// See Fxt::Card::FactoryDatabaseApi
-    void insert_( FactoryApi& cardFactoryToAdd ) noexcept;
+    /// See Fxt::Component::FactoryDatabaseApi
+    void insert_( FactoryApi& componentFactoryToAdd ) noexcept;
 
-    /// See Fxt::Card::FactoryDatabaseApi
-    void remove_( FactoryApi& cardFactoryToRemove ) noexcept;
+    /// See Fxt::Component::FactoryDatabaseApi
+    void remove_( FactoryApi& componentFactoryToRemove ) noexcept;
 
 private:
     /// Prevent access to the copy constructor -->Databases can not be copied!

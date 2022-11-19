@@ -27,7 +27,7 @@ namespace Point {
     The toJSON()/fromJSON format is:
     \code
 
-    { name:"<mpname>", type:"<mptypestring>", valid:true|false, locked:true|false, val:"<newvalue>" }
+    { name:"<mpname>", type:"<mptypestring>", valid:true|false, locked:true|false, val:{maxLen:<n>,text:"<value>" }
 
     \endcode
 
@@ -35,6 +35,13 @@ namespace Point {
  */
 class StringBase_ : public Fxt::Point::PointCommon_
 {
+public:
+    /// Type ID for the point
+    static constexpr const char* GUID_STRING = "e2c8172c-fca3-4023-bb9f-79f92dec7c34";
+
+    /// Type name for the card
+    static constexpr const char* TYPE_NAME   = "Fxt::Point::String";
+
 protected:
     /** Constructor. Invalid Point.
      */
@@ -54,8 +61,23 @@ public:
     /// Type safe write. See Fxt::Point::Api
     void write( const char* srcString, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept;
 
-    /// Returns the size WITHOUT the null terminator of the string storage
+    /// Updates the MP's data from 'src'. 
+    void write( StringBase_& src, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept;
+
+    /// Returns the maximum size WITHOUT the null terminator of the string storage
     virtual size_t getMaxLength() const noexcept = 0;
+
+    /// See Fxt::Point::Api.
+    size_t getDataSize_() noexcept;
+
+    /// See Fxt::Point::Api.
+    void* getDataPointer_() noexcept;
+
+    ///  See Fxt::Point::Api
+    const char* getTypeGuid() const noexcept { return GUID_STRING; }
+
+    ///  See Fxt::Point::Api
+    const char* getTypeName() const noexcept { return TYPE_NAME; }
 
 public:
     /// See Fxt::Point::Api.  
@@ -98,56 +120,44 @@ private:
     the size of string storage. The child classes must provide the following
     methods:
 
-        write( MyChildStringPointClass& src, ... )
-        getType()
         create(...)
 
     Template Args:  S:=  Max Size of the String WITHOUT the null
                          terminator!
  */
 template<int S>
-class String_ : public StringBase_
+class String : public StringBase_
 {
-protected:
+
+public:
     /** Constructor. Invalid Point.
      */
-    String_( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData )
-        : StringBase_( db, pointId, pointName, allocatorForPointStatefulData, sizeof( StateBlock_T) )
+    String( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData )
+        : StringBase_( db, pointId, pointName, allocatorForPointStatefulData, sizeof( StateBlock_T ) )
     {
     }
 
     /// Constructor. Valid Point.  Requires an initial value
-    String_( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, const char* initialValue )
+    String( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, const char* initialValue )
         : StringBase_( db, pointId, pointName, allocatorForPointStatefulData, sizeof( StateBlock_T ), initialValue )
     {
     }
 
-public:
-    /// Pull in overloaded methods from base class
-    using StringBase_::write;
 
-    /// Updates the MP's data from 'src'. 
-    void write( String_<S>& src, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
+public:
+    /// Creates a concrete instance in the invalid state
+    static Api* create( DatabaseApi&                        db,
+                        Cpl::Memory::Allocator&             allocatorForPoints,
+                        uint32_t                            pointId,
+                        const char*                         pointName,
+                        Cpl::Memory::ContiguousAllocator&   allocatorForPointStatefulData )
     {
-        updateFrom_( &(((StateBlock_T*)(src.m_state))->data), sizeof( int8_t ), src.isNotValid(), lockRequest );
+        return PointCommon_::create<String<S>>( db, allocatorForPoints, pointId, pointName, allocatorForPointStatefulData );
     }
 
-
+public:
     /// See Fxt::Point::StringBase_
     size_t getMaxLength() const noexcept { return S; }
-
-public:
-    /// See Fxt::Point::Api.
-    void* getDataPointer_() noexcept
-    {
-        return ((StateBlock_T*) (m_state))->data;
-    }
-
-    /// See Fxt::Point::Api.
-    size_t getDataSize_() noexcept
-    {
-        return S+1;
-    }
 
 public:
     /// The Point's Stateful data

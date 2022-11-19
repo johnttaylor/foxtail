@@ -242,7 +242,7 @@ bool Database<N>::toJSON( uint32_t         pointId,
     Database<N>::g_doc_["valid"] = isValid;
     if ( verbose )
     {
-        Database<N>::g_doc_["type"]   = point->getType();
+        Database<N>::g_doc_["type"]   = point->getTypeName();
         Database<N>::g_doc_["locked"] = isLocked;
     }
 

@@ -26,14 +26,14 @@ namespace Digital {
 
 
 /** This concrete class implements a Component that functions as AND gate
-    for boolean inputs.  Up to 16 inputs are support, and has two outputs. The
+    for boolean inputs.  Up to 16 inputs are supportED, and has two outputs. The
     first output is result of the AND operation and the second output is the
     logical complement of the AND output
 
     IF one or more of the Input signals are invalid, THEN the output signals
     are invalid.
 
-    The component has NOT stateful data
+    The component has NO stateful data
 
     \code
 
@@ -42,29 +42,32 @@ namespace Digital {
     {
        "name": "AND Gate#1"                                 // Text label for the component
        "type": "e62e395c-d27a-4821-bba9-aa1e6de42a05",      // Identifies the card type.  Value comes from the Supported/Available-card-list
-       "typeName": "16 Input AND Gate"                      // Human readable type name
+       "typeName": "Fxt::Component::Digital::And16Gate"     // OPTIONAL: Human readable type name
        "exeOrder": 0                                        // Execution order within the Logic Chain. Range: 0-64K
        "inputs": [                                          // Array of Point references that supply the Component's input values.  Number of elements: 1-16
           {
             "name": "Signal A",                             // human readable name for the input value
-            "type": "Fxt::Point::Bool",                     // REQUIRED Type for the input signal
+            "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0", // REQUIRED Type for the input signal
+            "typeName": "Fxt::Point::Bool",                 // OPTIONAL: Human readable Type name for the input signal
             "idRef": 4294967295                             // Point ID Reference to the point to read the input value from
           },
           ...
        ],
        "outputs": [                                         // Array of Point reference where the Component's writes it output values to.  Number of elements: 1-2
-            {                                               
-              "name":"Product"                              // Human readable name for the output signal
-              "type":"Fxt::Point::Bool",                    // REQUIRED Type for the output signal,
-              "idRef":4294967295,                           // Point ID reference to the point that is updated with the output value
-              "negate":false                                // Optional: (defaults to false) When set to false - the output is result of ANDing the input signals.  When set to true the output is logical complement of ANDing result
-            },
-            {                                       
-              "name":"/Product"                             // Human readable name for the output signal
-              "type":"Fxt::Point::Bool",                    // REQUIRED Type for the output signal,
-              "idRef":4294967295,                           // Point ID reference to the point that is updated with the output value
-              "negate":true                                 // Optional: (defaults to false) When set to false - the output is result of ANDing the input signals.  When set to true the output is logical complement of ANDing result
-            }
+          {                                               
+            "name":"Product"                                // Human readable name for the output signal
+            "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0", // REQUIRED Type for the output signal
+            "typeName": "Fxt::Point::Bool",                 // OPTIONAL: Human readable Type name for the output signal
+            "idRef":4294967295,                             // Point ID reference to the point that is updated with the output value
+            "negate":false                                  // Optional: (defaults to false) When set to false - the output is result of ANDing the input signals.  When set to true the output is logical complement of ANDing result
+          },
+          {                                       
+            "name":"/Product"                               // Human readable name for the output signal
+            "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0", // REQUIRED Type for the output signal
+            "typeName": "Fxt::Point::Bool",                 // OPTIONAL: Human readable Type name for the output signal
+            "idRef":4294967295,                             // Point ID reference to the point that is updated with the output value
+            "negate":true                                   // Optional: (defaults to false) When set to false - the output is result of ANDing the input signals.  When set to true the output is logical complement of ANDing result
+          }
        ]
     }
 
@@ -89,18 +92,20 @@ public:
 
 public:
     /// Constructor
-    And16Gate( uint16_t     exeOrder,
-               JsonVariant& componentObject );
+    And16Gate( JsonVariant&                       componentObject,
+               Cpl::Memory::ContiguousAllocator&  generalAllocator,
+               Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+               Fxt::Point::DatabaseApi&           dbForPoints );
 
     /// Destructor
     ~And16Gate();
 
 public:
     /// See Fxt::Component::Api
-    bool resolveReferences( Fxt::Point::DatabaseApi& pointDb )  noexcept;
+    Err_T resolveReferences( Fxt::Point::DatabaseApi& pointDb )  noexcept;
 
     /// See Fxt::Component::Api
-    bool execute( int64_t currentTickUsec, Err_T& componentErrorCode ) noexcept;
+    Err_T execute( int64_t currentTickUsec ) noexcept;
 
 public:
     /// See Fxt::Component::Api
@@ -112,8 +117,10 @@ public:
 
 protected:
     /// Helper method to parse the card's JSON config
-    virtual bool parseConfiguration( JsonVariant& obj ) noexcept;
+    bool parseConfiguration( JsonVariant& obj ) noexcept;
 
+    /// Helper method to valid point reference types
+    bool validatePointTypes( Fxt::Point::Api* arrayOfPoints[], uint8_t numPoints );
 
 protected:
     /// List of Input Points.  Note: Initially the point IDs are stored instead of pointers

@@ -259,10 +259,6 @@ TEST_CASE( "Uint32" )
         REQUIRE( db.lookupById( ORANGE_ID ) == orange );
         REQUIRE( db.lookupById( APPLE_ID ) == apple );
         REQUIRE( db.lookupById( ORANGE_ID + 2 ) == nullptr );
-
-        REQUIRE( db.first() == apple );
-        REQUIRE( db.next( *apple ) == orange );
-        REQUIRE( db.next( *orange ) == nullptr );
     }
 
     REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );

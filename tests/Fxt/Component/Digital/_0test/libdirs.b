@@ -1,8 +1,9 @@
 # Unit under test
-src/Fxt/Card/HW/Mock 
+src/Fxt/Component/Digital
 
 # tests
-src/Fxt/Card/HW/Mock/_0test
+src/Fxt/Component
+src/Fxt/Component/Digital/_0test
 
 src/Fxt/Card
 src/Fxt/Point

@@ -31,10 +31,7 @@ class FactoryCommon_ : public Fxt::Card::FactoryApi
 {
 public:
     /// Constructor
-    FactoryCommon_( FactoryDatabaseApi&                 factoryDatabase,
-                    Cpl::Memory::ContiguousAllocator&   generalAllocator,
-                    Cpl::Memory::ContiguousAllocator&   statefulDataAllocator,
-                    Fxt::Point::DatabaseApi&            dbForPoints );
+    FactoryCommon_( FactoryDatabaseApi&  factoryDatabase );
 
     /// Destructor
     ~FactoryCommon_();
@@ -44,25 +41,63 @@ public:
     void destroy( Api& cardToDestory ) noexcept;
 
 protected:
-    /** Helper method to parse basic/common fields for a card.  Returns the
+    /** Helper method to that allocates memory for the Card and parses
+        some parse basic/common fields for a card.  Returns the
         FXT_CARD_ERR_NO_ERROR if successful; else error code is returned.
         Field(s) are returned via the function arguments.
      */
-    Api::Err_T parseBasicFields( JsonVariant& obj,
-                                 uint16_t&    cardId ) noexcept;
-
-protected:
-    /// Point instance database
-    Fxt::Point::DatabaseApi&            m_pointDb;
-
-    /// General Allocator
-    Cpl::Memory::ContiguousAllocator&   m_generalAllocator;
-
-    /// Stateful data allocator
-    Cpl::Memory::ContiguousAllocator&   m_statefulDataAllocator;
+    Api::Err_T allocateAndParse( JsonVariant&                       obj,
+                                 Cpl::Memory::ContiguousAllocator&  generalAllocator, 
+                                 size_t                             cardSizeInBytes,
+                                 void*&                             memoryForCard,
+                                 uint16_t&                          cardId ) noexcept;
 };
 
 
+/** This template class implements a typesafe Card factory
+ */
+template <class CARDTYPE>
+class Factory : public FactoryCommon_
+{
+public:
+    /// Constructor
+    Factory( FactoryDatabaseApi&  factoryDatabase ) : FactoryCommon_( factoryDatabase )
+    {
+    }
+
+public:
+    /// See Fxt::Card::FactoryApi
+    const char* getGuid() const noexcept { return CARDTYPE::GUID_STRING; }
+
+    /// See Fxt::Card::FactoryApi
+    Api* create( DatabaseApi&                       cardDb,
+                 JsonVariant&                       cardObject,
+                 Api::Err_T&                        cardErrorCode,
+                 Cpl::Memory::ContiguousAllocator&  generalAllocator,
+                 Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                 Fxt::Point::DatabaseApi&           dbForPoints ) noexcept
+    {
+        //  Get basic info about the card
+        uint16_t cardId;
+        void*    memCardInstance;
+        cardErrorCode = allocateAndParse( cardObject, generalAllocator, sizeof(CARDTYPE), memCardInstance, cardId );
+        if ( cardErrorCode == FXT_CARD_ERR_NO_ERROR )
+        {
+            // Create the card
+            CARDTYPE* card = new(memCardInstance) CARDTYPE( cardDb,
+                                                            generalAllocator,
+                                                            statefulDataAllocator,
+                                                            dbForPoints,
+                                                            cardId,
+                                                            cardObject );
+
+            cardErrorCode = card->getErrorCode();
+            return card;
+        }
+
+        return nullptr;
+    }
+};
 
 };      // end namespaces
 };

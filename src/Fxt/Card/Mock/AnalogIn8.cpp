@@ -18,7 +18,7 @@
 #include <new>
 
 ///
-using namespace Fxt::Card::HW::Mock;
+using namespace Fxt::Card::Mock;
 
 ///////////////////////////////////////////////////////////////////////////////
 AnalogIn8::AnalogIn8( DatabaseApi&                       cardDb,

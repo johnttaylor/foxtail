@@ -70,13 +70,13 @@ public:
      */
     virtual const char* getName() const noexcept = 0;
 
-    /** This method returns a string identifier for the Point's data type.
-        This value IS GUARANTEED to be unique (within an Application).  The
-        format of the string is the Point's fully qualified namespace and
-        class type as a string. For example, the Fxt::Point::Uint32 class
-        the function would return "Fxt::Point::Uint32"
+    /** This method returns the points's GUID (that identifies its type) as a
+        text string in 8-4-4-4-12 format
      */
-    virtual const char* getType() const noexcept = 0;
+    virtual const char* getTypeGuid() const noexcept = 0;
+
+    /// Returns the point's 'human readable' type name (note: this is NOT guaranteed to be unique)
+    virtual const char* getTypeName() const noexcept = 0;
 
     /// This method returns the Point's meta-data
     virtual void getMetadata( bool& isValid, bool& isLocked ) const noexcept = 0;

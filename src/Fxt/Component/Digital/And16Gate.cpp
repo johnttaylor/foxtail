@@ -22,10 +22,11 @@ using namespace Fxt::Component::Digital;
 
 
 ///////////////////////////////////////////////////////////////////////////////
-And16Gate::And16Gate( uint16_t     exeOrder,
-                      JsonVariant& componentObject )
-    : Fxt::Component::Common_( exeOrder )
-    , m_numInputs( 0 )
+And16Gate::And16Gate( JsonVariant&                       componentObject,
+                      Cpl::Memory::ContiguousAllocator&  generalAllocator,
+                      Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                      Fxt::Point::DatabaseApi&           dbForPoints)
+    : m_numInputs( 0 )
     , m_numOutputs( 0 )
 {
     memset( &m_inputRefs, 0, sizeof( m_inputRefs ) );
@@ -90,7 +91,7 @@ bool And16Gate::parseConfiguration( JsonVariant & obj ) noexcept
     }
 
     // Parse output negate qualifiers
-    for ( int i=0; i < outputs.size(); i++ )
+    for ( unsigned i=0; i < outputs.size(); i++ )
     {
         m_outputNegated[i] = outputs[i]["negate"] | false;
     }
@@ -99,7 +100,7 @@ bool And16Gate::parseConfiguration( JsonVariant & obj ) noexcept
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-bool And16Gate::resolveReferences( Fxt::Point::DatabaseApi& pointDb )  noexcept
+Fxt::Component::Api::Err_T And16Gate::resolveReferences( Fxt::Point::DatabaseApi& pointDb )  noexcept
 {
     // Resolve INPUT references
     if ( !Common_::resolveReferences( pointDb,
@@ -107,7 +108,7 @@ bool And16Gate::resolveReferences( Fxt::Point::DatabaseApi& pointDb )  noexcept
                                       m_numInputs ) )
     {
         m_error = FXT_COMPONENT_ERR_UNRESOLVED_INPUT_REFRENCE;
-        return false;
+        return m_error;
     }
 
     // Resolve OUTPUT references
@@ -116,30 +117,64 @@ bool And16Gate::resolveReferences( Fxt::Point::DatabaseApi& pointDb )  noexcept
                                       m_numOutputs ) )
     {
         m_error = FXT_COMPONENT_ERR_UNRESOLVED_OUTPUT_REFRENCE;
-        return false;
+        return m_error;
+    }
+
+    // Validate Point types
+    if ( validatePointTypes( (Fxt::Point::Api **) m_inputRefs, m_numInputs ) == false )
+    {
+        m_error = FXT_COMPONENT_ERR_INPUT_REFRENCE_BAD_TYPE;
+        return m_error;
+    }
+    if ( validatePointTypes( (Fxt::Point::Api **) m_outputRefs, m_numOutputs ) == false )
+    {
+        m_error = FXT_COMPONENT_ERR_OUTPUT_REFRENCE_BAD_TYPE;
+        return m_error;
+    }
+
+    m_error = FXT_COMPONENT_ERR_NO_ERROR;   // Set my state to 'ready-to-start'
+    return m_error;
+}
+
+bool And16Gate::validatePointTypes( Fxt::Point::Api* arrayOfPoints[], uint8_t numPoints )
+{
+    for ( uint8_t i=0; i < numPoints; i++ )
+    {
+        if ( arrayOfPoints[i] != nullptr )
+        {
+            if ( strcmp( arrayOfPoints[i]->getTypeGuid(), Fxt::Point::Bool::GUID_STRING ) != 0 )
+            {
+                return false;
+            }
+        }
     }
 
     return true;
 }
 
-bool And16Gate::execute( int64_t currentTickUsec, Err_T& componentErrorCode ) noexcept
+Fxt::Component::Api::Err_T And16Gate::execute( int64_t currentTickUsec ) noexcept
 {
     // NOTE: The method NEVER fails
 
     // Read all of my inputs!
     bool outputVal = true;
-    for ( int i=0; i < m_numInputs && outputVal; i++ )
+    for ( int i=0; i < m_numInputs; i++ )
     {
+        bool temp = true;
+
         // Set the outputs to invalid if at least one input is invalid
-        if ( !m_inputRefs[i]->read( outputVal ) )
+        if ( !m_inputRefs[i]->read( temp ) )
         {
             // Invalidate the outputs
             for ( int i=0; i < m_numOutputs; i++ )
             {
                 m_outputRefs[i]->setInvalid();
             }
-            return true;
+            return FXT_COMPONENT_ERR_NO_ERROR;
         }
+
+        // AND the individual inputs
+        outputVal &= temp;
     }
 
     // If I get here all of the inputs have valid values -->generate output signals
@@ -149,5 +184,5 @@ bool And16Gate::execute( int64_t currentTickUsec, Err_T& componentErrorCode ) no
         m_outputRefs[i]->write( finalOut );
     }
 
-    return true;
+    return FXT_COMPONENT_ERR_NO_ERROR;
 }

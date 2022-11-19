@@ -67,7 +67,7 @@ public:
                            const char*                          pointName,
                            Cpl::Memory::Allocator&              allocatorForPoints,
                            Cpl::Memory::ContiguousAllocator&    allocatorForPointStatefulData,
-                           JsonVariant&                         valueSrc ) noexcept;
+                           const JsonObject&                    valueSrc ) noexcept;
 
 protected:
     /// Internal point

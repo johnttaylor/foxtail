@@ -73,18 +73,43 @@ void StringBase_::write( const char* srcString, Fxt::Point::Api::LockRequest_T l
     writeData( srcString, strlen( srcString ), lockRequest );
 }
 
+void StringBase_::write( StringBase_& src, Fxt::Point::Api::LockRequest_T lockRequest ) noexcept
+{
+    // Note: The copyDataFrom_() method ensures that there are no buffer/data overruns
+    updateFrom_( &(((BaseStateful_T*) (src.m_state))->data),
+                 strlen( ((BaseStateful_T*) (src.m_state))->data ),
+                 src.isNotValid(),
+                 lockRequest );
+}
+
+size_t StringBase_::getDataSize_() noexcept
+{
+    return getMaxLength() + 1;
+}
+
+void* StringBase_::getDataPointer_() noexcept
+{
+    return ((BaseStateful_T*) m_state)->data;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 bool StringBase_::toJSON_( JsonDocument& doc, bool verbose ) noexcept
 {
+    // Create value object
+    JsonObject valObj = doc.createNestedObject( "val" );
+
     // Construct the 'val' key/value pair 
-    doc["val"] = (char*) ((BaseStateful_T*) m_state)->data;
+    valObj["maxLen"] = getMaxLength();
+    valObj["text"]   = (char*) ((BaseStateful_T*) m_state)->data;
     return true;
 }
 
 bool StringBase_::fromJSON_( JsonVariant & src, Fxt::Point::Api::LockRequest_T lockRequest, Cpl::Text::String * errorMsg ) noexcept
 {
+    // Note: Max size is ignored, i.e. do NOT support reallocating sizes via JSON
+
     // Get the string
-    const char* newValue = src;
+    const char* newValue = src["text"];
     if ( newValue == nullptr )
     {
         if ( errorMsg )

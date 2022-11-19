@@ -46,27 +46,11 @@ public:
     {
     }
 
-    /// Pull in overloaded methods from base class
-    using Enum_<MyColors>::write;
+    ///  See Fxt::Point::Api
+    const char* getTypeGuid() const noexcept { return "13208238-bbc9-4b38-a505-c20cadcafd87"; }
 
-    /// Updates the MP's data from 'src'
-    virtual void write( MyEnum& src, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
-    {
-        updateFrom_( &(((StateBlock_T*) (src.m_state))->data), sizeof( MyColors ), src.isNotValid(), lockRequest );
-    }
-
-    ///  See Cpl::Dm::ModelPoint.
-    const char* getType() const noexcept { return "Fxt::Point::MyEnum"; }
-
-    /// Creates a concrete instance in the invalid state
-    static Api* create( DatabaseApi&                        db, 
-                        Cpl::Memory::Allocator&             allocatorForPoints,
-                        uint32_t                            pointId,
-                        const char*                         pointName,
-                        Cpl::Memory::ContiguousAllocator&   allocatorForPointStatefulData )
-    {
-        return PointCommon_::create<MyEnum>( db, allocatorForPoints, pointId, pointName, allocatorForPointStatefulData );
-    }
+    ///  See Fxt::Point::Api
+    const char* getTypeName() const noexcept { return "Fxt::Point::MyEnum"; }
 };
 
 }; // end anonymous namespace
@@ -269,10 +253,6 @@ TEST_CASE( "Enum" )
         REQUIRE( db.lookupById( ORANGE_ID ) == orange );
         REQUIRE( db.lookupById( APPLE_ID ) == apple );
         REQUIRE( db.lookupById( ORANGE_ID + 2 ) == nullptr );
-
-        REQUIRE( db.first() == apple );
-        REQUIRE( db.next( *apple ) == orange );
-        REQUIRE( db.next( *orange ) == nullptr );
     }
 
     REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );

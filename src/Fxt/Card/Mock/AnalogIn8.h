@@ -1,5 +1,5 @@
-#ifndef Fxt_Card_Hw_Mock_AnalogIn8_h_
-#define Fxt_Card_Hw_Mock_AnalogIn8_h_
+#ifndef Fxt_Card_Mock_AnalogIn8_h_
+#define Fxt_Card_Mock_AnalogIn8_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -21,8 +21,6 @@
 namespace Fxt {
 ///
 namespace Card {
-///
-namespace HW {
 ///
 namespace Mock {
 
@@ -51,7 +49,7 @@ namespace Mock {
       "name": "My AnalogIn8 Card",                      // Text label for the card
       "id": 0,                                          // ID assigned to the card
       "type": "1968f533-e323-4ae4-8493-9a572f3bd195",   // Identifies the card type.  Value comes from the Supported/Available-card-list
-      "typename": "Fxt::Card::HW::Mock::AnalogIn8",     // Human readable type name
+      "typename": "Fxt::Card::Mock::AnalogIn8",         // Human readable type name
       "slot": 0,                                        // Physical identifier, e.g. its the card position in the Node's physical chassis
       "points": {
         "inputs": [                                     // Inputs. The card supports 8 input values. Each input is exposed a Float point
@@ -80,7 +78,7 @@ public:
     static constexpr const char* GUID_STRING = "1968f533-e323-4ae4-8493-9a572f3bd195";
 
     /// Type name for the card
-    static constexpr const char* TYPE_NAME   = "Fxt::Card::HW::Mock::AnalogIn8";
+    static constexpr const char* TYPE_NAME   = "Fxt::Card::Mock::AnalogIn8";
 
 public:
 
@@ -147,7 +145,6 @@ protected:
 
 
 };      // end namespaces
-};
 };
 };
 #endif  // end header latch

@@ -27,41 +27,8 @@
 using namespace Fxt::Point;
 
 
-// Anonymous namespace
-namespace {
 
-
-
-class String16 : public String_<16>
-{
-public:
-    /// Constructor. Invalid Point.
-    String16( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData ) 
-        : String_<16>( db, pointId, pointName, allocatorForPointStatefulData )
-    {
-    }
-
-    /// Constructor. Valid Point.  Requires an initial value
-    String16( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, const char* initialValue )
-        :String_<16>( db, pointId, pointName, allocatorForPointStatefulData, initialValue )
-    {
-    }
-
-    ///  See Cpl::Dm::ModelPoint.
-    const char* getType() const noexcept { return "Fxt::Point::String16"; }
-
-    /// Creates a concrete instance in the invalid state
-    static Api* create( DatabaseApi&                        db, 
-                        Cpl::Memory::Allocator&             allocatorForPoints,
-                        uint32_t                            pointId,
-                        const char*                         pointName,
-                        Cpl::Memory::ContiguousAllocator&   allocatorForPointStatefulData )
-    {
-        return PointCommon_::create<String16>( db, allocatorForPoints, pointId, pointName, allocatorForPointStatefulData );
-    }
-};
-
-}; // end anonymous namespace
+typedef String<16> StringUut;
 
 #define MAX_POINTS  2
 
@@ -75,10 +42,10 @@ public:
 #define ORANGE_LABEL    "ORANGE"
 
 #define ELEM_SIZE_AS_SIZET(elemSize)    (((elemSize)+sizeof( size_t ) - 1) / sizeof(size_t))
-static size_t stateHeapMemory_[ELEM_SIZE_AS_SIZET( sizeof( String16::StateBlock_T ) ) * MAX_POINTS];
+static size_t stateHeapMemory_[ELEM_SIZE_AS_SIZET( sizeof( StringUut::StateBlock_T ) ) * MAX_POINTS];
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE( "String16" )
+TEST_CASE( "String" )
 {
     Cpl::System::Shutdown_TS::clearAndUseCounter();
     Database<MAX_POINTS>     db;
@@ -87,9 +54,9 @@ TEST_CASE( "String16" )
     char                     buffer[16 + 1];
     Cpl::Text::FString<16>   value;
 
-    String16* apple = new(std::nothrow) String16( db, APPLE_ID, APPLE_LABEL, stateHeap );
+    StringUut* apple = new(std::nothrow) StringUut( db, APPLE_ID, APPLE_LABEL, stateHeap );
     REQUIRE( apple );
-    String16* orange = new(std::nothrow) String16( db, ORANGE_ID, ORANGE_LABEL, stateHeap, ORANGE_INIT_VAL );
+    StringUut* orange = new(std::nothrow) StringUut( db, ORANGE_ID, ORANGE_LABEL, stateHeap, ORANGE_INIT_VAL );
     REQUIRE( orange );
 
 
@@ -147,7 +114,7 @@ TEST_CASE( "String16" )
         StaticJsonDocument<1024> doc;
         DeserializationError err = deserializeJson( doc, buffer );
         REQUIRE( err == DeserializationError::Ok );
-        REQUIRE( strcmp( doc["val"], "Hello JSON" ) == 0 );
+        REQUIRE( strcmp( doc["val"]["text"], "Hello JSON" ) == 0 );
 
         orange->setInvalid();
         result = db.toJSON( ORANGE_ID, buffer, sizeof( buffer ), truncated, false );
@@ -155,27 +122,27 @@ TEST_CASE( "String16" )
         REQUIRE( result );
         REQUIRE( truncated == false );
 
-        result = db.fromJSON( "{\"id\":0,\"val\":\"eBLUE\"}" );
+        result = db.fromJSON( "{\"id\":0,\"val\":{text:\"eBLUE\"}}" );
         REQUIRE( apple->read( value ) );
         REQUIRE( value == "eBLUE" );
 
-        result = db.fromJSON( "{\"id\":0,\"val\":\"eGREEN\"}" );
+        result = db.fromJSON( "{\"id\":0,\"val\":{text:\"eGREEN\"}}" );
         REQUIRE( apple->read( value ) );
         REQUIRE( value == "eGREEN");
 
-        result = db.fromJSON( "{\"id\":0,\"val\":\"eRED\",locked:true}" );
+        result = db.fromJSON( "{\"id\":0,\"val\":{text:\"eRED\"},locked:true}" );
         REQUIRE( result );
         REQUIRE( apple->read( value ) );
         REQUIRE( value == "eRED" );
         REQUIRE( apple->isLocked() );
 
-        result = db.fromJSON( "{\"id\":0,\"val\":\"eGREEN\",locked:false}" );
+        result = db.fromJSON( "{\"id\":0,\"val\":{text:\"eGREEN\"},locked:false}" );
         REQUIRE( result );
         REQUIRE( apple->read( value ) );
         REQUIRE( value == "eGREEN" );
         REQUIRE( !apple->isLocked() );
 
-        result = db.fromJSON( "{\"id\":0,\"val\":\"123456789 123456789 2\",locked:false}" );
+        result = db.fromJSON( "{\"id\":0,\"val\":{text:\"123456789 123456789 2\"},locked:false}" );
         REQUIRE( result );
         REQUIRE( apple->read( value ) );
         REQUIRE( value == "123456789 123456" );
@@ -193,12 +160,12 @@ TEST_CASE( "String16" )
         REQUIRE( !apple->isLocked() );
 
         // ERROR
-        result = db.fromJSON( "{\"id\":100,\"val\":\"eBLUE\",locked:true}" );
+        result = db.fromJSON( "{\"id\":100,\"val\":{text:\"eBLUE\"},locked:true}" );
         REQUIRE( result == false );
 
         // ERROR
         Cpl::Text::FString<100> errMsg = "NOERROR";
-        result = db.fromJSON( "{\"id\":100,\"val\":\"eBLUE\",locked:true}", &errMsg );
+        result = db.fromJSON( "{\"id\":100,\"val\":{text:\"eBLUE\"},locked:true}", &errMsg );
         REQUIRE( result == false );
         REQUIRE( errMsg != "NOERROR" );
 
@@ -254,10 +221,6 @@ TEST_CASE( "String16" )
         REQUIRE( db.lookupById( ORANGE_ID ) == orange );
         REQUIRE( db.lookupById( APPLE_ID ) == apple );
         REQUIRE( db.lookupById( ORANGE_ID + 2 ) == nullptr );
-
-        REQUIRE( db.first() == apple );
-        REQUIRE( db.next( *apple ) == orange );
-        REQUIRE( db.next( *orange ) == nullptr );
     }
 
     REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );

@@ -27,9 +27,8 @@ namespace Point {
     defined in Cpl/Type/enum.h.  A child class is still needed to provide the
     following methods:
 
-        write( MyChildEnumPointClass& src, ... )
-        getType()
-        create(...)
+        getTypeGuid()
+        getTypeName()
 
     The toJSON()/fromJSON format is:
         \code
@@ -64,11 +63,21 @@ public:
     using Basic_<BETTERENUM_TYPE>::write;
 
     /// Updates the MP's data from 'src'. Note: The lock state of 'src' is NOT-USED/IGNORED
-    void write( Enum_& src, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
+    void write( Enum_<BETTERENUM_TYPE>& src, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
-        updateFrom_( &(((StateBlock_T*) (src.m_state))->data), sizeof( BETTERENUM_TYPE ), src.isNotValid(), lockRequest );
+        PointCommon_::updateFrom_( &(((StateBlock_T*) (src.m_state))->data), sizeof( BETTERENUM_TYPE ), src.isNotValid(), lockRequest );
     }
 
+public:
+    /// Creates a concrete instance in the invalid state
+    static Api* create( DatabaseApi&                        db,
+                        Cpl::Memory::Allocator&             allocatorForPoints,
+                        uint32_t                            pointId,
+                        const char*                         pointName,
+                        Cpl::Memory::ContiguousAllocator&   allocatorForPointStatefulData )
+    {
+        return PointCommon_::create<Enum_< BETTERENUM_TYPE>>( db, allocatorForPoints, pointId, pointName, allocatorForPointStatefulData );
+    }
 
 public:
     /// See Fxt::Dm::Point.  

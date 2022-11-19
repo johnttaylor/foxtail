@@ -11,8 +11,8 @@
 
 #include "Catch/catch.hpp"
 #include "Cpl/System/_testsupport/Shutdown_TS.h"
-#include "Fxt/Card/HW/Mock/AnalogIn8.h"
-#include "Fxt/Card/HW/Mock/AnalogIn8Factory.h"
+#include "Fxt/Card/Mock/AnalogIn8.h"
+#include "Fxt/Card/Mock/AnalogIn8Factory.h"
 #include "Fxt/Point/Uint8.h"
 #include "Fxt/Point/Database.h"
 #include "Fxt/Card/FactoryDatabase.h"
@@ -24,7 +24,7 @@
 #define SECT_   "_0test"
 
 /// 
-using namespace Fxt::Card::HW::Mock;
+using namespace Fxt::Card::Mock;
 
 
 #define CARD_DEFINTION     "{\"cards\":[" \
@@ -89,8 +89,8 @@ TEST_CASE( "AnalogIn8Factory" )
     Fxt::Point::Database<MAX_POINTS> pointDb;
     Fxt::Card::Database<MAX_CARDS>   cardDb;
     Fxt::Card::FactoryDatabase       cardFactoryDb;
-    AnalogIn8Factory                 uut( cardFactoryDb, generalAllocator, statefulAllocator, pointDb );
-    Fxt::Card::Api::Err_T            cardErrorCode;
+    AnalogIn8Factory                 uut( cardFactoryDb );
+    Fxt::Card::Api::Err_T            componentErrorCode;
 
     SECTION( "create/destroy card" )
     {
@@ -99,10 +99,10 @@ TEST_CASE( "AnalogIn8Factory" )
         REQUIRE( err == DeserializationError::Ok );
 
         JsonVariant cardObj = doc["cards"][0];
-        Fxt::Card::Api* card = uut.create( cardDb, cardObj, cardErrorCode );
+        Fxt::Card::Api* card = uut.create( cardDb, cardObj, componentErrorCode, generalAllocator, statefulAllocator, pointDb );
         REQUIRE( card != nullptr );
-        REQUIRE( cardErrorCode == FXT_CARD_ERR_NO_ERROR );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", Fxt::Card::Api::getErrorText( cardErrorCode )) );
+        REQUIRE( componentErrorCode == FXT_COMPONENT_ERR_NO_ERROR );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", Fxt::Card::Api::getErrorText( componentErrorCode )) );
 
         REQUIRE( strcmp( uut.getGuid(), card->getTypeGuid() ) == 0 );
 
@@ -151,10 +151,10 @@ TEST_CASE( "AnalogIn8Factory" )
         REQUIRE( err == DeserializationError::Ok );
 
         JsonVariant cardObj = doc["cards"][0];
-        Fxt::Card::Api* card = cardFactoryDb.createCardfromJSON( cardDb, cardObj, cardErrorCode );
+        Fxt::Card::Api* card = cardFactoryDb.createCardfromJSON( cardDb, cardObj, generalAllocator, statefulAllocator, pointDb, componentErrorCode );
         REQUIRE( card != nullptr );
-        REQUIRE( cardErrorCode == FXT_CARD_ERR_NO_ERROR );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", Fxt::Card::Api::getErrorText( cardErrorCode )) );
+        REQUIRE( componentErrorCode == FXT_COMPONENT_ERR_NO_ERROR );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", Fxt::Card::Api::getErrorText( componentErrorCode )) );
     }
 
     REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );

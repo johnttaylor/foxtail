@@ -36,6 +36,13 @@ namespace Point {
 class Bool : public Basic_<bool>
 {
 public:
+    /// Type ID for the point
+    static constexpr const char* GUID_STRING = "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0";
+
+    /// Type name for the card
+    static constexpr const char* TYPE_NAME   = "Fxt::Point::Bool";
+
+public:
     /// Simplify access the stateful data
     typedef typename Basic_<bool>::Stateful_T StateBlock_T;
 
@@ -67,7 +74,10 @@ public:
 
 public:
     ///  See Fxt::Point::Api
-    const char* getType() const noexcept { return "Fxt::Point::Bool"; }
+    const char* getTypeGuid() const noexcept { return GUID_STRING; }
+
+    ///  See Fxt::Point::Api
+    const char* getTypeName() const noexcept { return TYPE_NAME; }
 
 public:
     /// Creates a concrete instance in the invalid state

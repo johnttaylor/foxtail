@@ -85,9 +85,12 @@ public:
         When an error occurs, the 'cardErrorCode' argument is updated with 
         details of the error.
       */
-    virtual Api* create( DatabaseApi& cardDb, 
-                         JsonVariant& cardObject, 
-                         Api::Err_T&  cardErrorCode ) noexcept = 0;
+    virtual Api* create( DatabaseApi&                       cardDb, 
+                         JsonVariant&                       cardObject, 
+                         Api::Err_T&                        cardErrorCode,
+                         Cpl::Memory::ContiguousAllocator&  generalAllocator,
+                         Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                         Fxt::Point::DatabaseApi&           dbForPoints ) noexcept = 0;
 
 
     /** This method is used to destroy/free an IO card.  

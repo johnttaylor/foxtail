@@ -59,7 +59,7 @@ Setter* Setter::create( DatabaseApi&                         db,
                         const char*                          pointName,
                         Cpl::Memory::Allocator&              allocatorForPoints,
                         Cpl::Memory::ContiguousAllocator&    allocatorForPointStatefulData,
-                        JsonVariant&                         valueSrc ) noexcept
+                        const JsonObject&                    valueSrc ) noexcept
 {
     // Create the internal point
     Api* srcPoint = (pointFactoryMethod) (db, allocatorForPoints, pointId, pointName, allocatorForPointStatefulData);

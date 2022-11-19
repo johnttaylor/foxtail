@@ -12,7 +12,10 @@
 #include "Catch/catch.hpp"
 #include "Cpl/System/_testsupport/Shutdown_TS.h"
 #include "Fxt/Component/Digital/And16Gate.h"
+#include "Fxt/Component/Digital/And16GateFactory.h"
+#include "Fxt/Component/FactoryDatabase.h"
 #include "Fxt/Point/Database.h"
+#include "Fxt/Point/Bank.h"
 #include "Cpl/Memory/LeanHeap.h"
 #include <string.h>
 
@@ -69,6 +72,8 @@ using namespace Fxt::Component::Digital;
 static size_t generalHeap_[10000];
 static size_t statefulHeap_[10000];
 
+#define MAX_COMPONENTS  2
+
 #define MAX_POINTS      5
 
 #define POINT_ID__IN_SIGNAL_1   2
@@ -81,113 +86,82 @@ static size_t statefulHeap_[10000];
 
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE( "And16Gate" )
+TEST_CASE( "And16GateFactory" )
 {
     Cpl::System::Shutdown_TS::clearAndUseCounter();
-    Cpl::Memory::LeanHeap generalAllocator( generalHeap_, sizeof( generalHeap_ ) );
-    Cpl::Memory::LeanHeap statefulAllocator( statefulHeap_, sizeof( statefulHeap_ ) );
-    Fxt::Point::Database<MAX_POINTS> pointDb;
+    Cpl::Memory::LeanHeap               generalAllocator( generalHeap_, sizeof( generalHeap_ ) );
+    Cpl::Memory::LeanHeap               statefulAllocator( statefulHeap_, sizeof( statefulHeap_ ) );
+    Fxt::Point::Database<MAX_POINTS>    pointDb;
+    Fxt::Point::Bank                    pointBank;
+    Fxt::Component::FactoryDatabase     componentFactoryDb;
+    And16GateFactory                    uut( componentFactoryDb );
+    Fxt::Component::Api::Err_T          componentErrorCode;
+    uint16_t                            exeOrder;
 
-    SECTION( "create component" )
+    SECTION( "create/destroy card" )
     {
         StaticJsonDocument<10240> doc;
         DeserializationError err = deserializeJson( doc, COMP_DEFINTION );
         REQUIRE( err == DeserializationError::Ok );
 
         JsonVariant componentObj = doc["components"][0];
-        And16Gate uut( componentObj,
-                       generalAllocator,
-                       statefulAllocator,
-                       pointDb );
+        Fxt::Component::Api* component = uut.create( pointBank,
+                                                     componentObj,
+                                                     componentErrorCode,
+                                                     generalAllocator,
+                                                     statefulAllocator,
+                                                     pointDb,
+                                                     exeOrder );
+        REQUIRE( component != nullptr );
+        REQUIRE( componentErrorCode == FXT_COMPONENT_ERR_NO_ERROR );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", Fxt::Component::Api::getErrorText( componentErrorCode )) );
 
-        REQUIRE( uut.getErrorCode() == FXT_COMPONENT_ERR_NO_ERROR );
+        REQUIRE( strcmp( component->getTypeName(), And16Gate::TYPE_NAME ) == 0 );
+        REQUIRE( strcmp( component->getTypeGuid(), And16Gate::GUID_STRING ) == 0 );
 
-        REQUIRE( strcmp( uut.getTypeGuid(), And16Gate::GUID_STRING ) == 0 );
-        REQUIRE( strcmp( uut.getTypeName(), And16Gate::TYPE_NAME ) == 0 );
+        REQUIRE( component->resolveReferences( pointDb ) == FXT_COMPONENT_ERR_UNRESOLVED_INPUT_REFRENCE );
 
-        REQUIRE( uut.isStarted() == false );
+        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_1, "inSig1", statefulAllocator );
+        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_2, "inSig2", statefulAllocator );
+        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_3, "inSig3", statefulAllocator );
+        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__OUT, "out", statefulAllocator );
+        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__OUT_NEGATED, "/out", statefulAllocator );
+        REQUIRE( component->resolveReferences( pointDb ) == FXT_COMPONENT_ERR_NO_ERROR );
+
+        uut.destroy( *component );
     }
 
-    SECTION( "start component" )
+    SECTION( "create from factory db" )
     {
         StaticJsonDocument<10240> doc;
         DeserializationError err = deserializeJson( doc, COMP_DEFINTION );
         REQUIRE( err == DeserializationError::Ok );
 
         JsonVariant componentObj = doc["components"][0];
-        And16Gate uut( componentObj,
-                       generalAllocator,
-                       statefulAllocator,
-                       pointDb );
+        Fxt::Component::Api* component = componentFactoryDb.createComponentfromJSON( componentObj,
+                                                                                     pointBank,
+                                                                                     generalAllocator,
+                                                                                     statefulAllocator,
+                                                                                     pointDb,
+                                                                                     exeOrder,
+                                                                                     componentErrorCode );
+        REQUIRE( component  );
+        REQUIRE( componentErrorCode == FXT_COMPONENT_ERR_NO_ERROR );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", Fxt::Component::Api::getErrorText( componentErrorCode )) );
 
-        REQUIRE( uut.getErrorCode() == FXT_COMPONENT_ERR_NO_ERROR );
+        REQUIRE( strcmp( component->getTypeName(), And16Gate::TYPE_NAME ) == 0 );
+        REQUIRE( strcmp( component->getTypeGuid(), And16Gate::GUID_STRING ) == 0 );
 
-        uint64_t nowUsec = Cpl::System::ElapsedTime::milliseconds() * 1000;
+        REQUIRE( component->resolveReferences( pointDb ) == FXT_COMPONENT_ERR_UNRESOLVED_INPUT_REFRENCE );
 
-        REQUIRE( uut.start( nowUsec ) == FXT_COMPONENT_ERR_NO_ERROR );
-        REQUIRE( uut.isStarted() == true );
-    }
+        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_1, "inSig1", statefulAllocator );
+        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_2, "inSig2", statefulAllocator );
+        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_3, "inSig3", statefulAllocator );
+        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__OUT, "out", statefulAllocator );
+        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__OUT_NEGATED, "/out", statefulAllocator );
+        REQUIRE( component->resolveReferences( pointDb ) == FXT_COMPONENT_ERR_NO_ERROR );
 
-    SECTION( "execute component - happy path" )
-    {
-        StaticJsonDocument<10240> doc;
-        DeserializationError err = deserializeJson( doc, COMP_DEFINTION );
-        REQUIRE( err == DeserializationError::Ok );
-
-        JsonVariant componentObj = doc["components"][0];
-        And16Gate uut( componentObj,
-                       generalAllocator,
-                       statefulAllocator,
-                       pointDb );
-
-        REQUIRE( uut.getErrorCode() == FXT_COMPONENT_ERR_NO_ERROR );
-
-        Fxt::Point::Bool* ptIn1  = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_1, "inSig1", statefulAllocator );
-        Fxt::Point::Bool* ptIn2  = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_2, "inSig2", statefulAllocator );
-        Fxt::Point::Bool* ptIn3  = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_3, "inSig3", statefulAllocator );
-        Fxt::Point::Bool* ptOut1 = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__OUT, "out", statefulAllocator );
-        Fxt::Point::Bool* ptOut2 = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__OUT_NEGATED, "/out", statefulAllocator );
-        REQUIRE( uut.resolveReferences( pointDb ) == FXT_COMPONENT_ERR_NO_ERROR );
-
-        uint64_t nowUsec = Cpl::System::ElapsedTime::milliseconds() * 1000;
-        REQUIRE( uut.start( nowUsec ) == FXT_COMPONENT_ERR_NO_ERROR );
-        REQUIRE( uut.isStarted() == true );
-
-        REQUIRE( uut.execute( nowUsec ) == FXT_COMPONENT_ERR_NO_ERROR );
-        REQUIRE( ptOut1->isNotValid() );
-        REQUIRE( ptOut2->isNotValid() );
-
-        ptIn1->write( true );
-        REQUIRE( uut.execute( nowUsec ) == FXT_COMPONENT_ERR_NO_ERROR );
-        REQUIRE( ptOut1->isNotValid() );
-        REQUIRE( ptOut2->isNotValid() );
-
-        ptIn2->write( false );
-        REQUIRE( uut.execute( nowUsec ) == FXT_COMPONENT_ERR_NO_ERROR );
-        REQUIRE( ptOut1->isNotValid() );
-        REQUIRE( ptOut2->isNotValid() );
-
-        ptIn3->write( false );
-        REQUIRE( uut.execute( nowUsec ) == FXT_COMPONENT_ERR_NO_ERROR );
-        bool val;
-        REQUIRE( ptOut1->read( val ) );
-        REQUIRE( val == false );
-        REQUIRE( ptOut2->read( val ) );
-        REQUIRE( val == true );
-
-        ptIn3->write( true );
-        REQUIRE( uut.execute( nowUsec ) == FXT_COMPONENT_ERR_NO_ERROR );
-        REQUIRE( ptOut1->read( val ) );
-        REQUIRE( val == false );
-        REQUIRE( ptOut2->read( val ) );
-        REQUIRE( val == true );
-
-        ptIn2->write( true );
-        REQUIRE( uut.execute( nowUsec ) == FXT_COMPONENT_ERR_NO_ERROR );
-        REQUIRE( ptOut1->read( val ) );
-        REQUIRE( val == true );
-        REQUIRE( ptOut2->read( val ) );
-        REQUIRE( val == false );
+        uut.destroy( *component );
     }
 
     REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );

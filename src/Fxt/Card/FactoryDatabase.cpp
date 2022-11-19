@@ -29,7 +29,12 @@ FactoryDatabase::FactoryDatabase( const char* ignoreThisParameter_usedToCreateAU
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-Api* FactoryDatabase::createCardfromJSON( DatabaseApi& cardDb, JsonVariant cardObj, Api::Err_T& cardErrorCode ) noexcept
+Api* FactoryDatabase::createCardfromJSON( DatabaseApi&                       cardDb,
+                                          JsonVariant                        cardObj,
+                                          Cpl::Memory::ContiguousAllocator&  generalAllocator,
+                                          Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                                          Fxt::Point::DatabaseApi&           dbForPoints,
+                                          Api::Err_T&                        cardErrorCode ) noexcept
 {
     // Ensure that a Id has been assigned
     const char* typeGuid = cardObj["type"];
@@ -38,7 +43,7 @@ Api* FactoryDatabase::createCardfromJSON( DatabaseApi& cardDb, JsonVariant cardO
         cardErrorCode = FXT_CARD_ERR_UNKNOWN_GUID;
         return nullptr;
     }
-    
+
     FactoryApi* factory = lookup( typeGuid );
     if ( factory == nullptr )
     {
@@ -46,7 +51,7 @@ Api* FactoryDatabase::createCardfromJSON( DatabaseApi& cardDb, JsonVariant cardO
         return nullptr;
     }
 
-    return factory->create( cardDb, cardObj, cardErrorCode );
+    return factory->create( cardDb, cardObj, cardErrorCode, generalAllocator, statefulDataAllocator, dbForPoints );
 }
 
 

@@ -11,7 +11,7 @@
 
 #include "Catch/catch.hpp"
 #include "Cpl/System/_testsupport/Shutdown_TS.h"
-#include "Fxt/Card/HW/Mock/AnalogIn8.h"
+#include "Fxt/Card/Mock/AnalogIn8.h"
 #include "Fxt/Card/Database.h"
 #include "Fxt/Point/Float.h"
 #include "Fxt/Point/Database.h"
@@ -23,7 +23,7 @@
 #define SECT_   "_0test"
 
 /// 
-using namespace Fxt::Card::HW::Mock;
+using namespace Fxt::Card::Mock;
 
 
 #define CARD_DEFINTION     "{\"cards\":[" \

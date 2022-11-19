@@ -36,6 +36,13 @@ namespace Point {
 class Uint32 : public BasicInteger_<uint32_t>
 {
 public:
+    /// Type ID for the point
+    static constexpr const char* GUID_STRING = "99f91433-b8e4-4480-9203-8fcab5d9f20f";
+
+    /// Type name for the card
+    static constexpr const char* TYPE_NAME   = "Fxt::Point::Uint32";
+
+public:
     /** Constructor. Invalid Point.
      */
     Uint32( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData )
@@ -57,7 +64,10 @@ public:
 
 public:
     ///  See Fxt::Point::Api
-    const char* getType() const noexcept { return "Fxt::Point::Uint32"; }
+    const char* getTypeGuid() const noexcept { return GUID_STRING; }
+
+    ///  See Fxt::Point::Api
+    const char* getTypeName() const noexcept { return TYPE_NAME; }
 
 public:
     /// Creates a concrete instance in the invalid state

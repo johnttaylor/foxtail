@@ -17,13 +17,12 @@
 ///
 using namespace Fxt::Component;
 
-#define INVALID_ELAPSED_TIME    0
+#define INVALID_ELAPSED_TIME        0
 
 //////////////////////////////////////////////////
-Common_::Common_( uint16_t exeOrder )
+Common_::Common_( )
     : m_lastExeCycleTimeUsec( INVALID_ELAPSED_TIME )
     , m_error( FXT_COMPONENT_ERR_NO_ERROR )
-    , m_exeOrder( exeOrder )
 {
 }
 
@@ -32,36 +31,30 @@ Common_::~Common_()
 }
 
 //////////////////////////////////////////////////
-bool Common_::start( uint64_t currentElapsedTimeUsec ) noexcept
+Api::Err_T Common_::start( uint64_t currentElapsedTimeUsec ) noexcept
 {
     // Use an invalid time marker to indicate the not-started state
     if ( m_lastExeCycleTimeUsec == INVALID_ELAPSED_TIME && m_error == FXT_COMPONENT_ERR_NO_ERROR )
     {
         m_lastExeCycleTimeUsec = currentElapsedTimeUsec;
-        return true;
+        return FXT_COMPONENT_ERR_NO_ERROR;
     }
-    return false;
+    m_error = FXT_COMPONENT_ERR_FAILED_START;
+    return m_error;
 }
 
-bool Common_::stop() noexcept
+void Common_::stop() noexcept
 {
     if ( m_lastExeCycleTimeUsec != INVALID_ELAPSED_TIME )
     {
         m_lastExeCycleTimeUsec = INVALID_ELAPSED_TIME;
         m_error                = FXT_COMPONENT_ERR_NO_ERROR;
-        return true;
     }
-    return false;
 }
 
 bool Common_::isStarted() const noexcept
 {
     return m_lastExeCycleTimeUsec != INVALID_ELAPSED_TIME;
-}
-
-uint16_t Common_::getExecutionOrder() const noexcept
-{
-    return m_exeOrder;
 }
 
 Api::Err_T Common_::getErrorCode() const noexcept
@@ -87,7 +80,7 @@ bool Common_::parsePointReferences( size_t      dstReferences[],
     }
 
     // Extract the Point references
-    for ( int i=0; i < numRefsFound; i++ )
+    for ( unsigned i=0; i < numRefsFound; i++ )
     {
         uint32_t pointRef = arrayObj[i]["idRef"] | Fxt::Point::Api::INVALID_ID;
         if ( pointRef == Fxt::Point::Api::INVALID_ID )
@@ -105,7 +98,13 @@ bool Common_::resolveReferences( Fxt::Point::DatabaseApi& pointDb,
                                  Fxt::Point::Api*         srcIdsAndDstPointers[],
                                  unsigned                 numElements )
 {
-    for ( int i=0; i < numElements; i++ )
+    // Fail is component has been started
+    if ( m_lastExeCycleTimeUsec != INVALID_ELAPSED_TIME )
+    {
+        return false;
+    }
+
+    for ( unsigned i=0; i < numElements; i++ )
     {
         uint32_t pointId = (size_t) (srcIdsAndDstPointers[i]);
         Fxt::Point::Api* pointPtr = pointDb.lookupById( pointId );

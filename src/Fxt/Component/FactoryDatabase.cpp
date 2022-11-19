@@ -15,7 +15,7 @@
 #include "Cpl/System/Assert.h"
 
 ///
-using namespace Fxt::Card;
+using namespace Fxt::Component;
 
 ///////////////////////////////////////////////////////////////////////////////
 FactoryDatabase::FactoryDatabase() noexcept
@@ -29,26 +29,37 @@ FactoryDatabase::FactoryDatabase( const char* ignoreThisParameter_usedToCreateAU
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-Api* FactoryDatabase::createCardfromJSON( JsonVariant cardObj, uint32_t cardErrorCode ) noexcept
+Api* FactoryDatabase::createComponentfromJSON( JsonVariant&                       componentObj,
+                                               Fxt::Point::BankApi&               statePointBank,
+                                               Cpl::Memory::ContiguousAllocator&  generalAllocator,
+                                               Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                                               Fxt::Point::DatabaseApi&           dbForPoints,
+                                               uint16_t&                          exeOrder,
+                                               Api::Err_T&                        componentErrorCode ) noexcept
 {
     // Ensure that a Id has been assigned
-    const char* typeGuid = cardObj["type"];
+    const char* typeGuid = componentObj["type"];
     if ( typeGuid == nullptr )
     {
-        cardErrorCode = FXT_CARD_ERR_UNKNOWN_GUID;
+        componentErrorCode = FXT_COMPONENT_ERR_UNKNOWN_GUID;
         return nullptr;
     }
     
     FactoryApi* factory = lookup( typeGuid );
     if ( factory == nullptr )
     {
-        cardErrorCode = FXT_CARD_ERR_UNKNOWN_GUID;
+        componentErrorCode = FXT_COMPONENT_ERR_UNKNOWN_GUID;
         return nullptr;
     }
 
-    return factory->create( cardObj, cardErrorCode );
+    return factory->create( statePointBank,
+                            componentObj,
+                            componentErrorCode,
+                            generalAllocator,
+                            statefulDataAllocator,
+                            dbForPoints,
+                            exeOrder );
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 FactoryApi* FactoryDatabase::lookup( const char* guidCardTypeId ) noexcept
@@ -80,12 +91,12 @@ FactoryApi* FactoryDatabase::next( FactoryApi& currentFactory ) noexcept
     return m_factories.next( currentFactory );
 }
 
-void FactoryDatabase::insert_( FactoryApi& cardFactoryToAdd ) noexcept
+void FactoryDatabase::insert_( FactoryApi& componentFactoryToAdd ) noexcept
 {
-    m_factories.put( cardFactoryToAdd );
+    m_factories.put( componentFactoryToAdd );
 }
 
-void FactoryDatabase::remove_( FactoryApi& cardFactoryToRemove ) noexcept
+void FactoryDatabase::remove_( FactoryApi& componentFactoryToRemove ) noexcept
 {
-    m_factories.remove( cardFactoryToRemove );
+    m_factories.remove( componentFactoryToRemove );
 }

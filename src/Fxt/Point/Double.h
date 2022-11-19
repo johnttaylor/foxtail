@@ -36,6 +36,13 @@ namespace Point {
 class Double : public BasicReal_<double>
 {
 public:
+    /// Type ID for the point
+    static constexpr const char* GUID_STRING = "05e542d9-2e54-4a32-9b64-a99084b2910b";
+
+    /// Type name for the card
+    static constexpr const char* TYPE_NAME   = "Fxt::Point::Double";
+
+public:
     /** Constructor. Invalid Point.
      */
     Double( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData ) 
@@ -58,7 +65,10 @@ public:
 
 public:
     ///  See Fxt::Point::Api
-    const char* getType() const noexcept { return "Fxt::Point::Double"; }
+    const char* getTypeGuid() const noexcept { return GUID_STRING; }
+
+    ///  See Fxt::Point::Api
+    const char* getTypeName() const noexcept { return TYPE_NAME; }
 
 public:
     /// Creates a concrete instance in the invalid state
