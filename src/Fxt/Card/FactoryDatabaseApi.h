@@ -81,7 +81,10 @@ public:
         other classes in the Fxt::Card namespace.  It is ONLY public to avoid
         the tight coupling of C++ friend mechanism.
 
-        This method inserts a IO Card Factory instance t into the Database.
+        NOTE: There is NO checks/protection against adding two factories with
+              the same card GUID
+
+        This method inserts a IO Card Factory instance into the Database.
      */
     virtual void insert_( FactoryApi& cardFactoryToAdd ) noexcept = 0;
 

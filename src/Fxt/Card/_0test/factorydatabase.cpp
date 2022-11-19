@@ -11,12 +11,10 @@
 
 #include "Catch/catch.hpp"
 #include "Cpl/System/_testsupport/Shutdown_TS.h"
-#include "Fxt/Card/Mock/Digital8.h"
 #include "Fxt/Card/Mock/Digital8Factory.h"
-#include "Fxt/Point/Uint8.h"
-#include "Fxt/Point/Database.h"
 #include "Fxt/Card/FactoryDatabase.h"
-#include "Fxt/Card/Database.h"
+#include "Fxt/Point/Database.h"
+#include "Fxt/Point/Uint8.h"
 #include "Cpl/Memory/LeanHeap.h"
 #include "Cpl/System/Trace.h"
 #include <string.h>
@@ -24,118 +22,44 @@
 #define SECT_   "_0test"
 
 /// 
-using namespace Fxt::Card::Mock;
+using namespace Fxt::Card;
 
-
-#define CARD_DEFINTION     "{\"cards\":[" \
-                           "{" \
-                           "  \"name\": \"bob\"," \
-                           "  \"id\": 2," \
-                           "  \"type\": \"59d33888-62c7-45b2-a4d4-9dbc55914ed3\"," \
-                           "  \"typename\": \"Fxt::Card::HW::Mock::Digital8\"," \
-                           "  \"slot\": 22," \
-                           "    \"points\": {" \
-                           "       \"inputs\": [" \
-                           "           {" \
-                           "               \"channel\": 1," \
-                           "                   \"id\": 1," \
-                           "                   \"ioRegId\": 2," \
-                           "                   \"name\": \"InputPt\"," \
-                           "                   \"initial\": {" \
-                           "                     \"valid\": true," \
-                           "                     \"val\": 128," \
-                           "                     \"id\": 0" \
-                           "                   }" \
-                           "           }" \
-                           "       ]," \
-                           "       \"outputs\": [" \
-                           "           {" \
-                           "              \"channel\": 1," \
-                           "              \"id\": 3," \
-                           "              \"ioRegId\": 4," \
-                           "              \"name\": \"OutputPt\"," \
-                           "              \"initial\": {" \
-                           "                 \"valid\": true," \
-                           "                 \"val\": 1," \
-                           "                 \"id\": 0" \
-                           "              }" \
-                           "           }" \
-                           "       ]" \
-                           "    }" \
-                           "}" \
-                           "]}"
 
 static size_t generalHeap_[10000];
 static size_t statefulHeap_[10000];
 
-#define MAX_POINTS      100
-#define MAX_CARDS       3
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE( "Digital8Factory" )
+TEST_CASE( "FactoryDatabase" )
 {
     Cpl::System::Shutdown_TS::clearAndUseCounter();
-    Cpl::Memory::LeanHeap            generalAllocator( generalHeap_, sizeof( generalHeap_ ) );
-    Cpl::Memory::LeanHeap            statefulAllocator( statefulHeap_, sizeof( statefulHeap_ ) );
-    Fxt::Point::Database<MAX_POINTS> pointDb;
-    Fxt::Card::FactoryDatabase       cardFactoryDb;
-    Fxt::Card::Database<MAX_CARDS>   cardDb;
-    Digital8Factory                  uut( cardFactoryDb, generalAllocator, statefulAllocator, pointDb );
-    Fxt::Card::Api::Err_T            cardErrorCode;
+    Cpl::Memory::LeanHeap generalAllocator( generalHeap_, sizeof( generalHeap_ ) );
+    Cpl::Memory::LeanHeap statefulAllocator( statefulHeap_, sizeof( statefulHeap_ ) );
+    FactoryDatabase uut;
 
-    SECTION( "create/destroy card" )
+    SECTION( "add" )
     {
-        StaticJsonDocument<10240> doc;
-        DeserializationError err = deserializeJson( doc, CARD_DEFINTION );
-        REQUIRE( err == DeserializationError::Ok );
+        REQUIRE( uut.first() == nullptr );
 
-        JsonVariant cardObj = doc["cards"][0];
-        Fxt::Card::Api* card = uut.create( cardDb, cardObj, cardErrorCode );
-        REQUIRE( card != nullptr );
-        REQUIRE( cardErrorCode == FXT_CARD_ERR_NO_ERROR );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", Fxt::Card::Api::getErrorText( cardErrorCode )) );
+        REQUIRE( uut.lookup( Fxt::Card::Mock::Digital8::GUID_STRING ) == nullptr );
 
-        REQUIRE( strcmp( uut.getGuid(), card->getTypeGuid() ) == 0 );
+        Fxt::Card::Mock::Digital8Factory factory1( uut );
+        REQUIRE( uut.first() == &factory1 );
+        REQUIRE( uut.next( factory1 ) == nullptr );
+        REQUIRE( uut.lookup( Fxt::Card::Mock::Digital8::GUID_STRING ) == &factory1 );
 
-        REQUIRE( strcmp( card->getTypeName(), Digital8::TYPE_NAME ) == 0 );
-        REQUIRE( strcmp( card->getTypeGuid(), Digital8::GUID_STRING ) == 0 );
+        Fxt::Card::Mock::Digital8Factory factory2( uut );
+        REQUIRE( uut.lookup( Fxt::Card::Mock::Digital8::GUID_STRING ) == &factory1 );
+        REQUIRE( uut.first() == &factory1 );
+        REQUIRE( uut.next( factory1 ) == &factory2 );
+        REQUIRE( uut.next( factory2 ) == nullptr );
 
-        REQUIRE( card->getId() == 2 );
+        REQUIRE( uut.lookup( "00d33888-62c7-45b2-a4d4-9dbc55914ed3" ) == nullptr );
 
-        Fxt::Point::Uint8* pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 1 );
-        REQUIRE( pointPtr );
-        REQUIRE( strcmp( pointPtr->getName(), "InputPt" ) == 0 );
-        REQUIRE( pointPtr->isNotValid() );
-
-        pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 2 );
-        REQUIRE( pointPtr );
-        REQUIRE( strcmp( pointPtr->getName(), "InputPt" ) == 0 );
-        REQUIRE( pointPtr->isNotValid() );
-
-        pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 3 );
-        REQUIRE( pointPtr );
-        REQUIRE( strcmp( pointPtr->getName(), "OutputPt" ) == 0 );
-        REQUIRE( pointPtr->isNotValid() );
-
-        pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 4 );
-        REQUIRE( pointPtr );
-        REQUIRE( strcmp( pointPtr->getName(), "OutputPt" ) == 0 );
-        REQUIRE( pointPtr->isNotValid() );
-
-        uut.destroy( *card );
-    }
-
-    SECTION( "create from factory db" )
-    {
-        StaticJsonDocument<10240> doc;
-        DeserializationError err = deserializeJson( doc, CARD_DEFINTION );
-        REQUIRE( err == DeserializationError::Ok );
-
-        JsonVariant cardObj = doc["cards"][0];
-        Fxt::Card::Api* card = cardFactoryDb.createCardfromJSON( cardDb, cardObj, cardErrorCode );
-        REQUIRE( card != nullptr );
-        REQUIRE( cardErrorCode == FXT_CARD_ERR_NO_ERROR );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", Fxt::Card::Api::getErrorText( cardErrorCode )) );
+        uut.remove_( factory1 );
+        REQUIRE( uut.first() == &factory2 );
+        REQUIRE( uut.next( factory2 ) == nullptr );
+        REQUIRE( uut.lookup( Fxt::Card::Mock::Digital8::GUID_STRING ) == &factory2 );
     }
 
     REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );

@@ -22,7 +22,7 @@
 #define SECT_   "_0test"
 
 /// 
-using namespace Fxt::Card::Mock;
+using namespace Fxt::Card;
 
 
 #define CARD_DEFINTION     "{\"cards\":[" \
@@ -67,140 +67,92 @@ static size_t generalHeap_[10000];
 static size_t statefulHeap_[10000];
 
 #define MAX_POINTS      100
-#define MAX_CARDS       3
+#define MAX_CARDS       2
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE( "Digital8" )
+TEST_CASE( "Database" )
 {
     Cpl::System::Shutdown_TS::clearAndUseCounter();
     Cpl::Memory::LeanHeap generalAllocator( generalHeap_, sizeof( generalHeap_ ) );
     Cpl::Memory::LeanHeap statefulAllocator( statefulHeap_, sizeof( statefulHeap_ ) );
     Fxt::Point::Database<MAX_POINTS> pointDb;
-    Fxt::Card::Database<MAX_CARDS>   cardDb;
+    Fxt::Card::Database<MAX_CARDS>   uut;
 
 
-    SECTION( "create card" )
+    SECTION( "empty db" )
     {
+        REQUIRE( uut.getMaxNumPoints() == MAX_CARDS );
+
+        for ( unsigned i=0; i < MAX_CARDS; i++ )
+        {
+            REQUIRE( uut.lookupById( i ) == nullptr );
+        }
+    }
+
+
+    SECTION( "add cards" )
+    {
+
         StaticJsonDocument<10240> doc;
         DeserializationError err = deserializeJson( doc, CARD_DEFINTION );
         REQUIRE( err == DeserializationError::Ok );
 
-        JsonVariant cardObj = doc["cards"][0];
-        Digital8 uut( cardDb,
-                      generalAllocator,
-                      statefulAllocator,
-                      pointDb,
-                      0,
-                      cardObj );
-
-        REQUIRE( uut.getErrorCode() == FXT_CARD_ERR_NO_ERROR );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", Fxt::Card::Api::getErrorText( uut.getErrorCode() )) );
-
-        REQUIRE( strcmp( uut.getTypeName(), Digital8::TYPE_NAME ) == 0 );
-        REQUIRE( strcmp( uut.getTypeGuid(), Digital8::GUID_STRING ) == 0 );
-
-        REQUIRE( uut.getId() == 0 );
-
-        Fxt::Point::Uint8* pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 1 );
-        REQUIRE( pointPtr );
-        REQUIRE( strcmp( pointPtr->getName(), "InputPt" ) == 0 );
-        REQUIRE( pointPtr->isNotValid() );
-
-        pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 2 );
-        REQUIRE( pointPtr );
-        REQUIRE( strcmp( pointPtr->getName(), "InputPt" ) == 0 );
-        REQUIRE( pointPtr->isNotValid() );
-
-        pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 3 );
-        REQUIRE( pointPtr );
-        REQUIRE( strcmp( pointPtr->getName(), "OutputPt" ) == 0 );
-        REQUIRE( pointPtr->isNotValid() );
-
-        pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 4 );
-        REQUIRE( pointPtr );
-        REQUIRE( strcmp( pointPtr->getName(), "OutputPt" ) == 0 );
-        REQUIRE( pointPtr->isNotValid() );
-
-        REQUIRE( uut.isStarted() == false );
-        REQUIRE( uut.start() );
-        REQUIRE( uut.isStarted() );
-
-        pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 2 );
-        uint8_t pointVal = 0;
-        REQUIRE( pointPtr->read( pointVal ) );
-        REQUIRE( pointVal == 128 );
-
-        pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 4 );
-        pointVal = 0;
-        REQUIRE( pointPtr->read( pointVal ) );
-        REQUIRE( pointVal == 1 );
-
-
-        uut.scanInputs();
-        pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 1 );
-        REQUIRE( pointPtr->read( pointVal ) );
-        REQUIRE( pointVal == 128 );
-
-        pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 2 );
-        pointPtr->setInvalid();
-        uut.scanInputs();
-        pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 1 );
-        REQUIRE( pointPtr->isNotValid() );
-
-        pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 3 );
-        pointPtr->write( 32 );
-        uut.flushOutputs();
-        pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 4 );
-        REQUIRE( pointPtr->read( pointVal ) );
-        REQUIRE( pointVal == 32 );
-
-        pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 3 );
-        pointPtr->setInvalid();
-        uut.flushOutputs();
-        pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 4 );
-        REQUIRE( pointPtr->isNotValid() );
-
-        REQUIRE( uut.stop() );
-        REQUIRE( uut.isStarted() == false );
-    }
-
-
-    SECTION( "app interface" )
-    {
-        StaticJsonDocument<10240> doc;
-        DeserializationError err = deserializeJson( doc, CARD_DEFINTION );
-        REQUIRE( err == DeserializationError::Ok );
+        REQUIRE( uut.lookupById( 0 ) == nullptr );
 
         JsonVariant cardObj = doc["cards"][0];
-        Digital8 uut( cardDb,
-                      generalAllocator,
-                      statefulAllocator,
-                      pointDb,
-                      0,
-                      cardObj );
+        Fxt::Card::Mock::Digital8* card1 = new Fxt::Card::Mock::Digital8( uut,
+                                                                         generalAllocator,
+                                                                         statefulAllocator,
+                                                                         pointDb,
+                                                                         0,
+                                                                         cardObj );
+        REQUIRE( card1 != nullptr );
+        REQUIRE( uut.lookupById( 0 ) == card1 );
+        REQUIRE( card1->getErrorCode() == FXT_CARD_ERR_NO_ERROR );
 
-        REQUIRE( uut.getErrorCode() == FXT_CARD_ERR_NO_ERROR );
-        REQUIRE( uut.start() );
+        Fxt::Card::Mock::Digital8* card2 = new Fxt::Card::Mock::Digital8( uut,
+                                              generalAllocator,
+                                              statefulAllocator,
+                                              pointDb,
+                                              0,
+                                              cardObj );
+        REQUIRE( card2 != nullptr );
+        REQUIRE( uut.lookupById( 0 ) == card1 );
+        REQUIRE( card2->getErrorCode() == FXT_CARD_ERR_CARD_INVALID_ID );
 
-        uut.setInputBit( 1 );
-        Fxt::Point::Uint8* pointPtr   = (Fxt::Point::Uint8*) pointDb.lookupById( 2 );
-        uint8_t            pointValue = 0;
-        REQUIRE( pointPtr->read( pointValue ) );
-        REQUIRE( pointValue == 0x82 );
-        uut.toggleInputBit( 7 );
-        REQUIRE( pointPtr->read( pointValue ) );
-        REQUIRE( pointValue == 0x02 );
-        uut.setInputBit( 0 );
-        uut.clearInputBit( 1 );
-        REQUIRE( pointPtr->read( pointValue ) );
-        REQUIRE( pointValue == 0x01 );
+        uut.clearCards();
+        REQUIRE( uut.lookupById( 0 ) == nullptr );
+        card2 = new Fxt::Card::Mock::Digital8( uut,
+                                              generalAllocator,
+                                              statefulAllocator,
+                                              pointDb,
+                                              0,
+                                              cardObj );
+        REQUIRE( card2 != nullptr );
+        REQUIRE( uut.lookupById( 0 ) == card2 );
+        REQUIRE( card2->getErrorCode() == FXT_CARD_ERR_NO_ERROR );
 
-        pointPtr   = (Fxt::Point::Uint8*) pointDb.lookupById( 3 );
-        pointPtr->write( 0xAA );
-        uut.flushOutputs();
-        REQUIRE( uut.getOutputs( pointValue ) );
-        REQUIRE( pointValue == 0xAA );
+        Fxt::Card::Mock::Digital8* card3 = new Fxt::Card::Mock::Digital8( uut,
+                                                                          generalAllocator,
+                                                                          statefulAllocator,
+                                                                          pointDb,
+                                                                          1,
+                                                                          cardObj );
+        REQUIRE( card3 != nullptr );
+        REQUIRE( uut.lookupById( 1 ) == card3 );
+        REQUIRE( card3->getErrorCode() == FXT_CARD_ERR_NO_ERROR );
+
+        Fxt::Card::Mock::Digital8* card4 = new Fxt::Card::Mock::Digital8( uut,
+                                                                          generalAllocator,
+                                                                          statefulAllocator,
+                                                                          pointDb,
+                                                                          2,
+                                                                          cardObj );
+        REQUIRE( card4 != nullptr );
+        REQUIRE( uut.lookupById( 2 ) == nullptr );
+        REQUIRE( card4->getErrorCode() == FXT_CARD_ERR_CARD_INVALID_ID );
     }
+
 
     REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );
 }
