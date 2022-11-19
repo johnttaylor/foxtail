@@ -85,6 +85,9 @@ public:
     /** This method has 'PACKAGE Scope' in that is should only be called by
         other classes in the Fxt::Component namespace.  It is ONLY public to avoid
         the tight coupling of C++ friend mechanism.
+        
+        NOTE: There is NO checks/protection against adding two factories with
+              the same Component GUID
 
         This method inserts a Component Factory instance into the Database.
      */
