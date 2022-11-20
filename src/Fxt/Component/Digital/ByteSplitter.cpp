@@ -19,12 +19,13 @@
 ///
 using namespace Fxt::Component::Digital;
 
+#define MAX_BIT_OFFSET      7
 
 ///////////////////////////////////////////////////////////////////////////////
 ByteSplitter::ByteSplitter( JsonVariant&                       componentObject,
-                      Cpl::Memory::ContiguousAllocator&  generalAllocator,
-                      Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
-                      Fxt::Point::DatabaseApi&           dbForPoints)
+                            Cpl::Memory::ContiguousAllocator&  generalAllocator,
+                            Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                            Fxt::Point::DatabaseApi&           dbForPoints )
     : m_numInputs( 0 )
     , m_numOutputs( 0 )
 {
@@ -45,23 +46,22 @@ Fxt::Component::Api::Err_T ByteSplitter::execute( int64_t currentTickUsec ) noex
 {
     // NOTE: The method NEVER fails
 
-    // Read all of my inputs!
-    bool outputVal = true;
-    for ( int i=0; i < m_numInputs; i++ )
+    // Get my input
+    uint8_t inValue;
+    if ( !m_inputRefs[0]->read( inValue ) )
     {
-        bool temp = true;
-
         // Set the outputs to invalid if at least one input is invalid
-        if ( !m_inputRefs[i]->read( temp ) )
+        for ( int i=0; i < m_numOutputs; i++ )
         {
-            // Invalidate the outputs
-            for ( int i=0; i < m_numOutputs; i++ )
-            {
-                m_outputRefs[i]->setInvalid();
-            }
-            return FXT_COMPONENT_ERR_NO_ERROR;
+            m_outputRefs[i]->setInvalid();
         }
+        return FXT_COMPONENT_ERR_NO_ERROR;
+    }
 
+    // Derive my outputs
+    for ( int i=0; i < m_numOutputs; i++ )
+    {
+        
         // AND the individual inputs
         outputVal &= temp;
     }
@@ -125,10 +125,16 @@ bool ByteSplitter::parseConfiguration( JsonVariant & obj ) noexcept
         m_numOutputs = numOutputsFound;
     }
 
-    // Parse output negate qualifiers
+    // Parse output bit offsets and negate qualifiers
     for ( unsigned i=0; i < outputs.size(); i++ )
     {
         m_outputNegated[i] = outputs[i]["negate"] | false;
+        m_bitOffsets[i]    = outputs[i]["bit"] | MAX_BIT_OFFSET+1;
+        if ( m_bitOffsets[i] > 7 )
+        {
+            m_error = FXT_COMPONENT_DIGITAL_BYTES_SPLITTER_INVALID_BIT_OFFSET;
+            return false;
+        }
     }
 
     return true;
@@ -156,12 +162,12 @@ Fxt::Component::Api::Err_T ByteSplitter::resolveReferences( Fxt::Point::Database
     }
 
     // Validate Point types
-    if ( validatePointTypes( (Fxt::Point::Api **) m_inputRefs, m_numInputs ) == false )
+    if ( validatePointTypes( (Fxt::Point::Api **) m_inputRefs, m_numInputs, Fxt::Point::Uint8::GUID_STRING) == false )
     {
         m_error = FXT_COMPONENT_ERR_INPUT_REFRENCE_BAD_TYPE;
         return m_error;
     }
-    if ( validatePointTypes( (Fxt::Point::Api **) m_outputRefs, m_numOutputs ) == false )
+    if ( validatePointTypes( (Fxt::Point::Api **) m_outputRefs, m_numOutputs, Fxt::Point::Bool::GUID_STRING ) == false )
     {
         m_error = FXT_COMPONENT_ERR_OUTPUT_REFRENCE_BAD_TYPE;
         return m_error;
@@ -171,13 +177,13 @@ Fxt::Component::Api::Err_T ByteSplitter::resolveReferences( Fxt::Point::Database
     return m_error;
 }
 
-bool ByteSplitter::validatePointTypes( Fxt::Point::Api* arrayOfPoints[], uint8_t numPoints )
+bool ByteSplitter::validatePointTypes( Fxt::Point::Api* arrayOfPoints[], uint8_t numPoints, const char* expectedGUID )
 {
     for ( uint8_t i=0; i < numPoints; i++ )
     {
         if ( arrayOfPoints[i] != nullptr )
         {
-            if ( strcmp( arrayOfPoints[i]->getTypeGuid(), Fxt::Point::Bool::GUID_STRING ) != 0 )
+            if ( strcmp( arrayOfPoints[i]->getTypeGuid(), expectedGUID ) != 0 )
             {
                 return false;
             }

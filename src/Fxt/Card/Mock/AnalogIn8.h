@@ -46,28 +46,31 @@ namespace Mock {
     JSON Definition
     --------------------
     {
-      "name": "My AnalogIn8 Card",                      // Text label for the card
-      "id": 0,                                          // ID assigned to the card
-      "type": "1968f533-e323-4ae4-8493-9a572f3bd195",   // Identifies the card type.  Value comes from the Supported/Available-card-list
-      "typename": "Fxt::Card::Mock::AnalogIn8",         // Human readable type name
-      "slot": 0,                                        // Physical identifier, e.g. its the card position in the Node's physical chassis
+      "name": "My AnalogIn8 Card",                          // Text label for the card
+      "id": 0,                                              // ID assigned to the card
+      "type": "1968f533-e323-4ae4-8493-9a572f3bd195",       // Identifies the card type.  Value comes from the Supported/Available-card-list
+      "typename": "Fxt::Card::Mock::AnalogIn8",             // *Human readable type name
+      "slot": 0,                                            // *Physical identifier, e.g. its the card position in the Node's physical chassis
       "points": {
-        "inputs": [                                     // Inputs. The card supports 8 input values. Each input is exposed a Float point
+        "inputs": [                                         // Inputs. The card supports 8 input values. Each input is exposed a Float point
           {
-            "channel": 1                                // Range: 1 to 8.  (For a physical card this would map back to connector/terminal identifiers)
-            "id": 0,                                    // ID assigned to the Virtual Point that represents the input value
-            "ioRegId": 0,                               // The ID of the Point's IO register.
-            "internalId": 0,                            // The ID of the Point's internal register.
-            "name": "My input#1 name"                   // Text label for the input signal
+            "channel": 1                                    // Range: 1 to 8.  (For a physical card this would map back to connector/terminal identifiers)
+            "id": 0,                                        // ID assigned to the Virtual Point that represents the input value
+            "ioRegId": 0,                                   // The ID of the Point's IO register.
+            "name": "My input#1 name"                       // Text label for the input signal
+            "type": "708745fa-cef6-4364-abad-063a40f35cbc", // *REQUIRED Type for the input signal
+            "typeName": "Fxt::Point::Float",                // *OPTIONAL: Human readable Type name for the input signal
             "initial": {
-              "valid": true|false                       // Initial valid state for the IO Register point
-              "val": <float>                            // Initial value for the input point. Only required when 'valid' is true
-              "id": 0                                   // The ID of the internal point that is used store the initial value in binary form
+              "valid": true|false                           // Initial valid state for the IO Register point
+              "val": <float>                                // Initial value for the input point. Only required when 'valid' is true
+              "id": 0                                       // The ID of the internal point that is used store the initial value in binary form
             }
           }
         ]
       }
     }
+
+    *The field is NOT parsed/used by the firmware
 
     \endcode
  */
