@@ -50,7 +50,7 @@ namespace Digital {
        "inputs": [                                          // Array of Point references that supply the Component's input values.  Number of elements: 1-16
           {
             "name": "input byte",                           // human readable name for the input value
-            "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0", // *REQUIRED Type for the input signal
+            "type": "918cff9e-8007-4666-99ac-384b9624329c", // *REQUIRED Type for the input signal
             "typeName": "Fxt::Point::Uint8",                // *OPTIONAL: Human readable Type name for the input signal
             "idRef": 4294967295                             // Point ID Reference to the point to read the input value from
           },

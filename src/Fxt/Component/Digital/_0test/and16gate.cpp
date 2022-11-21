@@ -125,7 +125,7 @@ TEST_CASE( "And16Gate" )
 
         uint64_t nowUsec = Cpl::System::ElapsedTime::milliseconds() * 1000;
 
-        REQUIRE( uut.start( nowUsec ) == FXT_COMPONENT_ERR_NO_ERROR );
+        REQUIRE( uut.start( nowUsec ) == fullErr( Err_T::SUCCESS ) );
         REQUIRE( uut.isStarted() == true );
     }
 

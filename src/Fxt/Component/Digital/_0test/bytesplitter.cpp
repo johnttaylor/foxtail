@@ -11,7 +11,8 @@
 
 #include "Catch/catch.hpp"
 #include "Cpl/System/_testsupport/Shutdown_TS.h"
-#include "Fxt/Component/Digital/And16Gate.h"
+#include "Fxt/Component/Digital/ByteSplitter.h"
+#include "Fxt/Component/Digital/Error.h"
 #include "Fxt/Point/Database.h"
 #include "Cpl/Memory/LeanHeap.h"
 #include <string.h>
@@ -24,64 +25,78 @@ using namespace Fxt::Component::Digital;
 
 #define COMP_DEFINTION     "{\"components\":[" \
                            "{" \
-                           "  \"name\": \"AND Gate#1\"," \
-                           "  \"type\": \"e62e395c-d27a-4821-bba9-aa1e6de42a05\"," \
-                           "  \"typeName\": \"Fxt::Component::Digital::And16Gate\"," \
+                           "  \"name\": \"ByteSplitter #1\"," \
+                           "  \"type\": \"8c55aa52-3bc8-4b8a-ad73-c434a0bbd4b4\"," \
+                           "  \"typeName\": \"Fxt::Component::Digital::ByteSplitter\"," \
                            "  \"exeOrder\": 2," \
                            "  \"inputs\": [" \
                            "      {" \
-                           "          \"name\": \"Signal#1\"," \
-                           "          \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
-                           "          \"typeName\": \"Fxt::Point::Bool\"," \
+                           "          \"name\": \"input byte\"," \
+                           "          \"type\": \"918cff9e-8007-4666-99ac-384b9624329c\"," \
+                           "          \"typeName\": \"Fxt::Point::Uint8\"," \
                            "          \"idRef\": 2" \
-                           "      }," \
-                           "      {" \
-                           "          \"name\": \"Signal#2\"," \
-                           "          \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
-                           "          \"typeName\": \"Fxt::Point::Bool\"," \
-                           "          \"idRef\": 0" \
-                           "      }," \
-                           "      {" \
-                           "          \"name\": \"Signal#3\"," \
-                           "          \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
-                           "          \"typeName\": \"Fxt::Point::Bool\"," \
-                           "          \"idRef\": 4" \
                            "      }" \
                            "    ]," \
                            "  \"outputs\": [" \
                            "      {" \
-                           "          \"name\": \"out\"," \
+                           "          \"bit\": 1," \
+                           "          \"name\": \"bit1\"," \
                            "          \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
                            "          \"typeName\": \"Fxt::Point::Bool\"," \
                            "          \"idRef\": 3" \
                            "      }," \
                            "      {" \
-                           "          \"name\": \"/out\"," \
+                           "          \"bit\": 1," \
+                           "          \"name\": \"/bit1\"," \
                            "          \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
                            "          \"typeName\": \"Fxt::Point::Bool\"," \
                            "          \"idRef\": 1," \
                            "          \"negate\": true" \
+                           "      }," \
+                           "      {" \
+                           "          \"bit\": 4," \
+                           "          \"name\": \"bit4\"," \
+                           "          \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
+                           "          \"typeName\": \"Fxt::Point::Bool\"," \
+                           "          \"idRef\": 0" \
+                           "      }," \
+                           "      {" \
+                           "          \"bit\": 4," \
+                           "          \"name\": \"/bit4\"," \
+                           "          \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
+                           "          \"typeName\": \"Fxt::Point::Bool\"," \
+                           "          \"idRef\": 4," \
+                           "          \"negate\": true" \
+                           "      }," \
+                           "      {" \
+                           "          \"bit\": 5," \
+                           "          \"name\": \"/bit5\"," \
+                           "          \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
+                           "          \"typeName\": \"Fxt::Point::Bool\"," \
+                           "          \"idRef\": 5," \
+                           "          \"negate\": true" \
                            "      }" \
-                           "    ]" \
+                          "    ]" \
                            "  }" \
                            "]}"
 
 static size_t generalHeap_[10000];
 static size_t statefulHeap_[10000];
 
-#define MAX_POINTS      5
+#define MAX_POINTS              6
 
 #define POINT_ID__IN_SIGNAL_1   2
-#define POINT_ID__IN_SIGNAL_2   0
-#define POINT_ID__IN_SIGNAL_3   4
 
-#define POINT_ID__OUT           3
-#define POINT_ID__OUT_NEGATED   1
+#define POINT_ID__BIT1_OUT      3
+#define POINT_ID__BIT1_NEGATED  1
+#define POINT_ID__BIT4_OUT      0
+#define POINT_ID__BIT4_NEGATED  4
+#define POINT_ID__BIT5_NEGATED  5
 
 
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE( "And16Gate" )
+TEST_CASE( "ByteSplitter" )
 {
     Cpl::System::Shutdown_TS::clearAndUseCounter();
     Cpl::Memory::LeanHeap generalAllocator( generalHeap_, sizeof( generalHeap_ ) );
@@ -95,15 +110,15 @@ TEST_CASE( "And16Gate" )
         REQUIRE( err == DeserializationError::Ok );
 
         JsonVariant componentObj = doc["components"][0];
-        And16Gate uut( componentObj,
-                       generalAllocator,
-                       statefulAllocator,
-                       pointDb );
+        ByteSplitter uut( componentObj,
+                          generalAllocator,
+                          statefulAllocator,
+                          pointDb );
 
-        REQUIRE( uut.getErrorCode() == FXT_COMPONENT_ERR_NO_ERROR );
+        REQUIRE( uut.getErrorCode() == fullErr( Err_T::SUCCESS ) );
 
-        REQUIRE( strcmp( uut.getTypeGuid(), And16Gate::GUID_STRING ) == 0 );
-        REQUIRE( strcmp( uut.getTypeName(), And16Gate::TYPE_NAME ) == 0 );
+        REQUIRE( strcmp( uut.getTypeGuid(), ByteSplitter::GUID_STRING ) == 0 );
+        REQUIRE( strcmp( uut.getTypeName(), ByteSplitter::TYPE_NAME ) == 0 );
 
         REQUIRE( uut.isStarted() == false );
     }
@@ -115,16 +130,16 @@ TEST_CASE( "And16Gate" )
         REQUIRE( err == DeserializationError::Ok );
 
         JsonVariant componentObj = doc["components"][0];
-        And16Gate uut( componentObj,
-                       generalAllocator,
-                       statefulAllocator,
-                       pointDb );
+        ByteSplitter uut( componentObj,
+                          generalAllocator,
+                          statefulAllocator,
+                          pointDb );
 
-        REQUIRE( uut.getErrorCode() == FXT_COMPONENT_ERR_NO_ERROR );
+        REQUIRE( uut.getErrorCode() == fullErr( Err_T::SUCCESS ) );
 
         uint64_t nowUsec = Cpl::System::ElapsedTime::milliseconds() * 1000;
 
-        REQUIRE( uut.start( nowUsec ) == FXT_COMPONENT_ERR_NO_ERROR );
+        REQUIRE( uut.start( nowUsec ) == fullErr( Err_T::SUCCESS ) );
         REQUIRE( uut.isStarted() == true );
     }
 
@@ -135,58 +150,97 @@ TEST_CASE( "And16Gate" )
         REQUIRE( err == DeserializationError::Ok );
 
         JsonVariant componentObj = doc["components"][0];
-        And16Gate uut( componentObj,
-                       generalAllocator,
-                       statefulAllocator,
-                       pointDb );
+        ByteSplitter uut( componentObj,
+                          generalAllocator,
+                          statefulAllocator,
+                          pointDb );
 
-        REQUIRE( uut.getErrorCode() == FXT_COMPONENT_ERR_NO_ERROR );
+        REQUIRE( uut.getErrorCode() == fullErr( Err_T::SUCCESS ) );
 
-        Fxt::Point::Bool* ptIn1  = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_1, "inSig1", statefulAllocator );
-        Fxt::Point::Bool* ptIn2  = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_2, "inSig2", statefulAllocator );
-        Fxt::Point::Bool* ptIn3  = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_3, "inSig3", statefulAllocator );
-        Fxt::Point::Bool* ptOut1 = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__OUT, "out", statefulAllocator );
-        Fxt::Point::Bool* ptOut2 = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__OUT_NEGATED, "/out", statefulAllocator );
-        REQUIRE( uut.resolveReferences( pointDb ) == FXT_COMPONENT_ERR_NO_ERROR );
+        Fxt::Point::Uint8* ptIn1  = new(std::nothrow) Fxt::Point::Uint8( pointDb, POINT_ID__IN_SIGNAL_1, "inSig1", statefulAllocator );
+        Fxt::Point::Bool* ptOutBit1 = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT1_OUT, "outBit1", statefulAllocator );
+        Fxt::Point::Bool* ptOutBit1_N = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT1_NEGATED, "/outBit1", statefulAllocator );
+        Fxt::Point::Bool* ptOutBit4 = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT4_OUT, "outBit4", statefulAllocator );
+        Fxt::Point::Bool* ptOutBit4_N = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT4_NEGATED, "/outBit4", statefulAllocator );
+        Fxt::Point::Bool* ptOutBit5_N = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT5_NEGATED, "/outBit5", statefulAllocator );
+
+        REQUIRE( uut.resolveReferences( pointDb ) == fullErr( Err_T::SUCCESS ) );
 
         uint64_t nowUsec = Cpl::System::ElapsedTime::milliseconds() * 1000;
-        REQUIRE( uut.start( nowUsec ) == FXT_COMPONENT_ERR_NO_ERROR );
+        REQUIRE( uut.start( nowUsec ) == fullErr( Err_T::SUCCESS ) );
         REQUIRE( uut.isStarted() == true );
 
-        REQUIRE( uut.execute( nowUsec ) == FXT_COMPONENT_ERR_NO_ERROR );
-        REQUIRE( ptOut1->isNotValid() );
-        REQUIRE( ptOut2->isNotValid() );
+        REQUIRE( uut.execute( nowUsec ) == fullErr( Err_T::SUCCESS ) );
+        REQUIRE( ptOutBit1->isNotValid() );
+        REQUIRE( ptOutBit1_N->isNotValid() );
+        REQUIRE( ptOutBit4->isNotValid() );
+        REQUIRE( ptOutBit4_N->isNotValid() );
+        REQUIRE( ptOutBit5_N->isNotValid() );
 
-        ptIn1->write( true );
-        REQUIRE( uut.execute( nowUsec ) == FXT_COMPONENT_ERR_NO_ERROR );
-        REQUIRE( ptOut1->isNotValid() );
-        REQUIRE( ptOut2->isNotValid() );
-
-        ptIn2->write( false );
-        REQUIRE( uut.execute( nowUsec ) == FXT_COMPONENT_ERR_NO_ERROR );
-        REQUIRE( ptOut1->isNotValid() );
-        REQUIRE( ptOut2->isNotValid() );
-
-        ptIn3->write( false );
-        REQUIRE( uut.execute( nowUsec ) == FXT_COMPONENT_ERR_NO_ERROR );
+        ptIn1->write( 0 );
+        REQUIRE( uut.execute( nowUsec ) == fullErr( Err_T::SUCCESS ) );
         bool val;
-        REQUIRE( ptOut1->read( val ) );
+        REQUIRE( ptOutBit1->read( val ) );
         REQUIRE( val == false );
-        REQUIRE( ptOut2->read( val ) );
+        REQUIRE( ptOutBit1_N->read( val ) );
+        REQUIRE( val == true );
+        REQUIRE( ptOutBit4->read( val ) );
+        REQUIRE( val == false );
+        REQUIRE( ptOutBit4_N->read( val ) );
+        REQUIRE( val == true );
+        REQUIRE( ptOutBit5_N->read( val ) );
         REQUIRE( val == true );
 
-        ptIn3->write( true );
-        REQUIRE( uut.execute( nowUsec ) == FXT_COMPONENT_ERR_NO_ERROR );
-        REQUIRE( ptOut1->read( val ) );
+        ptIn1->write( 0x2 );
+        REQUIRE( uut.execute( nowUsec ) == fullErr( Err_T::SUCCESS ) );
+        REQUIRE( ptOutBit1->read( val ) );
+        REQUIRE( val == true );
+        REQUIRE( ptOutBit1_N->read( val ) );
         REQUIRE( val == false );
-        REQUIRE( ptOut2->read( val ) );
+        REQUIRE( ptOutBit4->read( val ) );
+        REQUIRE( val == false );
+        REQUIRE( ptOutBit4_N->read( val ) );
+        REQUIRE( val == true );
+        REQUIRE( ptOutBit5_N->read( val ) );
         REQUIRE( val == true );
 
-        ptIn2->write( true );
-        REQUIRE( uut.execute( nowUsec ) == FXT_COMPONENT_ERR_NO_ERROR );
-        REQUIRE( ptOut1->read( val ) );
+        ptIn1->write( 0x12 );
+        REQUIRE( uut.execute( nowUsec ) == fullErr( Err_T::SUCCESS ) );
+        REQUIRE( ptOutBit1->read( val ) );
         REQUIRE( val == true );
-        REQUIRE( ptOut2->read( val ) );
+        REQUIRE( ptOutBit1_N->read( val ) );
+        REQUIRE( val == false );
+        REQUIRE( ptOutBit4->read( val ) );
+        REQUIRE( val == true );
+        REQUIRE( ptOutBit4_N->read( val ) );
+        REQUIRE( val == false );
+        REQUIRE( ptOutBit5_N->read( val ) );
+        REQUIRE( val == true );
+
+        ptIn1->write( 0x30 );
+        REQUIRE( uut.execute( nowUsec ) == fullErr( Err_T::SUCCESS ) );
+        REQUIRE( ptOutBit1->read( val ) );
+        REQUIRE( val == false );
+        REQUIRE( ptOutBit1_N->read( val ) );
+        REQUIRE( val == true );
+        REQUIRE( ptOutBit4->read( val ) );
+        REQUIRE( val == true );
+        REQUIRE( ptOutBit4_N->read( val ) );
+        REQUIRE( val == false );
+        REQUIRE( ptOutBit5_N->read( val ) );
+        REQUIRE( val == false );
+
+        ptIn1->write( 0x32 );
+        REQUIRE( uut.execute( nowUsec ) == fullErr( Err_T::SUCCESS ) );
+        REQUIRE( ptOutBit1->read( val ) );
+        REQUIRE( val == true );
+        REQUIRE( ptOutBit1_N->read( val ) );
+        REQUIRE( val == false );
+        REQUIRE( ptOutBit4->read( val ) );
+        REQUIRE( val == true );
+        REQUIRE( ptOutBit4_N->read( val ) );
+        REQUIRE( val == false );
+        REQUIRE( ptOutBit5_N->read( val ) );
         REQUIRE( val == false );
     }
 

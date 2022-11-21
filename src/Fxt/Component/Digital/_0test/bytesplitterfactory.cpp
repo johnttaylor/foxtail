@@ -11,8 +11,9 @@
 
 #include "Catch/catch.hpp"
 #include "Cpl/System/_testsupport/Shutdown_TS.h"
-#include "Fxt/Component/Digital/And16Gate.h"
-#include "Fxt/Component/Digital/And16GateFactory.h"
+#include "Fxt/Component/Digital/Error.h"
+#include "Fxt/Component/Digital/ByteSplitter.h"
+#include "Fxt/Component/Digital/ByteSplitterFactory.h"
 #include "Fxt/Component/FactoryDatabase.h"
 #include "Fxt/Point/Database.h"
 #include "Fxt/Point/Bank.h"
@@ -27,45 +28,58 @@ using namespace Fxt::Component::Digital;
 
 #define COMP_DEFINTION     "{\"components\":[" \
                            "{" \
-                           "  \"name\": \"AND Gate#1\"," \
-                           "  \"type\": \"e62e395c-d27a-4821-bba9-aa1e6de42a05\"," \
-                           "  \"typeName\": \"Fxt::Component::Digital::And16Gate\"," \
+                           "  \"name\": \"ByteSplitter #1\"," \
+                           "  \"type\": \"8c55aa52-3bc8-4b8a-ad73-c434a0bbd4b4\"," \
+                           "  \"typeName\": \"Fxt::Component::Digital::ByteSplitter\"," \
                            "  \"exeOrder\": 2," \
                            "  \"inputs\": [" \
                            "      {" \
-                           "          \"name\": \"Signal#1\"," \
-                           "          \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
-                           "          \"typeName\": \"Fxt::Point::Bool\"," \
+                           "          \"name\": \"input byte\"," \
+                           "          \"type\": \"918cff9e-8007-4666-99ac-384b9624329c\"," \
+                           "          \"typeName\": \"Fxt::Point::Uint8\"," \
                            "          \"idRef\": 2" \
-                           "      }," \
-                           "      {" \
-                           "          \"name\": \"Signal#2\"," \
-                           "          \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
-                           "          \"typeName\": \"Fxt::Point::Bool\"," \
-                           "          \"idRef\": 0" \
-                           "      }," \
-                           "      {" \
-                           "          \"name\": \"Signal#3\"," \
-                           "          \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
-                           "          \"typeName\": \"Fxt::Point::Bool\"," \
-                           "          \"idRef\": 4" \
                            "      }" \
                            "    ]," \
                            "  \"outputs\": [" \
                            "      {" \
-                           "          \"name\": \"out\"," \
+                           "          \"bit\": 1," \
+                           "          \"name\": \"bit1\"," \
                            "          \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
                            "          \"typeName\": \"Fxt::Point::Bool\"," \
                            "          \"idRef\": 3" \
                            "      }," \
                            "      {" \
-                           "          \"name\": \"/out\"," \
+                           "          \"bit\": 1," \
+                           "          \"name\": \"/bit1\"," \
                            "          \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
                            "          \"typeName\": \"Fxt::Point::Bool\"," \
                            "          \"idRef\": 1," \
                            "          \"negate\": true" \
+                           "      }," \
+                           "      {" \
+                           "          \"bit\": 4," \
+                           "          \"name\": \"bit4\"," \
+                           "          \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
+                           "          \"typeName\": \"Fxt::Point::Bool\"," \
+                           "          \"idRef\": 0" \
+                           "      }," \
+                           "      {" \
+                           "          \"bit\": 4," \
+                           "          \"name\": \"/bit4\"," \
+                           "          \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
+                           "          \"typeName\": \"Fxt::Point::Bool\"," \
+                           "          \"idRef\": 4," \
+                           "          \"negate\": true" \
+                           "      }," \
+                           "      {" \
+                           "          \"bit\": 5," \
+                           "          \"name\": \"/bit5\"," \
+                           "          \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
+                           "          \"typeName\": \"Fxt::Point::Bool\"," \
+                           "          \"idRef\": 5," \
+                           "          \"negate\": true" \
                            "      }" \
-                           "    ]" \
+                          "    ]" \
                            "  }" \
                            "]}"
 
@@ -74,19 +88,21 @@ static size_t statefulHeap_[10000];
 
 #define MAX_COMPONENTS  2
 
-#define MAX_POINTS      5
+#define MAX_POINTS              6
 
 #define POINT_ID__IN_SIGNAL_1   2
-#define POINT_ID__IN_SIGNAL_2   0
-#define POINT_ID__IN_SIGNAL_3   4
 
-#define POINT_ID__OUT           3
-#define POINT_ID__OUT_NEGATED   1
+#define POINT_ID__BIT1_OUT      3
+#define POINT_ID__BIT1_NEGATED  1
+#define POINT_ID__BIT4_OUT      0
+#define POINT_ID__BIT4_NEGATED  4
+#define POINT_ID__BIT5_NEGATED  5
+
 
 
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE( "And16GateFactory" )
+TEST_CASE( "ByteSplitterFactory" )
 {
     Cpl::System::Shutdown_TS::clearAndUseCounter();
     Cpl::Memory::LeanHeap               generalAllocator( generalHeap_, sizeof( generalHeap_ ) );
@@ -94,9 +110,10 @@ TEST_CASE( "And16GateFactory" )
     Fxt::Point::Database<MAX_POINTS>    pointDb;
     Fxt::Point::Bank                    pointBank;
     Fxt::Component::FactoryDatabase     componentFactoryDb;
-    And16GateFactory                    uut( componentFactoryDb );
-    Fxt::Component::Api::Err_T          componentErrorCode;
+    ByteSplitterFactory                 uut( componentFactoryDb );
+    Fxt::Type::Error                    componentErrorCode;
     uint16_t                            exeOrder;
+    Cpl::Text::FString<Fxt::Type::Error::MAX_TEXT_LEN> buf;
 
     SECTION( "create/destroy card" )
     {
@@ -113,20 +130,21 @@ TEST_CASE( "And16GateFactory" )
                                                      pointDb,
                                                      exeOrder );
         REQUIRE( component != nullptr );
-        REQUIRE( componentErrorCode == FXT_COMPONENT_ERR_NO_ERROR );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", Fxt::Component::Api::getErrorText( componentErrorCode )) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", componentErrorCode.toText( buf )) );
+        REQUIRE( componentErrorCode == fullErr( Err_T::SUCCESS ) );
 
-        REQUIRE( strcmp( component->getTypeName(), And16Gate::TYPE_NAME ) == 0 );
-        REQUIRE( strcmp( component->getTypeGuid(), And16Gate::GUID_STRING ) == 0 );
+        REQUIRE( strcmp( component->getTypeName(), ByteSplitter::TYPE_NAME ) == 0 );
+        REQUIRE( strcmp( component->getTypeGuid(), ByteSplitter::GUID_STRING ) == 0 );
 
-        REQUIRE( component->resolveReferences( pointDb ) == FXT_COMPONENT_ERR_UNRESOLVED_INPUT_REFRENCE );
+        REQUIRE( component->resolveReferences( pointDb ) == fullErr( Fxt::Component::Err_T::UNRESOLVED_INPUT_REFRENCE ) );
 
-        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_1, "inSig1", statefulAllocator );
-        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_2, "inSig2", statefulAllocator );
-        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_3, "inSig3", statefulAllocator );
-        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__OUT, "out", statefulAllocator );
-        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__OUT_NEGATED, "/out", statefulAllocator );
-        REQUIRE( component->resolveReferences( pointDb ) == FXT_COMPONENT_ERR_NO_ERROR );
+        new(std::nothrow) Fxt::Point::Uint8( pointDb, POINT_ID__IN_SIGNAL_1, "inSig1", statefulAllocator );
+        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT1_OUT, "outBit1", statefulAllocator );
+        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT1_NEGATED, "/outBit1", statefulAllocator );
+        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT4_OUT, "outBit4", statefulAllocator );
+        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT4_NEGATED, "/outBit4", statefulAllocator );
+        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT5_NEGATED, "/outBit5", statefulAllocator );
+        REQUIRE( component->resolveReferences( pointDb ) == fullErr( Err_T::SUCCESS ) );
 
         uut.destroy( *component );
     }
@@ -145,21 +163,22 @@ TEST_CASE( "And16GateFactory" )
                                                                                      pointDb,
                                                                                      exeOrder,
                                                                                      componentErrorCode );
-        REQUIRE( component  );
-        REQUIRE( componentErrorCode == FXT_COMPONENT_ERR_NO_ERROR );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", Fxt::Component::Api::getErrorText( componentErrorCode )) );
+        REQUIRE( component );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", componentErrorCode.toText( buf )) );
+        REQUIRE( componentErrorCode == fullErr( Err_T::SUCCESS ) );
 
-        REQUIRE( strcmp( component->getTypeName(), And16Gate::TYPE_NAME ) == 0 );
-        REQUIRE( strcmp( component->getTypeGuid(), And16Gate::GUID_STRING ) == 0 );
+        REQUIRE( strcmp( component->getTypeName(), ByteSplitter::TYPE_NAME ) == 0 );
+        REQUIRE( strcmp( component->getTypeGuid(), ByteSplitter::GUID_STRING ) == 0 );
 
-        REQUIRE( component->resolveReferences( pointDb ) == FXT_COMPONENT_ERR_UNRESOLVED_INPUT_REFRENCE );
+        REQUIRE( component->resolveReferences( pointDb ) == fullErr( Fxt::Component::Err_T::UNRESOLVED_INPUT_REFRENCE ) );
 
-        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_1, "inSig1", statefulAllocator );
-        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_2, "inSig2", statefulAllocator );
-        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_3, "inSig3", statefulAllocator );
-        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__OUT, "out", statefulAllocator );
-        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__OUT_NEGATED, "/out", statefulAllocator );
-        REQUIRE( component->resolveReferences( pointDb ) == FXT_COMPONENT_ERR_NO_ERROR );
+        new(std::nothrow) Fxt::Point::Uint8( pointDb, POINT_ID__IN_SIGNAL_1, "inSig1", statefulAllocator );
+        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT1_OUT, "outBit1", statefulAllocator );
+        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT1_NEGATED, "/outBit1", statefulAllocator );
+        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT4_OUT, "outBit4", statefulAllocator );
+        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT4_NEGATED, "/outBit4", statefulAllocator );
+        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT5_NEGATED, "/outBit5", statefulAllocator );
+        REQUIRE( component->resolveReferences( pointDb ) == fullErr( Err_T::SUCCESS ) );
 
         uut.destroy( *component );
     }

@@ -62,15 +62,9 @@ Fxt::Type::Error ByteSplitter::execute( int64_t currentTickUsec ) noexcept
     // Derive my outputs
     for ( int i=0; i < m_numOutputs; i++ )
     {
-        
-        // AND the individual inputs
-        outputVal &= temp;
-    }
-
-    // If I get here all of the inputs have valid values -->generate output signals
-    for ( int i=0; i < m_numOutputs; i++ )
-    {
-        bool finalOut = m_outputNegated[i] ? !outputVal : outputVal;
+        uint8_t bitMask   = 1 << m_bitOffsets[i];
+        bool    outputVal = bitMask & inValue;
+        bool    finalOut  = m_outputNegated[i] ? !outputVal : outputVal;
         m_outputRefs[i]->write( finalOut );
     }
 
@@ -114,10 +108,10 @@ bool ByteSplitter::parseConfiguration( JsonVariant & obj ) noexcept
     {
         unsigned numOutputsFound;
         if ( !parsePointReferences( (size_t*) m_outputRefs, // Start by storing the point ID
-                                    MAX_INPUTS,
+                                    MAX_OUTPUTS,
                                     outputs,
-                                    fullErr( Fxt::Component::Err_T::TOO_MANY_INPUT_REFS ),
-                                    fullErr( Fxt::Component::Err_T::BAD_INPUT_REFERENCE ),
+                                    fullErr( Fxt::Component::Err_T::TOO_MANY_OUTPUT_REFS ),
+                                    fullErr( Fxt::Component::Err_T::BAD_OUTPUT_REFERENCE ),
                                     numOutputsFound ) )
         {
             return false;
@@ -130,7 +124,7 @@ bool ByteSplitter::parseConfiguration( JsonVariant & obj ) noexcept
     for ( unsigned i=0; i < outputs.size(); i++ )
     {
         m_outputNegated[i] = outputs[i]["negate"] | false;
-        m_bitOffsets[i]    = outputs[i]["bit"] | MAX_BIT_OFFSET+1;
+        m_bitOffsets[i]    = outputs[i]["bit"] | (MAX_BIT_OFFSET+1);
         if ( m_bitOffsets[i] > MAX_BIT_OFFSET )
         {
             m_error = fullErr( Err_T::SPLITTER_INVALID_BIT_OFFSET );
