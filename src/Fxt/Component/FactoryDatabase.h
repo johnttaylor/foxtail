@@ -62,7 +62,7 @@ public:
                                   Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
                                   Fxt::Point::DatabaseApi&           dbForPoints,
                                   uint16_t&                          exeOrder,
-                                  Api::Err_T&                        componentErrorCode ) noexcept;
+                                  Fxt::Type::Error&                  componentErrorCode ) noexcept;
 
 public:
     /// See Fxt::Component::FactoryDatabaseApi

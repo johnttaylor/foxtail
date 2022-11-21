@@ -12,6 +12,7 @@
 
 
 #include "Common_.h"
+#include "Error.h"
 
 
 ///
@@ -22,7 +23,7 @@ using namespace Fxt::Component;
 //////////////////////////////////////////////////
 Common_::Common_( )
     : m_lastExeCycleTimeUsec( INVALID_ELAPSED_TIME )
-    , m_error( FXT_COMPONENT_ERR_NO_ERROR )
+    , m_error( fullErr( Err_T::SUCCESS ) )
 {
 }
 
@@ -31,15 +32,15 @@ Common_::~Common_()
 }
 
 //////////////////////////////////////////////////
-Api::Err_T Common_::start( uint64_t currentElapsedTimeUsec ) noexcept
+Fxt::Type::Error Common_::start( uint64_t currentElapsedTimeUsec ) noexcept
 {
     // Use an invalid time marker to indicate the not-started state
-    if ( m_lastExeCycleTimeUsec == INVALID_ELAPSED_TIME && m_error == FXT_COMPONENT_ERR_NO_ERROR )
+    if ( m_lastExeCycleTimeUsec == INVALID_ELAPSED_TIME && m_error == fullErr( Err_T::SUCCESS ) )
     {
         m_lastExeCycleTimeUsec = currentElapsedTimeUsec;
-        return FXT_COMPONENT_ERR_NO_ERROR;
+        return fullErr( Err_T::SUCCESS );
     }
-    m_error = FXT_COMPONENT_ERR_FAILED_START;
+    m_error = fullErr( Err_T::FAILED_START );
     return m_error;
 }
 
@@ -48,7 +49,7 @@ void Common_::stop() noexcept
     if ( m_lastExeCycleTimeUsec != INVALID_ELAPSED_TIME )
     {
         m_lastExeCycleTimeUsec = INVALID_ELAPSED_TIME;
-        m_error                = FXT_COMPONENT_ERR_NO_ERROR;
+        m_error                = fullErr( Err_T::SUCCESS );
     }
 }
 
@@ -57,18 +58,18 @@ bool Common_::isStarted() const noexcept
     return m_lastExeCycleTimeUsec != INVALID_ELAPSED_TIME;
 }
 
-Api::Err_T Common_::getErrorCode() const noexcept
+Fxt::Type::Error Common_::getErrorCode() const noexcept
 {
     return m_error;
 }
 
 /////////////////////////////////////////////
-bool Common_::parsePointReferences( size_t      dstReferences[],
-                                    unsigned    maxNumReferences,
-                                    JsonArray&  arrayObj,
-                                    Err_T       errTooMany,
-                                    Err_T       errBadRef,
-                                    unsigned&   numRefsFound )
+bool Common_::parsePointReferences( size_t              dstReferences[],
+                                    unsigned            maxNumReferences,
+                                    JsonArray&          arrayObj,
+                                    Fxt::Type::Error    errTooMany,
+                                    Fxt::Type::Error    errBadRef,
+                                    unsigned&           numRefsFound )
 {
     // Validate supported number of input signals
     numRefsFound = arrayObj.size();

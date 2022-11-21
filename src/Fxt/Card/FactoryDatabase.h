@@ -60,7 +60,7 @@ public:
                              Cpl::Memory::ContiguousAllocator&  generalAllocator,
                              Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
                              Fxt::Point::DatabaseApi&           dbForPoints,
-                             Api::Err_T&                        cardErrorCode ) noexcept;
+                             Fxt::Type::Error&                  cardErrorCode ) noexcept;
 
 public:
     /// See Fxt::Card::FactoryDatabaseApi

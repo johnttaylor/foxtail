@@ -15,52 +15,9 @@
 
 #include "Cpl/Container/Item.h"
 #include "Cpl/Type/Guid.h"
+#include "Fxt/Type/Error.h"
 #include "Fxt/Point/DatabaseApi.h"
 #include <stdint.h>
-
-
-/// ERROR Code: NO Error, i.e. the component is operating properly
-#define FXT_COMPONENT_ERR_NO_ERROR                      0
-
-/// ERROR Code: Configuration contains the unknown/unsupported component type GUID 
-#define FXT_COMPONENT_ERR_UNKNOWN_GUID                  1
-
-/// ERROR Code: Too many input references
-#define FXT_COMPONENT_ERR_TOO_MANY_INPUT_REFS           2
-
-/// ERROR Code: Bad or Missing Input reference
-#define FXT_COMPONENT_ERR_BAD_INPUT_REFERENCE           3
-
-/// ERROR Code: Too many output references
-#define FXT_COMPONENT_ERR_TOO_MANY_OUTPUT_REFS          4
-
-/// ERROR Code: Bad or Missing output reference
-#define FXT_COMPONENT_ERR_BAD_OUTPUT_REFERENCE          5
-
-/// ERROR Code: Failed to resolve input references
-#define FXT_COMPONENT_ERR_UNRESOLVED_INPUT_REFRENCE     6
-
-/// ERROR Code: Failed to resolve output references
-#define FXT_COMPONENT_ERR_UNRESOLVED_OUTPUT_REFRENCE    7
-
-/// ERROR Code: Missing Execution order
-#define FXT_COMPONENT_ERR_MISSING_INVALID_EXE_ORDER     8
-
-/// ERROR Code: Insufficient memory to allocate the component
-#define FXT_COMPONENT_ERR_OUT_OF_MEMORY                 9
-
-/// ERROR Code: Failed to start the component (e.g. already running)
-#define FXT_COMPONENT_ERR_FAILED_START                  10
-
-/// ERROR Code: Input Point Reference is the wrong type
-#define FXT_COMPONENT_ERR_INPUT_REFRENCE_BAD_TYPE       11
-
-/// ERROR Code: Output Point Reference is the wrong type
-#define FXT_COMPONENT_ERR_OUTPUT_REFRENCE_BAD_TYPE      12
-
-
-/// ERROR Code: Code to use for the start of component-specific Error codes
-#define FXT_COMPONENT_ERR_START_CARD_SPECIFIC           0x2000
 
 
 ///
@@ -82,11 +39,6 @@ namespace Component {
 class Api : public Cpl::Container::Item
 {
 public:
-    /// Error Type
-    typedef uint16_t Err_T;
-    
-
-public:
     /** This method is used to resolve Point references once all of the
         configuration (i.e. all Points have been) has been processed. The
         method returns true if all references have been successfully resolved;
@@ -96,7 +48,7 @@ public:
         a Chassis/LogicChain/Component is not ready to begin execution till all
         symbolic references have been resolved.
      */
-    virtual Err_T resolveReferences( Fxt::Point::DatabaseApi& pointDb )  noexcept = 0;
+    virtual Fxt::Type::Error resolveReferences( Fxt::Point::DatabaseApi& pointDb )  noexcept = 0;
 
 public:
     /** This method is used to start/initialize the Component for execution.
@@ -113,7 +65,7 @@ public:
         Restarting (after being stopped) a component will clear any existing 
         error conditions.
      */
-    virtual Err_T start( uint64_t currentElapsedTimeUsec ) noexcept = 0;
+    virtual Fxt::Type::Error start( uint64_t currentElapsedTimeUsec ) noexcept = 0;
 
     /** This method is used to stop/deactivate the IO card.  If the Component fails
         to be stopped the method returns an error code; else 
@@ -143,7 +95,7 @@ public:
         then an error code is returned. Once the component has encountered
         an error, subsequence calls to this method will always fail. 
      */
-    virtual Err_T execute( int64_t currentTickUsec ) noexcept = 0;
+    virtual Fxt::Type::Error execute( int64_t currentTickUsec ) noexcept = 0;
 
 public:
     /** This method returns the Component's GUID (that identifies its type) as a
@@ -158,13 +110,7 @@ public:
     /** This method returns the current error state of the Component.  A value
         of zero/ERR_NO_ERROR indicates the card is operating properly
      */
-    virtual Err_T getErrorCode() const noexcept = 0;
-
-    /** This method returns a text string associated with the specified
-        error code.  If the specified error code is not-valid/out-of-range for
-        the card, a null pointer is returned.
-     */
-    static const char* getErrorText( Err_T errCode ) noexcept;
+    virtual Fxt::Type::Error getErrorCode() const noexcept = 0;
 
 public:
     /// Virtual destructor to make the compiler happy

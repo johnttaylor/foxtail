@@ -35,7 +35,7 @@ Digital8::Digital8( DatabaseApi&                       cardDb,
     memset( &m_ioRegInDescriptors, 0, sizeof( m_ioRegInDescriptors ) );
     memset( &m_ioRegOutDescriptors, 0, sizeof( m_ioRegOutDescriptors ) );
 
-    if ( m_error == FXT_CARD_ERR_NO_ERROR )
+    if ( m_error == fullErr( Err_T::SUCCESS ) )
     {
         if ( parseConfiguration( cardObject ) )
         {
@@ -85,7 +85,7 @@ bool Digital8::parseConfiguration( JsonVariant& obj ) noexcept
             size_t numInputs = inputs.size();
             if ( numInputs > MAX_DESCRIPTORS )
             {
-                m_error = FXT_CARD_ERR_TOO_MANY_INPUT_POINTS;
+                m_error = fullErr( Err_T::TOO_MANY_INPUT_POINTS );
                 return false;
             }
 
@@ -111,7 +111,7 @@ bool Digital8::parseConfiguration( JsonVariant& obj ) noexcept
             numOutputs = outputs.size();
             if ( numOutputs > MAX_DESCRIPTORS )
             {
-                m_error = FXT_CARD_ERR_TOO_MANY_OUTPUT_POINTS;
+                m_error = fullErr( Err_T::TOO_MANY_OUTPUT_POINTS );
                 return false;
             }
 
@@ -122,7 +122,7 @@ bool Digital8::parseConfiguration( JsonVariant& obj ) noexcept
                                      m_ioRegOutDescriptors,
                                      dummyChannellist,
                                      outputs,
-                                     numOutputs) )
+                                     numOutputs ) )
             {
                 return false;
             }
@@ -150,7 +150,7 @@ void Digital8::createPoints() noexcept
 bool Digital8::start() noexcept
 {
     // Fail if there was error during construction
-    if ( m_error != FXT_CARD_ERR_NO_ERROR )
+    if ( m_error !=  +Err_T::SUCCESS )
     {
         return false;
     }

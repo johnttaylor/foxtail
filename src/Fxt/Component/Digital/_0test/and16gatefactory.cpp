@@ -11,6 +11,7 @@
 
 #include "Catch/catch.hpp"
 #include "Cpl/System/_testsupport/Shutdown_TS.h"
+#include "Fxt/Component/Digital/Error.h"
 #include "Fxt/Component/Digital/And16Gate.h"
 #include "Fxt/Component/Digital/And16GateFactory.h"
 #include "Fxt/Component/FactoryDatabase.h"
@@ -95,7 +96,7 @@ TEST_CASE( "And16GateFactory" )
     Fxt::Point::Bank                    pointBank;
     Fxt::Component::FactoryDatabase     componentFactoryDb;
     And16GateFactory                    uut( componentFactoryDb );
-    Fxt::Component::Api::Err_T          componentErrorCode;
+    Fxt::Type::Error                    componentErrorCode;
     uint16_t                            exeOrder;
 
     SECTION( "create/destroy card" )
@@ -113,20 +114,20 @@ TEST_CASE( "And16GateFactory" )
                                                      pointDb,
                                                      exeOrder );
         REQUIRE( component != nullptr );
-        REQUIRE( componentErrorCode == FXT_COMPONENT_ERR_NO_ERROR );
+        REQUIRE( componentErrorCode == fullErr( Err_T::SUCCESS)  );
         CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", Fxt::Component::Api::getErrorText( componentErrorCode )) );
 
         REQUIRE( strcmp( component->getTypeName(), And16Gate::TYPE_NAME ) == 0 );
         REQUIRE( strcmp( component->getTypeGuid(), And16Gate::GUID_STRING ) == 0 );
 
-        REQUIRE( component->resolveReferences( pointDb ) == FXT_COMPONENT_ERR_UNRESOLVED_INPUT_REFRENCE );
+        REQUIRE( component->resolveReferences( pointDb ) == fullErr( Fxt::Component::Err_T::UNRESOLVED_INPUT_REFRENCE) );
 
         new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_1, "inSig1", statefulAllocator );
         new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_2, "inSig2", statefulAllocator );
         new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_3, "inSig3", statefulAllocator );
         new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__OUT, "out", statefulAllocator );
         new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__OUT_NEGATED, "/out", statefulAllocator );
-        REQUIRE( component->resolveReferences( pointDb ) == FXT_COMPONENT_ERR_NO_ERROR );
+        REQUIRE( component->resolveReferences( pointDb ) == fullErr( Err_T::SUCCESS ) );
 
         uut.destroy( *component );
     }
@@ -146,20 +147,20 @@ TEST_CASE( "And16GateFactory" )
                                                                                      exeOrder,
                                                                                      componentErrorCode );
         REQUIRE( component  );
-        REQUIRE( componentErrorCode == FXT_COMPONENT_ERR_NO_ERROR );
+        REQUIRE( componentErrorCode == fullErr( Err_T::SUCCESS ) );
         CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", Fxt::Component::Api::getErrorText( componentErrorCode )) );
 
         REQUIRE( strcmp( component->getTypeName(), And16Gate::TYPE_NAME ) == 0 );
         REQUIRE( strcmp( component->getTypeGuid(), And16Gate::GUID_STRING ) == 0 );
 
-        REQUIRE( component->resolveReferences( pointDb ) == FXT_COMPONENT_ERR_UNRESOLVED_INPUT_REFRENCE );
+        REQUIRE( component->resolveReferences( pointDb ) == fullErr( Fxt::Component::Err_T::FXT_COMPONENT_ERR_UNRESOLVED_INPUT_REFRENCE) );
 
         new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_1, "inSig1", statefulAllocator );
         new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_2, "inSig2", statefulAllocator );
         new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_3, "inSig3", statefulAllocator );
         new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__OUT, "out", statefulAllocator );
         new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__OUT_NEGATED, "/out", statefulAllocator );
-        REQUIRE( component->resolveReferences( pointDb ) == FXT_COMPONENT_ERR_NO_ERROR );
+        REQUIRE( component->resolveReferences( pointDb ) == fullErr( Err_T::SUCCESS ) );
 
         uut.destroy( *component );
     }

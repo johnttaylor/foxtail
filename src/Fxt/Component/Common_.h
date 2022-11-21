@@ -14,6 +14,7 @@
 
 
 #include "Fxt/Component/Api.h"
+#include "Fxt/Component/Error.h"
 #include "Fxt/Point/DatabaseApi.h"
 #include "Cpl/Json/Arduino.h"
 #include "Cpl/Memory/ContiguousAllocator.h"
@@ -37,7 +38,7 @@ public:
 
 public:
     /// See Fxt::Component::Api
-    Err_T start( uint64_t currentElapsedTimeUsec ) noexcept;
+    Fxt::Type::Error start( uint64_t currentElapsedTimeUsec ) noexcept;
 
     /// See Fxt::Component::Api
     void stop() noexcept;
@@ -46,16 +47,16 @@ public:
     bool isStarted() const noexcept;
 
     /// See Fxt::Component::Api
-    Err_T getErrorCode() const noexcept;
+    Fxt::Type::Error getErrorCode() const noexcept;
 
 protected:
     /// Helper method to extract Point references
-    bool parsePointReferences( size_t     dstReferences[],
-                               unsigned   maxNumReferences,
-                               JsonArray& arrayObj,
-                               Err_T      errTooMany,
-                               Err_T      errBadRef,
-                               unsigned&  numRefsFound );
+    bool parsePointReferences( size_t           dstReferences[],
+                               unsigned         maxNumReferences,
+                               JsonArray&       arrayObj,
+                               Fxt::Type::Error errTooMany,
+                               Fxt::Type::Error errBadRef,
+                               unsigned&        numRefsFound );
 
     /// Helper Resolve Point References
     bool resolveReferences( Fxt::Point::DatabaseApi& pointDb,
@@ -64,10 +65,10 @@ protected:
 
 protected:
     /// Time marker (in microseconds) of last execution cycle
-    uint64_t                            m_lastExeCycleTimeUsec;
+    uint64_t         m_lastExeCycleTimeUsec;
 
     /// Error state. A value of 0 indicates NO error
-    Err_T                               m_error;
+    Fxt::Type::Error m_error;
 };
 
 

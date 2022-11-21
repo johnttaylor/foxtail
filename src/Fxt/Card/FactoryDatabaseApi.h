@@ -51,7 +51,7 @@ public:
                                      Cpl::Memory::ContiguousAllocator&  generalAllocator,
                                      Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
                                      Fxt::Point::DatabaseApi&           dbForPoints, 
-                                     Api::Err_T&                        cardErrorCode ) noexcept = 0;
+                                     Fxt::Type::Error&                  cardErrorCode ) noexcept = 0;
 
 public:
     /** This method looks-up the IO card Factory by its GUID.  If the

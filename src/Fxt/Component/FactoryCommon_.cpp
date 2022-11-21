@@ -35,16 +35,16 @@ void FactoryCommon_::destroy( Api& componentToDestory ) noexcept
 }
 
 
-Api::Err_T FactoryCommon_::allocateAndParse( JsonVariant&                       obj,
-                                             Cpl::Memory::ContiguousAllocator&  generalAllocator,
-                                             size_t                             compenentSizeInBytes,
-                                             void*&                             memoryForComponent,
-                                             uint16_t&                          exeOrder ) noexcept
+Fxt::Type::Error FactoryCommon_::allocateAndParse( JsonVariant&                       obj,
+                                                   Cpl::Memory::ContiguousAllocator&  generalAllocator,
+                                                   size_t                             compenentSizeInBytes,
+                                                   void*&                             memoryForComponent,
+                                                   uint16_t&                          exeOrder ) noexcept
 {
     // Ensure that a Execution order has been assigned
     if ( obj["exeOrder"].is<unsigned>() == false )
     {
-        return FXT_COMPONENT_ERR_MISSING_INVALID_EXE_ORDER;
+        return fullErr( Err_T::MISSING_INVALID_EXE_ORDER );
     }
     exeOrder = obj["exeOrder"];
 
@@ -52,8 +52,8 @@ Api::Err_T FactoryCommon_::allocateAndParse( JsonVariant&                       
     memoryForComponent = generalAllocator.allocate( compenentSizeInBytes );
     if ( memoryForComponent == nullptr )
     {
-        return FXT_COMPONENT_ERR_OUT_OF_MEMORY;
+        return fullErr(Err_T::OUT_OF_MEMORY );
     }
 
-    return FXT_COMPONENT_ERR_NO_ERROR;
+    return fullErr( Err_T::SUCCESS );
 }

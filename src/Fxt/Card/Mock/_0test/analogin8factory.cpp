@@ -87,10 +87,11 @@ TEST_CASE( "AnalogIn8Factory" )
     Cpl::Memory::LeanHeap            generalAllocator( generalHeap_, sizeof( generalHeap_ ) );
     Cpl::Memory::LeanHeap            statefulAllocator( statefulHeap_, sizeof( statefulHeap_ ) );
     Fxt::Point::Database<MAX_POINTS> pointDb;
-    Fxt::Card::Database<MAX_CARDS>   uut;
+    Fxt::Card::Database<MAX_CARDS>   cardDb;
     Fxt::Card::FactoryDatabase       cardFactoryDb;
     AnalogIn8Factory                 uut( cardFactoryDb );
-    Fxt::Card::Api::Err_T            componentErrorCode;
+    Fxt::Type::Error                 componentErrorCode;
+    Cpl::Text::FString<Fxt::Type::Error::MAX_TEXT_LEN> errText;
 
     SECTION( "create/destroy card" )
     {
@@ -99,10 +100,10 @@ TEST_CASE( "AnalogIn8Factory" )
         REQUIRE( err == DeserializationError::Ok );
 
         JsonVariant cardObj = doc["cards"][0];
-        Fxt::Card::Api* card = uut.create( uut, cardObj, componentErrorCode, generalAllocator, statefulAllocator, pointDb );
+        Fxt::Card::Api* card = uut.create( cardDb, cardObj, componentErrorCode, generalAllocator, statefulAllocator, pointDb );
         REQUIRE( card != nullptr );
-        REQUIRE( componentErrorCode == FXT_COMPONENT_ERR_NO_ERROR );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", Fxt::Card::Api::getErrorText( componentErrorCode )) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", componentErrorCode.toText( errText )) );
+        REQUIRE( componentErrorCode == Fxt::Type::Error( Fxt::Type::Err_T::SUCCESS ) );
 
         REQUIRE( strcmp( uut.getGuid(), card->getTypeGuid() ) == 0 );
 
@@ -151,10 +152,10 @@ TEST_CASE( "AnalogIn8Factory" )
         REQUIRE( err == DeserializationError::Ok );
 
         JsonVariant cardObj = doc["cards"][0];
-        Fxt::Card::Api* card = cardFactoryDb.createCardfromJSON( uut, cardObj, generalAllocator, statefulAllocator, pointDb, componentErrorCode );
+        Fxt::Card::Api* card = cardFactoryDb.createCardfromJSON( cardDb, cardObj, generalAllocator, statefulAllocator, pointDb, componentErrorCode );
         REQUIRE( card != nullptr );
-        REQUIRE( componentErrorCode == FXT_COMPONENT_ERR_NO_ERROR );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", Fxt::Card::Api::getErrorText( componentErrorCode )) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", componentErrorCode.toText( errText )) );
+        REQUIRE( componentErrorCode == Fxt::Type::Error( Fxt::Type::Err_T::SUCCESS ) );
     }
 
     REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );

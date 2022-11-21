@@ -56,7 +56,7 @@ public:
                                           Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
                                           Fxt::Point::DatabaseApi&           dbForPoints,
                                           uint16_t&                          exeOrder,
-                                          Api::Err_T&                        componentErrorCode ) noexcept = 0;
+                                          Fxt::Type::Error&                  componentErrorCode ) noexcept = 0;
 
 public:
     /** This method looks-up the Component Factory by its GUID.  If the

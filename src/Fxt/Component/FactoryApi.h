@@ -103,7 +103,7 @@ public:
       */
     virtual Api* create( Fxt::Point::BankApi&               statePointBank, 
                          JsonVariant&                       componentObject, 
-                         Api::Err_T&                        componentErrorCode,
+                         Fxt::Type::Error&                  componentErrorCode,
                          Cpl::Memory::ContiguousAllocator&  generalAllocator,
                          Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
                          Fxt::Point::DatabaseApi&           dbForPoints,

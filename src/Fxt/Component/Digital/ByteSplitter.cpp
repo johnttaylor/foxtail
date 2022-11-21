@@ -12,6 +12,7 @@
 
 
 #include "ByteSplitter.h"
+#include "Error.h"
 #include "Cpl/System/Assert.h"
 #include <stdint.h>
 #include <new>
@@ -42,7 +43,7 @@ ByteSplitter::~ByteSplitter()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-Fxt::Component::Api::Err_T ByteSplitter::execute( int64_t currentTickUsec ) noexcept
+Fxt::Type::Error ByteSplitter::execute( int64_t currentTickUsec ) noexcept
 {
     // NOTE: The method NEVER fails
 
@@ -55,7 +56,7 @@ Fxt::Component::Api::Err_T ByteSplitter::execute( int64_t currentTickUsec ) noex
         {
             m_outputRefs[i]->setInvalid();
         }
-        return FXT_COMPONENT_ERR_NO_ERROR;
+        return fullErr( Err_T::SUCCESS );
     }
 
     // Derive my outputs
@@ -73,7 +74,7 @@ Fxt::Component::Api::Err_T ByteSplitter::execute( int64_t currentTickUsec ) noex
         m_outputRefs[i]->write( finalOut );
     }
 
-    return FXT_COMPONENT_ERR_NO_ERROR;
+    return fullErr( Err_T::SUCCESS );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -97,8 +98,8 @@ bool ByteSplitter::parseConfiguration( JsonVariant & obj ) noexcept
         if ( !parsePointReferences( (size_t*) m_inputRefs,  // Start by storing the point ID
                                     MAX_INPUTS,
                                     inputs,
-                                    FXT_COMPONENT_ERR_TOO_MANY_INPUT_REFS,
-                                    FXT_COMPONENT_ERR_BAD_INPUT_REFERENCE,
+                                    fullErr( Fxt::Component::Err_T::TOO_MANY_INPUT_REFS ),
+                                    fullErr( Fxt::Component::Err_T::BAD_INPUT_REFERENCE ),
                                     numInputsFound ) )
         {
             return false;
@@ -115,8 +116,8 @@ bool ByteSplitter::parseConfiguration( JsonVariant & obj ) noexcept
         if ( !parsePointReferences( (size_t*) m_outputRefs, // Start by storing the point ID
                                     MAX_INPUTS,
                                     outputs,
-                                    FXT_COMPONENT_ERR_TOO_MANY_INPUT_REFS,
-                                    FXT_COMPONENT_ERR_BAD_INPUT_REFERENCE,
+                                    fullErr( Fxt::Component::Err_T::TOO_MANY_INPUT_REFS ),
+                                    fullErr( Fxt::Component::Err_T::BAD_INPUT_REFERENCE ),
                                     numOutputsFound ) )
         {
             return false;
@@ -130,9 +131,9 @@ bool ByteSplitter::parseConfiguration( JsonVariant & obj ) noexcept
     {
         m_outputNegated[i] = outputs[i]["negate"] | false;
         m_bitOffsets[i]    = outputs[i]["bit"] | MAX_BIT_OFFSET+1;
-        if ( m_bitOffsets[i] > 7 )
+        if ( m_bitOffsets[i] > MAX_BIT_OFFSET )
         {
-            m_error = FXT_COMPONENT_DIGITAL_BYTES_SPLITTER_INVALID_BIT_OFFSET;
+            m_error = fullErr( Err_T::SPLITTER_INVALID_BIT_OFFSET );
             return false;
         }
     }
@@ -141,14 +142,14 @@ bool ByteSplitter::parseConfiguration( JsonVariant & obj ) noexcept
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-Fxt::Component::Api::Err_T ByteSplitter::resolveReferences( Fxt::Point::DatabaseApi& pointDb )  noexcept
+Fxt::Type::Error ByteSplitter::resolveReferences( Fxt::Point::DatabaseApi& pointDb )  noexcept
 {
     // Resolve INPUT references
     if ( !Common_::resolveReferences( pointDb,
                                       (Fxt::Point::Api **) m_inputRefs,    // Pass as array of generic Point pointers
                                       m_numInputs ) )
     {
-        m_error = FXT_COMPONENT_ERR_UNRESOLVED_INPUT_REFRENCE;
+        m_error = fullErr( Fxt::Component::Err_T::UNRESOLVED_INPUT_REFRENCE );
         return m_error;
     }
 
@@ -157,23 +158,23 @@ Fxt::Component::Api::Err_T ByteSplitter::resolveReferences( Fxt::Point::Database
                                       (Fxt::Point::Api **) m_outputRefs,    // Pass as array of generic Point pointers
                                       m_numOutputs ) )
     {
-        m_error = FXT_COMPONENT_ERR_UNRESOLVED_OUTPUT_REFRENCE;
+        m_error = fullErr( Fxt::Component::Err_T::UNRESOLVED_OUTPUT_REFRENCE );
         return m_error;
     }
 
     // Validate Point types
     if ( validatePointTypes( (Fxt::Point::Api **) m_inputRefs, m_numInputs, Fxt::Point::Uint8::GUID_STRING) == false )
     {
-        m_error = FXT_COMPONENT_ERR_INPUT_REFRENCE_BAD_TYPE;
+        m_error = fullErr( Fxt::Component::Err_T::INPUT_REFRENCE_BAD_TYPE );
         return m_error;
     }
     if ( validatePointTypes( (Fxt::Point::Api **) m_outputRefs, m_numOutputs, Fxt::Point::Bool::GUID_STRING ) == false )
     {
-        m_error = FXT_COMPONENT_ERR_OUTPUT_REFRENCE_BAD_TYPE;
+        m_error = fullErr( Fxt::Component::Err_T::OUTPUT_REFRENCE_BAD_TYPE );
         return m_error;
     }
 
-    m_error = FXT_COMPONENT_ERR_NO_ERROR;   // Set my state to 'ready-to-start'
+    m_error = fullErr( Err_T::SUCCESS);   // Set my state to 'ready-to-start'
     return m_error;
 }
 

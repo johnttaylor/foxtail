@@ -108,7 +108,7 @@ TEST_CASE( "Database" )
                                                                          cardObj );
         REQUIRE( card1 != nullptr );
         REQUIRE( uut.lookupById( 0 ) == card1 );
-        REQUIRE( card1->getErrorCode() == FXT_CARD_ERR_NO_ERROR );
+        REQUIRE( card1->getErrorCode() == Fxt::Type::Error( Fxt::Type::Err_T::SUCCESS ) );
 
         Fxt::Card::Mock::Digital8* card2 = new Fxt::Card::Mock::Digital8( uut,
                                               generalAllocator,
@@ -118,7 +118,7 @@ TEST_CASE( "Database" )
                                               cardObj );
         REQUIRE( card2 != nullptr );
         REQUIRE( uut.lookupById( 0 ) == card1 );
-        REQUIRE( card2->getErrorCode() == FXT_CARD_ERR_CARD_INVALID_ID );
+        REQUIRE( card2->getErrorCode() == Fxt::Type::Error( Fxt::Type::Err_T::CARD, Err_T::CARD_INVALID_ID ) );
 
         uut.clearCards();
         REQUIRE( uut.lookupById( 0 ) == nullptr );
@@ -130,7 +130,7 @@ TEST_CASE( "Database" )
                                               cardObj );
         REQUIRE( card2 != nullptr );
         REQUIRE( uut.lookupById( 0 ) == card2 );
-        REQUIRE( card2->getErrorCode() == FXT_CARD_ERR_NO_ERROR );
+        REQUIRE( card2->getErrorCode() == Fxt::Type::Error( Fxt::Type::Err_T::SUCCESS ) );
 
         Fxt::Card::Mock::Digital8* card3 = new Fxt::Card::Mock::Digital8( uut,
                                                                           generalAllocator,
@@ -140,7 +140,7 @@ TEST_CASE( "Database" )
                                                                           cardObj );
         REQUIRE( card3 != nullptr );
         REQUIRE( uut.lookupById( 1 ) == card3 );
-        REQUIRE( card3->getErrorCode() == FXT_CARD_ERR_NO_ERROR );
+        REQUIRE( card3->getErrorCode() == Fxt::Type::Error( Fxt::Type::Err_T::SUCCESS ) );
 
         Fxt::Card::Mock::Digital8* card4 = new Fxt::Card::Mock::Digital8( uut,
                                                                           generalAllocator,
@@ -150,7 +150,7 @@ TEST_CASE( "Database" )
                                                                           cardObj );
         REQUIRE( card4 != nullptr );
         REQUIRE( uut.lookupById( 2 ) == nullptr );
-        REQUIRE( card4->getErrorCode() == FXT_CARD_ERR_CARD_INVALID_ID );
+        REQUIRE( card4->getErrorCode() == Fxt::Type::Error( Fxt::Type::Err_T::CARD, Err_T::CARD_INVALID_ID ) );
     }
 
 

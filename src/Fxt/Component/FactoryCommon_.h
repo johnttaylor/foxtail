@@ -14,6 +14,7 @@
 
 
 #include "Fxt/Component/FactoryApi.h"
+#include "Fxt/Component/Error.h"
 #include "Fxt/Component/FactoryDatabaseApi.h"
 #include "Cpl/Memory/ContiguousAllocator.h"
 
@@ -45,11 +46,11 @@ protected:
         FXT_COMPONENT_ERR_NO_ERROR if successful; else error code is returned.
         Field(s) are returned via the function arguments.
      */
-    Api::Err_T allocateAndParse( JsonVariant&                       obj,
-                                 Cpl::Memory::ContiguousAllocator&  generalAllocator,
-                                 size_t                             compenentSizeInBytes,
-                                 void*&                             memoryForComponent,
-                                 uint16_t&                          exeOrder ) noexcept;
+    Fxt::Type::Error allocateAndParse( JsonVariant&                       obj,
+                                       Cpl::Memory::ContiguousAllocator&  generalAllocator,
+                                       size_t                             compenentSizeInBytes,
+                                       void*&                             memoryForComponent,
+                                       uint16_t&                          exeOrder ) noexcept;
 
 };
 
@@ -71,7 +72,7 @@ public:
     /// See Fxt::Component::FactoryApi
     Api* create( Fxt::Point::BankApi&               statePointBank,
                  JsonVariant&                       componentObject,
-                 Api::Err_T&                        componentErrorCode,
+                 Fxt::Type::Error&                  componentErrorCode,
                  Cpl::Memory::ContiguousAllocator&  generalAllocator,
                  Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
                  Fxt::Point::DatabaseApi&           dbForPoints,
@@ -80,10 +81,10 @@ public:
         //  Get basic info about the card
         void* memComponentInstance;
         componentErrorCode = allocateAndParse( componentObject, generalAllocator, sizeof( COMPONENTTYPE ), memComponentInstance, exeOrder );
-        if ( componentErrorCode == FXT_COMPONENT_ERR_NO_ERROR )
+        if ( componentErrorCode == fullErr( Err_T::SUCCESS ) )
         {
             // Create the Component
-            COMPONENTTYPE* component = new(memComponentInstance) COMPONENTTYPE( componentObject, 
+            COMPONENTTYPE* component = new(memComponentInstance) COMPONENTTYPE( componentObject,
                                                                                 generalAllocator,
                                                                                 statefulDataAllocator,
                                                                                 dbForPoints );

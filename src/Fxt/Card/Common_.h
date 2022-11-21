@@ -15,6 +15,7 @@
 
 #include "Fxt/Card/Api.h"
 #include "Fxt/Card/DatabaseApi.h"
+#include "Fxt/Card/Error.h"
 #include "Fxt/Point/Bank.h"
 #include "Fxt/Point/DatabaseApi.h"
 #include "Fxt/Point/Descriptor.h"
@@ -64,7 +65,7 @@ public:
     bool flushOutputs() noexcept;
 
     /// See Fxt::Card::Api
-    Err_T getErrorCode() const noexcept;
+    Fxt::Type::Error getErrorCode() const noexcept;
 
 
 protected:
@@ -105,7 +106,7 @@ protected:
     Fxt::Point::Bank                    m_virtualOutputs;         
 
     /// Error state. A value of 0 indicates NO error
-    Err_T                               m_error;
+    Fxt::Type::Error                    m_error;
 
     /// The card's ID
     uint16_t                            m_id;

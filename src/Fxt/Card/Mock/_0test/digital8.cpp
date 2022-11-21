@@ -77,6 +77,7 @@ TEST_CASE( "Digital8" )
     Cpl::Memory::LeanHeap statefulAllocator( statefulHeap_, sizeof( statefulHeap_ ) );
     Fxt::Point::Database<MAX_POINTS> pointDb;
     Fxt::Card::Database<MAX_CARDS>   cardDb;
+    Cpl::Text::FString<Fxt::Type::Error::MAX_TEXT_LEN> errText;
 
 
     SECTION( "create card" )
@@ -93,8 +94,8 @@ TEST_CASE( "Digital8" )
                       0,
                       cardObj );
 
-        REQUIRE( uut.getErrorCode() == FXT_CARD_ERR_NO_ERROR );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", Fxt::Card::Api::getErrorText( uut.getErrorCode() )) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", uut.getErrorCode().toText( errText )) );
+        REQUIRE( uut.getErrorCode() == Fxt::Type::Error( Fxt::Type::Err_T::SUCCESS ) );
 
         REQUIRE( strcmp( uut.getTypeName(), Digital8::TYPE_NAME ) == 0 );
         REQUIRE( strcmp( uut.getTypeGuid(), Digital8::GUID_STRING ) == 0 );
@@ -179,7 +180,7 @@ TEST_CASE( "Digital8" )
                       0,
                       cardObj );
 
-        REQUIRE( uut.getErrorCode() == FXT_CARD_ERR_NO_ERROR );
+        REQUIRE( uut.getErrorCode() == Fxt::Type::Error( Fxt::Type::Err_T::SUCCESS ) );
         REQUIRE( uut.start() );
 
         uut.setInputBit( 1 );

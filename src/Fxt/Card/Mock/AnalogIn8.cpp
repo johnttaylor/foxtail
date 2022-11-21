@@ -70,7 +70,7 @@ bool AnalogIn8::parseConfiguration( JsonVariant & obj ) noexcept
             size_t numInputs = inputs.size();
             if ( numInputs > MAX_DESCRIPTORS )
             {
-                m_error = FXT_CARD_ERR_TOO_MANY_INPUT_POINTS;
+                m_error = fullErr( Err_T::TOO_MANY_INPUT_POINTS );
                 return false;
             }
 
@@ -104,7 +104,7 @@ void AnalogIn8::createPoints() noexcept
 bool AnalogIn8::start() noexcept
 {
     // Fail if there was error during construction
-    if ( m_error != FXT_CARD_ERR_NO_ERROR )
+    if ( m_error != fullErr( Err_T::SUCCESS ) )
     {
         return false;
     }

@@ -12,6 +12,7 @@
 
 
 #include "FactoryDatabase.h"
+#include "Error.h"
 #include "Cpl/System/Assert.h"
 
 ///
@@ -35,20 +36,20 @@ Api* FactoryDatabase::createComponentfromJSON( JsonVariant&                     
                                                Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
                                                Fxt::Point::DatabaseApi&           dbForPoints,
                                                uint16_t&                          exeOrder,
-                                               Api::Err_T&                        componentErrorCode ) noexcept
+                                               Fxt::Type::Error&                  componentErrorCode ) noexcept
 {
     // Ensure that a Id has been assigned
     const char* typeGuid = componentObj["type"];
     if ( typeGuid == nullptr )
     {
-        componentErrorCode = FXT_COMPONENT_ERR_UNKNOWN_GUID;
+        componentErrorCode = fullErr( Err_T::UNKNOWN_GUID );
         return nullptr;
     }
     
     FactoryApi* factory = lookup( typeGuid );
     if ( factory == nullptr )
     {
-        componentErrorCode = FXT_COMPONENT_ERR_UNKNOWN_GUID;
+        componentErrorCode = fullErr( Err_T::UNKNOWN_GUID );
         return nullptr;
     }
 

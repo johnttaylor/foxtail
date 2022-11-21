@@ -12,6 +12,7 @@
 #include "Catch/catch.hpp"
 #include "Cpl/System/_testsupport/Shutdown_TS.h"
 #include "Fxt/Component/Digital/And16Gate.h"
+#include "Fxt/Component/Digital/Error.h"
 #include "Fxt/Point/Database.h"
 #include "Cpl/Memory/LeanHeap.h"
 #include <string.h>
@@ -100,7 +101,7 @@ TEST_CASE( "And16Gate" )
                        statefulAllocator,
                        pointDb );
 
-        REQUIRE( uut.getErrorCode() == FXT_COMPONENT_ERR_NO_ERROR );
+        REQUIRE( uut.getErrorCode() == fullErr(Err_T::SUCCESS) );
 
         REQUIRE( strcmp( uut.getTypeGuid(), And16Gate::GUID_STRING ) == 0 );
         REQUIRE( strcmp( uut.getTypeName(), And16Gate::TYPE_NAME ) == 0 );
@@ -120,7 +121,7 @@ TEST_CASE( "And16Gate" )
                        statefulAllocator,
                        pointDb );
 
-        REQUIRE( uut.getErrorCode() == FXT_COMPONENT_ERR_NO_ERROR );
+        REQUIRE( uut.getErrorCode() == fullErr( Err_T::SUCCESS ) );
 
         uint64_t nowUsec = Cpl::System::ElapsedTime::milliseconds() * 1000;
 
@@ -140,35 +141,35 @@ TEST_CASE( "And16Gate" )
                        statefulAllocator,
                        pointDb );
 
-        REQUIRE( uut.getErrorCode() == FXT_COMPONENT_ERR_NO_ERROR );
+        REQUIRE( uut.getErrorCode() == fullErr( Err_T::SUCCESS ) );
 
         Fxt::Point::Bool* ptIn1  = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_1, "inSig1", statefulAllocator );
         Fxt::Point::Bool* ptIn2  = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_2, "inSig2", statefulAllocator );
         Fxt::Point::Bool* ptIn3  = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_3, "inSig3", statefulAllocator );
         Fxt::Point::Bool* ptOut1 = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__OUT, "out", statefulAllocator );
         Fxt::Point::Bool* ptOut2 = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__OUT_NEGATED, "/out", statefulAllocator );
-        REQUIRE( uut.resolveReferences( pointDb ) == FXT_COMPONENT_ERR_NO_ERROR );
+        REQUIRE( uut.resolveReferences( pointDb ) == fullErr( Err_T::SUCCESS ) );
 
         uint64_t nowUsec = Cpl::System::ElapsedTime::milliseconds() * 1000;
-        REQUIRE( uut.start( nowUsec ) == FXT_COMPONENT_ERR_NO_ERROR );
+        REQUIRE( uut.start( nowUsec ) == fullErr( Err_T::SUCCESS ) );
         REQUIRE( uut.isStarted() == true );
 
-        REQUIRE( uut.execute( nowUsec ) == FXT_COMPONENT_ERR_NO_ERROR );
+        REQUIRE( uut.execute( nowUsec ) == fullErr( Err_T::SUCCESS ) );
         REQUIRE( ptOut1->isNotValid() );
         REQUIRE( ptOut2->isNotValid() );
 
         ptIn1->write( true );
-        REQUIRE( uut.execute( nowUsec ) == FXT_COMPONENT_ERR_NO_ERROR );
+        REQUIRE( uut.execute( nowUsec ) == fullErr( Err_T::SUCCESS ) );
         REQUIRE( ptOut1->isNotValid() );
         REQUIRE( ptOut2->isNotValid() );
 
         ptIn2->write( false );
-        REQUIRE( uut.execute( nowUsec ) == FXT_COMPONENT_ERR_NO_ERROR );
+        REQUIRE( uut.execute( nowUsec ) == fullErr( Err_T::SUCCESS ) );
         REQUIRE( ptOut1->isNotValid() );
         REQUIRE( ptOut2->isNotValid() );
 
         ptIn3->write( false );
-        REQUIRE( uut.execute( nowUsec ) == FXT_COMPONENT_ERR_NO_ERROR );
+        REQUIRE( uut.execute( nowUsec ) == fullErr( Err_T::SUCCESS ) );
         bool val;
         REQUIRE( ptOut1->read( val ) );
         REQUIRE( val == false );
@@ -176,14 +177,14 @@ TEST_CASE( "And16Gate" )
         REQUIRE( val == true );
 
         ptIn3->write( true );
-        REQUIRE( uut.execute( nowUsec ) == FXT_COMPONENT_ERR_NO_ERROR );
+        REQUIRE( uut.execute( nowUsec ) == fullErr( Err_T::SUCCESS ) );
         REQUIRE( ptOut1->read( val ) );
         REQUIRE( val == false );
         REQUIRE( ptOut2->read( val ) );
         REQUIRE( val == true );
 
         ptIn2->write( true );
-        REQUIRE( uut.execute( nowUsec ) == FXT_COMPONENT_ERR_NO_ERROR );
+        REQUIRE( uut.execute( nowUsec ) == fullErr( Err_T::SUCCESS ) );
         REQUIRE( ptOut1->read( val ) );
         REQUIRE( val == true );
         REQUIRE( ptOut2->read( val ) );

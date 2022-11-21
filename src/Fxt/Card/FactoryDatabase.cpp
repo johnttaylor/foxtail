@@ -12,6 +12,7 @@
 
 
 #include "FactoryDatabase.h"
+#include "Error.h"
 #include "Cpl/System/Assert.h"
 
 ///
@@ -34,20 +35,20 @@ Api* FactoryDatabase::createCardfromJSON( DatabaseApi&                       car
                                           Cpl::Memory::ContiguousAllocator&  generalAllocator,
                                           Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
                                           Fxt::Point::DatabaseApi&           dbForPoints,
-                                          Api::Err_T&                        cardErrorCode ) noexcept
+                                          Fxt::Type::Error&                  cardErrorCode ) noexcept
 {
     // Ensure that a Id has been assigned
     const char* typeGuid = cardObj["type"];
     if ( typeGuid == nullptr )
     {
-        cardErrorCode = FXT_CARD_ERR_UNKNOWN_GUID;
+        cardErrorCode = fullErr( Err_T::UNKNOWN_GUID );
         return nullptr;
     }
 
     FactoryApi* factory = lookup( typeGuid );
     if ( factory == nullptr )
     {
-        cardErrorCode = FXT_CARD_ERR_UNKNOWN_GUID;
+        cardErrorCode = fullErr( Err_T::UNKNOWN_GUID );
         return nullptr;
     }
 

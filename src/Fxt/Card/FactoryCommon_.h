@@ -15,6 +15,7 @@
 
 #include "Fxt/Card/FactoryApi.h"
 #include "Fxt/Card/FactoryDatabaseApi.h"
+#include "Fxt/Card/Error.h"
 #include "Fxt/Point/DatabaseApi.h"
 #include "Cpl/Memory/ContiguousAllocator.h"
 
@@ -43,14 +44,14 @@ public:
 protected:
     /** Helper method to that allocates memory for the Card and parses
         some parse basic/common fields for a card.  Returns the
-        FXT_CARD_ERR_NO_ERROR if successful; else error code is returned.
+        Err_T::NO_ERROR if successful; else error code is returned.
         Field(s) are returned via the function arguments.
      */
-    Api::Err_T allocateAndParse( JsonVariant&                       obj,
-                                 Cpl::Memory::ContiguousAllocator&  generalAllocator, 
-                                 size_t                             cardSizeInBytes,
-                                 void*&                             memoryForCard,
-                                 uint16_t&                          cardId ) noexcept;
+    Fxt::Type::Error allocateAndParse( JsonVariant&                       obj,
+                                       Cpl::Memory::ContiguousAllocator&  generalAllocator,
+                                       size_t                             cardSizeInBytes,
+                                       void*&                             memoryForCard,
+                                       uint16_t&                          cardId ) noexcept;
 };
 
 
@@ -72,7 +73,7 @@ public:
     /// See Fxt::Card::FactoryApi
     Api* create( DatabaseApi&                       cardDb,
                  JsonVariant&                       cardObject,
-                 Api::Err_T&                        cardErrorCode,
+                 Fxt::Type::Error&                  cardErrorCode,
                  Cpl::Memory::ContiguousAllocator&  generalAllocator,
                  Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
                  Fxt::Point::DatabaseApi&           dbForPoints ) noexcept
@@ -80,8 +81,8 @@ public:
         //  Get basic info about the card
         uint16_t cardId;
         void*    memCardInstance;
-        cardErrorCode = allocateAndParse( cardObject, generalAllocator, sizeof(CARDTYPE), memCardInstance, cardId );
-        if ( cardErrorCode == FXT_CARD_ERR_NO_ERROR )
+        cardErrorCode = allocateAndParse( cardObject, generalAllocator, sizeof( CARDTYPE ), memCardInstance, cardId );
+        if ( cardErrorCode == Fxt::Type::Error( Fxt::Type::Err_T::SUCCESS ) )
         {
             // Create the card
             CARDTYPE* card = new(memCardInstance) CARDTYPE( cardDb,

@@ -15,47 +15,9 @@
 
 #include "Cpl/Container/Item.h"
 #include "Cpl/Type/Guid.h"
+#include "Fxt/Type/Error.h"
 #include <stdint.h>
 
-
-/// ERROR Code: NO Error, i.e. the card is operating properly
-#define FXT_CARD_ERR_NO_ERROR                   0
-
-/// ERROR Code: Unable to allocate memory for the card
-#define FXT_CARD_ERR_CARD_MEMORY                1
-
-/// ERROR Code: Out-of-memory when parsing/creating Descriptors
-#define FXT_CARD_ERR_MEMORY_DESCRIPTORS         2
-
-/// ERROR Code: Configuration contains the unknown/unsupported card type GUID 
-#define FXT_CARD_ERR_UNKNOWN_GUID               3
-
-/// ERROR Code: Configuration does NOT contain a valid ID value
-#define FXT_CARD_ERR_CARD_MISSING_ID            4
-
-/// ERROR Code: Configuration does NOT contain a valid ID value for one of it Points
-#define FXT_CARD_ERR_POINT_MISSING_ID           5
-
-/// ERROR Code: Configuration contains TOO many input Points
-#define FXT_CARD_ERR_TOO_MANY_INPUT_POINTS      6
-
-/// ERROR Code: Configuration contains TOO many output Points
-#define FXT_CARD_ERR_TOO_MANY_OUTPUT_POINTS     7
-
-/// ERROR Code: Configuration contains duplicate or our-of-range Channel IDs
-#define FXT_CARD_ERR_BAD_CHANNEL_ASSIGNMENTS    8
-
-/// ERROR Code: Error occurred while parsing/creating a Setter instance
-#define FXT_CARD_ERR_CARD_SETTER_ERROR          9
-
-/// ERROR Code: Out-of-memory when parsing/creating a Descriptor's name
-#define FXT_CARD_ERR_MEMORY_DESCRIPTOR_NAME     10
-
-/// ERROR Code: The Card ID is invalid/out-of-range
-#define FXT_CARD_ERR_CARD_INVALID_ID            11
-
-/// ERROR Code: Code to use for the start of card-specific Error codes
-#define FXT_CARD_ERR_START_CARD_SPECIFIC        0x2000
 
 
 ///
@@ -76,10 +38,6 @@ namespace Card {
  */
 class Api : public Cpl::Container::Item
 {
-public:
-    /// Error Type
-    typedef uint16_t Err_T;
-
     /// Magic value for an Invalid Point ID
     static constexpr uint16_t INVALID_ID = 0xFFFF;
 
@@ -148,13 +106,7 @@ public:
     /** This method returns the current error state of the card.  A value
         of zero/ERR_NO_ERROR indicates the card is operating properly
      */
-    virtual Err_T getErrorCode() const noexcept = 0;
-
-    /** This method returns a text string associated with the specified
-        error code.  If the specified error code is not-valid/out-of-range for
-        the card, a null pointer is returned.
-     */
-    static const char* getErrorText( Err_T errCode ) noexcept;
+    virtual Fxt::Type::Error getErrorCode() const noexcept = 0;
 
 public:
     /// Virtual destructor to make the compiler happy

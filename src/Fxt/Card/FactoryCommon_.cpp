@@ -17,7 +17,7 @@
 ///
 using namespace Fxt::Card;
 
-FactoryCommon_::FactoryCommon_( FactoryDatabaseApi& factoryDatabase  )
+FactoryCommon_::FactoryCommon_( FactoryDatabaseApi& factoryDatabase )
 {
     // Auto register with factory database
     factoryDatabase.insert_( *this );
@@ -34,16 +34,16 @@ void FactoryCommon_::destroy( Api& cardToDestory ) noexcept
     cardToDestory.~Api();
 }
 
-Api::Err_T FactoryCommon_::allocateAndParse( JsonVariant&                       obj,
-                                             Cpl::Memory::ContiguousAllocator&  generalAllocator,
-                                             size_t                             cardSizeInBytes,
-                                             void*&                             memoryForCard,
-                                             uint16_t&                          cardId ) noexcept
+Fxt::Type::Error FactoryCommon_::allocateAndParse( JsonVariant&                       obj,
+                                                   Cpl::Memory::ContiguousAllocator&  generalAllocator,
+                                                   size_t                             cardSizeInBytes,
+                                                   void*&                             memoryForCard,
+                                                   uint16_t&                          cardId ) noexcept
 {
     // Ensure that a Id has been assigned
     if ( obj["id"].is<unsigned>() == false )
     {
-        return FXT_CARD_ERR_CARD_MISSING_ID;
+        return fullErr( Err_T::CARD_MISSING_ID );
     }
     cardId = obj["id"];
 
@@ -51,8 +51,8 @@ Api::Err_T FactoryCommon_::allocateAndParse( JsonVariant&                       
     memoryForCard = generalAllocator.allocate( cardSizeInBytes );
     if ( memoryForCard == nullptr )
     {
-        return FXT_CARD_ERR_CARD_MEMORY;
+        return fullErr( Err_T::MEMORY_CARD );
     }
 
-    return FXT_CARD_ERR_NO_ERROR;
+    return fullErr( Err_T::SUCCESS );
 }

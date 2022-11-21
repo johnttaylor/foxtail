@@ -40,49 +40,48 @@ namespace Digital {
     JSON Definition
     --------------------
     {
-       "name": "AND Gate#1"                                 // *Text label for the component
+       "name": "AND Gate#1"                                 // Text label for the component
        "type": "e62e395c-d27a-4821-bba9-aa1e6de42a05",      // Identifies the card type.  Value comes from the Supported/Available-card-list
-       "typeName": "Fxt::Component::Digital::ByteSplitter"     // *OPTIONAL: Human readable type name
+       "typeName": "Fxt::Component::Digital::And16Gate"     // OPTIONAL: Human readable type name
        "exeOrder": 0                                        // Execution order within the Logic Chain. Range: 0-64K
        "inputs": [                                          // Array of Point references that supply the Component's input values.  Number of elements: 1-16
           {
             "name": "Signal A",                             // human readable name for the input value
-            "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0", // *REQUIRED Type for the input signal
-            "typeName": "Fxt::Point::Bool",                 // *OPTIONAL: Human readable Type name for the input signal
+            "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0", // REQUIRED Type for the input signal
+            "typeName": "Fxt::Point::Bool",                 // OPTIONAL: Human readable Type name for the input signal
             "idRef": 4294967295                             // Point ID Reference to the point to read the input value from
           },
           ...
        ],
        "outputs": [                                         // Array of Point reference where the Component's writes it output values to.  Number of elements: 1-2
-          {                                               
+          {
             "name":"Product"                                // Human readable name for the output signal
-            "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0", // *REQUIRED Type for the output signal
-            "typeName": "Fxt::Point::Bool",                 // *OPTIONAL: Human readable Type name for the output signal
+            "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0", // REQUIRED Type for the output signal
+            "typeName": "Fxt::Point::Bool",                 // OPTIONAL: Human readable Type name for the output signal
             "idRef":4294967295,                             // Point ID reference to the point that is updated with the output value
             "negate":false                                  // Optional: (defaults to false) When set to false - the output is result of ANDing the input signals.  When set to true the output is logical complement of ANDing result
           },
-          {                                       
+          {
             "name":"/Product"                               // Human readable name for the output signal
-            "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0", // *REQUIRED Type for the output signal
-            "typeName": "Fxt::Point::Bool",                 // *OPTIONAL: Human readable Type name for the output signal
+            "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0", // REQUIRED Type for the output signal
+            "typeName": "Fxt::Point::Bool",                 // OPTIONAL: Human readable Type name for the output signal
             "idRef":4294967295,                             // Point ID reference to the point that is updated with the output value
             "negate":true                                   // Optional: (defaults to false) When set to false - the output is result of ANDing the input signals.  When set to true the output is logical complement of ANDing result
           }
        ]
     }
 
-    *The field is NOT parsed/used by the firmware
 
     \endcode
  */
-class ByteSplitter : public Fxt::Component::Common_
+class And16Gate : public Fxt::Component::Common_
 {
 public:
     /// Type ID for the card
     static constexpr const char* GUID_STRING = "e62e395c-d27a-4821-bba9-aa1e6de42a05";
 
     /// Type name for the card
-    static constexpr const char* TYPE_NAME   = "Fxt::Component::Digital::ByteSplitter";
+    static constexpr const char* TYPE_NAME   = "Fxt::Component::Digital::And16Gate";
 
 public:
     /// Maximum number of Input signals
@@ -93,20 +92,20 @@ public:
 
 public:
     /// Constructor
-    ByteSplitter( JsonVariant&                       componentObject,
+    And16Gate( JsonVariant&                       componentObject,
                Cpl::Memory::ContiguousAllocator&  generalAllocator,
                Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
                Fxt::Point::DatabaseApi&           dbForPoints );
 
     /// Destructor
-    ~ByteSplitter();
+    ~And16Gate();
 
 public:
     /// See Fxt::Component::Api
-    Err_T resolveReferences( Fxt::Point::DatabaseApi& pointDb )  noexcept;
+    Fxt::Type::Error resolveReferences( Fxt::Point::DatabaseApi& pointDb )  noexcept;
 
     /// See Fxt::Component::Api
-    Err_T execute( int64_t currentTickUsec ) noexcept;
+    Fxt::Type::Error execute( int64_t currentTickUsec ) noexcept;
 
 public:
     /// See Fxt::Component::Api

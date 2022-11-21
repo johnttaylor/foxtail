@@ -81,7 +81,8 @@ TEST_CASE( "Digital8Factory" )
     Fxt::Card::FactoryDatabase       cardFactoryDb;
     Fxt::Card::Database<MAX_CARDS>   cardDb;
     Digital8Factory                  uut( cardFactoryDb );
-    Fxt::Card::Api::Err_T            cardErrorCode;
+    Fxt::Type::Error                 cardErrorCode;
+    Cpl::Text::FString<Fxt::Type::Error::MAX_TEXT_LEN> errText;
 
     SECTION( "create/destroy card" )
     {
@@ -92,8 +93,8 @@ TEST_CASE( "Digital8Factory" )
         JsonVariant cardObj = doc["cards"][0];
         Fxt::Card::Api* card = uut.create( cardDb, cardObj, cardErrorCode, generalAllocator, statefulAllocator, pointDb );
         REQUIRE( card != nullptr );
-        REQUIRE( cardErrorCode == FXT_CARD_ERR_NO_ERROR );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", Fxt::Card::Api::getErrorText( cardErrorCode )) );
+        REQUIRE( cardErrorCode == Fxt::Type::Error( Fxt::Type::Err_T::SUCCESS ) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", cardErrorCode.toText( errText )) );
 
         REQUIRE( strcmp( uut.getGuid(), card->getTypeGuid() ) == 0 );
 
@@ -134,8 +135,8 @@ TEST_CASE( "Digital8Factory" )
         JsonVariant cardObj = doc["cards"][0];
         Fxt::Card::Api* card = cardFactoryDb.createCardfromJSON( cardDb, cardObj, generalAllocator, statefulAllocator, pointDb, cardErrorCode );
         REQUIRE( card != nullptr );
-        REQUIRE( cardErrorCode == FXT_CARD_ERR_NO_ERROR );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", Fxt::Card::Api::getErrorText( cardErrorCode )) );
+        REQUIRE( cardErrorCode == Fxt::Type::Error( Fxt::Type::Err_T::SUCCESS ) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", cardErrorCode.toText( errText )) );
     }
 
     REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );

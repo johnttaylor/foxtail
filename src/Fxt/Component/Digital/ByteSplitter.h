@@ -18,9 +18,6 @@
 #include "Fxt/Point/Uint8.h"
 #include "Fxt/Point/Bool.h"
 
-/// ERROR Code: Invalid/bad bit offset
-#define FXT_COMPONENT_DIGITAL_BYTES_SPLITTER_INVALID_BIT_OFFSET     (FXT_COMPONENT_ERR_START_CARD_SPECIFIC)
-
 
 ///
 namespace Fxt {
@@ -112,10 +109,10 @@ public:
 
 public:
     /// See Fxt::Component::Api
-    Err_T resolveReferences( Fxt::Point::DatabaseApi& pointDb )  noexcept;
+    Fxt::Type::Error resolveReferences( Fxt::Point::DatabaseApi& pointDb )  noexcept;
 
     /// See Fxt::Component::Api
-    Err_T execute( int64_t currentTickUsec ) noexcept;
+    Fxt::Type::Error execute( int64_t currentTickUsec ) noexcept;
 
 public:
     /// See Fxt::Component::Api
@@ -123,7 +120,6 @@ public:
 
     /// See Fxt::Component::Api
     const char* getTypeName() const noexcept;
-
 
 protected:
     /// Helper method to parse the card's JSON config
