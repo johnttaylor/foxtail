@@ -31,7 +31,6 @@ using namespace Fxt::Component::Digital;
                            "  \"name\": \"AND Gate#1\"," \
                            "  \"type\": \"e62e395c-d27a-4821-bba9-aa1e6de42a05\"," \
                            "  \"typeName\": \"Fxt::Component::Digital::And16Gate\"," \
-                           "  \"exeOrder\": 2," \
                            "  \"inputs\": [" \
                            "      {" \
                            "          \"name\": \"Signal#1\"," \
@@ -97,7 +96,6 @@ TEST_CASE( "And16GateFactory" )
     Fxt::Component::FactoryDatabase     componentFactoryDb;
     And16GateFactory                    uut( componentFactoryDb );
     Fxt::Type::Error                    componentErrorCode;
-    uint16_t                            exeOrder;
     Cpl::Text::FString<Fxt::Type::Error::MAX_TEXT_LEN> buf;
 
     SECTION( "create/destroy card" )
@@ -112,8 +110,7 @@ TEST_CASE( "And16GateFactory" )
                                                      componentErrorCode,
                                                      generalAllocator,
                                                      statefulAllocator,
-                                                     pointDb,
-                                                     exeOrder );
+                                                     pointDb );
         REQUIRE( component != nullptr );
         CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", componentErrorCode.toText( buf )) );
         REQUIRE( componentErrorCode == fullErr( Err_T::SUCCESS ) );
@@ -145,7 +142,6 @@ TEST_CASE( "And16GateFactory" )
                                                                                      generalAllocator,
                                                                                      statefulAllocator,
                                                                                      pointDb,
-                                                                                     exeOrder,
                                                                                      componentErrorCode );
         REQUIRE( component  );
         CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", componentErrorCode.toText( buf )) );

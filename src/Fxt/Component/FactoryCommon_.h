@@ -49,8 +49,7 @@ protected:
     Fxt::Type::Error allocateAndParse( JsonVariant&                       obj,
                                        Cpl::Memory::ContiguousAllocator&  generalAllocator,
                                        size_t                             compenentSizeInBytes,
-                                       void*&                             memoryForComponent,
-                                       uint16_t&                          exeOrder ) noexcept;
+                                       void*&                             memoryForComponent ) noexcept;
 
 };
 
@@ -75,12 +74,11 @@ public:
                  Fxt::Type::Error&                  componentErrorCode,
                  Cpl::Memory::ContiguousAllocator&  generalAllocator,
                  Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
-                 Fxt::Point::DatabaseApi&           dbForPoints,
-                 uint16_t&                          exeOrder ) noexcept
+                 Fxt::Point::DatabaseApi&           dbForPoints ) noexcept
     {
         //  Get basic info about the card
         void* memComponentInstance;
-        componentErrorCode = allocateAndParse( componentObject, generalAllocator, sizeof( COMPONENTTYPE ), memComponentInstance, exeOrder );
+        componentErrorCode = allocateAndParse( componentObject, generalAllocator, sizeof( COMPONENTTYPE ), memComponentInstance );
         if ( componentErrorCode == fullErr( Err_T::SUCCESS ) )
         {
             // Create the Component

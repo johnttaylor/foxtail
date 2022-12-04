@@ -31,33 +31,9 @@ namespace LogicChain {
     @param Err_T                            Enum
 
     @param SUCCESS                          NO ERROR
-    @param MEMORY_CARD                      Unable to allocate memory for the card
-    @param MEMORY_DESCRIPTORS               Out-of-memory when parsing/creating Descriptors
-    @param UNKNOWN_GUID                     Configuration contains the unknown/unsupported card type GUID 
-    @param CARD_MISSING_ID                  Configuration does NOT contain a valid ID value
-    @param POINT_MISSING_ID                 Configuration does NOT contain a valid ID value for one of it Points
-    @param TOO_MANY_INPUT_POINTS            Configuration contains TOO many input Points
-    @param TOO_MANY_OUTPUT_POINTS           Configuration contains TOO many output Points
-    @param BAD_CHANNEL_ASSIGNMENTS          Configuration contains duplicate or our-of-range Channel IDs
-    @param CARD_SETTER_ERROR                Error occurred while parsing/creating a Setter instance
-    @param MEMORY_DESCRIPTOR_NAME           Out-of-memory when parsing/creating a Descriptor's name
-    @param CARD_INVALID_ID                  The Card ID is invalid/out-of-range
-    @param MOCK                             A Mock Card sub-system specific error
  */
 BETTER_ENUM( Err_T, uint8_t
              , SUCCESS = 0
-             , MEMORY_CARD
-             , MEMORY_DESCRIPTORS
-             , UNKNOWN_GUID
-             , CARD_MISSING_ID           
-             , POINT_MISSING_ID          
-             , TOO_MANY_INPUT_POINTS     
-             , TOO_MANY_OUTPUT_POINTS    
-             , BAD_CHANNEL_ASSIGNMENTS   
-             , CARD_SETTER_ERROR         
-             , MEMORY_DESCRIPTOR_NAME    
-             , CARD_INVALID_ID           
-             , MOCK
 );
 
 /** This method has 'PACKAGE Scope' in that is should only be called by

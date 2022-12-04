@@ -38,16 +38,8 @@ void FactoryCommon_::destroy( Api& componentToDestory ) noexcept
 Fxt::Type::Error FactoryCommon_::allocateAndParse( JsonVariant&                       obj,
                                                    Cpl::Memory::ContiguousAllocator&  generalAllocator,
                                                    size_t                             compenentSizeInBytes,
-                                                   void*&                             memoryForComponent,
-                                                   uint16_t&                          exeOrder ) noexcept
+                                                   void*&                             memoryForComponent ) noexcept
 {
-    // Ensure that a Execution order has been assigned
-    if ( obj["exeOrder"].is<unsigned>() == false )
-    {
-        return fullErr( Err_T::MISSING_INVALID_EXE_ORDER );
-    }
-    exeOrder = obj["exeOrder"];
-
     // Allocate memory for the component
     memoryForComponent = generalAllocator.allocate( compenentSizeInBytes );
     if ( memoryForComponent == nullptr )

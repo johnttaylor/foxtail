@@ -55,7 +55,6 @@ public:
                                           Cpl::Memory::ContiguousAllocator&  generalAllocator,
                                           Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
                                           Fxt::Point::DatabaseApi&           dbForPoints,
-                                          uint16_t&                          exeOrder,
                                           Fxt::Type::Error&                  componentErrorCode ) noexcept = 0;
 
 public:

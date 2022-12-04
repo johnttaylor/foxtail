@@ -104,7 +104,7 @@ public:
 
 public:
     /** This method returns the current error state of the card.  A value
-        of zero/ERR_NO_ERROR indicates the card is operating properly
+        of Fxt::Type::Err_T::SUCCESS indicates the card is operating properly
      */
     virtual Fxt::Type::Error getErrorCode() const noexcept = 0;
 

@@ -48,7 +48,7 @@ namespace Type {
         Note: Each error code symbol must be less than 32 characters
            123456789 123456789 12345678 12
 
-    @param GlobalErrCodes                   Enum
+    @param Err_T                            Enum
 
     @param SUCCESS                          NO Error.  The operation was successful
     @param CARD                             A Card sub-system specific error

@@ -38,7 +38,7 @@ namespace Card {
     Required/Defined JSON fields/structure:
        {
           "name":           "<human readable name for the card - not required to be unique>",
-          "id":             <ID.  Must be unique. Range: 0-64K>,
+          "id":             <ID.  Must be unique. Range: 0-64K (note: NOT used by the firmware)>,
           "type":           "<Card's Type GUID: 8-4-4-4-12 format>",
           "typeName":       "<OPTIONAL: human readable card type>",
           "slot":           <chasis slot number. Range: 0-255>,

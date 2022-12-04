@@ -28,7 +28,6 @@ using namespace Fxt::Component::Digital;
                            "  \"name\": \"ByteSplitter #1\"," \
                            "  \"type\": \"8c55aa52-3bc8-4b8a-ad73-c434a0bbd4b4\"," \
                            "  \"typeName\": \"Fxt::Component::Digital::ByteSplitter\"," \
-                           "  \"exeOrder\": 2," \
                            "  \"inputs\": [" \
                            "      {" \
                            "          \"name\": \"input byte\"," \

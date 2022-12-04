@@ -31,7 +31,6 @@ using namespace Fxt::Component::Digital;
                            "  \"name\": \"ByteSplitter #1\"," \
                            "  \"type\": \"8c55aa52-3bc8-4b8a-ad73-c434a0bbd4b4\"," \
                            "  \"typeName\": \"Fxt::Component::Digital::ByteSplitter\"," \
-                           "  \"exeOrder\": 2," \
                            "  \"inputs\": [" \
                            "      {" \
                            "          \"name\": \"input byte\"," \
@@ -112,7 +111,6 @@ TEST_CASE( "ByteSplitterFactory" )
     Fxt::Component::FactoryDatabase     componentFactoryDb;
     ByteSplitterFactory                 uut( componentFactoryDb );
     Fxt::Type::Error                    componentErrorCode;
-    uint16_t                            exeOrder;
     Cpl::Text::FString<Fxt::Type::Error::MAX_TEXT_LEN> buf;
 
     SECTION( "create/destroy card" )
@@ -127,8 +125,7 @@ TEST_CASE( "ByteSplitterFactory" )
                                                      componentErrorCode,
                                                      generalAllocator,
                                                      statefulAllocator,
-                                                     pointDb,
-                                                     exeOrder );
+                                                     pointDb );
         REQUIRE( component != nullptr );
         CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", componentErrorCode.toText( buf )) );
         REQUIRE( componentErrorCode == fullErr( Err_T::SUCCESS ) );
@@ -161,7 +158,6 @@ TEST_CASE( "ByteSplitterFactory" )
                                                                                      generalAllocator,
                                                                                      statefulAllocator,
                                                                                      pointDb,
-                                                                                     exeOrder,
                                                                                      componentErrorCode );
         REQUIRE( component );
         CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", componentErrorCode.toText( buf )) );

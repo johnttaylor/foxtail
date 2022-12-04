@@ -1,5 +1,5 @@
-#ifndef Fxt_Card_Common_h_
-#define Fxt_Card_Common_h_
+#ifndef Fxt_LogicChain_Chain_h_
+#define Fxt_LogicChain_Chain_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -13,9 +13,8 @@
 /** @file */
 
 
-#include "Fxt/Card/Api.h"
-#include "Fxt/Card/DatabaseApi.h"
-#include "Fxt/Card/Error.h"
+#include "Fxt/LogicChain/Api.h"
+#include "Fxt/LogicChain/Error.h"
 #include "Fxt/Point/Bank.h"
 #include "Fxt/Point/DatabaseApi.h"
 #include "Fxt/Point/Descriptor.h"
@@ -25,18 +24,18 @@
 ///
 namespace Fxt {
 ///
-namespace Card {
+namespace LogicChain {
 
 
-/** This partially concrete class provide common infrastructure for a Card
+/** This concrete class implements the LogicChain interface
  */
-class Common_ : public Api
+class Chain : public Api
 {
 public:
 
 public:
     /// Constructor
-    Common_( DatabaseApi&                       cardDb,
+    Chain( DatabaseApi&                       cardDb,
              Cpl::Memory::ContiguousAllocator&  generalAllocator,
              Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
              Fxt::Point::DatabaseApi&           dbForPoints,
@@ -46,26 +45,18 @@ public:
     ~Common_();
 
 public:
-    /// See Fxt::Card::Api
-    bool start() noexcept;
+    /// See Fxt::LogicChain::Api
+    Fxt::Type::Error start( uint64_t currentElapsedTimeUsec ) noexcept;
 
-    /// See Fxt::Card::Api
-    bool stop() noexcept;
+    /// See Fxt::LogicChain::Api
+    void stop() noexcept;
 
-    /// See Fxt::Card::Api
+    /// See Fxt::LogicChain::Api
     bool isStarted() const noexcept;
 
-    /// See Fxt::Card::Api
-    uint16_t getId() const noexcept;
+    /// See Fxt::LogicChain::Api
+    Fxt::Type::Error execute( int64_t currentTickUsec ) noexcept;
 
-    /// See Fxt::Card::Api
-    bool scanInputs() noexcept;
-
-    /// See Fxt::Card::Api
-    bool flushOutputs() noexcept;
-
-    /// See Fxt::Card::Api
-    Fxt::Type::Error getErrorCode() const noexcept;
 
 
 protected:

@@ -67,9 +67,9 @@ public:
      */
     virtual Fxt::Type::Error start( uint64_t currentElapsedTimeUsec ) noexcept = 0;
 
-    /** This method is used to stop/deactivate the IO card.  If the Component fails
-        to be stopped the method returns an error code; else 
-        FXT_COMPONENT_ERR_NO_ERROR is returned.
+    /** This method is used to stop/deactivate the Component.  If the Component fails
+        to be stopped the method returns an error code; else Fxt::Type::Err_T::SUCCESS 
+        is returned.
 
         A Component MUST be in the 'stopped state' before it can be deleted/destroyed
      */

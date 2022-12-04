@@ -16,6 +16,10 @@
 #include "Cpl/Container/Item.h"
 #include "Cpl/Type/Guid.h"
 #include "Fxt/Type/Error.h"
+#include "Fxt/Point/BankApi.h"
+#include "Fxt/Point/Api.h"
+#include "Cpl/Memory//ContiguousAllocator.h"
+#include "Cpl/Json/Arduino.h"
 #include <stdint.h>
 
 
@@ -31,78 +35,77 @@ namespace LogicChain {
     Note: Logic Chain semantics are NOT thread-safe.
 
  */
-class Api : public Cpl::Container::Item
+class Api
 {
-    /// Magic value for an Invalid Point ID
-    static constexpr uint16_t INVALID_ID = 0xFFFF;
-
 public:
-    /** This method is used to start/activate the IO card.  If the card fails
-        to be started the method returns false; else true is returned.
+    /** This method is used to start/initialize the Logic Chain for execution.
+        If the Logic Chain fails to be started the method returns an error code;
+        else Fxt::Type::Err_T::SUCCESS is returned.
 
-        A card can be started/stopped multiple times. When a card is created
-        it is in the 'stopped' state.
+        The 'currentElapsedTimeUsec' argument represents the current elapsed
+        time in microseconds since power-up of the application.
+
+        A Logic Chain can be started/stopped multiple times, however it should only
+        started/stopped when its containing Chassis is started/stopped. When
+        a Logic Chain is created it is in the 'stopped' state.
+
+        Restarting (after being stopped) a Logic Chain will clear any existing
+        error conditions.
      */
-    virtual bool start() noexcept = 0;
+    virtual Fxt::Type::Error start( uint64_t currentElapsedTimeUsec ) noexcept = 0;
 
-    /** This method is used to stop/deactivate the IO card.  If the card fails
-        to be stopped the method returns false; else true is returned.
+    /** This method is used to stop/deactivate the Logic Chain.  If the Logic Chain fails
+        to be stopped the method returns an error code; else Fxt::Type::Err_T::SUCCESS
+        is returned.
 
-        A card MUST be in the 'stopped state' before it can be deleted/destroyed
+        A Logic Chain MUST be in the 'stopped state' before it can be deleted/destroyed
      */
-    virtual bool stop() noexcept = 0;
+    virtual void stop() noexcept = 0;
 
-    /** This method returns true if the card is in the started state
+    /** This method returns true if the Logic Chain is in the started state
      */
     virtual bool isStarted() const noexcept = 0;
 
 
 public:
-    /** This method is used by the Chassis Card scanner to update the its virtual
-        input points (associated with the card) from the content of the IO
-        Registers.
+    /** This method is called to have a Logic execute is contained Components.
+        It should be called periodically by the 'Chassis' object
 
-        Note: The Chassis Card scanner is responsible for ensuring the
-              thread-safety/integrity of its virtual input points being
-              updated.
+        The 'currentTickUsec' argument represents the current elapsed time
+        in microseconds since power-up of the application.  For given execution
+        cycle,
 
-        The method return false if unrecoverable error occurred; else true
-        is returned.
+        This method return Fxt::Type::Err_T::SUCCESS if the Logic Chain completed
+        ALL of its logic for the current processing cycle; else if error occurred
+        then an error code is returned. Once the Logic Chain has encountered
+        an error, subsequence calls to this method will always fail.
      */
-    virtual bool scanInputs() noexcept = 0;
-
-    /** This method is used by the Chassis Card scanner to flush its virtual
-        output points (associated with the card) to the card's IO Registers
-
-        Note: The Chassis Card scanner is responsible for ensuring the
-              thread-safety/integrity of its virtual output points being
-              copied.
-
-        The method return false if unrecoverable error occurred; else true
-        is returned.
-     */
-    virtual bool flushOutputs() noexcept = 0;
+    virtual Fxt::Type::Error execute( int64_t currentTickUsec ) noexcept = 0;
 
 
 public:
-    /// This method returns the Card's unique numeric id
-    virtual uint16_t getId() const noexcept = 0;
-
-    /** This method returns the card's GUID (that identifies its type) as a
-        text string in 8-4-4-4-12 format
-     */
-    virtual const char* getTypeGuid() const noexcept = 0;
-
-    /// Returns the card's 'human readable' type name (note: this is NOT guaranteed to be unique)
-    virtual const char* getTypeName() const noexcept = 0;
-
-
-public:
-    /** This method returns the current error state of the card.  A value
-        of zero/ERR_NO_ERROR indicates the card is operating properly
+    /** This method returns the current error state of the Logic.  A value
+        of Fxt::Type::Err_T::SUCCESS indicates the Logic Chain is operating
+        properly
      */
     virtual Fxt::Type::Error getErrorCode() const noexcept = 0;
 
+
+
+public:
+    /** This method attempts to parse the provided JSON Object that represents
+        a Logic Chain and create the contained components.  If there is an error
+        (e.g. component not supported, missing key/value pairs, etc.) the
+        method returns nullptr; else a pointer to the newly created Logic Chain
+        object is returned.  When an error occurs, details about the specific
+        card error is returned via 'logicChainErrorode' argument.
+     */
+    static Api* createLogicChainfromJSON( JsonVariant                        logicChainObject,
+                                          Fxt::Point::BankApi&               statePointBank,
+                                          Cpl::Memory::ContiguousAllocator&  generalAllocator,
+                                          Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                                          Fxt::Point::DatabaseApi&           dbForPoints,
+                                          Fxt::Type::Error&                  logicChainErrorode ) noexcept;
 public:
     /// Virtual destructor to make the compiler happy
     virtual ~Api() {}

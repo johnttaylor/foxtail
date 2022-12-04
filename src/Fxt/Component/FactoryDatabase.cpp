@@ -35,7 +35,6 @@ Api* FactoryDatabase::createComponentfromJSON( JsonVariant&                     
                                                Cpl::Memory::ContiguousAllocator&  generalAllocator,
                                                Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
                                                Fxt::Point::DatabaseApi&           dbForPoints,
-                                               uint16_t&                          exeOrder,
                                                Fxt::Type::Error&                  componentErrorCode ) noexcept
 {
     // Ensure that a Id has been assigned
@@ -58,8 +57,7 @@ Api* FactoryDatabase::createComponentfromJSON( JsonVariant&                     
                             componentErrorCode,
                             generalAllocator,
                             statefulDataAllocator,
-                            dbForPoints,
-                            exeOrder );
+                            dbForPoints );
 }
 
 ///////////////////////////////////////////////////////////////////////////////

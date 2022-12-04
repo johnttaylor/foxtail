@@ -41,7 +41,6 @@ namespace Component {
           "name":           "<human readable name for the Component - not required to be unique>",
           "type":           "<Component's Type GUID: 8-4-4-4-12 format>",
           "typeName":       "<OPTIONAL: human readable component type>",
-          "exeOrder":       <execution order within the Logic Chain. Range: 0-64K>,
           "inputs": [       // Array of Point reference that supply the Component's input values
                {
                  "name":    "<human readable name for the input>",
@@ -106,8 +105,7 @@ public:
                          Fxt::Type::Error&                  componentErrorCode,
                          Cpl::Memory::ContiguousAllocator&  generalAllocator,
                          Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
-                         Fxt::Point::DatabaseApi&           dbForPoints,
-                         uint16_t&                          exeOrder ) noexcept = 0;
+                         Fxt::Point::DatabaseApi&           dbForPoints ) noexcept = 0;
 
 
     /** This method is used to destroy/free an IO card.  

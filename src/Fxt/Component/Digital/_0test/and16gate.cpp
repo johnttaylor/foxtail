@@ -28,7 +28,6 @@ using namespace Fxt::Component::Digital;
                            "  \"name\": \"AND Gate#1\"," \
                            "  \"type\": \"e62e395c-d27a-4821-bba9-aa1e6de42a05\"," \
                            "  \"typeName\": \"Fxt::Component::Digital::And16Gate\"," \
-                           "  \"exeOrder\": 2," \
                            "  \"inputs\": [" \
                            "      {" \
                            "          \"name\": \"Signal#1\"," \
