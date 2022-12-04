@@ -17,7 +17,6 @@
 #include "Cpl/Json/Arduino.h"
 #include "Fxt/Point/Bank.h"
 #include "Fxt/Card/Api.h"
-#include "Fxt/Card/DatabaseApi.h"
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -85,8 +84,7 @@ public:
         When an error occurs, the 'cardErrorCode' argument is updated with 
         details of the error.
       */
-    virtual Api* create( DatabaseApi&                       cardDb, 
-                         JsonVariant&                       cardObject, 
+    virtual Api* create( JsonVariant&                       cardObject, 
                          Fxt::Type::Error&                  cardErrorCode,
                          Cpl::Memory::ContiguousAllocator&  generalAllocator,
                          Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,

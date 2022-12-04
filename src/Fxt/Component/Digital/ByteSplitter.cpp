@@ -124,7 +124,7 @@ bool ByteSplitter::parseConfiguration( JsonVariant & obj ) noexcept
     for ( unsigned i=0; i < outputs.size(); i++ )
     {
         m_outputNegated[i] = outputs[i]["negate"] | false;
-        m_bitOffsets[i]    = outputs[i]["bit"] | (MAX_BIT_OFFSET+1);
+        m_bitOffsets[i]    = outputs[i]["bit"] | MAX_BIT_OFFSET+1;
         if ( m_bitOffsets[i] > MAX_BIT_OFFSET )
         {
             m_error = fullErr( Err_T::SPLITTER_INVALID_BIT_OFFSET );

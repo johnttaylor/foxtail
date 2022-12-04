@@ -12,7 +12,6 @@
 #include "Catch/catch.hpp"
 #include "Cpl/System/_testsupport/Shutdown_TS.h"
 #include "Fxt/Card/Mock/Digital8.h"
-#include "Fxt/Card/Database.h"
 #include "Fxt/Point/Database.h"
 #include "Fxt/Point/Uint8.h"
 #include "Cpl/Memory/LeanHeap.h"
@@ -76,7 +75,6 @@ TEST_CASE( "Digital8" )
     Cpl::Memory::LeanHeap generalAllocator( generalHeap_, sizeof( generalHeap_ ) );
     Cpl::Memory::LeanHeap statefulAllocator( statefulHeap_, sizeof( statefulHeap_ ) );
     Fxt::Point::Database<MAX_POINTS> pointDb;
-    Fxt::Card::Database<MAX_CARDS>   cardDb;
     Cpl::Text::FString<Fxt::Type::Error::MAX_TEXT_LEN> errText;
 
 
@@ -87,8 +85,7 @@ TEST_CASE( "Digital8" )
         REQUIRE( err == DeserializationError::Ok );
 
         JsonVariant cardObj = doc["cards"][0];
-        Digital8 uut( cardDb,
-                      generalAllocator,
+        Digital8 uut( generalAllocator,
                       statefulAllocator,
                       pointDb,
                       0,
@@ -173,8 +170,7 @@ TEST_CASE( "Digital8" )
         REQUIRE( err == DeserializationError::Ok );
 
         JsonVariant cardObj = doc["cards"][0];
-        Digital8 uut( cardDb,
-                      generalAllocator,
+        Digital8 uut( generalAllocator,
                       statefulAllocator,
                       pointDb,
                       0,

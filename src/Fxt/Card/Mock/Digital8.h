@@ -106,8 +106,7 @@ public:
 
 public:
     /// Constructor
-    Digital8( DatabaseApi&                       cardDb,
-              Cpl::Memory::ContiguousAllocator&  generalAllocator,
+    Digital8( Cpl::Memory::ContiguousAllocator&  generalAllocator,
               Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
               Fxt::Point::DatabaseApi&           dbForPoints,
               uint16_t                           cardId,

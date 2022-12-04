@@ -14,6 +14,7 @@
 
 
 #include "Fxt/Card/Api.h"
+#include "Fxt/Card/DatabaseApi.h"
 #include "Fxt/Card/Error.h"
 #include "Fxt/Point/Bank.h"
 #include "Fxt/Point/DatabaseApi.h"
@@ -35,7 +36,8 @@ public:
 
 public:
     /// Constructor
-    Common_( Cpl::Memory::ContiguousAllocator&  generalAllocator,
+    Common_( DatabaseApi&                       cardDb,
+             Cpl::Memory::ContiguousAllocator&  generalAllocator,
              Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
              Fxt::Point::DatabaseApi&           dbForPoints,
              uint16_t                           cardId );

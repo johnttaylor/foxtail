@@ -1,5 +1,5 @@
-#ifndef Fxt_Card_Error_h_
-#define Fxt_Card_Error_h_
+#ifndef Fxt_LogicChain_Error_h_
+#define Fxt_LogicChain_Error_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -21,7 +21,7 @@
 ///
 namespace Fxt {
 ///
-namespace Card {
+namespace LogicChain {
 
 /** This enumeration defines error codes that are unique to the Card Sub-system
 
@@ -41,6 +41,7 @@ namespace Card {
     @param BAD_CHANNEL_ASSIGNMENTS          Configuration contains duplicate or our-of-range Channel IDs
     @param CARD_SETTER_ERROR                Error occurred while parsing/creating a Setter instance
     @param MEMORY_DESCRIPTOR_NAME           Out-of-memory when parsing/creating a Descriptor's name
+    @param CARD_INVALID_ID                  The Card ID is invalid/out-of-range
     @param MOCK                             A Mock Card sub-system specific error
  */
 BETTER_ENUM( Err_T, uint8_t
@@ -55,6 +56,7 @@ BETTER_ENUM( Err_T, uint8_t
              , BAD_CHANNEL_ASSIGNMENTS   
              , CARD_SETTER_ERROR         
              , MEMORY_DESCRIPTOR_NAME    
+             , CARD_INVALID_ID           
              , MOCK
 );
 

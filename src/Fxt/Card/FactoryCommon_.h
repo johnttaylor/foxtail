@@ -71,8 +71,7 @@ public:
     const char* getGuid() const noexcept { return CARDTYPE::GUID_STRING; }
 
     /// See Fxt::Card::FactoryApi
-    Api* create( DatabaseApi&                       cardDb,
-                 JsonVariant&                       cardObject,
+    Api* create( JsonVariant&                       cardObject,
                  Fxt::Type::Error&                  cardErrorCode,
                  Cpl::Memory::ContiguousAllocator&  generalAllocator,
                  Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
@@ -85,8 +84,7 @@ public:
         if ( cardErrorCode == Fxt::Type::Error( Fxt::Type::Err_T::SUCCESS ) )
         {
             // Create the card
-            CARDTYPE* card = new(memCardInstance) CARDTYPE( cardDb,
-                                                            generalAllocator,
+            CARDTYPE* card = new(memCardInstance) CARDTYPE( generalAllocator,
                                                             statefulDataAllocator,
                                                             dbForPoints,
                                                             cardId,

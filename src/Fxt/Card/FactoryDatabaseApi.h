@@ -46,8 +46,7 @@ public:
         This method should ONLY be called after all Factory instances have been
         registered with the Factory Database.
      */
-    virtual Api* createCardfromJSON( DatabaseApi&                       cardDb, 
-                                     JsonVariant                        cardObj, 
+    virtual Api* createCardfromJSON( JsonVariant                        cardObj, 
                                      Cpl::Memory::ContiguousAllocator&  generalAllocator,
                                      Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
                                      Fxt::Point::DatabaseApi&           dbForPoints, 

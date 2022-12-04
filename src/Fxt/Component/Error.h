@@ -28,7 +28,7 @@ namespace Component {
         Note: Each error code symbol must be less than 32 characters
            123456789 123456789 12345678 12
 
-    @param GlobalErrCodes                   Enum
+    @param Err_T                            Enum
 
     @param SUCCESS                          NO ERROR
     @param UNKNOWN_GUID                     Configuration contains the unknown/unsupported component type GUID 
@@ -74,7 +74,7 @@ void errorCodetoText_( Cpl::Text::String& buffer, Fxt::Type::Error errorCode, ui
 /// Helper method to build a 'complete/full' error from a component specific error code
 inline Fxt::Type::Error fullErr( Err_T localErr )
 {
-    return Fxt::Type::Error( Fxt::Type::Err_T::COMPONENT, localErr );
+    return Fxt::Type::Error( Fxt::Type::Err_T::LOGIC_CHAIN, localErr );
 }
 
 

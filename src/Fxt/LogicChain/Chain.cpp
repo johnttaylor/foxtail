@@ -22,7 +22,8 @@
 using namespace Fxt::Card;
 
 //////////////////////////////////////////////////
-Common_::Common_( Cpl::Memory::ContiguousAllocator& m_generalAllocator,
+Common_::Common_( DatabaseApi &                     cardDb,
+                  Cpl::Memory::ContiguousAllocator& m_generalAllocator,
                   Cpl::Memory::ContiguousAllocator& statefulDataAllocator,
                   Fxt::Point::DatabaseApi&          dbForPoints,
                   uint16_t                          cardId)
@@ -34,6 +35,10 @@ Common_::Common_( Cpl::Memory::ContiguousAllocator& m_generalAllocator,
     , m_started( false )
 {
     CPL_SYSTEM_ASSERT( cardName );
+    if ( !cardDb.add( *this ) )
+    {
+        m_error = fullErr(Err_T::CARD_INVALID_ID);
+    }
 }
 
 Common_::~Common_()

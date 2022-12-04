@@ -16,7 +16,6 @@
 #include "Fxt/Point/Uint8.h"
 #include "Fxt/Point/Database.h"
 #include "Fxt/Card/FactoryDatabase.h"
-#include "Fxt/Card/Database.h"
 #include "Cpl/Memory/LeanHeap.h"
 #include "Cpl/System/Trace.h"
 #include <string.h>
@@ -87,7 +86,6 @@ TEST_CASE( "AnalogIn8Factory" )
     Cpl::Memory::LeanHeap            generalAllocator( generalHeap_, sizeof( generalHeap_ ) );
     Cpl::Memory::LeanHeap            statefulAllocator( statefulHeap_, sizeof( statefulHeap_ ) );
     Fxt::Point::Database<MAX_POINTS> pointDb;
-    Fxt::Card::Database<MAX_CARDS>   cardDb;
     Fxt::Card::FactoryDatabase       cardFactoryDb;
     AnalogIn8Factory                 uut( cardFactoryDb );
     Fxt::Type::Error                 componentErrorCode;
@@ -100,7 +98,7 @@ TEST_CASE( "AnalogIn8Factory" )
         REQUIRE( err == DeserializationError::Ok );
 
         JsonVariant cardObj = doc["cards"][0];
-        Fxt::Card::Api* card = uut.create( cardDb, cardObj, componentErrorCode, generalAllocator, statefulAllocator, pointDb );
+        Fxt::Card::Api* card = uut.create( cardObj, componentErrorCode, generalAllocator, statefulAllocator, pointDb );
         REQUIRE( card != nullptr );
         CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", componentErrorCode.toText( errText )) );
         REQUIRE( componentErrorCode == Fxt::Type::Error( Fxt::Type::Err_T::SUCCESS ) );
@@ -152,7 +150,7 @@ TEST_CASE( "AnalogIn8Factory" )
         REQUIRE( err == DeserializationError::Ok );
 
         JsonVariant cardObj = doc["cards"][0];
-        Fxt::Card::Api* card = cardFactoryDb.createCardfromJSON( cardDb, cardObj, generalAllocator, statefulAllocator, pointDb, componentErrorCode );
+        Fxt::Card::Api* card = cardFactoryDb.createCardfromJSON( cardObj, generalAllocator, statefulAllocator, pointDb, componentErrorCode );
         REQUIRE( card != nullptr );
         CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", componentErrorCode.toText( errText )) );
         REQUIRE( componentErrorCode == Fxt::Type::Error( Fxt::Type::Err_T::SUCCESS ) );

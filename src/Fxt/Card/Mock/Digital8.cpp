@@ -22,13 +22,12 @@ using namespace Fxt::Card::Mock;
 
 
 ///////////////////////////////////////////////////////////////////////////////
-Digital8::Digital8( DatabaseApi&                       cardDb,
-                    Cpl::Memory::ContiguousAllocator&  generalAllocator,
+Digital8::Digital8( Cpl::Memory::ContiguousAllocator&  generalAllocator,
                     Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
                     Fxt::Point::DatabaseApi&           dbForPoints,
                     uint16_t                           cardId,
                     JsonVariant&                       cardObject )
-    : Fxt::Card::Common_( cardDb, generalAllocator, statefulDataAllocator, dbForPoints, cardId )
+    : Fxt::Card::Common_( generalAllocator, statefulDataAllocator, dbForPoints, cardId )
 {
     memset( &m_virtualInDescriptors, 0, sizeof( m_virtualInDescriptors ) );
     memset( &m_virtualOutDescriptors, 0, sizeof( m_virtualOutDescriptors ) );

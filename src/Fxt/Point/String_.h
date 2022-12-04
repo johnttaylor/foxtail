@@ -89,7 +89,7 @@ public:
 protected:
 
     /** See Fxt::Point::Api.  It is the caller's responsibility to
-    NOT call this method if m_data is null.
+        NOT call this method if m_data is null.
 
     Note: The PointCommon_.read() will not call this method if the m_state
           is null.

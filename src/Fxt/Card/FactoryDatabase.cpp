@@ -30,8 +30,7 @@ FactoryDatabase::FactoryDatabase( const char* ignoreThisParameter_usedToCreateAU
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-Api* FactoryDatabase::createCardfromJSON( DatabaseApi&                       cardDb,
-                                          JsonVariant                        cardObj,
+Api* FactoryDatabase::createCardfromJSON( JsonVariant                        cardObj,
                                           Cpl::Memory::ContiguousAllocator&  generalAllocator,
                                           Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
                                           Fxt::Point::DatabaseApi&           dbForPoints,
@@ -52,7 +51,7 @@ Api* FactoryDatabase::createCardfromJSON( DatabaseApi&                       car
         return nullptr;
     }
 
-    return factory->create( cardDb, cardObj, cardErrorCode, generalAllocator, statefulDataAllocator, dbForPoints );
+    return factory->create( cardObj, cardErrorCode, generalAllocator, statefulDataAllocator, dbForPoints );
 }
 
 

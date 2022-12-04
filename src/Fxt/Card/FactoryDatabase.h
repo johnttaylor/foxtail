@@ -55,8 +55,7 @@ public:
 
 public:
     /// See Fxt::Card::FactoryDatabaseApi
-    Api* createCardfromJSON( DatabaseApi&                       cardDb,
-                             JsonVariant                        cardObj,
+    Api* createCardfromJSON( JsonVariant                        cardObj,
                              Cpl::Memory::ContiguousAllocator&  generalAllocator,
                              Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
                              Fxt::Point::DatabaseApi&           dbForPoints,
