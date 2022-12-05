@@ -16,6 +16,7 @@
 #include "Fxt/Component/Common_.h"
 #include "Cpl/Json/Arduino.h"
 #include "Fxt/Point/Bool.h"
+#include "Fxt/Point/BankApi.h"
 
 ///
 namespace Fxt {
@@ -95,6 +96,7 @@ public:
     And16Gate( JsonVariant&                       componentObject,
                Cpl::Memory::ContiguousAllocator&  generalAllocator,
                Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+               Fxt::Point::BankApi&               statePointBank,
                Fxt::Point::DatabaseApi&           dbForPoints );
 
     /// Destructor

@@ -79,12 +79,13 @@ public:
         //  Get basic info about the card
         void* memComponentInstance;
         componentErrorCode = allocateAndParse( componentObject, generalAllocator, sizeof( COMPONENTTYPE ), memComponentInstance );
-        if ( componentErrorCode == fullErr( Err_T::SUCCESS ) )
+        if ( componentErrorCode == Fxt::Type::Error::SUCCESS() )
         {
             // Create the Component
             COMPONENTTYPE* component = new(memComponentInstance) COMPONENTTYPE( componentObject,
                                                                                 generalAllocator,
                                                                                 statefulDataAllocator,
+                                                                                statePointBank,
                                                                                 dbForPoints );
 
             componentErrorCode = component->getErrorCode();

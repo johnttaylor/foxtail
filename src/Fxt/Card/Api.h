@@ -90,9 +90,6 @@ public:
 
 
 public:
-    /// This method returns the Card's unique numeric id
-    virtual uint16_t getId() const noexcept = 0;
-
     /** This method returns the card's GUID (that identifies its type) as a
         text string in 8-4-4-4-12 format
      */

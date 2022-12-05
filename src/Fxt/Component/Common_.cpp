@@ -23,7 +23,7 @@ using namespace Fxt::Component;
 //////////////////////////////////////////////////
 Common_::Common_( )
     : m_lastExeCycleTimeUsec( INVALID_ELAPSED_TIME )
-    , m_error( fullErr( Err_T::SUCCESS ) )
+    , m_error( Fxt::Type::Error::SUCCESS() )
 {
 }
 
@@ -35,10 +35,10 @@ Common_::~Common_()
 Fxt::Type::Error Common_::start( uint64_t currentElapsedTimeUsec ) noexcept
 {
     // Use an invalid time marker to indicate the not-started state
-    if ( m_lastExeCycleTimeUsec == INVALID_ELAPSED_TIME && m_error == fullErr( Err_T::SUCCESS ) )
+    if ( m_lastExeCycleTimeUsec == INVALID_ELAPSED_TIME && m_error == Fxt::Type::Error::SUCCESS() )
     {
         m_lastExeCycleTimeUsec = currentElapsedTimeUsec;
-        return fullErr( Err_T::SUCCESS );
+        return Fxt::Type::Error::SUCCESS();
     }
     m_error = fullErr( Err_T::FAILED_START );
     return m_error;
@@ -49,7 +49,7 @@ void Common_::stop() noexcept
     if ( m_lastExeCycleTimeUsec != INVALID_ELAPSED_TIME )
     {
         m_lastExeCycleTimeUsec = INVALID_ELAPSED_TIME;
-        m_error                = fullErr( Err_T::SUCCESS );
+        m_error                = Fxt::Type::Error::SUCCESS();
     }
 }
 

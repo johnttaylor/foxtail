@@ -11,10 +11,11 @@
 
 #include "Catch/catch.hpp"
 #include "Cpl/System/_testsupport/Shutdown_TS.h"
-#include "Fxt/Card/Mock/Digital8.h"
-#include "Fxt/Card/Database.h"
+#include "Fxt/LogicChain/Chain.h"
 #include "Fxt/Point/Database.h"
 #include "Fxt/Point/Uint8.h"
+#include "Fxt/Component/Digital/And16GateFactory.h
+#include "Fxt/Component/Digital/ByteSplitterFactory.h
 #include "Cpl/Memory/LeanHeap.h"
 #include "Cpl/System/Trace.h"
 #include <string.h>
@@ -22,46 +23,70 @@
 #define SECT_   "_0test"
 
 /// 
-using namespace Fxt::Card;
+using namespace Fxt::LogicChain;
 
 
-#define CARD_DEFINTION     "{\"cards\":[" \
-                           "{" \
-                           "  \"name\": \"My Digital8 Card\"," \
-                           "  \"id\": 0," \
-                           "  \"type\": \"59d33888-62c7-45b2-a4d4-9dbc55914ed3\"," \
-                           "  \"typename\": \"Fxt::Card::HW::Mock::Digital8\"," \
-                           "  \"slot\": 0," \
-                           "    \"points\": {" \
-                           "       \"inputs\": [" \
-                           "           {" \
-                           "               \"channel\": 1," \
-                           "                   \"id\": 1," \
-                           "                   \"ioRegId\": 2," \
-                           "                   \"name\": \"InputPt\"," \
-                           "                   \"initial\": {" \
-                           "                     \"valid\": true," \
-                           "                     \"val\": 128," \
-                           "                     \"id\": 0" \
-                           "                   }" \
-                           "           }" \
-                           "       ]," \
-                           "       \"outputs\": [" \
-                           "           {" \
-                           "              \"channel\": 1," \
-                           "              \"id\": 3," \
-                           "              \"ioRegId\": 4," \
-                           "              \"name\": \"OutputPt\"," \
-                           "              \"initial\": {" \
-                           "                 \"valid\": true," \
-                           "                 \"val\": 1," \
-                           "                 \"id\": 0" \
-                           "              }" \
-                           "           }" \
-                           "       ]" \
-                           "    }" \
-                           "}" \
-                           "]}"
+#define LC_DEFINTION        "{\"name\":\"my logic chain\", \
+                            " \"id\":1 \
+                            " \"components\":[" \
+                            "  {" \
+                            "  \"name\": \"AND Gate#1\"," \
+                            "  \"type\": \"e62e395c-d27a-4821-bba9-aa1e6de42a05\"," \
+                            "  \"typeName\": \"Fxt::Component::Digital::And16Gate\"," \
+                            "  \"inputs\": [" \
+                            "      {" \
+                            "          \"name\": \"Signal#1\"," \
+                            "          \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
+                            "          \"typeName\": \"Fxt::Point::Bool\"," \
+                            "          \"idRef\": 2" \
+                            "      }," \
+                            "      {" \
+                            "          \"name\": \"Signal#2\"," \
+                            "          \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
+                            "          \"typeName\": \"Fxt::Point::Bool\"," \
+                            "          \"idRef\": 0" \
+                            "      }" \
+                            "    ]," \
+                            "  \"outputs\": [" \
+                            "      {" \
+                            "          \"name\": \"out\"," \
+                            "          \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
+                            "          \"typeName\": \"Fxt::Point::Bool\"," \
+                            "          \"idRef\": 3" \
+                            "      }" \
+                            "    ]" \
+                            "  }," \
+                            "  {" \
+                            "  \"name\": \"ByteSplitter #1\"," \
+                            "  \"type\": \"8c55aa52-3bc8-4b8a-ad73-c434a0bbd4b4\"," \
+                            "  \"typeName\": \"Fxt::Component::Digital::ByteSplitter\"," \
+                            "  \"inputs\": [" \
+                            "      {" \
+                            "          \"name\": \"input byte\"," \
+                            "          \"type\": \"918cff9e-8007-4666-99ac-384b9624329c\"," \
+                            "          \"typeName\": \"Fxt::Point::Uint8\"," \
+                            "          \"idRef\": 2" \
+                            "      }" \
+                            "    ]," \
+                            "  \"outputs\": [" \
+                            "      {" \
+                            "          \"bit\": 1," \
+                            "          \"name\": \"bit1\"," \
+                            "          \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
+                            "          \"typeName\": \"Fxt::Point::Bool\"," \
+                            "          \"idRef\": 3" \
+                            "      }," \
+                            "      {" \
+                            "          \"bit\": 4," \
+                            "          \"name\": \"/bit4\"," \
+                            "          \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
+                            "          \"typeName\": \"Fxt::Point::Bool\"," \
+                            "          \"idRef\": 4," \
+                            "          \"negate\": true" \
+                            "      }" \
+                            "    ]" \
+                            "  }" \
+                            "]}"
 
 static size_t generalHeap_[10000];
 static size_t statefulHeap_[10000];
@@ -70,27 +95,15 @@ static size_t statefulHeap_[10000];
 #define MAX_CARDS       2
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE( "Database" )
+TEST_CASE( "LogicChain" )
 {
     Cpl::System::Shutdown_TS::clearAndUseCounter();
     Cpl::Memory::LeanHeap generalAllocator( generalHeap_, sizeof( generalHeap_ ) );
     Cpl::Memory::LeanHeap statefulAllocator( statefulHeap_, sizeof( statefulHeap_ ) );
     Fxt::Point::Database<MAX_POINTS> pointDb;
-    Fxt::Card::Database<MAX_CARDS>   uut;
 
 
-    SECTION( "empty db" )
-    {
-        REQUIRE( uut.getMaxNumPoints() == MAX_CARDS );
-
-        for ( unsigned i=0; i < MAX_CARDS; i++ )
-        {
-            REQUIRE( uut.lookupById( i ) == nullptr );
-        }
-    }
-
-
-    SECTION( "add cards" )
+    SECTION( "create" )
     {
 
         StaticJsonDocument<10240> doc;
@@ -108,7 +121,7 @@ TEST_CASE( "Database" )
                                                                          cardObj );
         REQUIRE( card1 != nullptr );
         REQUIRE( uut.lookupById( 0 ) == card1 );
-        REQUIRE( card1->getErrorCode() == Fxt::Type::Error( Fxt::Type::Err_T::SUCCESS ) );
+        REQUIRE( card1->getErrorCode() == Fxt::Type::Error::SUCCESS()  );
 
         Fxt::Card::Mock::Digital8* card2 = new Fxt::Card::Mock::Digital8( uut,
                                               generalAllocator,
@@ -130,7 +143,7 @@ TEST_CASE( "Database" )
                                               cardObj );
         REQUIRE( card2 != nullptr );
         REQUIRE( uut.lookupById( 0 ) == card2 );
-        REQUIRE( card2->getErrorCode() == Fxt::Type::Error( Fxt::Type::Err_T::SUCCESS ) );
+        REQUIRE( card2->getErrorCode() == Fxt::Type::Error::SUCCESS()  );
 
         Fxt::Card::Mock::Digital8* card3 = new Fxt::Card::Mock::Digital8( uut,
                                                                           generalAllocator,
@@ -140,7 +153,7 @@ TEST_CASE( "Database" )
                                                                           cardObj );
         REQUIRE( card3 != nullptr );
         REQUIRE( uut.lookupById( 1 ) == card3 );
-        REQUIRE( card3->getErrorCode() == Fxt::Type::Error( Fxt::Type::Err_T::SUCCESS ) );
+        REQUIRE( card3->getErrorCode() == Fxt::Type::Error::SUCCESS()  );
 
         Fxt::Card::Mock::Digital8* card4 = new Fxt::Card::Mock::Digital8( uut,
                                                                           generalAllocator,

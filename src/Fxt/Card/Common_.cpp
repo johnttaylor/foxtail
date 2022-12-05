@@ -24,13 +24,11 @@ using namespace Fxt::Card;
 //////////////////////////////////////////////////
 Common_::Common_( Cpl::Memory::ContiguousAllocator& m_generalAllocator,
                   Cpl::Memory::ContiguousAllocator& statefulDataAllocator,
-                  Fxt::Point::DatabaseApi&          dbForPoints,
-                  uint16_t                          cardId)
+                  Fxt::Point::DatabaseApi&          dbForPoints)
     : m_dbForPoints( dbForPoints )
     , m_generalAllocator( m_generalAllocator )
     , m_statefulDataAllocator( statefulDataAllocator )
-    , m_error( fullErr(Err_T::SUCCESS) )
-    , m_id( cardId )
+    , m_error( Fxt::Type::Error::SUCCESS() )
     , m_started( false )
 {
     CPL_SYSTEM_ASSERT( cardName );
@@ -43,7 +41,7 @@ Common_::~Common_()
 //////////////////////////////////////////////////
 bool Common_::start() noexcept
 {
-    if ( !m_started && m_error == fullErr( Err_T::SUCCESS ) )
+    if ( !m_started && m_error == Fxt::Type::Error::SUCCESS() )
     {
         m_started = true;
         return true;
@@ -64,11 +62,6 @@ bool Common_::stop() noexcept
 bool Common_::isStarted() const noexcept
 {
     return m_started;
-}
-
-uint16_t Common_::getId() const noexcept
-{
-    return m_id;
 }
 
 

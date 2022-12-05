@@ -25,6 +25,7 @@ using namespace Fxt::Component::Digital;
 And16Gate::And16Gate( JsonVariant&                       componentObject,
                       Cpl::Memory::ContiguousAllocator&  generalAllocator,
                       Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                      Fxt::Point::BankApi&               statePointBank,
                       Fxt::Point::DatabaseApi&           dbForPoints )
     : m_numInputs( 0 )
     , m_numOutputs( 0 )
@@ -132,7 +133,7 @@ Fxt::Type::Error And16Gate::resolveReferences( Fxt::Point::DatabaseApi& pointDb 
         return m_error;
     }
 
-    m_error = fullErr( Err_T::SUCCESS );   // Set my state to 'ready-to-start'
+    m_error = Fxt::Type::Error::SUCCESS();   // Set my state to 'ready-to-start'
     return m_error;
 }
 
@@ -170,7 +171,7 @@ Fxt::Type::Error And16Gate::execute( int64_t currentTickUsec ) noexcept
             {
                 m_outputRefs[i]->setInvalid();
             }
-            return fullErr( Err_T::SUCCESS );
+            return Fxt::Type::Error::SUCCESS();
         }
 
         // AND the individual inputs
@@ -184,5 +185,5 @@ Fxt::Type::Error And16Gate::execute( int64_t currentTickUsec ) noexcept
         m_outputRefs[i]->write( finalOut );
     }
 
-    return fullErr( Err_T::SUCCESS );
+    return Fxt::Type::Error::SUCCESS();
 }

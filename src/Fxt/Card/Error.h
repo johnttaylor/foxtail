@@ -34,7 +34,6 @@ namespace Card {
     @param MEMORY_CARD                      Unable to allocate memory for the card
     @param MEMORY_DESCRIPTORS               Out-of-memory when parsing/creating Descriptors
     @param UNKNOWN_GUID                     Configuration contains the unknown/unsupported card type GUID 
-    @param CARD_MISSING_ID                  Configuration does NOT contain a valid ID value
     @param POINT_MISSING_ID                 Configuration does NOT contain a valid ID value for one of it Points
     @param TOO_MANY_INPUT_POINTS            Configuration contains TOO many input Points
     @param TOO_MANY_OUTPUT_POINTS           Configuration contains TOO many output Points
@@ -48,7 +47,6 @@ BETTER_ENUM( Err_T, uint8_t
              , MEMORY_CARD
              , MEMORY_DESCRIPTORS
              , UNKNOWN_GUID
-             , CARD_MISSING_ID           
              , POINT_MISSING_ID          
              , TOO_MANY_INPUT_POINTS     
              , TOO_MANY_OUTPUT_POINTS    

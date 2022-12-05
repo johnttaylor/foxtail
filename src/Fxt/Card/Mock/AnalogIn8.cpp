@@ -24,9 +24,8 @@ using namespace Fxt::Card::Mock;
 AnalogIn8::AnalogIn8( Cpl::Memory::ContiguousAllocator&  generalAllocator,
                       Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
                       Fxt::Point::DatabaseApi&           dbForPoints,
-                      uint16_t                           cardId,
                       JsonVariant&                       cardObject )
-    : Fxt::Card::Common_( generalAllocator, statefulDataAllocator, dbForPoints, cardId )
+    : Fxt::Card::Common_( generalAllocator, statefulDataAllocator, dbForPoints )
 {
     memset( &m_virtualInDescriptors, 0, sizeof( m_virtualInDescriptors ) );
     memset( &m_ioRegInDescriptors, 0, sizeof( m_ioRegInDescriptors ) );
@@ -103,7 +102,7 @@ void AnalogIn8::createPoints() noexcept
 bool AnalogIn8::start() noexcept
 {
     // Fail if there was error during construction
-    if ( m_error != fullErr( Err_T::SUCCESS ) )
+    if ( m_error != Fxt::Type::Error::SUCCESS() )
     {
         return false;
     }

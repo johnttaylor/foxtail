@@ -37,16 +37,8 @@ void FactoryCommon_::destroy( Api& cardToDestory ) noexcept
 Fxt::Type::Error FactoryCommon_::allocateAndParse( JsonVariant&                       obj,
                                                    Cpl::Memory::ContiguousAllocator&  generalAllocator,
                                                    size_t                             cardSizeInBytes,
-                                                   void*&                             memoryForCard,
-                                                   uint16_t&                          cardId ) noexcept
+                                                   void*&                             memoryForCard ) noexcept
 {
-    // Ensure that a Id has been assigned
-    if ( obj["id"].is<unsigned>() == false )
-    {
-        return fullErr( Err_T::CARD_MISSING_ID );
-    }
-    cardId = obj["id"];
-
     // Allocate memory for the card
     memoryForCard = generalAllocator.allocate( cardSizeInBytes );
     if ( memoryForCard == nullptr )
@@ -54,5 +46,5 @@ Fxt::Type::Error FactoryCommon_::allocateAndParse( JsonVariant&                 
         return fullErr( Err_T::MEMORY_CARD );
     }
 
-    return fullErr( Err_T::SUCCESS );
+    return Fxt::Type::Error::SUCCESS();
 }

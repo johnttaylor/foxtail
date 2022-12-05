@@ -25,16 +25,15 @@ using namespace Fxt::Card::Mock;
 Digital8::Digital8( Cpl::Memory::ContiguousAllocator&  generalAllocator,
                     Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
                     Fxt::Point::DatabaseApi&           dbForPoints,
-                    uint16_t                           cardId,
                     JsonVariant&                       cardObject )
-    : Fxt::Card::Common_( generalAllocator, statefulDataAllocator, dbForPoints, cardId )
+    : Fxt::Card::Common_( generalAllocator, statefulDataAllocator, dbForPoints )
 {
     memset( &m_virtualInDescriptors, 0, sizeof( m_virtualInDescriptors ) );
     memset( &m_virtualOutDescriptors, 0, sizeof( m_virtualOutDescriptors ) );
     memset( &m_ioRegInDescriptors, 0, sizeof( m_ioRegInDescriptors ) );
     memset( &m_ioRegOutDescriptors, 0, sizeof( m_ioRegOutDescriptors ) );
 
-    if ( m_error == fullErr( Err_T::SUCCESS ) )
+    if ( m_error == Fxt::Type::Error::SUCCESS() )
     {
         if ( parseConfiguration( cardObject ) )
         {

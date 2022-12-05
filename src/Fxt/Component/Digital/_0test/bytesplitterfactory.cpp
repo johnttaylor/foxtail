@@ -128,7 +128,7 @@ TEST_CASE( "ByteSplitterFactory" )
                                                      pointDb );
         REQUIRE( component != nullptr );
         CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", componentErrorCode.toText( buf )) );
-        REQUIRE( componentErrorCode == fullErr( Err_T::SUCCESS ) );
+        REQUIRE( componentErrorCode == Fxt::Type::Error::SUCCESS() );
 
         REQUIRE( strcmp( component->getTypeName(), ByteSplitter::TYPE_NAME ) == 0 );
         REQUIRE( strcmp( component->getTypeGuid(), ByteSplitter::GUID_STRING ) == 0 );
@@ -141,7 +141,7 @@ TEST_CASE( "ByteSplitterFactory" )
         new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT4_OUT, "outBit4", statefulAllocator );
         new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT4_NEGATED, "/outBit4", statefulAllocator );
         new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT5_NEGATED, "/outBit5", statefulAllocator );
-        REQUIRE( component->resolveReferences( pointDb ) == fullErr( Err_T::SUCCESS ) );
+        REQUIRE( component->resolveReferences( pointDb ) == Fxt::Type::Error::SUCCESS() );
 
         uut.destroy( *component );
     }
@@ -161,7 +161,7 @@ TEST_CASE( "ByteSplitterFactory" )
                                                                                      componentErrorCode );
         REQUIRE( component );
         CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", componentErrorCode.toText( buf )) );
-        REQUIRE( componentErrorCode == fullErr( Err_T::SUCCESS ) );
+        REQUIRE( componentErrorCode == Fxt::Type::Error::SUCCESS() );
 
         REQUIRE( strcmp( component->getTypeName(), ByteSplitter::TYPE_NAME ) == 0 );
         REQUIRE( strcmp( component->getTypeGuid(), ByteSplitter::GUID_STRING ) == 0 );
@@ -174,7 +174,7 @@ TEST_CASE( "ByteSplitterFactory" )
         new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT4_OUT, "outBit4", statefulAllocator );
         new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT4_NEGATED, "/outBit4", statefulAllocator );
         new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT5_NEGATED, "/outBit5", statefulAllocator );
-        REQUIRE( component->resolveReferences( pointDb ) == fullErr( Err_T::SUCCESS ) );
+        REQUIRE( component->resolveReferences( pointDb ) == Fxt::Type::Error::SUCCESS() );
 
         uut.destroy( *component );
     }

@@ -91,15 +91,13 @@ TEST_CASE( "Digital8Factory" )
         JsonVariant cardObj = doc["cards"][0];
         Fxt::Card::Api* card = uut.create( cardObj, cardErrorCode, generalAllocator, statefulAllocator, pointDb );
         REQUIRE( card != nullptr );
-        REQUIRE( cardErrorCode == Fxt::Type::Error( Fxt::Type::Err_T::SUCCESS ) );
+        REQUIRE( cardErrorCode == Fxt::Type::Error::SUCCESS()  );
         CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", cardErrorCode.toText( errText )) );
 
         REQUIRE( strcmp( uut.getGuid(), card->getTypeGuid() ) == 0 );
 
         REQUIRE( strcmp( card->getTypeName(), Digital8::TYPE_NAME ) == 0 );
         REQUIRE( strcmp( card->getTypeGuid(), Digital8::GUID_STRING ) == 0 );
-
-        REQUIRE( card->getId() == 2 );
 
         Fxt::Point::Uint8* pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 1 );
         REQUIRE( pointPtr );
@@ -133,7 +131,7 @@ TEST_CASE( "Digital8Factory" )
         JsonVariant cardObj = doc["cards"][0];
         Fxt::Card::Api* card = cardFactoryDb.createCardfromJSON( cardObj, generalAllocator, statefulAllocator, pointDb, cardErrorCode );
         REQUIRE( card != nullptr );
-        REQUIRE( cardErrorCode == Fxt::Type::Error( Fxt::Type::Err_T::SUCCESS ) );
+        REQUIRE( cardErrorCode == Fxt::Type::Error::SUCCESS()  );
         CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", cardErrorCode.toText( errText )) );
     }
 

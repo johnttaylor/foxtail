@@ -113,7 +113,7 @@ TEST_CASE( "And16GateFactory" )
                                                      pointDb );
         REQUIRE( component != nullptr );
         CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", componentErrorCode.toText( buf )) );
-        REQUIRE( componentErrorCode == fullErr( Err_T::SUCCESS ) );
+        REQUIRE( componentErrorCode == Fxt::Type::Error::SUCCESS() );
 
         REQUIRE( strcmp( component->getTypeName(), And16Gate::TYPE_NAME ) == 0 );
         REQUIRE( strcmp( component->getTypeGuid(), And16Gate::GUID_STRING ) == 0 );
@@ -125,7 +125,7 @@ TEST_CASE( "And16GateFactory" )
         new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_3, "inSig3", statefulAllocator );
         new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__OUT, "out", statefulAllocator );
         new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__OUT_NEGATED, "/out", statefulAllocator );
-        REQUIRE( component->resolveReferences( pointDb ) == fullErr( Err_T::SUCCESS ) );
+        REQUIRE( component->resolveReferences( pointDb ) == Fxt::Type::Error::SUCCESS() );
 
         uut.destroy( *component );
     }
@@ -145,7 +145,7 @@ TEST_CASE( "And16GateFactory" )
                                                                                      componentErrorCode );
         REQUIRE( component  );
         CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", componentErrorCode.toText( buf )) );
-        REQUIRE( componentErrorCode == fullErr( Err_T::SUCCESS ) );
+        REQUIRE( componentErrorCode == Fxt::Type::Error::SUCCESS() );
         
         REQUIRE( strcmp( component->getTypeName(), And16Gate::TYPE_NAME ) == 0 );
         REQUIRE( strcmp( component->getTypeGuid(), And16Gate::GUID_STRING ) == 0 );
@@ -157,7 +157,7 @@ TEST_CASE( "And16GateFactory" )
         new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_3, "inSig3", statefulAllocator );
         new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__OUT, "out", statefulAllocator );
         new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__OUT_NEGATED, "/out", statefulAllocator );
-        REQUIRE( component->resolveReferences( pointDb ) == fullErr( Err_T::SUCCESS ) );
+        REQUIRE( component->resolveReferences( pointDb ) == Fxt::Type::Error::SUCCESS() );
 
         uut.destroy( *component );
     }

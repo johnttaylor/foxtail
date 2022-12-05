@@ -37,8 +37,7 @@ public:
     /// Constructor
     Common_( Cpl::Memory::ContiguousAllocator&  generalAllocator,
              Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
-             Fxt::Point::DatabaseApi&           dbForPoints,
-             uint16_t                           cardId );
+             Fxt::Point::DatabaseApi&           dbForPoints );
 
     /// Destructor
     ~Common_();
@@ -52,9 +51,6 @@ public:
 
     /// See Fxt::Card::Api
     bool isStarted() const noexcept;
-
-    /// See Fxt::Card::Api
-    uint16_t getId() const noexcept;
 
     /// See Fxt::Card::Api
     bool scanInputs() noexcept;
@@ -105,9 +101,6 @@ protected:
 
     /// Error state. A value of 0 indicates NO error
     Fxt::Type::Error                    m_error;
-
-    /// The card's ID
-    uint16_t                            m_id;
 
     /// My started state
     bool                                m_started;

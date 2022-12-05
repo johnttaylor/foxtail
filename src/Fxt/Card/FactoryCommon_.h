@@ -50,8 +50,7 @@ protected:
     Fxt::Type::Error allocateAndParse( JsonVariant&                       obj,
                                        Cpl::Memory::ContiguousAllocator&  generalAllocator,
                                        size_t                             cardSizeInBytes,
-                                       void*&                             memoryForCard,
-                                       uint16_t&                          cardId ) noexcept;
+                                       void*&                             memoryForCard ) noexcept;
 };
 
 
@@ -78,16 +77,14 @@ public:
                  Fxt::Point::DatabaseApi&           dbForPoints ) noexcept
     {
         //  Get basic info about the card
-        uint16_t cardId;
-        void*    memCardInstance;
-        cardErrorCode = allocateAndParse( cardObject, generalAllocator, sizeof( CARDTYPE ), memCardInstance, cardId );
-        if ( cardErrorCode == Fxt::Type::Error( Fxt::Type::Err_T::SUCCESS ) )
+        void* memCardInstance;
+        cardErrorCode = allocateAndParse( cardObject, generalAllocator, sizeof( CARDTYPE ), memCardInstance );
+        if ( cardErrorCode == Fxt::Type::Error::SUCCESS()  )
         {
             // Create the card
             CARDTYPE* card = new(memCardInstance) CARDTYPE( generalAllocator,
                                                             statefulDataAllocator,
                                                             dbForPoints,
-                                                            cardId,
                                                             cardObject );
 
             cardErrorCode = card->getErrorCode();

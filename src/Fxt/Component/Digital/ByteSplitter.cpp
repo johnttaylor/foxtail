@@ -26,6 +26,7 @@ using namespace Fxt::Component::Digital;
 ByteSplitter::ByteSplitter( JsonVariant&                       componentObject,
                             Cpl::Memory::ContiguousAllocator&  generalAllocator,
                             Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                            Fxt::Point::BankApi&               statePointBank,
                             Fxt::Point::DatabaseApi&           dbForPoints )
     : m_numInputs( 0 )
     , m_numOutputs( 0 )
@@ -56,7 +57,7 @@ Fxt::Type::Error ByteSplitter::execute( int64_t currentTickUsec ) noexcept
         {
             m_outputRefs[i]->setInvalid();
         }
-        return fullErr( Err_T::SUCCESS );
+        return Fxt::Type::Error::SUCCESS();
     }
 
     // Derive my outputs
@@ -68,7 +69,7 @@ Fxt::Type::Error ByteSplitter::execute( int64_t currentTickUsec ) noexcept
         m_outputRefs[i]->write( finalOut );
     }
 
-    return fullErr( Err_T::SUCCESS );
+    return Fxt::Type::Error::SUCCESS();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

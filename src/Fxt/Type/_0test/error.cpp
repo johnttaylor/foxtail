@@ -37,7 +37,7 @@ TEST_CASE( "Error" )
         {
             Error uut;
             REQUIRE( uut.errVal == 0 );
-            REQUIRE( uut == fullErr( Err_T::SUCCESS ) );
+            REQUIRE( uut == Fxt::Type::Error::SUCCESS() );
             buf = uut.toText( buf );
             CPL_SYSTEM_TRACE_MSG( SECT_, ("toText: [%s]", buf.getString()) );
             REQUIRE( buf == "SUCCESS" );

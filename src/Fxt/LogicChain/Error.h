@@ -31,9 +31,29 @@ namespace LogicChain {
     @param Err_T                            Enum
 
     @param SUCCESS                          NO ERROR
+    @param NO_MEMORY_COMPONENT_LIST         Unable to allocate memory for list of contained components
+    @param COMPONENT_FAILURE                One or more components failed during execution
+    @param TOO_MANY_COMPONENTS              Attempted to add more components that what was specified when the LC was constructed
+    @param MISSING_COMPONENTS               At least one or more components where not added to the LC (as defined by the number specified in the LC constructor)
+    @param FAILED_START                     Unable to start one or more components
+    @param PARSE_COMPONENT_ARRAY            JSON input does not contain "components"/array 
+    @param NO_COMPONENTS                    JSON Input has an empty array of "components"
+    @param NO_MEMORY_LOGIC_CHAIN            Unable to allocate memory for the Logic Chain instance
+    @param FAILED_CREATE_COMPONENT          Failed to create one or more components
+    @param FAILED_POINT_RESOLVE             One or more Components failed when resolving their' point references
  */
 BETTER_ENUM( Err_T, uint8_t
              , SUCCESS = 0
+             , NO_MEMORY_COMPONENT_LIST
+             , COMPONENT_FAILURE
+             , TOO_MANY_COMPONENTS
+             , MISSING_COMPONENTS
+             , FAILED_START
+             , PARSE_COMPONENT_ARRAY
+             , NO_COMPONENTS
+             , NO_MEMORY_LOGIC_CHAIN
+             , FAILED_CREATE_COMPONENT
+             , FAILED_POINT_RESOLVE
 );
 
 /** This method has 'PACKAGE Scope' in that is should only be called by

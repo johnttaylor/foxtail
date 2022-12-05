@@ -114,7 +114,7 @@ TEST_CASE( "ByteSplitter" )
                           statefulAllocator,
                           pointDb );
 
-        REQUIRE( uut.getErrorCode() == fullErr( Err_T::SUCCESS ) );
+        REQUIRE( uut.getErrorCode() == Fxt::Type::Error::SUCCESS() );
 
         REQUIRE( strcmp( uut.getTypeGuid(), ByteSplitter::GUID_STRING ) == 0 );
         REQUIRE( strcmp( uut.getTypeName(), ByteSplitter::TYPE_NAME ) == 0 );
@@ -134,11 +134,11 @@ TEST_CASE( "ByteSplitter" )
                           statefulAllocator,
                           pointDb );
 
-        REQUIRE( uut.getErrorCode() == fullErr( Err_T::SUCCESS ) );
+        REQUIRE( uut.getErrorCode() == Fxt::Type::Error::SUCCESS() );
 
         uint64_t nowUsec = Cpl::System::ElapsedTime::milliseconds() * 1000;
 
-        REQUIRE( uut.start( nowUsec ) == fullErr( Err_T::SUCCESS ) );
+        REQUIRE( uut.start( nowUsec ) == Fxt::Type::Error::SUCCESS() );
         REQUIRE( uut.isStarted() == true );
     }
 
@@ -154,7 +154,7 @@ TEST_CASE( "ByteSplitter" )
                           statefulAllocator,
                           pointDb );
 
-        REQUIRE( uut.getErrorCode() == fullErr( Err_T::SUCCESS ) );
+        REQUIRE( uut.getErrorCode() == Fxt::Type::Error::SUCCESS() );
 
         Fxt::Point::Uint8* ptIn1  = new(std::nothrow) Fxt::Point::Uint8( pointDb, POINT_ID__IN_SIGNAL_1, "inSig1", statefulAllocator );
         Fxt::Point::Bool* ptOutBit1 = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT1_OUT, "outBit1", statefulAllocator );
@@ -163,13 +163,13 @@ TEST_CASE( "ByteSplitter" )
         Fxt::Point::Bool* ptOutBit4_N = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT4_NEGATED, "/outBit4", statefulAllocator );
         Fxt::Point::Bool* ptOutBit5_N = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT5_NEGATED, "/outBit5", statefulAllocator );
 
-        REQUIRE( uut.resolveReferences( pointDb ) == fullErr( Err_T::SUCCESS ) );
+        REQUIRE( uut.resolveReferences( pointDb ) == Fxt::Type::Error::SUCCESS() );
 
         uint64_t nowUsec = Cpl::System::ElapsedTime::milliseconds() * 1000;
-        REQUIRE( uut.start( nowUsec ) == fullErr( Err_T::SUCCESS ) );
+        REQUIRE( uut.start( nowUsec ) == Fxt::Type::Error::SUCCESS() );
         REQUIRE( uut.isStarted() == true );
 
-        REQUIRE( uut.execute( nowUsec ) == fullErr( Err_T::SUCCESS ) );
+        REQUIRE( uut.execute( nowUsec ) == Fxt::Type::Error::SUCCESS() );
         REQUIRE( ptOutBit1->isNotValid() );
         REQUIRE( ptOutBit1_N->isNotValid() );
         REQUIRE( ptOutBit4->isNotValid() );
@@ -177,7 +177,7 @@ TEST_CASE( "ByteSplitter" )
         REQUIRE( ptOutBit5_N->isNotValid() );
 
         ptIn1->write( 0 );
-        REQUIRE( uut.execute( nowUsec ) == fullErr( Err_T::SUCCESS ) );
+        REQUIRE( uut.execute( nowUsec ) == Fxt::Type::Error::SUCCESS() );
         bool val;
         REQUIRE( ptOutBit1->read( val ) );
         REQUIRE( val == false );
@@ -191,7 +191,7 @@ TEST_CASE( "ByteSplitter" )
         REQUIRE( val == true );
 
         ptIn1->write( 0x2 );
-        REQUIRE( uut.execute( nowUsec ) == fullErr( Err_T::SUCCESS ) );
+        REQUIRE( uut.execute( nowUsec ) == Fxt::Type::Error::SUCCESS() );
         REQUIRE( ptOutBit1->read( val ) );
         REQUIRE( val == true );
         REQUIRE( ptOutBit1_N->read( val ) );
@@ -204,7 +204,7 @@ TEST_CASE( "ByteSplitter" )
         REQUIRE( val == true );
 
         ptIn1->write( 0x12 );
-        REQUIRE( uut.execute( nowUsec ) == fullErr( Err_T::SUCCESS ) );
+        REQUIRE( uut.execute( nowUsec ) == Fxt::Type::Error::SUCCESS() );
         REQUIRE( ptOutBit1->read( val ) );
         REQUIRE( val == true );
         REQUIRE( ptOutBit1_N->read( val ) );
@@ -217,7 +217,7 @@ TEST_CASE( "ByteSplitter" )
         REQUIRE( val == true );
 
         ptIn1->write( 0x30 );
-        REQUIRE( uut.execute( nowUsec ) == fullErr( Err_T::SUCCESS ) );
+        REQUIRE( uut.execute( nowUsec ) == Fxt::Type::Error::SUCCESS() );
         REQUIRE( ptOutBit1->read( val ) );
         REQUIRE( val == false );
         REQUIRE( ptOutBit1_N->read( val ) );
@@ -230,7 +230,7 @@ TEST_CASE( "ByteSplitter" )
         REQUIRE( val == false );
 
         ptIn1->write( 0x32 );
-        REQUIRE( uut.execute( nowUsec ) == fullErr( Err_T::SUCCESS ) );
+        REQUIRE( uut.execute( nowUsec ) == Fxt::Type::Error::SUCCESS() );
         REQUIRE( ptOutBit1->read( val ) );
         REQUIRE( val == true );
         REQUIRE( ptOutBit1_N->read( val ) );

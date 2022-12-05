@@ -101,14 +101,12 @@ TEST_CASE( "AnalogIn8Factory" )
         Fxt::Card::Api* card = uut.create( cardObj, componentErrorCode, generalAllocator, statefulAllocator, pointDb );
         REQUIRE( card != nullptr );
         CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", componentErrorCode.toText( errText )) );
-        REQUIRE( componentErrorCode == Fxt::Type::Error( Fxt::Type::Err_T::SUCCESS ) );
+        REQUIRE( componentErrorCode == Fxt::Type::Error::SUCCESS()  );
 
         REQUIRE( strcmp( uut.getGuid(), card->getTypeGuid() ) == 0 );
 
         REQUIRE( strcmp( card->getTypeName(), AnalogIn8::TYPE_NAME ) == 0 );
         REQUIRE( strcmp( card->getTypeGuid(), AnalogIn8::GUID_STRING ) == 0 );
-
-        REQUIRE( card->getId() == 1 );
 
         Fxt::Point::Uint8* pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 1 );
         REQUIRE( pointPtr );
@@ -153,7 +151,7 @@ TEST_CASE( "AnalogIn8Factory" )
         Fxt::Card::Api* card = cardFactoryDb.createCardfromJSON( cardObj, generalAllocator, statefulAllocator, pointDb, componentErrorCode );
         REQUIRE( card != nullptr );
         CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", componentErrorCode.toText( errText )) );
-        REQUIRE( componentErrorCode == Fxt::Type::Error( Fxt::Type::Err_T::SUCCESS ) );
+        REQUIRE( componentErrorCode == Fxt::Type::Error::SUCCESS()  );
     }
 
     REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );

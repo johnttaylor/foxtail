@@ -17,6 +17,7 @@
 #include "Cpl/Json/Arduino.h"
 #include "Fxt/Point/Uint8.h"
 #include "Fxt/Point/Bool.h"
+#include "Fxt/Point/BankApi.h"
 
 
 ///
@@ -102,6 +103,7 @@ public:
     ByteSplitter( JsonVariant&                       componentObject,
                   Cpl::Memory::ContiguousAllocator&  generalAllocator,
                   Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                  Fxt::Point::BankApi&               statePointBank,
                   Fxt::Point::DatabaseApi&           dbForPoints );
 
     /// Destructor

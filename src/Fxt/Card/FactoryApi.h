@@ -49,6 +49,8 @@ namespace Card {
                  "id":                  <Virtual Point ID.  Must be unique.  Range: 0-4GB>,
                  "ioRegId":             <The ID of the Point's IO register. Must be unique.  Range: 0-4GB>,
                  "name":                "<human readable name for the point/channel/IO>"
+                 "type":                "*<Points's Type GUID: 8-4-4-4-12 format>",
+                 "typeName":            "*<OPTIONAL: human readable card type>",
                  "initial": {           // OPTIONAL initial value/state specifier for the Point
                    "valid": true|false  // Initial valid state for the internal point
                    "val":               <point value as defined by the Point type's fromJSON syntax - only required when 'valid' is 'true'>
@@ -59,7 +61,9 @@ namespace Card {
           }
        }
 
-   \endcode
+    *The field is NOT parsed/used by the firmware
+
+    \endcode
  */
 class FactoryApi: public Cpl::Container::Item
 {

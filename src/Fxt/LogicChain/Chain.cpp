@@ -11,199 +11,217 @@
 /** @file */
 
 
-#include "Common_.h"
+#include "Chain.h"
 #include "Cpl/System/Assert.h"
-#include "Fxt/Point/Bank.h"
-#include "Fxt/Point/Api.h"
 #include <new>
 
 
 ///
-using namespace Fxt::Card;
+using namespace Fxt::LogicChain;
 
 //////////////////////////////////////////////////
-Common_::Common_( DatabaseApi &                     cardDb,
-                  Cpl::Memory::ContiguousAllocator& m_generalAllocator,
-                  Cpl::Memory::ContiguousAllocator& statefulDataAllocator,
-                  Fxt::Point::DatabaseApi&          dbForPoints,
-                  uint16_t                          cardId)
-    : m_dbForPoints( dbForPoints )
-    , m_generalAllocator( m_generalAllocator )
-    , m_statefulDataAllocator( statefulDataAllocator )
-    , m_error( fullErr(Err_T::SUCCESS) )
-    , m_id( cardId )
-    , m_started( false )
+Chain::Chain( Cpl::Memory::ContiguousAllocator&   generalAllocator,
+              uint16_t                            numComponents )
+    : m_components( nullptr )
+    , m_error( Fxt::Type::Error::SUCCESS() )
+    , m_numComponents( numComponents )
+    , m_nextIdx( 0 )
 {
-    CPL_SYSTEM_ASSERT( cardName );
-    if ( !cardDb.add( *this ) )
+    // Allocate my array of Component pointers
+    m_components = (Fxt::Component::Api**) generalAllocator.allocate( sizeof( Api* ) * numComponents );
+    if ( m_components == nullptr )
     {
-        m_error = fullErr(Err_T::CARD_INVALID_ID);
+        m_numComponents = 0;
+        m_error         = fullErr( Err_T::NO_MEMORY_COMPONENT_LIST );
+    }
+    else
+    {
+        // Zero the array so we can tell if there are missing components
+        memset( m_components, 0, sizeof( Api* ) * numComponents );
     }
 }
 
-Common_::~Common_()
+Chain::~Chain()
 {
+    // Call the destructors on all of the components
+    for ( uint16_t i=0; i < m_numComponents; i++ )
+    {
+        if ( m_components[i] )
+        {
+            m_components[i]->~Api();
+        }
+    }
 }
 
 //////////////////////////////////////////////////
-bool Common_::start() noexcept
+Fxt::Type::Error Chain::start( uint64_t currentElapsedTimeUsec ) noexcept
 {
-    if ( !m_started && m_error == fullErr( Err_T::SUCCESS ) )
+    // Do nothing if already started
+    if ( !m_started )
     {
+        if ( m_error == Fxt::Type::Error::SUCCESS() )
+        {
+            for ( uint16_t i=0; i < m_numComponents; i++ )
+            {
+                if ( m_components[i] == nullptr )
+                {
+                    m_error = fullErr( Err_T::MISSING_COMPONENTS );
+                    break;
+                }
+                if ( m_components[i]->start( currentElapsedTimeUsec ) != Fxt::Type::Error::SUCCESS() )
+                {
+                    m_error = fullErr( Err_T::FAILED_START );
+                    break;
+                }
+            }
+        }
+
         m_started = true;
-        return true;
     }
-    return false;
+
+    return m_error;
 }
 
-bool Common_::stop() noexcept
+void Chain::stop() noexcept
 {
+    // Only stop if I have been started
     if ( m_started )
     {
-        m_started = false;
-        return true;
+        // Always stop the components - even if there is an internal error
+        for ( uint16_t i=0; i < m_numComponents; i++ )
+        {
+            m_components[i]->stop();
+        }
     }
-    return false;
 }
 
-bool Common_::isStarted() const noexcept
+/// See Fxt::LogicChain::Api
+bool Chain::isStarted() const noexcept
 {
     return m_started;
 }
 
-uint16_t Common_::getId() const noexcept
+Fxt::Type::Error Chain::execute( int64_t currentTickUsec ) noexcept
 {
-    return m_id;
+    // Only execute if there is no error AND the LC was actually started
+    if ( m_error == Fxt::Type::Error::SUCCESS() && m_started )
+    {
+        for ( uint16_t i=0; i < m_numComponents; i++ )
+        {
+            if ( m_components[i]->execute( currentTickUsec ) != Fxt::Type::Error::SUCCESS() )
+            {
+                m_error = fullErr( Err_T::COMPONENT_FAILURE );
+                break;
+            }
+        }
+    }
+
+    return m_error;
 }
 
 
-Fxt::Type::Error Common_::getErrorCode() const noexcept
+Fxt::Type::Error Chain::getErrorCode() const noexcept
 {
     return m_error;
 }
 
 
 //////////////////////////////////////////////////
-bool Common_::scanInputs() noexcept
+Fxt::Type::Error Chain::add( Fxt::Component::Api& componentToAdd ) noexcept
 {
-    return m_virtualInputs.copyStatefulMemoryFrom( m_registerInputs );
-}
-
-bool Common_::flushOutputs() noexcept
-{
-    return m_registerOutputs.copyStatefulMemoryFrom( m_virtualOutputs );
-}
-
-
-bool Common_::createDescriptors( Fxt::Point::Descriptor::CreateFunc_T createFunc,
-                                 Fxt::Point::Descriptor*              vpointDesc[],
-                                 Fxt::Point::Descriptor*              ioRegDesc[],
-                                 uint16_t                             channelIds[],
-                                 JsonArray&                           json,
-                                 size_t                               numDescriptors ) noexcept
-{
-    // Initialize the descriptor elements
-    for ( size_t i=0; i < numDescriptors; i++ )
+    if ( m_error == Fxt::Type::Error::SUCCESS() )
     {
-        // Parse IDs, and Name
-        uint32_t id         = json[i]["id"] | Point::Api::INVALID_ID;
-        uint32_t ioRegId    = json[i]["ioRegId"] | Point::Api::INVALID_ID;
-        if ( id == Point::Api::INVALID_ID || ioRegId == Point::Api::INVALID_ID  )
+        if ( m_nextIdx >= m_numComponents )
         {
-            m_error = fullErr(Err_T::POINT_MISSING_ID);
-            return false;
+            m_error = fullErr( Err_T::TOO_MANY_COMPONENTS );
         }
-
-        // Parse channel Number
-        channelIds[i] = json[i]["channel"] | 0;   // Zero is NOT a valid channel number
-        if ( channelIds[i] == 0 )
+        else
         {
-            m_error = fullErr(Err_T::BAD_CHANNEL_ASSIGNMENTS);
-            return false;
+            m_components[m_nextIdx] = &componentToAdd;
+            m_nextIdx++;
         }
-        
-        // Ensure Channel Number is unique
-        for ( size_t j=0; j < numDescriptors; j++ )
-        {
-            if ( j != i && channelIds[j] == channelIds[i] )
-            {
-                m_error = fullErr(Err_T::BAD_CHANNEL_ASSIGNMENTS);
-                return false;
-            }
-        }
-
-        // Parse and Allocate memory for the point name
-        const char* name          = json[i]["name"];
-        char*       nameMemoryPtr = (char*) m_generalAllocator.allocate( strlen( name ) + 1 );
-        if ( nameMemoryPtr == nullptr )
-        {
-            m_error = fullErr(Err_T::MEMORY_DESCRIPTOR_NAME);
-            return false;
-        }
-        strcpy( nameMemoryPtr, name );
-
-        // Create Virtual Point descriptor
-        Fxt::Point::Descriptor* memDescriptor = (Fxt::Point::Descriptor*) m_generalAllocator.allocate( sizeof( Fxt::Point::Descriptor ) );
-        if ( memDescriptor == nullptr )
-        {
-            m_error = fullErr(Err_T::MEMORY_DESCRIPTORS);
-            return false;
-        }
-        vpointDesc[i] = new(memDescriptor) Fxt::Point::Descriptor( id, nameMemoryPtr, createFunc );
-
-        // Parse the optional Initial value (aka a 'setter point')
-        Fxt::Point::Setter* setter    = nullptr;
-        JsonVariant         setterObj = json[i]["initial"];
-        if ( !setterObj.isNull() )
-        {
-            uint32_t setterId = setterObj["id"] | Point::Api::INVALID_ID;
-            if ( setterId == Point::Api::INVALID_ID )
-            {
-                m_error = fullErr(Err_T::POINT_MISSING_ID);
-                return false;
-            }
-
-            setter = Fxt::Point::Setter::create( m_dbForPoints,
-                                                 createFunc,
-                                                 setterId,
-                                                 name,
-                                                 m_generalAllocator,
-                                                 m_generalAllocator,
-                                                 setterObj );
-            if ( setter == nullptr )
-            {
-                m_error = fullErr(Err_T::CARD_SETTER_ERROR);
-                return false;
-            }
-        }
-
-
-        // Create IO Register descriptor
-        memDescriptor = (Fxt::Point::Descriptor*) m_generalAllocator.allocate( sizeof( Fxt::Point::Descriptor ) );
-        if ( memDescriptor == nullptr )
-        {
-            m_error = fullErr(Err_T::MEMORY_DESCRIPTORS);
-            return false;
-        }
-        ioRegDesc[i] = new(memDescriptor) Fxt::Point::Descriptor( ioRegId, nameMemoryPtr, createFunc, setter );
     }
-    return true;
+
+    return m_error;
 }
 
-void Common_::setInitialValue( Fxt::Point::Descriptor* descriptor ) noexcept
+Api* Api::createLogicChainfromJSON( JsonVariant                         logicChainObject,
+                                    Fxt::Component::FactoryDatabaseApi& componentFactory,
+                                    Fxt::Point::BankApi&                statePointBank,
+                                    Cpl::Memory::ContiguousAllocator&   generalAllocator,
+                                    Cpl::Memory::ContiguousAllocator&   statefulDataAllocator,
+                                    Fxt::Point::DatabaseApi&            dbForPoints,
+                                    Fxt::Type::Error&                   logicChainErrorode ) noexcept
 {
-    if ( descriptor != nullptr )
+    // Minimal syntax checking of the JSON input
+    if ( logicChainObject["components"].is<JsonArray>() == false )
     {
-        // Set the initial INPUT value (if one was provided)
-        Fxt::Point::Setter* setterPtr = descriptor->getSetter();
-        if ( setterPtr )
+        logicChainErrorode = fullErr( Err_T::PARSE_COMPONENT_ARRAY );
+        return nullptr;
+    }
+
+    JsonArray components  = logicChainObject["components"];
+    uint16_t  numComponents = components.size();
+    if ( numComponents == 0 )
+    {
+        logicChainErrorode = fullErr( Err_T::NO_COMPONENTS );
+        return nullptr;
+    }
+
+    // Create Logic Chain instance
+    void* memLogicChain = generalAllocator.allocate( sizeof( Chain ) );
+    if ( memLogicChain == nullptr )
+    {
+        logicChainErrorode = fullErr( Err_T::NO_MEMORY_LOGIC_CHAIN );
+        return nullptr;
+    }
+    Api* logicChain = new(memLogicChain) Chain( generalAllocator, numComponents );
+
+    //  Create Components
+    for ( uint16_t i=0; i < numComponents; i++ )
+    {
+        Fxt::Type::Error     errorCode     = Fxt::Type::Error::SUCCESS();
+        JsonVariant          componentJson = components[i];
+        Fxt::Component::Api* component     = componentFactory.createComponentfromJSON( componentJson,
+                                                                                       statePointBank,
+                                                                                       generalAllocator,
+                                                                                       statefulDataAllocator,
+                                                                                       dbForPoints,
+                                                                                       errorCode );
+        if ( component == nullptr )
         {
-            Fxt::Point::Api* ioRegPtr = m_dbForPoints.lookupById( descriptor->getPointId() );
-            if ( ioRegPtr )
+            logicChainErrorode = fullErr( Err_T::FAILED_CREATE_COMPONENT );
+            return nullptr;
+        }
+        logicChainErrorode = logicChain->add( *component );
+        if ( logicChainErrorode != Fxt::Type::Error::SUCCESS() )
+        {
+            return nullptr;
+        }
+    }
+
+    // If I get here -->everything worked
+    return logicChain;
+}
+
+Fxt::Type::Error Chain::resolveReferences( Fxt::Point::DatabaseApi& pointDb )  noexcept
+{
+    if ( m_error == Fxt::Type::Error::SUCCESS() )
+    {
+        for ( uint16_t i=0; i < m_numComponents; i++ )
+        {
+            if ( m_components[i] == nullptr )
             {
-                // Set the IO Register state
-                setterPtr->setValue( *ioRegPtr );
+                m_error = fullErr( Err_T::MISSING_COMPONENTS );
+                break;
+            }
+            if ( m_components[i]->resolveReferences( pointDb ) != Fxt::Type::Error::SUCCESS() )
+            {
+                m_error = fullErr( Err_T::FAILED_POINT_RESOLVE );
+                break;
             }
         }
     }
+
+    return m_error;
 }

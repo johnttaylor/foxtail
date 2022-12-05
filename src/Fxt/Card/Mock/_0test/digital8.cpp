@@ -27,7 +27,6 @@ using namespace Fxt::Card::Mock;
 #define CARD_DEFINTION     "{\"cards\":[" \
                            "{" \
                            "  \"name\": \"My Digital8 Card\"," \
-                           "  \"id\": 0," \
                            "  \"type\": \"59d33888-62c7-45b2-a4d4-9dbc55914ed3\"," \
                            "  \"typename\": \"Fxt::Card::HW::Mock::Digital8\"," \
                            "  \"slot\": 0," \
@@ -88,16 +87,13 @@ TEST_CASE( "Digital8" )
         Digital8 uut( generalAllocator,
                       statefulAllocator,
                       pointDb,
-                      0,
                       cardObj );
 
         CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", uut.getErrorCode().toText( errText )) );
-        REQUIRE( uut.getErrorCode() == Fxt::Type::Error( Fxt::Type::Err_T::SUCCESS ) );
+        REQUIRE( uut.getErrorCode() == Fxt::Type::Error::SUCCESS()  );
 
         REQUIRE( strcmp( uut.getTypeName(), Digital8::TYPE_NAME ) == 0 );
         REQUIRE( strcmp( uut.getTypeGuid(), Digital8::GUID_STRING ) == 0 );
-
-        REQUIRE( uut.getId() == 0 );
 
         Fxt::Point::Uint8* pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 1 );
         REQUIRE( pointPtr );
@@ -173,10 +169,9 @@ TEST_CASE( "Digital8" )
         Digital8 uut( generalAllocator,
                       statefulAllocator,
                       pointDb,
-                      0,
                       cardObj );
 
-        REQUIRE( uut.getErrorCode() == Fxt::Type::Error( Fxt::Type::Err_T::SUCCESS ) );
+        REQUIRE( uut.getErrorCode() == Fxt::Type::Error::SUCCESS()  );
         REQUIRE( uut.start() );
 
         uut.setInputBit( 1 );

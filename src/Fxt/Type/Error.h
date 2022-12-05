@@ -74,6 +74,10 @@ BETTER_ENUM( Err_T, uint8_t
 class Error
 {
 public:
+    /// Short hand for SUCCESS
+    inline static Error SUCCESS() { return Error(0); };
+
+public:
     /// Constructor. No error
     constexpr Error() : errVal( 0 ) {}
 

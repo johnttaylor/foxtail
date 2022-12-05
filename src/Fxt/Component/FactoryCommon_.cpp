@@ -47,5 +47,5 @@ Fxt::Type::Error FactoryCommon_::allocateAndParse( JsonVariant&                 
         return fullErr(Err_T::OUT_OF_MEMORY );
     }
 
-    return fullErr( Err_T::SUCCESS );
+    return Fxt::Type::Error::SUCCESS();
 }
