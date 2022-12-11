@@ -45,12 +45,12 @@ public:
 public:
     /** Constructor. Invalid Point.
      */
-    Int16( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData ) 
-        : BasicInteger_<int16_t>( db, pointId, pointName, allocatorForPointStatefulData ) {}
+    Int16( DatabaseApi&                         db, 
+           uint32_t                             pointId, 
+           Cpl::Memory::ContiguousAllocator&    allocatorForPointStatefulData,
+           Api*                                 setterPoint = nullptr )
+        : BasicInteger_<int16_t>( db, pointId, allocatorForPointStatefulData, setterPoint ) {}
 
-    /// Constructor. Valid Point.  Requires an initial value
-    Int16( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, int16_t initialValue ) 
-        : BasicInteger_<int16_t>( db, pointId, pointName, allocatorForPointStatefulData, initialValue ) {}
 
 public:
     /// Pull in overloaded methods from base class
@@ -62,23 +62,15 @@ public:
         updateFrom_( &(((Basic_<int16_t>::Stateful_T*)(src.m_state))->data), sizeof( int16_t ), src.isNotValid(), lockRequest );
     }
 
+    ///  See Fxt::Point::Api
+    void updateFromSetter() noexcept { if ( m_setter ) { write( *((Int16*) m_setter) ); } }
+
 public:
     ///  See Fxt::Point::Api
     const char* getTypeGuid() const noexcept { return GUID_STRING; }
 
     ///  See Fxt::Point::Api
     const char* getTypeName() const noexcept { return TYPE_NAME; }
-
-public:
-    /// Creates a concrete instance in the invalid state
-    static Api* create( DatabaseApi&                        db, 
-                        Cpl::Memory::Allocator&             allocatorForPoints,
-                        uint32_t                            pointId,
-                        const char*                         pointName,
-                        Cpl::Memory::ContiguousAllocator&   allocatorForPointStatefulData )
-    {
-        return PointCommon_::create<Int16>( db, allocatorForPoints, pointId, pointName, allocatorForPointStatefulData );
-    }
 };
 
 

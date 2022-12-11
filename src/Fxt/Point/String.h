@@ -33,7 +33,7 @@ namespace Point {
 
 
  */
-class StringBase_ : public Fxt::Point::PointCommon_
+class String : public Fxt::Point::PointCommon_
 {
 public:
     /// Type ID for the point
@@ -45,11 +45,11 @@ public:
 protected:
     /** Constructor. Invalid Point.
      */
-    StringBase_( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, size_t sizeofData );
-
-    /// Constructor. Valid Point.  Requires an initial value
-    StringBase_( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, size_t sizeofData, const char* initialValue );
-
+    String( DatabaseApi&                        db, 
+            uint32_t                            pointId, 
+            Cpl::Memory::ContiguousAllocator&   allocatorForPointStatefulData, 
+            size_t                              stringLenInBytesWithoutNullTerminator,
+            Api*                                setterPoint = nullptr );
 
 public:
     /// Type safe read. See Fxt::Point::Api.
@@ -62,10 +62,13 @@ public:
     void write( const char* srcString, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept;
 
     /// Updates the MP's data from 'src'. 
-    void write( StringBase_& src, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept;
+    void write( String& src, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept;
+
+    ///  See Fxt::Point::Api
+    void updateFromSetter() noexcept { if ( m_setter ) { write( *((String*) m_setter) ); } }
 
     /// Returns the maximum size WITHOUT the null terminator of the string storage
-    virtual size_t getMaxLength() const noexcept = 0;
+    size_t getMaxLength() const noexcept;
 
     /// See Fxt::Point::Api.
     size_t getDataSize_() noexcept;
@@ -106,7 +109,7 @@ protected:
 
 private:
     /// Typedef that represents the 'final' stateful data allocation
-    struct BaseStateful_T
+    struct StringStateful_T
     {
         Fxt::Point::PointCommon_::Metadata_T  meta;
         char                                  data[1];
@@ -114,59 +117,6 @@ private:
 
 };
 
-
-/** This mostly concrete template class provides the storage for a Point
-    who's data is a null terminated string.  The template parameter specifies
-    the size of string storage. The child classes must provide the following
-    methods:
-
-        create(...)
-
-    Template Args:  S:=  Max Size of the String WITHOUT the null
-                         terminator!
- */
-template<int S>
-class String : public StringBase_
-{
-
-public:
-    /** Constructor. Invalid Point.
-     */
-    String( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData )
-        : StringBase_( db, pointId, pointName, allocatorForPointStatefulData, sizeof( StateBlock_T ) )
-    {
-    }
-
-    /// Constructor. Valid Point.  Requires an initial value
-    String( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, const char* initialValue )
-        : StringBase_( db, pointId, pointName, allocatorForPointStatefulData, sizeof( StateBlock_T ), initialValue )
-    {
-    }
-
-
-public:
-    /// Creates a concrete instance in the invalid state
-    static Api* create( DatabaseApi&                        db,
-                        Cpl::Memory::Allocator&             allocatorForPoints,
-                        uint32_t                            pointId,
-                        const char*                         pointName,
-                        Cpl::Memory::ContiguousAllocator&   allocatorForPointStatefulData )
-    {
-        return PointCommon_::create<String<S>>( db, allocatorForPoints, pointId, pointName, allocatorForPointStatefulData );
-    }
-
-public:
-    /// See Fxt::Point::StringBase_
-    size_t getMaxLength() const noexcept { return S; }
-
-public:
-    /// The Point's Stateful data
-    struct StateBlock_T
-    {
-        Metadata_T  meta;           //!< The Point's meta-data. THIS MUST BE THE FIRST ELEMENT in the structure
-        char        data[S + 1];    //!< The Point's 'data' with storage for the null terminator
-    };
-};
 
 
 

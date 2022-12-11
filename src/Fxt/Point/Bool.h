@@ -49,12 +49,11 @@ public:
 public:
     /** Constructor. Invalid Point.
      */
-    Bool( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData )
-        : Basic_<bool>(db, pointId, sizeof(StateBlock_T), pointName, allocatorForPointStatefulData ) {}
-
-    /// Constructor. Valid Point.  Requires an initial value
-    Bool( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, bool initialValue )
-        : Basic_<bool>( db, pointId, sizeof( StateBlock_T ), pointName, allocatorForPointStatefulData, initialValue ) {}
+    Bool( DatabaseApi&                      db,
+          uint32_t                          pointId,
+          Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData,
+          Api*                              setterPoint=nullptr)
+        : Basic_<bool>( db, pointId, sizeof( StateBlock_T ), allocatorForPointStatefulData, setterPoint ) {}
 
 public:
     /// Pull in overloaded methods from base class
@@ -67,10 +66,14 @@ public:
     inline void clear( Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept { write( false, lockRequest ); }
 
     /// Updates the MP's data from 'src'. Note: The lock state of 'src' is NOT-USED/IGNORED
-    void write( Bool& src, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept 
+    void write( Bool& src, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept
     {
-        updateFrom_( &(((StateBlock_T*)(src.m_state))->data), sizeof( bool ), src.isNotValid(), lockRequest );
+        updateFrom_( &(((StateBlock_T*) (src.m_state))->data), sizeof( bool ), src.isNotValid(), lockRequest );
     }
+
+    ///  See Fxt::Point::Api
+    void updateFromSetter() noexcept { if ( m_setter ) { write( *((Bool*) m_setter) ); } }
+        
 
 public:
     ///  See Fxt::Point::Api
@@ -78,17 +81,6 @@ public:
 
     ///  See Fxt::Point::Api
     const char* getTypeName() const noexcept { return TYPE_NAME; }
-
-public:
-    /// Creates a concrete instance in the invalid state
-    static Api* create( DatabaseApi&                        db, 
-                        Cpl::Memory::Allocator&             allocatorForPoints,
-                        uint32_t                            pointId,
-                        const char*                         pointName,
-                        Cpl::Memory::ContiguousAllocator&   allocatorForPointStatefulData ) 
-    { 
-        return PointCommon_::create<Bool>( db, allocatorForPoints, pointId, pointName, allocatorForPointStatefulData );
-    }
 
 public:
     bool toJSON_( JsonDocument& doc, bool verbose ) noexcept

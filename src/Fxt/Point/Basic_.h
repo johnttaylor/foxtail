@@ -49,36 +49,15 @@ public:
 
 protected:
     /// Constructor: Invalid MP
-    Basic_( DatabaseApi& db, uint32_t pointId, size_t stateSize, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData )
-        :Fxt::Point::PointCommon_( db, pointId, pointName, stateSize )
+    Basic_( DatabaseApi&                        db,
+            nt32_t                              pointId,
+            size_t                              stateSize,
+            Cpl::Memory::ContiguousAllocator&   allocatorForPointStatefulData,
+            Api*                                setterPoint )
+        :Fxt::Point::PointCommon_( db, pointId, stateSize, allocatorForPointStatefulData, setterPoint )
     {
-        m_state = allocatorForPointStatefulData.allocate( sizeof( StateBlock_T ) );
-        if ( m_state )
-        {
-            memset( m_state, 0, sizeof( ELEMTYPE ) );
-            finishInit( false );
-        }
-        else
-        {
-            CPL_SYSTEM_TRACE_MSG( FXT_POINT_TRACE_SECT_, ("State Memory allocation failed for pointID: %lu", pointId) );
-        }
     }
 
-    /// Constructor: Valid MP (requires initial value)
-    Basic_( DatabaseApi& db, uint32_t pointId, size_t stateSize, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, ELEMTYPE initialValue )
-        :Fxt::Point::PointCommon_( db, pointId, pointName, stateSize )
-    {
-        m_state = allocatorForPointStatefulData.allocate( sizeof( StateBlock_T ) );
-        if ( m_state )
-        {
-            ((StateBlock_T*) m_state)->data = initialValue;
-            finishInit( true );
-        }
-        else
-        {
-            CPL_SYSTEM_TRACE_MSG( FXT_POINT_TRACE_SECT_, ("State Memory allocation failed for pointID: %lu", pointId) );
-        }
-    }
 
 public:
     /// Type safe read. See Fxt::Point::Api
@@ -146,16 +125,15 @@ public:
 
 protected:
     /// Constructor: Invalid MP
-    BasicInteger_( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData )
-        :Basic_<ELEMTYPE>( db, pointId, sizeof( StateBlock_T ), pointName, allocatorForPointStatefulData )
+    BasicInteger_( DatabaseApi&                         db,
+                   uint32_t                             pointId,
+                   Cpl::Memory::ContiguousAllocator&    allocatorForPointStatefulData,
+                   Api*                                 setterPoint )
+        )
+        :Basic_<ELEMTYPE>( db, pointId, sizeof( StateBlock_T ), allocatorForPointStatefulData, setterPoint )
     {
     }
 
-    /// Constructor: Valid MP (requires initial value)
-    BasicInteger_( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, ELEMTYPE initialValue )
-        :Basic_<ELEMTYPE>( db, pointId, sizeof( StateBlock_T ), pointName, allocatorForPointStatefulData, initialValue )
-    {
-    }
 
 public:
     /// Pull in overloaded methods from base class
@@ -282,14 +260,11 @@ public:
 
 protected:
     /// Constructor: Invalid MP
-    BasicReal_( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData )
-        :Basic_<ELEMTYPE>( db, pointId, sizeof( StateBlock_T ), pointName, allocatorForPointStatefulData )
-    {
-    }
-
-    /// Constructor: Valid MP (requires initial value)
-    BasicReal_( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, ELEMTYPE initialValue )
-        :Basic_<ELEMTYPE>( db, pointId, sizeof( StateBlock_T ), pointName, allocatorForPointStatefulData, initialValue )
+    BasicReal_( DatabaseApi&                        db, 
+                uint32_t                            pointId, 
+                Cpl::Memory::ContiguousAllocator&   allocatorForPointStatefulData,
+                Api*                                setterPoint )
+        :Basic_<ELEMTYPE>( db, pointId, sizeof( StateBlock_T ), allocatorForPointStatefulData, setterPoint )
     {
     }
 

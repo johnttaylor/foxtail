@@ -37,18 +37,16 @@ class PointCommon_ : public Fxt::Point::Api
 {
 protected:
     /// Constructor
-    PointCommon_( DatabaseApi& db, uint32_t pointId, const char* pointName, size_t stateSize  );
-
-    /// Helper method to 'completed' the initialization after the Stateful memory has been allocated
-    virtual void finishInit( bool isValid ) noexcept;
+    PointCommon_( DatabaseApi&                      db, 
+                  uint32_t                          pointId, 
+                  size_t                            stateSize, 
+                  Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData,
+                  Api*                              setterPoint );
 
 public:
     /// See Fxt::Point::Api
     uint32_t getId() const noexcept;
     
-    /// See Fxt::Point::Api
-    const char* getName() const noexcept;
-
     /// See Fxt::Point::Api
     void getMetadata( bool& isValid, bool& isLocked ) const noexcept;
 
@@ -66,6 +64,10 @@ public:
 
     /// See Fxt::Point::Api
     void setLockState( LockRequest_T lockRequest ) noexcept;
+
+public:
+    /// See Fxt::Point::Api
+    bool hasSetter() const noexcept;
 
 public:
     /// See Fxt::Point::Api
@@ -97,24 +99,6 @@ protected:
     virtual bool testAndUpdateLock( LockRequest_T lockRequest ) noexcept;
 
 
-protected:
-    /// Creates a concrete instance in the invalid state
-    template <class T>
-    static Api* create( DatabaseApi&                        db, 
-                        Cpl::Memory::Allocator&             allocatorForPoints,
-                        uint32_t                            pointId, 
-                        const char*                         pointName,
-                        Cpl::Memory::ContiguousAllocator&   allocatorForPointStatefulData )
-    {
-        void* memPtr = allocatorForPoints.allocate( sizeof( T ) );
-        if ( memPtr )
-        {
-            return new(memPtr) T( db, pointId, pointName, allocatorForPointStatefulData );
-        }
-        return nullptr;
-    }
-
-
 public:
     /// Structure for meta-data
     struct Metadata_T
@@ -133,8 +117,8 @@ protected:
     /// Number of bytes in of the data pointed to by m_state
     size_t      m_stateSize;
 
-    /// The point's 'label. The constructor ensures that a null name is 'converted' to an empty string.
-    const char* m_name;
+    /// Optional reference to the Point's internal setter (aka another Point instance)
+    Api*        m_setter;
 
     
 };

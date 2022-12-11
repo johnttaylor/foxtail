@@ -12,6 +12,7 @@
 
 
 #include "Error.h"
+#include "Fxt/Point/Error.h"
 #include "Fxt/Card/Error.h"
 #include "Fxt/Component/Error.h"
 
@@ -33,6 +34,10 @@ const char* Error::toText( Cpl::Text::String& buffer ) const noexcept
         // Level 2
         switch ( *maybe )
         {
+        case Err_T::POINT:
+            Fxt::Point::errorCodetoText_( buffer, *this, 1 );
+            break;
+
         case Err_T::CARD:
             Fxt::Card::errorCodetoText_( buffer, *this, 1 );
             break;

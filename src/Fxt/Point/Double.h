@@ -45,12 +45,12 @@ public:
 public:
     /** Constructor. Invalid Point.
      */
-    Double( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData ) 
-        : BasicReal_<double>(db, pointId, pointName, allocatorForPointStatefulData ) {}
-
-    /// Constructor. Valid Point.  Requires an initial value
-    Double( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, double initialValue ) 
-        : BasicReal_<double>( db, pointId, pointName, allocatorForPointStatefulData, initialValue ) {}
+    Double( DatabaseApi&                      db, 
+            uint32_t                          pointId, 
+            size_t                            notUseSetToZero,
+            Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData,
+            Api*                              setterPoint = nullptr )
+        : BasicReal_<double>(db, pointId, allocatorForPointStatefulData, setterPoint ) {}
 
 public:
     /// Pull in overloaded methods from base class
@@ -62,6 +62,8 @@ public:
         updateFrom_( &(((Basic_<double>::Stateful_T*)(src.m_state))->data), sizeof( double ), src.isNotValid(), lockRequest );
     }
 
+    ///  See Fxt::Point::Api
+    void updateFromSetter() noexcept { if ( m_setter ) { write( *((Double*) m_setter) ); } }
 
 public:
     ///  See Fxt::Point::Api
@@ -70,16 +72,6 @@ public:
     ///  See Fxt::Point::Api
     const char* getTypeName() const noexcept { return TYPE_NAME; }
 
-public:
-    /// Creates a concrete instance in the invalid state
-    static Api* create( DatabaseApi&                        db,
-                        Cpl::Memory::Allocator&             allocatorForPoints,
-                        uint32_t                            pointId,
-                        const char*                         pointName,
-                        Cpl::Memory::ContiguousAllocator&   allocatorForPointStatefulData ) 
-    { 
-        return PointCommon_::create<Double>( db, allocatorForPoints, pointId, pointName, allocatorForPointStatefulData );
-    }
 };
 
 

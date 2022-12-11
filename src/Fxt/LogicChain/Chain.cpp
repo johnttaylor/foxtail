@@ -151,6 +151,7 @@ Api* Api::createLogicChainfromJSON( JsonVariant                         logicCha
                                     Cpl::Memory::ContiguousAllocator&   generalAllocator,
                                     Cpl::Memory::ContiguousAllocator&   statefulDataAllocator,
                                     Fxt::Point::DatabaseApi&            dbForPoints,
+                                    Fxt::Point::CreateFuncDatabaseApi&  pointCreateFuncDb,
                                     Fxt::Type::Error&                   logicChainErrorode ) noexcept
 {
     // Minimal syntax checking of the JSON input

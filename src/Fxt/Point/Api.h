@@ -33,7 +33,6 @@ namespace Point {
     features:
 
         o Points have a unique numeric identifier (to the Application)
-        o Points have a text label/name that is NOT guaranteed to be unique
         o Read/write operations from/to a Point's data are atomic operations
         o A Point has inherit valid/invalid state respect to its data.  The
           valid/invalid state is meta data and not associated with a specific
@@ -44,6 +43,10 @@ namespace Point {
         o A Point can serialize/deserialize to/from a JSON string.
         o A Point is type safe.  This means that child classes, per 'data type',
           are required.  Each Point type can have methods unique to its type.
+        o Points have an OPTIONAL 'setter'.  A Setter is constant value (determined
+          when the point is created) that be used to update the Point's value. 
+          Typically usage is to set a Point to known value at the start of processing
+          cycle.
         o Points are NOT THREAD SAFE.
  */
 class Api
@@ -65,11 +68,6 @@ public:
      */
     virtual uint32_t getId() const noexcept = 0;
 
-    /** This method returns the Point symbolic name (not guaranteed to be unique).
-        If no name as been assigned, the method returns an empty string.
-     */
-    virtual const char* getName() const noexcept = 0;
-
     /** This method returns the points's GUID (that identifies its type) as a
         text string in 8-4-4-4-12 format
      */
@@ -86,6 +84,15 @@ public:
         NOT included return value.
      */
     virtual size_t getStatefulMemorySize() const noexcept = 0;
+
+public:
+    /// This method returns true if the Point has a valid 'Setter'
+    virtual bool hasSetter() const noexcept = 0;
+
+    /** This method updates the Point values/state from its 'Setter'.  If the
+        point does not have a 'Setter' then this operation does nothing.
+     */
+    virtual void updateFromSetter() noexcept = 0;
 
 public:
     /** This method sets the Point to the invalid state.

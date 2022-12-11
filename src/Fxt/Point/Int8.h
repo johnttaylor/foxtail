@@ -45,12 +45,12 @@ public:
 public:
     /** Constructor. Invalid Point.
      */
-    Int8( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData ) 
-        : BasicInteger_<int8_t>(db, pointId, pointName, allocatorForPointStatefulData ) {}
+    Int8( DatabaseApi&                      db, 
+          uint32_t                          pointId, 
+          Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData,
+          Api*                              setterPoint = nullptr )
+        : BasicInteger_<int8_t>(db, pointId, allocatorForPointStatefulData, setterPoint ) {}
 
-    /// Constructor. Valid Point.  Requires an initial value
-    Int8( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, int8_t initialValue ) 
-        : BasicInteger_<int8_t>( db, pointId, pointName, allocatorForPointStatefulData, initialValue ) {}
 
 public:
     /// Pull in overloaded methods from base class
@@ -62,23 +62,15 @@ public:
         updateFrom_( &(((Basic_<int8_t>::Stateful_T*)(src.m_state))->data), sizeof(int8_t), src.isNotValid(), lockRequest );
     }
 
+    ///  See Fxt::Point::Api
+    void updateFromSetter() noexcept { if ( m_setter ) { write( *((Int8*) m_setter) ); } }
+
 public:
     ///  See Fxt::Point::Api
     const char* getTypeGuid() const noexcept { return GUID_STRING; }
 
     ///  See Fxt::Point::Api
     const char* getTypeName() const noexcept { return TYPE_NAME; }
-
-public:
-    /// Creates a concrete instance in the invalid state
-    static Api* create( DatabaseApi&                        db, 
-                        Cpl::Memory::Allocator&             allocatorForPoints,
-                        uint32_t                            pointId,
-                        const char*                         pointName,
-                        Cpl::Memory::ContiguousAllocator&   allocatorForPointStatefulData ) 
-    { 
-        return PointCommon_::create<Int8>( db, allocatorForPoints, pointId, pointName, allocatorForPointStatefulData );
-    }
 };
 
 

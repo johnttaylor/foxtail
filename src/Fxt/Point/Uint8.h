@@ -45,12 +45,11 @@ public:
 public:
     /** Constructor. Invalid Point.
      */
-    Uint8( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData ) 
-        : BasicInteger_<uint8_t>( db, pointId, pointName, allocatorForPointStatefulData ) {}
-
-    /// Constructor. Valid Point.  Requires an initial value
-    Uint8( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, uint8_t initialValue ) 
-        : BasicInteger_<uint8_t>( db, pointId, pointName, allocatorForPointStatefulData, initialValue ) {}
+    Uint8( DatabaseApi&                      db, 
+           uint32_t                          pointId, 
+           Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData,
+           Api*                              setterPoint = nullptr )
+        : BasicInteger_<uint8_t>( db, pointId, allocatorForPointStatefulData, setterPoint ) {}
 
 public:
     /// Pull in overloaded methods from base class
@@ -62,23 +61,15 @@ public:
         updateFrom_( &(((Basic_<uint8_t>::Stateful_T*)(src.m_state))->data), sizeof( uint8_t ), src.isNotValid(), lockRequest );
     }
 
+    ///  See Fxt::Point::Api
+    void updateFromSetter() noexcept { if ( m_setter ) { write( *((Uint8*) m_setter) ); } }
+
 public:
     ///  See Fxt::Point::Api
     const char* getTypeGuid() const noexcept { return GUID_STRING; }
 
     ///  See Fxt::Point::Api
     const char* getTypeName() const noexcept { return TYPE_NAME; }
-
-public:
-    /// Creates a concrete instance in the invalid state
-    static Api* create( DatabaseApi&                        db, 
-                        Cpl::Memory::Allocator&             allocatorForPoints,
-                        uint32_t                            pointId,
-                        const char*                         pointName,
-                        Cpl::Memory::ContiguousAllocator&   allocatorForPointStatefulData )
-    {
-        return PointCommon_::create<Uint8>( db, allocatorForPoints, pointId, pointName, allocatorForPointStatefulData );
-    }
 };
 
 

@@ -47,16 +47,14 @@ public:
 
 protected:
     /// Constructor: Invalid MP
-    Enum_( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData )
-        :Basic_<BETTERENUM_TYPE>( db, pointId, sizeof(StateBlock_T), pointName, allocatorForPointStatefulData )
+    Enum_( DatabaseApi&                         db, 
+           uint32_t                             pointId, 
+           Cpl::Memory::ContiguousAllocator&    allocatorForPointStatefulData,
+           Api*                                 setterPoint )
+        :Basic_<BETTERENUM_TYPE>( db, pointId, sizeof(StateBlock_T), allocatorForPointStatefulData, setterPoint )
     {
     }
 
-    /// Constructor: Valid MP (requires initial value)
-    Enum_( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, BETTERENUM_TYPE initialValue )
-        :Basic_<BETTERENUM_TYPE>( db, pointId, sizeof( StateBlock_T ), pointName, allocatorForPointStatefulData, initialValue )
-    {
-    }
 
 public:
     /// Pull in overloaded methods from base class
@@ -68,16 +66,9 @@ public:
         PointCommon_::updateFrom_( &(((StateBlock_T*) (src.m_state))->data), sizeof( BETTERENUM_TYPE ), src.isNotValid(), lockRequest );
     }
 
-public:
-    /// Creates a concrete instance in the invalid state
-    static Api* create( DatabaseApi&                        db,
-                        Cpl::Memory::Allocator&             allocatorForPoints,
-                        uint32_t                            pointId,
-                        const char*                         pointName,
-                        Cpl::Memory::ContiguousAllocator&   allocatorForPointStatefulData )
-    {
-        return PointCommon_::create<Enum_< BETTERENUM_TYPE>>( db, allocatorForPoints, pointId, pointName, allocatorForPointStatefulData );
-    }
+    ///  See Fxt::Point::Api
+    void updateFromSetter() noexcept { if ( m_setter ) { write( *((Enum_<BETTERENUM_TYPE>*) m_setter) ); } }
+
 
 public:
     /// See Fxt::Dm::Point.  

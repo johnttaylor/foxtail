@@ -45,12 +45,12 @@ public:
 public:
     /** Constructor. Invalid Point.
      */
-    Uint16( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData ) 
-        : BasicInteger_<uint16_t>(db, pointId, pointName, allocatorForPointStatefulData ) {}
+    Uint16( DatabaseApi&                        db, 
+            uint32_t                            pointId, 
+            Cpl::Memory::ContiguousAllocator&   allocatorForPointStatefulData,
+            Api*                                setterPoint = nullptr )
+        : BasicInteger_<uint16_t>(db, pointId, allocatorForPointStatefulData, setterPoint ) {}
 
-    /// Constructor. Valid Point.  Requires an initial value
-    Uint16( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, uint16_t initialValue ) 
-        : BasicInteger_<uint16_t>( db, pointId, pointName, allocatorForPointStatefulData, initialValue ) {}
 
 public:
     /// Pull in overloaded methods from base class
@@ -62,23 +62,15 @@ public:
         updateFrom_( &(((Basic_<uint16_t>::Stateful_T*)(src.m_state))->data), sizeof( uint16_t ), src.isNotValid(), lockRequest );
     }
 
+    ///  See Fxt::Point::Api
+    void updateFromSetter() noexcept { if ( m_setter ) { write( *((Uint16*) m_setter) ); } }
+
 public:
     ///  See Fxt::Point::Api
     const char* getTypeGuid() const noexcept { return GUID_STRING; }
 
     ///  See Fxt::Point::Api
     const char* getTypeName() const noexcept { return TYPE_NAME; }
-
-public:
-    /// Creates a concrete instance in the invalid state
-    static Api* create( DatabaseApi&                        db, 
-                        Cpl::Memory::Allocator&             allocatorForPoints,
-                        uint32_t                            pointId,
-                        const char*                         pointName,
-                        Cpl::Memory::ContiguousAllocator&   allocatorForPointStatefulData ) 
-    { 
-        return PointCommon_::create<Uint16>( db, allocatorForPoints, pointId, pointName, allocatorForPointStatefulData );
-    }
 };
 
 

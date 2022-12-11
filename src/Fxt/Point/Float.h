@@ -45,12 +45,11 @@ public:
 public:
     /** Constructor. Invalid Point.
      */
-    Float( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData ) 
-        : BasicReal_<float>( db, pointId, pointName, allocatorForPointStatefulData ) {}
-
-    /// Constructor. Valid Point.  Requires an initial value
-    Float( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, float initialValue ) 
-        : BasicReal_<float>( db, pointId, pointName, allocatorForPointStatefulData, initialValue ) {}
+    Float( DatabaseApi&                         db, 
+           uint32_t                             pointId, 
+           Cpl::Memory::ContiguousAllocator&    allocatorForPointStatefulData,
+           Api*                                 setterPoint = nullptr ) 
+        : BasicReal_<float>( db, pointId, allocatorForPointStatefulData, setterPoint ) {}
 
 public:
     /// Pull in overloaded methods from base class
@@ -62,23 +61,15 @@ public:
         updateFrom_( &(((Basic_<float>::Stateful_T*)(src.m_state))->data), sizeof( float ), src.isNotValid(), lockRequest );
     }
 
+    ///  See Fxt::Point::Api
+    void updateFromSetter() noexcept { if ( m_setter ) { write( *((Float*) m_setter) ); } }
+
 public:
     ///  See Fxt::Point::Api
     const char* getTypeGuid() const noexcept { return GUID_STRING; }
 
     ///  See Fxt::Point::Api
     const char* getTypeName() const noexcept { return TYPE_NAME; }
-
-public:
-    /// Creates a concrete instance in the invalid state
-    static Api* create( DatabaseApi&                        db,
-                        Cpl::Memory::Allocator&             allocatorForPoints,
-                        uint32_t                            pointId,
-                        const char*                         pointName,
-                        Cpl::Memory::ContiguousAllocator&   allocatorForPointStatefulData )
-    {
-        return PointCommon_::create<Float>( db, allocatorForPoints, pointId, pointName, allocatorForPointStatefulData );
-    }
 };
 
 

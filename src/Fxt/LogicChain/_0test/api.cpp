@@ -14,8 +14,8 @@
 #include "Fxt/LogicChain/Chain.h"
 #include "Fxt/Point/Database.h"
 #include "Fxt/Point/Uint8.h"
-#include "Fxt/Component/Digital/And16GateFactory.h
-#include "Fxt/Component/Digital/ByteSplitterFactory.h
+#include "Fxt/Component/Digital/And16GateFactory.h"
+#include "Fxt/Component/Digital/ByteSplitterFactory.h"
 #include "Cpl/Memory/LeanHeap.h"
 #include "Cpl/System/Trace.h"
 #include <string.h>
@@ -93,6 +93,13 @@ static size_t statefulHeap_[10000];
 
 #define MAX_POINTS      100
 #define MAX_CARDS       2
+
+#define MAX_POINT_TYPES     3
+
+static Fxt::Point::CreateFuncDatabase<MAX_POINT_TYPES> uut1_( "static constructor" );
+
+static RegisterCreateFunc<Uint32> uint32_( uut1_ );
+static RegisterCreateFunc<Int64>  int64_( uut1_ );
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE( "LogicChain" )

@@ -16,6 +16,7 @@
 #include "Cpl/Container/Item.h"
 #include "Cpl/Type/Guid.h"
 #include "Fxt/Type/Error.h"
+#include "Fxt/Point/CreateFuncDatabaseApi.h"
 #include "Fxt/Point/BankApi.h"
 #include "Fxt/Point/Api.h"
 #include "Cpl/Memory/ContiguousAllocator.h"
@@ -163,6 +164,7 @@ public:
                                           Cpl::Memory::ContiguousAllocator&   generalAllocator,
                                           Cpl::Memory::ContiguousAllocator&   statefulDataAllocator,
                                           Fxt::Point::DatabaseApi&            dbForPoints,
+                                          Fxt::Point::CreateFuncDatabaseApi&  pointCreateFuncDb,
                                           Fxt::Type::Error&                   logicChainErrorode ) noexcept;
 public:
     /// Virtual destructor to make the compiler happy

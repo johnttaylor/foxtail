@@ -26,20 +26,20 @@ using namespace Fxt::Point;
 
 #define MAX_POINTS  4
 
-static Descriptor       apple_(  0, "APPLE", Fxt::Point::Uint32::create );
-static Descriptor       orange_(  1, "ORANGE", Fxt::Point::Int64::create );
-static Descriptor       cherry_(  2, "CHERRY", Fxt::Point::Uint32::create );
-static Descriptor       lime_(  3, "LIME", Fxt::Point::Int64::create );
+static Descriptor       apple_(  0, Fxt::Point::Uint32::create );
+static Descriptor       orange_(  1, Fxt::Point::Int64::create );
+static Descriptor       cherry_(  2, Fxt::Point::Uint32::create );
+static Descriptor       lime_(  3, Fxt::Point::Int64::create );
 
-static Descriptor       apple2_( 7, "APPLE", Fxt::Point::Uint32::create );
-static Descriptor       orange2_( 4, "ORANGE", Fxt::Point::Int64::create );
-static Descriptor       cherry2_( 5, "CHERRY", Fxt::Point::Uint32::create );
-static Descriptor       lime2_( 6, "LIME", Fxt::Point::Int64::create );
+static Descriptor       apple2_( 7, Fxt::Point::Uint32::create );
+static Descriptor       orange2_( 4, Fxt::Point::Int64::create );
+static Descriptor       cherry2_( 5, Fxt::Point::Uint32::create );
+static Descriptor       lime2_( 6, Fxt::Point::Int64::create );
 
-static Descriptor       apple3_( 11, "APPLE", Fxt::Point::Uint32::create );
-static Descriptor       orange3_( 8, "ORANGE", Fxt::Point::Int64::create );
-static Descriptor       cherry3_( 9, "CHERRY", Fxt::Point::Uint32::create );
-static Descriptor       lime3_( 10, "LIME", Fxt::Point::Int64::create );
+static Descriptor       apple3_( 11, Fxt::Point::Uint32::create );
+static Descriptor       orange3_( 8, Fxt::Point::Int64::create );
+static Descriptor       cherry3_( 9, Fxt::Point::Uint32::create );
+static Descriptor       lime3_( 10, Fxt::Point::Int64::create );
 
 #define ELEM_SIZE_AS_SIZET(elemSize)    (((elemSize)+sizeof( size_t ) - 1) / sizeof(size_t))
 #define MEM_SIZE        (ELEM_SIZE_AS_SIZET( sizeof(Fxt::Point::Uint32) ) * 2 + ELEM_SIZE_AS_SIZET( sizeof(Fxt::Point::Int64) ) * 2 )

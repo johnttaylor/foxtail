@@ -85,6 +85,7 @@ Setter* Setter::create( DatabaseApi&                         db,
         if ( !srcPoint->fromJSON_( val, Api::eLOCK, &errMsg ) )
         {
             CPL_SYSTEM_TRACE_MSG( SECT_, ("Failed to parse 'val' object for the Setter point.id=%lu err=%s", pointId, errMsg.getString()) );
+            pointFactoryMethod
             return nullptr;
         }
     }

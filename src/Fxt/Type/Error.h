@@ -51,6 +51,7 @@ namespace Type {
     @param Err_T                            Enum
 
     @param SUCCESS                          NO Error.  The operation was successful
+    @param POINT                            A Point sub-system specific error
     @param CARD                             A Card sub-system specific error
     @param COMPONENT                        A Component sub-system specific error
     @param LOGIC_CHAIN                      A Logic Chain sub-system specific error
@@ -58,6 +59,7 @@ namespace Type {
  */
 BETTER_ENUM( Err_T, uint8_t
              , SUCCESS = 0
+             , POINT
              , CARD
              , COMPONENT
              , LOGIC_CHAIN

@@ -10,6 +10,9 @@
 *----------------------------------------------------------------------------*/
 
 #include "PointCommon_.h"
+#include "Cpl/System/Trace.h"
+
+#define SECT_   "Fxt::Point"
 
 ///
 using namespace Fxt::Point;
@@ -19,28 +22,27 @@ using namespace Fxt::Point;
 constexpr uint32_t Fxt::Point::Api::INVALID_ID;
 
 ////////////////////////
-PointCommon_::PointCommon_( DatabaseApi& db, uint32_t pointId, const char* pointName, size_t stateSize )
+PointCommon_::PointCommon_( DatabaseApi&                        db, 
+                            uint32_t                            pointId,  
+                            size_t                              stateSize, 
+                            Cpl::Memory::ContiguousAllocator&   allocatorForPointStatefulData,
+                            Api*                                setterPoint )
     : m_id( pointId )
-    , m_state( nullptr )
+    , m_state( allocatorForPointStatefulData.allocate( stateSize ) )
     , m_stateSize( stateSize )
-    , m_name( pointName )
+    , m_setter( setterPoint )
 {
+    if ( m_state )
+    {
+        memset( m_state, 0, stateSize );
+    }
+    else
+    {
+        CPL_SYSTEM_TRACE_MSG( FXT_POINT_TRACE_SECT_, ("State Memory allocation failed for pointID: %lu", pointId) );
+    }
+
     // Auto register with the database
     db.add( *this );
-
-    if ( m_name == nullptr )
-    {
-        m_name = "";
-    }
-}
-
-void PointCommon_::finishInit( bool isValid ) noexcept
-{
-    if ( METAPTR )
-    {
-        METAPTR->valid  = isValid;
-        METAPTR->locked = false;
-    }
 }
 
 /////////////////
@@ -59,11 +61,6 @@ uint32_t PointCommon_::getId() const noexcept
     return m_id;
 }
 
-
-const char* PointCommon_::getName() const noexcept
-{
-    return m_name;
-}
 
 void PointCommon_::getMetadata( bool& isValid, bool& isLocked ) const noexcept
 {
@@ -95,6 +92,11 @@ void PointCommon_::setInvalid( LockRequest_T lockRequest ) noexcept
             memset( m_state, 0, m_stateSize );
         }
     }
+}
+
+bool PointCommon_::hasSetter() const noexcept
+{
+    return m_setter != nullptr;
 }
 
 bool PointCommon_::readData( void* dstData, size_t dstSize ) const noexcept
