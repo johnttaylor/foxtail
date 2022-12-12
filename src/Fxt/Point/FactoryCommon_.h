@@ -34,10 +34,6 @@ public:
     /// Constructor
     FactoryCommon_( FactoryDatabaseApi&  factoryDatabase );
 
-    /// Destructor
-    ~FactoryCommon_();
-
-
 public:
     /// See Fxt::Point::FactoryApi
     Api* create( JsonObject&                        pointObject,

@@ -27,7 +27,7 @@ String::String( DatabaseApi&                        db,
                 Cpl::Memory::ContiguousAllocator&   allocatorForPointStatefulData,
                 size_t                              stringLenInBytesWithoutNullTerminator,
                 Api*                                setterPoint )
-    : Fxt::Point::PointCommon_( db, pointId, sizeof( StringStateful_T ) + stringLenInBytesWithoutNullTerminator, setterPoint )
+    : Fxt::Point::PointCommon_( db, pointId, sizeof( StringStateful_T ) + stringLenInBytesWithoutNullTerminator, allocatorForPointStatefulData, setterPoint )
 {
 }
 

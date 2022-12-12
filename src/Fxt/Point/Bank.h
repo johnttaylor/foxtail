@@ -33,10 +33,13 @@ public:
 
 public:
     /// See Fxt::Point::BankApi
-    bool populate( Descriptor*                       listOfDescriptorPointers[],
-                   Cpl::Memory::ContiguousAllocator& generalAllocator,
-                   Fxt::Point::DatabaseApi&          dbForPoints,
-                   Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData ) noexcept;
+    bool createPoint( FactoryDatabaseApi&                pointFactoryDb,
+                      JsonObject&                        pointObject,
+                      Fxt::Type::Error&                  pointErrorCode,
+                      Cpl::Memory::ContiguousAllocator&  generalAllocator,
+                      Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                      Fxt::Point::DatabaseApi&           dbForPoints,
+                      const char*                        pointIdKeyName = "id" ) noexcept;
 
     /// See Fxt::Point::BankApi
     bool copyStatefulMemoryTo( void* dst, size_t maxDstSizeInBytes ) noexcept;
@@ -59,6 +62,9 @@ protected:
 
     /// Size of allocated memory
     size_t   m_memSize;
+
+    /// Error State
+    bool     m_error;
 };
 
 

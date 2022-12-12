@@ -20,74 +20,63 @@
 ///
 using namespace Fxt::Point;
 
+
 ///////////////////////////////////////////////////////////////////////////////
 Bank::Bank()
     : m_memStart( nullptr )
-    , m_memSize(0 )
+    , m_memSize( 0 )
+    , m_error( false )
 {
 }
 
 
 
 ///////////////////////////////////////////////////////////////////////////////
-bool Bank::populate( Descriptor*                       listOfDescriptorPointers[],
-                     Cpl::Memory::ContiguousAllocator& generalAllocator,
-                     Fxt::Point::DatabaseApi&          dbForPoints,
-                     Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData ) noexcept
+bool Bank::createPoint( FactoryDatabaseApi&                pointFactoryDb,
+                        JsonObject&                        pointObject,
+                        Fxt::Type::Error&                  pointErrorCode,
+                        Cpl::Memory::ContiguousAllocator&  generalAllocator,
+                        Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                        Fxt::Point::DatabaseApi&           dbForPoints,
+                        const char*                        pointIdKeyName ) noexcept
 {
-    CPL_SYSTEM_ASSERT( listOfDescriptorPointers );
-
-    m_memSize           = 0;
-    m_memStart          = nullptr;
-    Descriptor* itemPtr = *listOfDescriptorPointers;
-    while ( itemPtr  )
+    // Fail - if I have previously failed
+    if ( m_error )
     {
-        // Fail if the point already exists
-        if ( dbForPoints.lookupById( itemPtr->getPointId() ) != nullptr )
-        {
-            // Error: Duplicate POINT ID
-            m_memSize  = 0;
-            m_memStart = nullptr;
-            CPL_SYSTEM_TRACE_MSG( SECT_, ("Point ALREADY exists in the database. pointID: %lu", itemPtr->getPointId()) );
-            return false;
-        }
-
-        // Create the next point
-        Api* point = itemPtr->createPoint( dbForPoints, generalAllocator, allocatorForPointStatefulData );
-        if ( point == nullptr )
-        {
-            // Error: allocator is out-of-space
-            m_memSize  = 0;
-            m_memStart = nullptr;
-            CPL_SYSTEM_TRACE_MSG( SECT_, ("Point Memory allocation failed for pointID: %lu", itemPtr->getPointId() ) );
-            return false;
-        }
-
-        // Validate that the point was added to the database
-        if ( dbForPoints.lookupById( itemPtr->getPointId() ) == nullptr )
-        {
-            // Error: database out-of-space
-            m_memSize  = 0;
-            m_memStart = nullptr;
-            CPL_SYSTEM_TRACE_MSG( SECT_, ("Point was NOT added to the DB (i.e. DB out-of-space). pointID: %lu", itemPtr->getPointId()) );
-            return false;
-        }
-
-        // Trap the 1st allocate address
-        if ( m_memStart == nullptr )
-        {
-            m_memStart = point->getStartOfStatefulMemory_();
-        }
-        
-        // Keep track of the allocated size
-        m_memSize += point->getStatefulMemorySize();
-
-        // Get the next descriptor in the list
-        listOfDescriptorPointers++;
-        itemPtr = *listOfDescriptorPointers;
+        pointErrorCode = fullErr( Err_T::BANK_CONT_ERROR );
+        return false;
     }
 
-    // If I get here the bank was successfully populated
+    // Create the point
+    Api* point = pointFactoryDb.createPointfromJSON( pointObject,
+                                                     pointErrorCode,
+                                                     generalAllocator,
+                                                     statefulDataAllocator,
+                                                     dbForPoints,
+                                                     pointIdKeyName );
+    if ( point == nullptr )
+    {
+        // Error: Failed to create the point
+        m_memSize  = 0;
+        m_memStart = nullptr;
+        m_error    = true;
+        return false;
+    }
+
+    // Trap the 1st allocated address
+    if ( m_memStart == nullptr )
+    {
+        m_memStart = point->getStartOfStatefulMemory_();
+    }
+
+    // Keep track of the allocated size (account for the 'Setter' when it is present)
+    m_memSize += point->getStatefulMemorySize();
+    if ( point->hasSetter() )
+    {
+        m_memSize += point->getStatefulMemorySize();
+    }
+
+    // If I get here the Point was successfully added to the bank
     return true;
 }
 

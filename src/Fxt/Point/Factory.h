@@ -59,7 +59,13 @@ public:
         void* memPtr = generalAllocator.allocate( sizeof( POINTTYPE ) );
         if ( memPtr )
         {
-            return new(memPtr) POINTTYPE( dbForPoints, pointId, statefulDataAllocator, setter );
+            Api* newPoint = new(memPtr) POINTTYPE( dbForPoints, pointId, statefulDataAllocator, setter );
+            if ( newPoint->getId() != Api::INVALID_ID )
+            {
+                // When I get here -->everything worked
+                return newPoint;
+            }
+            pointErrorCode = fullErr( Err_T::FAILED_DB_INSERT );
         }
         return nullptr;
     }
@@ -120,10 +126,16 @@ public:
         size_t numElems = typeConfigObject["numElems"];
 
         // Create Point
-        void* memPtr = generalAllocator.allocate( sizeof( POINTTYPE ) );
+        void* memPtr = generalAllocator.allocate( sizeof( ARRAYPOINTTYPE ) );
         if ( memPtr )
         {
-            return new(memPtr) ARRAYPOINTTYPE( dbForPoints, pointId, statefulDataAllocator, numElems, setter );
+            Api* newPoint = new(memPtr) ARRAYPOINTTYPE( dbForPoints, pointId, statefulDataAllocator, numElems, setter );
+            if ( newPoint->getId() != Api::INVALID_ID )
+            {
+                // When I get here -->everything worked
+                return newPoint;
+            }
+            pointErrorCode = fullErr( Err_T::FAILED_DB_INSERT );
         }
         return nullptr;
     }

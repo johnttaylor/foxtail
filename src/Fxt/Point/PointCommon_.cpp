@@ -22,9 +22,9 @@ using namespace Fxt::Point;
 constexpr uint32_t Fxt::Point::Api::INVALID_ID;
 
 ////////////////////////
-PointCommon_::PointCommon_( DatabaseApi&                        db, 
-                            uint32_t                            pointId,  
-                            size_t                              stateSize, 
+PointCommon_::PointCommon_( DatabaseApi&                        db,
+                            uint32_t                            pointId,
+                            size_t                              stateSize,
                             Cpl::Memory::ContiguousAllocator&   allocatorForPointStatefulData,
                             Api*                                setterPoint )
     : m_id( pointId )
@@ -38,11 +38,20 @@ PointCommon_::PointCommon_( DatabaseApi&                        db,
     }
     else
     {
+        m_setter = nullptr;
+        pointId  = INVALID_ID;
         CPL_SYSTEM_TRACE_MSG( FXT_POINT_TRACE_SECT_, ("State Memory allocation failed for pointID: %lu", pointId) );
     }
 
     // Auto register with the database
-    db.add( *this );
+    if ( !db.add( *this ) )
+    {
+        // DB Error -->put the point in a non-functioning/error state
+        m_state  = nullptr;
+        m_setter = nullptr;
+        pointId  = INVALID_ID;
+        CPL_SYSTEM_TRACE_MSG( FXT_POINT_TRACE_SECT_, ("Failed DB add (duplicate ID?) pointID: %lu", pointId) );
+    }
 }
 
 /////////////////

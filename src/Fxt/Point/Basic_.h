@@ -50,7 +50,7 @@ public:
 protected:
     /// Constructor: Invalid MP
     Basic_( DatabaseApi&                        db,
-            nt32_t                              pointId,
+            uint32_t                            pointId,
             size_t                              stateSize,
             Cpl::Memory::ContiguousAllocator&   allocatorForPointStatefulData,
             Api*                                setterPoint )
@@ -129,7 +129,6 @@ protected:
                    uint32_t                             pointId,
                    Cpl::Memory::ContiguousAllocator&    allocatorForPointStatefulData,
                    Api*                                 setterPoint )
-        )
         :Basic_<ELEMTYPE>( db, pointId, sizeof( StateBlock_T ), allocatorForPointStatefulData, setterPoint )
     {
     }

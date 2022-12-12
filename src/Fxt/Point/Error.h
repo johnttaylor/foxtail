@@ -34,8 +34,10 @@ namespace Point {
     @param MEMORY_POINT                     Unable to allocate memory for the Point
     @param UNKNOWN_GUID                     Configuration contains the unknown/unsupported Point type GUID 
     @param MISSING_ID                       Configuration does NOT contain a valid ID value a Point
-    @param MISSING_TYPE_CFG                 Configuration does NOT contain a valid/properly-form 'typeCfg' key/value pair  
+    @param FAILED_DB_INSERT                 Failed to add the point to Point DB (duplicate ID or out-of-memory in db)
+    @param MISSING_TYPE_CFG                 Configuration does NOT contain a valid/properly-form 'typeCfg' key/value pair
     @param BAD_SETTER_VALUE                 Configuration does not contain a valid value for the Setter/Initial value
+    @param BANK_CONT_ERROR                  Attempted to continuing populating a Bank instance after a Bank failure
  */
 BETTER_ENUM( Err_T, uint8_t
              , SUCCESS = 0
@@ -44,6 +46,8 @@ BETTER_ENUM( Err_T, uint8_t
              , MISSING_ID       
              , MISSING_TYPE_CFG
              , BAD_SETTER_VALUE
+             , BANK_CONT_ERROR
+             , FAILED_DB_INSERT
 );
 
 /** This method has 'PACKAGE Scope' in that is should only be called by

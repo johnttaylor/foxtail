@@ -30,12 +30,12 @@ FactoryDatabase::FactoryDatabase( const char* ignoreThisParameter_usedToCreateAU
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-Api* FactoryDatabase::createCardfromJSON( JsonObject&                        pointObject,
-                                          Fxt::Type::Error&                  pointErrorCode,
-                                          Cpl::Memory::ContiguousAllocator&  generalAllocator,
-                                          Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
-                                          Fxt::Point::DatabaseApi&           dbForPoints,
-                                          const char*                        pointIdKeyName ) noexcept
+Api* FactoryDatabase::createPointfromJSON( JsonObject&                        pointObject,
+                                           Fxt::Type::Error&                  pointErrorCode,
+                                           Cpl::Memory::ContiguousAllocator&  generalAllocator,
+                                           Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                                           Fxt::Point::DatabaseApi&           dbForPoints,
+                                           const char*                        pointIdKeyName ) noexcept
 {
     // Ensure that a Id has been assigned
     const char* typeGuid = pointObject["type"];

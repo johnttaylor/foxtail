@@ -55,12 +55,12 @@ public:
 
 public:
     /// See Fxt::Point::FactoryDatabaseApi
-    Api* createCardfromJSON( JsonObject&                        pointObject,
-                             Fxt::Type::Error&                  pointErrorCode,
-                             Cpl::Memory::ContiguousAllocator&  generalAllocator,
-                             Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
-                             Fxt::Point::DatabaseApi&           dbForPoints,
-                             const char*                        pointIdKeyName = "id" ) noexcept;
+    Api* createPointfromJSON( JsonObject&                        pointObject,
+                              Fxt::Type::Error&                  pointErrorCode,
+                              Cpl::Memory::ContiguousAllocator&  generalAllocator,
+                              Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                              Fxt::Point::DatabaseApi&           dbForPoints,
+                              const char*                        pointIdKeyName = "id" ) noexcept;
 
 public:
     /// See Fxt::Point::FactoryDatabaseApi

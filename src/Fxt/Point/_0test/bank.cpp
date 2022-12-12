@@ -14,8 +14,11 @@
 #include "Fxt/Point/Database.h"
 #include "Fxt/Point/Uint32.h"
 #include "Fxt/Point/Int64.h"
+#include "Fxt/Point/Factory.h"
+#include "Fxt/Point/FactoryDatabase.h"
 #include "Cpl/System/Trace.h"
 #include "Fxt/Point/Bank.h"
+#include "Fxt/Type/Error.h"
 #include "Cpl/Memory/LeanHeap.h"
 #include <string.h>
 
@@ -24,34 +27,120 @@
 /// 
 using namespace Fxt::Point;
 
-#define MAX_POINTS  4
-
-static Descriptor       apple_(  0, Fxt::Point::Uint32::create );
-static Descriptor       orange_(  1, Fxt::Point::Int64::create );
-static Descriptor       cherry_(  2, Fxt::Point::Uint32::create );
-static Descriptor       lime_(  3, Fxt::Point::Int64::create );
-
-static Descriptor       apple2_( 7, Fxt::Point::Uint32::create );
-static Descriptor       orange2_( 4, Fxt::Point::Int64::create );
-static Descriptor       cherry2_( 5, Fxt::Point::Uint32::create );
-static Descriptor       lime2_( 6, Fxt::Point::Int64::create );
-
-static Descriptor       apple3_( 11, Fxt::Point::Uint32::create );
-static Descriptor       orange3_( 8, Fxt::Point::Int64::create );
-static Descriptor       cherry3_( 9, Fxt::Point::Uint32::create );
-static Descriptor       lime3_( 10, Fxt::Point::Int64::create );
+#define MAX_POINTS  14
 
 #define ELEM_SIZE_AS_SIZET(elemSize)    (((elemSize)+sizeof( size_t ) - 1) / sizeof(size_t))
-#define MEM_SIZE        (ELEM_SIZE_AS_SIZET( sizeof(Fxt::Point::Uint32) ) * 2 + ELEM_SIZE_AS_SIZET( sizeof(Fxt::Point::Int64) ) * 2 )
+#define MEM_SIZE        (ELEM_SIZE_AS_SIZET( sizeof(Fxt::Point::Uint32) ) * 3 + ELEM_SIZE_AS_SIZET( sizeof(Fxt::Point::Int64) ) * 3 )
 
 static size_t           heapMemory_[MEM_SIZE];
 static size_t           heapMemory2_[MEM_SIZE];
-static size_t           heapMemory3_[MEM_SIZE];
-static size_t           heapMemory4_[MEM_SIZE*3];
-static size_t           heapMemory5_[MEM_SIZE*3];
+static size_t           heapMemory4_[MEM_SIZE * 3];
+static size_t           heapMemory5_[MEM_SIZE * 3];
 static size_t           tempBuffer_[MEM_SIZE];
 
-#define CMP(db,s,id)    (strcmp( db.lookupById(id)->getName(), s ) == 0)
+#define JSON_APPLE      "{"\
+                        "  \"id\":0," \
+                        "  \"type\":\"99f91433-b8e4-4480-9203-8fcab5d9f20f\"" \
+                        "}"
+#define JSON_ORANGE     "{"\
+                        "  \"id\":1," \
+                        "  \"type\":\"49d79369-32d7-4f78-bba3-0fcb1ddff2a1\"" \
+                        "}"
+#define JSON_CHERRY     "{"\
+                        "  \"id\":2," \
+                        "  \"type\":\"99f91433-b8e4-4480-9203-8fcab5d9f20f\"" \
+                        "}"
+#define JSON_LIME      "{"\
+                        "  \"id\":3," \
+                        "  \"type\":\"49d79369-32d7-4f78-bba3-0fcb1ddff2a1\"" \
+                        "}"
+
+#define JSON_BANK       "[" \
+                            JSON_APPLE "," \
+                            JSON_ORANGE "," \
+                            JSON_CHERRY "," \
+                            JSON_LIME \
+                        "]"
+
+#define JSON_APPLE2     "{"\
+                        "  \"id\":7," \
+                        "  \"type\":\"99f91433-b8e4-4480-9203-8fcab5d9f20f\"," \
+                        "  \"initial\": {" \
+                        "     \"valid\":false," \
+                        "     \"id\":8" \
+                        "   }" \
+                        "}"
+#define JSON_ORANGE2    "{"\
+                        "  \"id\":4," \
+                        "  \"type\":\"49d79369-32d7-4f78-bba3-0fcb1ddff2a1\"" \
+                        "}"
+#define JSON_CHERRY2    "{"\
+                        "  \"id\":5," \
+                        "  \"type\":\"99f91433-b8e4-4480-9203-8fcab5d9f20f\"" \
+                        "}"
+#define JSON_LIME2      "{"\
+                        "  \"id\":6," \
+                        "  \"type\":\"49d79369-32d7-4f78-bba3-0fcb1ddff2a1\"," \
+                        "  \"initial\": {" \
+                        "     \"val\":42," \
+                        "     \"id\":9" \
+                        "   }" \
+                        "}"
+
+#define JSON_APPLE3     "{"\
+                        "  \"id\":13," \
+                        "  \"type\":\"99f91433-b8e4-4480-9203-8fcab5d9f20f\"" \
+                        "}"
+#define JSON_ORANGE3    "{"\
+                        "  \"id\":10," \
+                        "  \"type\":\"49d79369-32d7-4f78-bba3-0fcb1ddff2a1\"" \
+                        "}"
+#define JSON_CHERRY3    "{"\
+                        "  \"id\":11," \
+                        "  \"type\":\"99f91433-b8e4-4480-9203-8fcab5d9f20f\"" \
+                        "}"
+#define JSON_LIME3      "{"\
+                        "  \"id\":12," \
+                        "  \"type\":\"49d79369-32d7-4f78-bba3-0fcb1ddff2a1\"" \
+                        "}"
+
+#define JSON_BANK       "[" \
+                            JSON_APPLE "," \
+                            JSON_ORANGE "," \
+                            JSON_CHERRY "," \
+                            JSON_LIME \
+                        "]"
+
+#define JSON_BANK2      "[" \
+                            JSON_APPLE2 "," \
+                            JSON_ORANGE2 "," \
+                            JSON_CHERRY2 "," \
+                            JSON_LIME2 \
+                        "]"
+
+#define JSON_BANK3      "[" \
+                            JSON_APPLE3 "," \
+                            JSON_ORANGE3 "," \
+                            JSON_CHERRY3"," \
+                            JSON_LIME3 \
+                        "]"
+
+
+static FactoryDatabase      pointFactoryDb_;
+static Factory<Int64>       int64Factory_( pointFactoryDb_ );
+static Factory<Uint32>      uint32Factory_( pointFactoryDb_ );
+
+static inline void writeUint32( DatabaseApi& db, uint32_t id, uint32_t val )
+{
+    Api* point = db.lookupById( id );
+    ((Uint32*) point)->write( val );
+}
+
+static inline void writeInt64( DatabaseApi& db, uint32_t id, int64_t val )
+{
+    Api* point = db.lookupById( id );
+    ((Int64*) point)->write( val );
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE( "Bank" )
@@ -59,21 +148,102 @@ TEST_CASE( "Bank" )
     Cpl::System::Shutdown_TS::clearAndUseCounter();
     Cpl::Memory::LeanHeap stateHeap1( heapMemory4_, sizeof( heapMemory4_ ) );
     Cpl::Memory::LeanHeap stateHeap2( heapMemory5_, sizeof( heapMemory5_ ) );
+    Fxt::Type::Error pointErrorCode;
+
 
     SECTION( "create" )
     {
         Bank uut;
         Cpl::Memory::LeanHeap            heap( heapMemory_, sizeof( heapMemory_ ) );
         Fxt::Point::Database<MAX_POINTS> db;
-        Descriptor*                      list[4 + 1] ={ &apple_, &orange_, &cherry_, &lime_, 0 };
 
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("Start section") );
-        bool result = uut.populate( list, heap, db, stateHeap1 );
-        REQUIRE( result );
-        REQUIRE( CMP( db, "APPLE", 0 ) );
-        REQUIRE( CMP( db, "ORANGE", 1 ) );
-        REQUIRE( CMP( db, "CHERRY", 2 ) );
-        REQUIRE( CMP( db, "LIME", 3 ) );
+        StaticJsonDocument<1024> doc;
+        printf( "JSON IN[%s]\n", JSON_BANK );
+        DeserializationError err = deserializeJson( doc, JSON_BANK );
+        REQUIRE( err == DeserializationError::Ok );
+        JsonArray list = doc.as<JsonArray>();
+        for ( unsigned i=0; i < list.size(); i++ )
+        {
+            JsonObject json = list[i].as<JsonObject>();
+            REQUIRE( uut.createPoint( pointFactoryDb_,
+                                      json,
+                                      pointErrorCode,
+                                      heap,
+                                      stateHeap1,
+                                      db,
+                                      "id" ) );
+        }
+
+        Api* point = db.lookupById( 0 );
+        REQUIRE( !point->hasSetter() );
+        REQUIRE( strcmp( point->getTypeGuid(), "99f91433-b8e4-4480-9203-8fcab5d9f20f" ) == 0 );
+
+        point = db.lookupById( 1 );
+        REQUIRE( !point->hasSetter() );
+        REQUIRE( strcmp( point->getTypeGuid(), "49d79369-32d7-4f78-bba3-0fcb1ddff2a1" ) == 0 );
+
+        point = db.lookupById( 2 );
+        REQUIRE( !point->hasSetter() );
+        REQUIRE( strcmp( point->getTypeGuid(), "99f91433-b8e4-4480-9203-8fcab5d9f20f" ) == 0 );
+
+        point = db.lookupById( 3 );
+        REQUIRE( !point->hasSetter() );
+        REQUIRE( strcmp( point->getTypeGuid(), "49d79369-32d7-4f78-bba3-0fcb1ddff2a1" ) == 0 );
+
+    }
+
+    SECTION( "create2" )
+    {
+        Bank uut;
+        Cpl::Memory::LeanHeap            heap( heapMemory_, sizeof( heapMemory_ ) );
+        Fxt::Point::Database<MAX_POINTS> db;
+
+        StaticJsonDocument<1024> doc;
+        printf( "JSON IN[%s]\n", JSON_BANK2 );
+        DeserializationError err = deserializeJson( doc, JSON_BANK2 );
+        REQUIRE( err == DeserializationError::Ok );
+        JsonArray list = doc.as<JsonArray>();
+        for ( unsigned i=0; i < list.size(); i++ )
+        {
+            JsonObject json = list[i].as<JsonObject>();
+            bool result = uut.createPoint( pointFactoryDb_,
+                                           json,
+                                           pointErrorCode,
+                                           heap,
+                                           stateHeap1,
+                                           db,
+                                           "id" );
+            printf( "errCode=%08X\n", pointErrorCode.errVal );
+            REQUIRE( result );
+        }
+
+        Api* point = db.lookupById( 7 );
+        REQUIRE( point->hasSetter() );
+        REQUIRE( strcmp( point->getTypeGuid(), "99f91433-b8e4-4480-9203-8fcab5d9f20f" ) == 0 );
+        REQUIRE( point->isNotValid() );
+        point->updateFromSetter();
+        REQUIRE( point->isNotValid() );
+
+        point = db.lookupById( 4 );
+        REQUIRE( !point->hasSetter() );
+        REQUIRE( strcmp( point->getTypeGuid(), "49d79369-32d7-4f78-bba3-0fcb1ddff2a1" ) == 0 );
+
+        point = db.lookupById( 5 );
+        REQUIRE( !point->hasSetter() );
+        REQUIRE( strcmp( point->getTypeGuid(), "99f91433-b8e4-4480-9203-8fcab5d9f20f" ) == 0 );
+
+        point = db.lookupById( 6 );
+        REQUIRE( point->hasSetter() );
+        REQUIRE( strcmp( point->getTypeGuid(), "49d79369-32d7-4f78-bba3-0fcb1ddff2a1" ) == 0 );
+        REQUIRE( point->isNotValid() );
+        point->updateFromSetter();
+        Int64* pt = (Int64*) point;
+        int64_t val;
+        REQUIRE( pt->read( val ) );
+        REQUIRE( val == 42 );
+
+        REQUIRE( db.lookupById( 8 ) );
+        REQUIRE( db.lookupById( 9 ) );
     }
 
     SECTION( "copy" )
@@ -81,22 +251,31 @@ TEST_CASE( "Bank" )
         Bank uut;
         Cpl::Memory::LeanHeap            heap( heapMemory_, sizeof( heapMemory_ ) );
         Fxt::Point::Database<MAX_POINTS> db;
-        Descriptor*                      list[4 + 1] ={ &apple_, &orange_, &cherry_, &lime_, 0 };
 
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("Start section") );
-        bool result = uut.populate( list, heap, db, stateHeap1 );
-        REQUIRE( result );
-        REQUIRE( CMP( db, "APPLE", 0 ) );
-        REQUIRE( CMP( db, "ORANGE", 1 ) );
-        REQUIRE( CMP( db, "CHERRY", 2 ) );
-        REQUIRE( CMP( db, "LIME", 3 ) );
+        // Populate the Bank
+        StaticJsonDocument<1024> doc;
+        printf( "JSON IN[%s]\n", JSON_BANK );
+        DeserializationError err = deserializeJson( doc, JSON_BANK );
+        REQUIRE( err == DeserializationError::Ok );
+        JsonArray list = doc.as<JsonArray>();
+        for ( unsigned i=0; i < list.size(); i++ )
+        {
+            JsonObject json = list[i].as<JsonObject>();
+            REQUIRE( uut.createPoint( pointFactoryDb_,
+                                      json,
+                                      pointErrorCode,
+                                      heap,
+                                      stateHeap1,
+                                      db,
+                                      "id" ) );
+        }
 
         size_t dstAllocatedLenInBytes;
         stateHeap1.getMemoryStart( dstAllocatedLenInBytes );
         REQUIRE( dstAllocatedLenInBytes == uut.getStatefulAllocatedSize() );
         REQUIRE( uut.copyStatefulMemoryTo( tempBuffer_, sizeof( tempBuffer_ ) ) );
         REQUIRE( memcmp( tempBuffer_, heapMemory4_, uut.getStatefulAllocatedSize() ) == 0 );
-        REQUIRE( uut.copyStatefulMemoryTo( tempBuffer_+1, uut.getStatefulAllocatedSize() - 1 ) == false );
+        REQUIRE( uut.copyStatefulMemoryTo( tempBuffer_ + 1, uut.getStatefulAllocatedSize() - 1 ) == false );
         REQUIRE( memcmp( tempBuffer_, heapMemory4_, uut.getStatefulAllocatedSize() ) == 0 );
 
         memset( tempBuffer_, 0, sizeof( tempBuffer_ ) );
@@ -110,72 +289,118 @@ TEST_CASE( "Bank" )
     {
         Bank uut;
         Cpl::Memory::LeanHeap              heap( heapMemory_, sizeof( heapMemory_ ) );
-        Fxt::Point::Database<MAX_POINTS*3> db;
-        Descriptor*                        list[4 + 1] ={ &apple_, &orange_, &cherry_, &lime_, 0 };
+        Fxt::Point::Database<MAX_POINTS * 3> db;
+
+        // Populate the Bank/UUT1
+        StaticJsonDocument<1024> doc;
+        printf( "JSON IN[%s]\n", JSON_BANK );
+        DeserializationError err = deserializeJson( doc, JSON_BANK );
+        REQUIRE( err == DeserializationError::Ok );
+        JsonArray list = doc.as<JsonArray>();
+        for ( unsigned i=0; i < list.size(); i++ )
+        {
+            JsonObject json = list[i].as<JsonObject>();
+            REQUIRE( uut.createPoint( pointFactoryDb_,
+                                      json,
+                                      pointErrorCode,
+                                      heap,
+                                      stateHeap1,
+                                      db,
+                                      "id" ) );
+        }
+
+        // Populate Bank/UUT2
         Bank uut2;
         Cpl::Memory::LeanHeap heap2( heapMemory2_, sizeof( heapMemory2_ ) );
-        Descriptor* list2[4 + 1] ={ &orange2_, &cherry2_, &lime2_, &apple2_, 0 };
+        doc.clear();
+        printf( "JSON IN[%s]\n", JSON_BANK2 );
+        err = deserializeJson( doc, JSON_BANK2 );
+        REQUIRE( err == DeserializationError::Ok );
+        list = doc.as<JsonArray>();
+        for ( unsigned i=0; i < list.size(); i++ )
+        {
+            JsonObject json = list[i].as<JsonObject>();
+            bool result = uut2.createPoint( pointFactoryDb_,
+                                            json,
+                                            pointErrorCode,
+                                            heap2,
+                                            stateHeap2,
+                                            db,
+                                            "id" );
+            printf( "errCode=%08X\n", pointErrorCode.errVal );
+            REQUIRE( result );
+        }
 
-        Bank uut3;
-        Cpl::Memory::LeanHeap heap3( heapMemory3_, sizeof( heapMemory3_ ) );
-        Descriptor* list3[3 + 1] ={ &orange3_, &cherry3_, &lime3_, 0 };
+        REQUIRE( uut.getStatefulAllocatedSize() < uut2.getStatefulAllocatedSize() );
 
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("Start section") );
-        bool result = uut.populate( list, heap, db, stateHeap1 );
-        REQUIRE( result );
-        REQUIRE( CMP( db, "APPLE", 0 ) );
-        REQUIRE( CMP( db, "ORANGE", 1 ) );
-        REQUIRE( CMP( db, "CHERRY", 2 ) );
-        REQUIRE( CMP( db, "LIME", 3 ) );
+        // Update the source bank
+        writeUint32( db, 0, 1 ); // Bank1
+        writeInt64( db, 1, 2 );
+        writeUint32( db, 2, 3 );
+        writeInt64( db, 3, 4 );
 
-        result = uut2.populate( list2, heap2, db, stateHeap2 );
-        REQUIRE( result );
-        REQUIRE( CMP( db, "ORANGE", 4 ) );
-        REQUIRE( CMP( db, "CHERRY", 5 ) );
-        REQUIRE( CMP( db, "LIME", 6 ) );
-        REQUIRE( CMP( db, "APPLE", 7 ) );
+        REQUIRE( uut.copyStatefulMemoryFrom( uut2 ) == false );
 
-        uut.copyStatefulMemoryFrom( uut2 );
-        REQUIRE( memcmp( heapMemory4_, heapMemory5_, uut.getStatefulAllocatedSize() ) == 0 );
-
-        result = uut3.populate( list3, heap3, db, stateHeap1 );
-        REQUIRE( result );
-        REQUIRE( CMP( db, "ORANGE", 8 ) );
-        REQUIRE( CMP( db, "CHERRY", 9 ) );
-        REQUIRE( CMP( db, "LIME", 10 ) );
-        REQUIRE( uut2.copyStatefulMemoryFrom( uut3 ) == false );
+        // Should fail because Bank2 has setter's
+        REQUIRE( memcmp( heapMemory4_, heapMemory5_, uut2.getStatefulAllocatedSize() ) != 0 );
     }
-
-    SECTION( "db-out-of-space" )
+    SECTION( "copy-bank2" )
     {
         Bank uut;
-        Cpl::Memory::LeanHeap               heap( heapMemory_, sizeof( heapMemory_ ) );
-        Fxt::Point::Database<MAX_POINTS-1>  db;
-        Descriptor*                         list[4 + 1] ={ &apple_, &orange_, &cherry_, &lime_, 0 };
+        Cpl::Memory::LeanHeap              heap( heapMemory_, sizeof( heapMemory_ ) );
+        Fxt::Point::Database<MAX_POINTS * 3> db;
 
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("Start section") );
-        bool result = uut.populate( list, heap, db, stateHeap1 );
-        REQUIRE( result == false );
-        REQUIRE( CMP( db, "APPLE", 0 ) );
-        REQUIRE( CMP( db, "ORANGE", 1 ) );
-        REQUIRE( CMP( db, "CHERRY", 2 ) );
-        REQUIRE( db.lookupById( 3 ) == nullptr );
-    }
+        // Populate the Bank/UUT1
+        StaticJsonDocument<1024> doc;
+        printf( "JSON IN[%s]\n", JSON_BANK );
+        DeserializationError err = deserializeJson( doc, JSON_BANK );
+        REQUIRE( err == DeserializationError::Ok );
+        JsonArray list = doc.as<JsonArray>();
+        for ( unsigned i=0; i < list.size(); i++ )
+        {
+            JsonObject json = list[i].as<JsonObject>();
+            REQUIRE( uut.createPoint( pointFactoryDb_,
+                                      json,
+                                      pointErrorCode,
+                                      heap,
+                                      stateHeap1,
+                                      db,
+                                      "id" ) );
+        }
 
-    SECTION( "heap-out-of-space" )
-    {
-        Bank uut;
-        Cpl::Memory::LeanHeap                 heap( heapMemory_, sizeof( heapMemory_ ) - sizeof( Fxt::Point::Uint32 ) );
-        Fxt::Point::Database<MAX_POINTS - 1>  db;
-        Descriptor*                           list[4 + 1] ={ &apple_, &orange_, &cherry_, &lime_, 0 };
+        // Populate Bank/UUT
+        Bank uut2;
+        Cpl::Memory::LeanHeap heap2( heapMemory2_, sizeof( heapMemory2_ ) );
+        doc.clear();
+        printf( "JSON IN[%s]\n", JSON_BANK3 );
+        err = deserializeJson( doc, JSON_BANK3 );
+        REQUIRE( err == DeserializationError::Ok );
+        list = doc.as<JsonArray>();
+        for ( unsigned i=0; i < list.size(); i++ )
+        {
+            JsonObject json = list[i].as<JsonObject>();
+            bool result = uut2.createPoint( pointFactoryDb_,
+                                            json,
+                                            pointErrorCode,
+                                            heap2,
+                                            stateHeap2,
+                                            db,
+                                            "id" );
+            printf( "errCode=%08X\n", pointErrorCode.errVal );
+            REQUIRE( result );
+        }
 
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("Start section") );
-        bool result = uut.populate( list, heap, db, stateHeap1 );
-        REQUIRE( result == false );
-        REQUIRE( CMP( db, "APPLE", 0 ) );
-        REQUIRE( CMP( db, "ORANGE", 1 ) );
-        REQUIRE( CMP( db, "CHERRY", 2 ) );
-        REQUIRE( db.lookupById( 3 ) == nullptr );
+        REQUIRE( uut.getStatefulAllocatedSize() == uut2.getStatefulAllocatedSize() );
+
+        // Update the source bank
+        writeUint32( db, 0, 1 ); // Bank1
+        writeInt64( db, 1, 2 );
+        writeUint32( db, 2, 3 );
+        writeInt64( db, 3, 4 );
+
+        // Should pass because Bank1 and Bank3 are the 'same' structure/points
+        REQUIRE( uut.copyStatefulMemoryFrom( uut2 ) );
+        REQUIRE( memcmp( heapMemory4_, heapMemory5_, uut2.getStatefulAllocatedSize() ) == 0 );
     }
 
     REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );
