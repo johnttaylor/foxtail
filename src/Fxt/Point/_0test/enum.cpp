@@ -35,14 +35,11 @@ class MyEnum : public Enum_<MyColors>
 {
 public:
     /// Constructor. Invalid Point.
-    MyEnum( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData ) 
-        : Enum_<MyColors>( db, pointId, pointName, allocatorForPointStatefulData )
-    {
-    }
-
-    /// Constructor. Valid Point.  Requires an initial value
-    MyEnum( DatabaseApi& db, uint32_t pointId, const char* pointName, Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData, MyColors initialValue ) 
-        :Enum_<MyColors>( db, pointId, pointName, allocatorForPointStatefulData, initialValue )
+    MyEnum( DatabaseApi&                        db,
+            uint32_t                            pointId,
+            Cpl::Memory::ContiguousAllocator&   allocatorForPointStatefulData,
+            Api*                                setterPoint  = nullptr )
+        : Enum_<MyColors>( db, pointId, allocatorForPointStatefulData, setterPoint )
     {
     }
 
@@ -61,10 +58,8 @@ public:
 #define ORANGE_INIT_VAL MyColors::eGREEN
 
 #define APPLE_ID        0
-#define APPLE_LABEL     "APPLE"
 
 #define ORANGE_ID       1
-#define ORANGE_LABEL    "ORANGE"
 
 
 #define ELEM_SIZE_AS_SIZET(elemSize)    (((elemSize)+sizeof( size_t ) - 1) / sizeof(size_t))
@@ -79,17 +74,16 @@ TEST_CASE( "Enum" )
     bool                     valid;
     MyColors                 value = MyColors::eBLUE;
 
-    MyEnum* apple = new(std::nothrow) MyEnum( db, APPLE_ID, APPLE_LABEL, stateHeap );
+    MyEnum* apple = new(std::nothrow) MyEnum( db, APPLE_ID, stateHeap );
     REQUIRE( apple );
-    MyEnum* orange = new(std::nothrow) MyEnum( db, ORANGE_ID, ORANGE_LABEL, stateHeap, ORANGE_INIT_VAL );
+    MyEnum* orange = new(std::nothrow) MyEnum( db, ORANGE_ID, stateHeap );
     REQUIRE( orange );
 
 
     SECTION( "read/write/invalid" )
     {
         valid = orange->read( value );
-        REQUIRE( valid == true );
-        REQUIRE( value == +ORANGE_INIT_VAL );
+        REQUIRE( valid == false );
 
         valid = apple->read( value );
         REQUIRE( valid == false );
@@ -112,6 +106,7 @@ TEST_CASE( "Enum" )
 
     SECTION( "write2" )
     {
+        orange->write( ORANGE_INIT_VAL );
         apple->write( *orange, Api::eLOCK );
         REQUIRE( apple->read( value ) );
         REQUIRE( value == +ORANGE_INIT_VAL );
@@ -140,7 +135,7 @@ TEST_CASE( "Enum" )
         StaticJsonDocument<1024> doc;
         DeserializationError err = deserializeJson( doc, buffer );
         REQUIRE( err == DeserializationError::Ok );
-        REQUIRE( strcmp(doc["val"], (+MyColors::eRED)._to_string() ) == 0 );
+        REQUIRE( strcmp( doc["val"], (+MyColors::eRED)._to_string() ) == 0 );
 
         orange->setInvalid();
         result = db.toJSON( ORANGE_ID, buffer, sizeof( buffer ), truncated, false );

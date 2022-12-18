@@ -67,7 +67,7 @@ public:
     }
 
     ///  See Fxt::Point::Api
-    void updateFromSetter() noexcept { if ( m_setter ) { write( *((Enum_<BETTERENUM_TYPE>*) m_setter) ); } }
+    void updateFromSetter() noexcept { if ( PointCommon_::m_setter ) { write( *((Enum_<BETTERENUM_TYPE>*) PointCommon_::m_setter) ); } }
 
 
 public:

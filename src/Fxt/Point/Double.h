@@ -45,11 +45,10 @@ public:
 public:
     /** Constructor. Invalid Point.
      */
-    Double( DatabaseApi&                      db, 
-            uint32_t                          pointId, 
-            size_t                            notUseSetToZero,
-            Cpl::Memory::ContiguousAllocator& allocatorForPointStatefulData,
-            Api*                              setterPoint = nullptr )
+    Double( DatabaseApi&                         db,
+            uint32_t                             pointId,
+            Cpl::Memory::ContiguousAllocator&    allocatorForPointStatefulData,
+            Api*                                 setterPoint = nullptr )
         : BasicReal_<double>(db, pointId, allocatorForPointStatefulData, setterPoint ) {}
 
 public:

@@ -30,10 +30,8 @@ using namespace Fxt::Point;
 #define ORANGE_INIT_VAL true
 
 #define APPLE_ID        0
-#define APPLE_LABEL     "APPLE"
 
 #define ORANGE_ID       1
-#define ORANGE_LABEL    "ORANGE"
 
 #define ELEM_SIZE_AS_SIZET(elemSize)    (((elemSize)+sizeof( size_t ) - 1) / sizeof(size_t))
 static size_t stateHeapMemory_[ELEM_SIZE_AS_SIZET( sizeof( Bool::StateBlock_T ) ) * MAX_POINTS];
@@ -52,17 +50,16 @@ TEST_CASE( "Bool" )
                                    sizeof( Bool::StateBlock_T ),
                                    ELEM_SIZE_AS_SIZET( sizeof( Bool::StateBlock_T ) )) );
 
-    Bool* apple = new(std::nothrow) Bool( db, APPLE_ID, APPLE_LABEL, stateHeap );
+    Bool* apple = new(std::nothrow) Bool( db, APPLE_ID, stateHeap );
     REQUIRE( apple );
-    Bool* orange = new(std::nothrow) Bool( db, ORANGE_ID, ORANGE_LABEL, stateHeap, ORANGE_INIT_VAL );
+    Bool* orange = new(std::nothrow) Bool( db, ORANGE_ID, stateHeap );
     REQUIRE( orange );
 
 
     SECTION( "read/write/invalid" )
     {
         valid = orange->read( value );
-        REQUIRE( valid == true );
-        REQUIRE( value == ORANGE_INIT_VAL );
+        REQUIRE( valid == false );
 
         valid = apple->read( value );
         REQUIRE( valid == false );
@@ -90,6 +87,7 @@ TEST_CASE( "Bool" )
 
     SECTION( "write2" )
     {
+        orange->write( ORANGE_INIT_VAL );
         apple->write( *orange, Api::eLOCK );
         REQUIRE( apple->read( value ) );
         REQUIRE( value == ORANGE_INIT_VAL );

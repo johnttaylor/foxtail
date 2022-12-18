@@ -27,7 +27,7 @@ namespace Point {
     The toJSON()/fromJSON format is:
     \code
 
-    { name:"<mpname>", type:"<mptypestring>", valid:true|false, locked:true|false, val:{maxLen:<n>,text:"<value>" }
+    { name:"<mpname>", type:"<mptypestring>", valid:true|false, locked:true|false, val:{maxLen:<n>,text:"<value>" }}
 
     \endcode
 
@@ -42,7 +42,7 @@ public:
     /// Type name for the card
     static constexpr const char* TYPE_NAME   = "Fxt::Point::String";
 
-protected:
+public:
     /** Constructor. Invalid Point.
      */
     String( DatabaseApi&                        db, 

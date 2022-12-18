@@ -12,7 +12,7 @@
 #include "Catch/catch.hpp"
 #include "Cpl/System/_testsupport/Shutdown_TS.h"
 #include "Fxt/Point/Database.h"
-#include "Fxt/Point/String_.h"
+#include "Fxt/Point/String.h"
 #include "Cpl/System/Trace.h"
 #include <string.h>
 #include "Cpl/Memory/HPool.h"
@@ -28,21 +28,19 @@ using namespace Fxt::Point;
 
 
 
-typedef String<16> StringUut;
 
 #define MAX_POINTS  2
 
+#define STRING_LEN      16
 
 #define ORANGE_INIT_VAL "Hello World"
 
 #define APPLE_ID        0
-#define APPLE_LABEL     "APPLE"
 
 #define ORANGE_ID       1
-#define ORANGE_LABEL    "ORANGE"
 
 #define ELEM_SIZE_AS_SIZET(elemSize)    (((elemSize)+sizeof( size_t ) - 1) / sizeof(size_t))
-static size_t stateHeapMemory_[ELEM_SIZE_AS_SIZET( sizeof( StringUut::StateBlock_T ) ) * MAX_POINTS];
+static size_t stateHeapMemory_[ELEM_SIZE_AS_SIZET( (sizeof( PointCommon_::Metadata_T ) + STRING_LEN+1) * MAX_POINTS)];
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE( "String" )
@@ -54,17 +52,16 @@ TEST_CASE( "String" )
     char                     buffer[16 + 1];
     Cpl::Text::FString<16>   value;
 
-    StringUut* apple = new(std::nothrow) StringUut( db, APPLE_ID, APPLE_LABEL, stateHeap );
+    String* apple = new(std::nothrow) String( db, APPLE_ID, stateHeap, STRING_LEN );
     REQUIRE( apple );
-    StringUut* orange = new(std::nothrow) StringUut( db, ORANGE_ID, ORANGE_LABEL, stateHeap, ORANGE_INIT_VAL );
+    String* orange = new(std::nothrow) String( db, ORANGE_ID, stateHeap, STRING_LEN );
     REQUIRE( orange );
 
 
     SECTION( "read/write/invalid" )
     {
         valid = orange->read( value );
-        REQUIRE( valid == true );
-        REQUIRE( value == ORANGE_INIT_VAL );
+        REQUIRE( valid == false );
 
         valid = apple->read( value );
         REQUIRE( valid == false );
@@ -87,6 +84,7 @@ TEST_CASE( "String" )
 
     SECTION( "write2" )
     {
+        orange->write( ORANGE_INIT_VAL );
         apple->write( *orange, Api::eLOCK );
         REQUIRE( apple->read( value ) );
         REQUIRE( value == ORANGE_INIT_VAL );

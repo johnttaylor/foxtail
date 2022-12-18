@@ -235,7 +235,7 @@ TEST_CASE( "Bank" )
         point = db.lookupById( 6 );
         REQUIRE( point->hasSetter() );
         REQUIRE( strcmp( point->getTypeGuid(), "49d79369-32d7-4f78-bba3-0fcb1ddff2a1" ) == 0 );
-        REQUIRE( point->isNotValid() );
+        REQUIRE( point->isNotValid() == false );
         point->updateFromSetter();
         Int64* pt = (Int64*) point;
         int64_t val;

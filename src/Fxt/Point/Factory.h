@@ -34,6 +34,17 @@ public:
     Factory( FactoryDatabaseApi& factoryDb ) : FactoryCommon_( factoryDb ) {}
 
 public:
+    /// Same as Fxt::Point::FactoryApi - excepts returns the point as a concrete sub-type
+    POINTTYPE* createTypeSafe( JsonObject&                        pointObject,
+                               Fxt::Type::Error&                  pointErrorCode,
+                               Cpl::Memory::ContiguousAllocator&  generalAllocator,
+                               Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                               Fxt::Point::DatabaseApi&           dbForPoints,
+                               const char*                        pointIdKeyName = "id" ) noexcept
+    {
+        return (POINTTYPE*) create( pointObject, pointErrorCode, generalAllocator, statefulDataAllocator, dbForPoints, pointIdKeyName );
+    }
+
     /// See Fxt::Point::FactoryApi
     const char* getGuid() const noexcept { return POINTTYPE::GUID_STRING; }
 
@@ -63,6 +74,7 @@ public:
             if ( newPoint->getId() != Api::INVALID_ID )
             {
                 // When I get here -->everything worked
+                newPoint->updateFromSetter();
                 return newPoint;
             }
             pointErrorCode = fullErr( Err_T::FAILED_DB_INSERT );
@@ -79,7 +91,7 @@ public:
     {
         "id":                   <ID. Note: the ID key can vary, e.g. 'id', 'ioRegId', etc.>,
         "type":                 "<Points's Type GUID: 8-4-4-4-12 format>",
-        "typeCfg: {             
+        "typeCfg: {
             "numElems":         <number of array elements>
          },
         "typeName":             "*<OPTIONAL: human readable point type>",
@@ -88,13 +100,24 @@ public:
     }
  */
 template <class ARRAYPOINTTYPE>
-class Factory1DArray : public FactoryApi
+class Factory1DArray : public FactoryCommon_
 {
 public:
     /// Constructor
     Factory1DArray( FactoryDatabaseApi& factoryDb ) : FactoryCommon_( factoryDb ) {}
 
 public:
+    /// Same as Fxt::Point::FactoryApi - excepts returns the point as a concrete sub-type
+    ARRAYPOINTTYPE* createTypeSafe( JsonObject&                        pointObject,
+                                    Fxt::Type::Error&                  pointErrorCode,
+                                    Cpl::Memory::ContiguousAllocator&  generalAllocator,
+                                    Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                                    Fxt::Point::DatabaseApi&           dbForPoints,
+                                    const char*                        pointIdKeyName = "id" ) noexcept
+    {
+        return (ARRAYPOINTTYPE*) create( pointObject, pointErrorCode, generalAllocator, statefulDataAllocator, dbForPoints, pointIdKeyName );
+    }
+
     /// See Fxt::Point::FactoryApi
     const char* getGuid() const noexcept { return ARRAYPOINTTYPE::GUID_STRING; }
 
@@ -117,7 +140,7 @@ public:
         uint32_t pointId = pointObject[pointIdKeyName].as<unsigned long>();
 
         // Get array size
-        if ( typeConfigObject.isNull() == false && 
+        if ( typeConfigObject.isNull() == false &&
              typeConfigObject["numElems"].is<unsigned long>() == false )
         {
             pointErrorCode = fullErr( Err_T::MISSING_TYPE_CFG );
@@ -133,6 +156,7 @@ public:
             if ( newPoint->getId() != Api::INVALID_ID )
             {
                 // When I get here -->everything worked
+                newPoint->updateFromSetter();
                 return newPoint;
             }
             pointErrorCode = fullErr( Err_T::FAILED_DB_INSERT );
