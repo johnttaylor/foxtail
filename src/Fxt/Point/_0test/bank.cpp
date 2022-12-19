@@ -32,8 +32,8 @@ using namespace Fxt::Point;
 #define ELEM_SIZE_AS_SIZET(elemSize)    (((elemSize)+sizeof( size_t ) - 1) / sizeof(size_t))
 #define MEM_SIZE        (ELEM_SIZE_AS_SIZET( sizeof(Fxt::Point::Uint32) ) * 3 + ELEM_SIZE_AS_SIZET( sizeof(Fxt::Point::Int64) ) * 3 )
 
-static size_t           heapMemory_[MEM_SIZE];
-static size_t           heapMemory2_[MEM_SIZE];
+static size_t           heapMemory_[MEM_SIZE*2];
+static size_t           heapMemory2_[MEM_SIZE*2];
 static size_t           heapMemory4_[MEM_SIZE * 3];
 static size_t           heapMemory5_[MEM_SIZE * 3];
 static size_t           tempBuffer_[MEM_SIZE];
@@ -331,7 +331,7 @@ TEST_CASE( "Bank" )
             REQUIRE( result );
         }
 
-        REQUIRE( uut.getStatefulAllocatedSize() < uut2.getStatefulAllocatedSize() );
+        REQUIRE( uut.getStatefulAllocatedSize() == uut2.getStatefulAllocatedSize() );
 
         // Update the source bank
         writeUint32( db, 0, 1 ); // Bank1
@@ -339,10 +339,8 @@ TEST_CASE( "Bank" )
         writeUint32( db, 2, 3 );
         writeInt64( db, 3, 4 );
 
-        REQUIRE( uut.copyStatefulMemoryFrom( uut2 ) == false );
-
-        // Should fail because Bank2 has setter's
-        REQUIRE( memcmp( heapMemory4_, heapMemory5_, uut2.getStatefulAllocatedSize() ) != 0 );
+        REQUIRE( uut.copyStatefulMemoryFrom( uut2 ) );
+        REQUIRE( memcmp( heapMemory4_, heapMemory5_, uut2.getStatefulAllocatedSize() ) == 0 );
     }
     SECTION( "copy-bank2" )
     {

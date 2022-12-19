@@ -40,7 +40,7 @@ namespace Mock {
     The semantics with the Application is that the Application is RESPONSIBLE for
     freeing/recycling the memory in the Contiguous Allocator when Card(s) are
     deleted.
-    
+
     \code
 
     JSON Definition
@@ -56,14 +56,15 @@ namespace Mock {
           {
             "channel": 1                                    // Range: 1 to 8.  (For a physical card this would map back to connector/terminal identifiers)
             "id": 0,                                        // ID assigned to the Virtual Point that represents the input value
-            "ioRegId": 0,                                   // The ID of the Point's IO register.
-            "name": "My input#1 name"                       // Text label for the input signal
-            "type": "708745fa-cef6-4364-abad-063a40f35cbc", // *REQUIRED Type for the input signal
+            "ioRegId": 1,                                   // The ID of the Point's IO register.
+            "name": "My input#1 name"                       // *Text label for the input signal
+            "type": "708745fa-cef6-4364-abad-063a40f35cbc", // REQUIRED Type for the input signal
             "typeName": "Fxt::Point::Float",                // *OPTIONAL: Human readable Type name for the input signal
+            "typeCfg: {..}                                  // <OPTIONAL type configuration for complex types, e.g. "typeCfg":{"numElems":2}>,
             "initial": {
               "valid": true|false                           // Initial valid state for the IO Register point
               "val": <float>                                // Initial value for the input point. Only required when 'valid' is true
-              "id": 0                                       // The ID of the internal point that is used store the initial value in binary form
+              "id": 2                                       // The ID of the internal point that is used store the initial value in binary form
             }
           }
         ]
@@ -94,11 +95,9 @@ public:
     /// Constructor
     AnalogIn8( Cpl::Memory::ContiguousAllocator&  generalAllocator,
                Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+               Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
                Fxt::Point::DatabaseApi&           dbForPoints,
                JsonVariant&                       cardObject );
-
-    /// Destructor
-    ~AnalogIn8();
 
 public:
     /// See Fxt::Card::Api
@@ -108,6 +107,9 @@ public:
     bool stop() noexcept;
 
     /// See Fxt::Card::Api
+    bool flushOutputs() noexcept;
+
+    /// See Fxt::Card::Api
     const char* getTypeGuid() const noexcept;
 
     /// See Fxt::Card::Api
@@ -115,7 +117,7 @@ public:
 
 public:
     /** Provide the Application the ability to set the inputs. The range of
-        'channelNumber' is 1...8 (as defined in the Card's JSON object). This 
+        'channelNumber' is 1...8 (as defined in the Card's JSON object). This
         method is thread safe
      */
     void setInputs( uint8_t channelNumber, float newValue );
@@ -123,24 +125,17 @@ public:
 
 protected:
     /// Helper method to parse the card's JSON config
-    virtual bool parseConfiguration( JsonVariant& obj ) noexcept;
+    void parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAllocator,
+                             Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                             Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
+                             Fxt::Point::DatabaseApi&           dbForPoints,
+                             JsonVariant&                       cardObject ) noexcept;
 
-    /// Helper method to create the point instances
-    virtual void createPoints() noexcept;
 
 
 protected:
     /// Mutex to provide thread safety for the application driving/reading the mocked IO
-    Cpl::System::Mutex                  m_lock;
-
-    /// List of Virtual Point Input Descriptors (allocate space for max IO plus a list-terminator)
-    Fxt::Point::Descriptor*             m_virtualInDescriptors[MAX_DESCRIPTORS + 1];
-
-    /// List of IO Register Input Descriptors (allocate space for max IO plus a list-terminator)
-    Fxt::Point::Descriptor*             m_ioRegInDescriptors[MAX_DESCRIPTORS + 1];
-
-    /// Channel Numbers
-    uint16_t                            m_channelNumbers[MAX_DESCRIPTORS];
+    Cpl::System::Mutex m_lock;
 };
 
 

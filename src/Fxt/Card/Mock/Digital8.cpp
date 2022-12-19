@@ -20,145 +20,173 @@
 ///
 using namespace Fxt::Card::Mock;
 
+#define MAX_INPUT_CHANNELS      1
+#define INPUT_CHANNEL_OFFSET    0
+
+#define MAX_OUTPUT_CHANNELS     1
+#define OUTPUT_CHANNEL_OFFSET   (MAX_INPUT_CHANNELS)
+
+#define TOTAL_MAX_CHANNELS      (MAX_INPUT_CHANNELS + MAX_OUTPUT_CHANNELS)
 
 ///////////////////////////////////////////////////////////////////////////////
 Digital8::Digital8( Cpl::Memory::ContiguousAllocator&  generalAllocator,
                     Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                    Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
                     Fxt::Point::DatabaseApi&           dbForPoints,
                     JsonVariant&                       cardObject )
-    : Fxt::Card::Common_( generalAllocator, statefulDataAllocator, dbForPoints )
+    : Fxt::Card::Common_( TOTAL_MAX_CHANNELS, generalAllocator, cardObject )
 {
-    memset( &m_virtualInDescriptors, 0, sizeof( m_virtualInDescriptors ) );
-    memset( &m_virtualOutDescriptors, 0, sizeof( m_virtualOutDescriptors ) );
-    memset( &m_ioRegInDescriptors, 0, sizeof( m_ioRegInDescriptors ) );
-    memset( &m_ioRegOutDescriptors, 0, sizeof( m_ioRegOutDescriptors ) );
-
     if ( m_error == Fxt::Type::Error::SUCCESS() )
     {
-        if ( parseConfiguration( cardObject ) )
-        {
-            createPoints();
-        }
+        parseConfiguration( generalAllocator, statefulDataAllocator, pointFactoryDb, dbForPoints, cardObject );
     }
 }
 
-Digital8::~Digital8()
-{
-    // NOTE: Call the destructors on ALL dynamically allocated objects - but 
-    //       the Application is responsible for freeing the actual memory
 
-    // Destroy any created Descriptors
-    for ( unsigned i=0; i < MAX_DESCRIPTORS; i++ )
-    {
-        if ( m_virtualInDescriptors[i] != nullptr )
-        {
-            m_virtualInDescriptors[i]->~Descriptor();
-        }
-        if ( m_ioRegInDescriptors[i] != nullptr )
-        {
-            m_ioRegInDescriptors[i]->~Descriptor();
-        }
-
-        if ( m_virtualOutDescriptors[i] != nullptr )
-        {
-            m_virtualOutDescriptors[i]->~Descriptor();
-        }
-        if ( m_ioRegOutDescriptors[i] != nullptr )
-        {
-            m_ioRegOutDescriptors[i]->~Descriptor();
-        }
-    }
-}
 
 ///////////////////////////////////////////////////////////////////////////////
-bool Digital8::parseConfiguration( JsonVariant& obj ) noexcept
+void Digital8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAllocator,
+                                   Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                                   Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
+                                   Fxt::Point::DatabaseApi&           dbForPoints,
+                                   JsonVariant&                       cardObject ) noexcept
 {
-    // Parse point Descriptors
-    if ( !obj["points"].isNull() )
+    // Parse channels
+    if ( !cardObject["points"].isNull() )
     {
-        JsonArray inputs = obj["points"]["inputs"];
+        // INPUTS
+        JsonArray inputs = cardObject["points"]["inputs"];
         if ( !inputs.isNull() )
         {
             // Validate supported number of signals
             size_t numInputs = inputs.size();
-            if ( numInputs > MAX_DESCRIPTORS )
+            if ( numInputs > MAX_INPUT_CHANNELS )
             {
                 m_error = fullErr( Err_T::TOO_MANY_INPUT_POINTS );
-                return false;
+                return;
             }
 
-            // Create the Input descriptors
-            uint16_t dummyChannellist[1];
-            if ( !createDescriptors( Fxt::Point::Uint8::create,
-                                     m_virtualInDescriptors,
-                                     m_ioRegInDescriptors,
-                                     dummyChannellist,
-                                     inputs,
-                                     numInputs ) )
+            // Create Virtual Points
+            for ( size_t idx=0; idx < numInputs && m_error == Fxt::Type::Error::SUCCESS(); idx++ )
             {
-                return false;
+                uint16_t   channelNum_notUsed;
+                JsonObject channelObj = inputs[idx].as<JsonObject>();
+                createPointForChannel( pointFactoryDb,
+                                       m_virtualInputs,
+                                       false,
+                                       channelObj,
+                                       m_error,
+                                       MAX_INPUT_CHANNELS,
+                                       INPUT_CHANNEL_OFFSET,
+                                       channelNum_notUsed,
+                                       generalAllocator,
+                                       statefulDataAllocator,
+                                       dbForPoints );
+            }
+
+            // Create IO Register Points
+            for ( size_t idx=0; idx < numInputs && m_error == Fxt::Type::Error::SUCCESS(); idx++ )
+            {
+                uint16_t   channelNum_notUsed;
+                JsonObject channelObj = inputs[idx].as<JsonObject>();
+                createPointForChannel( pointFactoryDb,
+                                       m_ioRegisterInputs,
+                                       true,
+                                       channelObj,
+                                       m_error,
+                                       MAX_INPUT_CHANNELS,
+                                       INPUT_CHANNEL_OFFSET,
+                                       channelNum_notUsed,
+                                       generalAllocator,
+                                       statefulDataAllocator,
+                                       dbForPoints );
             }
         }
 
-        // Parse Output descriptors
-        JsonArray outputs = obj["points"]["outputs"];
+        // OUTPUTS
+        JsonArray outputs = cardObject["points"]["outputs"];
         if ( !outputs.isNull() )
         {
             // Validate supported number of signals
-            size_t numOutputs = inputs.size();
-            numOutputs = outputs.size();
-            if ( numOutputs > MAX_DESCRIPTORS )
+            size_t numOutputs = outputs.size();
+            if ( numOutputs > MAX_OUTPUT_CHANNELS )
             {
                 m_error = fullErr( Err_T::TOO_MANY_OUTPUT_POINTS );
-                return false;
+                return;
             }
 
-            // Create the Output descriptors
-            uint16_t dummyChannellist[1];
-            if ( !createDescriptors( Fxt::Point::Uint8::create,
-                                     m_virtualOutDescriptors,
-                                     m_ioRegOutDescriptors,
-                                     dummyChannellist,
-                                     outputs,
-                                     numOutputs ) )
+            // Create Virtual Points
+            for ( size_t idx=0; idx < numOutputs ; idx++ )
             {
-                return false;
+                uint16_t   channelNum_notUsed;
+                JsonObject channelObj = outputs[idx].as<JsonObject>();
+                createPointForChannel( pointFactoryDb,
+                                       m_virtualOutputs,
+                                       false,
+                                       channelObj,
+                                       m_error,
+                                       MAX_OUTPUT_CHANNELS,
+                                       OUTPUT_CHANNEL_OFFSET,
+                                       channelNum_notUsed,
+                                       generalAllocator,
+                                       statefulDataAllocator,
+                                       dbForPoints );
+
+                if ( m_error != Fxt::Type::Error::SUCCESS() )
+                {
+                    return;
+                }
+
+            }
+
+            // Create IO Register Points
+            for ( size_t idx=0; idx < numOutputs; idx++ )
+            {
+                uint16_t   channelNum_notUsed;
+                JsonObject channelObj = outputs[idx].as<JsonObject>();
+                createPointForChannel( pointFactoryDb,
+                                       m_ioRegisterOutputs,
+                                       true,
+                                       channelObj,
+                                       m_error,
+                                       MAX_OUTPUT_CHANNELS,
+                                       OUTPUT_CHANNEL_OFFSET,
+                                       channelNum_notUsed,
+                                       generalAllocator,
+                                       statefulDataAllocator,
+                                       dbForPoints );
+
+                if ( m_error != Fxt::Type::Error::SUCCESS() )
+                {
+                    return;
+                }
             }
         }
     }
-
-    return true;
-}
-
-
-
-void Digital8::createPoints() noexcept
-{
-    // Create INPUT Points
-    m_registerInputs.populate( &m_ioRegInDescriptors[0], m_generalAllocator, m_dbForPoints, m_statefulDataAllocator );
-    m_virtualInputs.populate( &m_virtualInDescriptors[0], m_generalAllocator, m_dbForPoints, m_statefulDataAllocator );
-
-    // Create OUTPUT points
-    m_registerOutputs.populate( &m_ioRegOutDescriptors[0], m_generalAllocator, m_dbForPoints, m_statefulDataAllocator );
-    m_virtualOutputs.populate( &m_virtualOutDescriptors[0], m_generalAllocator, m_dbForPoints, m_statefulDataAllocator );
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
 bool Digital8::start() noexcept
 {
-    // Fail if there was error during construction
-    if ( m_error !=  +Err_T::SUCCESS )
+    // Call the parent's start-up actions
+    if ( Common_::start() )
     {
-        return false;
+        // Set the initial IO Register values (both inputs and outputs)
+        for ( unsigned i=0; i < TOTAL_MAX_CHANNELS; i++ )
+        {
+            if ( m_ioRegisterPoints[i] != nullptr )
+            {
+                m_ioRegisterPoints[i]->updateFromSetter();
+            }
+        }
+
+        // If I get here -->everything worked            
+        return true;
     }
 
-    // Set the initial IO Register values
-    setInitialValue( m_ioRegInDescriptors[0] );
-    setInitialValue( m_ioRegOutDescriptors[0] );
-
-    // Call the parent's method do complete the start-up actions
-    return Common_::start();
+    // Start FAILED
+    return false;
 }
 
 
@@ -183,33 +211,51 @@ const char* Digital8::getTypeName() const noexcept
 void Digital8::setInputs( uint8_t bitMaskToOR )
 {
     Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
-    Fxt::Point::Uint8* ioRegPtr = (Fxt::Point::Uint8*) m_dbForPoints.lookupById( m_ioRegInDescriptors[0]->getPointId() );
-    ioRegPtr->maskOr( bitMaskToOR );
+
+    if ( m_ioRegisterPoints[INPUT_CHANNEL_OFFSET] != nullptr )
+    {
+        // Update the IO Register
+        Fxt::Point::Uint8* pt = (Fxt::Point::Uint8*) m_ioRegisterPoints[INPUT_CHANNEL_OFFSET];
+        pt->maskOr( bitMaskToOR );
+    }
 }
 
 
 void Digital8::clearInputs( uint8_t bitMaskToAND )
 {
     Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
-    Fxt::Point::Uint8* ioRegPtr = (Fxt::Point::Uint8*) m_dbForPoints.lookupById( m_ioRegInDescriptors[0]->getPointId() );
-    ioRegPtr->maskAnd( bitMaskToAND );
+
+    if ( m_ioRegisterPoints[INPUT_CHANNEL_OFFSET] != nullptr )
+    {
+        // Update the IO Register
+        Fxt::Point::Uint8* pt = (Fxt::Point::Uint8*) m_ioRegisterPoints[INPUT_CHANNEL_OFFSET];
+        pt->maskAnd( bitMaskToAND );
+    }
 }
 
 void Digital8::toggleInputs( uint8_t bitMaskToXOR )
 {
     Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
-    Fxt::Point::Uint8* ioRegPtr = (Fxt::Point::Uint8*) m_dbForPoints.lookupById( m_ioRegInDescriptors[0]->getPointId() );
-    ioRegPtr->maskXor( bitMaskToXOR );
+
+    if ( m_ioRegisterPoints[INPUT_CHANNEL_OFFSET] != nullptr )
+    {
+        // Update the IO Register
+        Fxt::Point::Uint8* pt = (Fxt::Point::Uint8*) m_ioRegisterPoints[INPUT_CHANNEL_OFFSET];
+        pt->maskXor( bitMaskToXOR );
+    }
 }
 
 bool Digital8::getOutputs( uint8_t& valueMask )
 {
     Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
-    Fxt::Point::Uint8* ioRegPtr = (Fxt::Point::Uint8*) m_dbForPoints.lookupById( m_ioRegOutDescriptors[0]->getPointId() );
-    if ( ioRegPtr->read( valueMask ) )
+
+    if ( m_ioRegisterPoints[INPUT_CHANNEL_OFFSET] != nullptr )
     {
-        return true;
+        // Read the IO Register
+        Fxt::Point::Uint8* pt = (Fxt::Point::Uint8*) m_ioRegisterPoints[INPUT_CHANNEL_OFFSET];
+        return pt->read( valueMask );
     }
+
     return false;
 }
 

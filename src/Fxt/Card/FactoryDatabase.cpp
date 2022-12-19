@@ -33,6 +33,7 @@ FactoryDatabase::FactoryDatabase( const char* ignoreThisParameter_usedToCreateAU
 Api* FactoryDatabase::createCardfromJSON( JsonVariant                        cardObj,
                                           Cpl::Memory::ContiguousAllocator&  generalAllocator,
                                           Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                                          Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
                                           Fxt::Point::DatabaseApi&           dbForPoints,
                                           Fxt::Type::Error&                  cardErrorCode ) noexcept
 {
@@ -51,7 +52,7 @@ Api* FactoryDatabase::createCardfromJSON( JsonVariant                        car
         return nullptr;
     }
 
-    return factory->create( cardObj, cardErrorCode, generalAllocator, statefulDataAllocator, dbForPoints );
+    return factory->create( cardObj, cardErrorCode, generalAllocator, statefulDataAllocator, pointFactoryDb, dbForPoints );
 }
 
 

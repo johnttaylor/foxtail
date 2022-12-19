@@ -37,23 +37,24 @@ namespace Card {
     \code
     Required/Defined JSON fields/structure:
        {
-          "name":           "<human readable name for the card - not required to be unique>",
+          "name":           "*<human readable name for the card - not required to be unique>",
           "id":             <ID.  Must be unique. Range: 0-64K (note: NOT used by the firmware)>,
           "type":           "<Card's Type GUID: 8-4-4-4-12 format>",
-          "typeName":       "<OPTIONAL: human readable card type>",
+          "typeName":       "*<OPTIONAL: human readable card type>",
           "slot":           <chasis slot number. Range: 0-255>,
           "points": {
              "<groupingName>": [ // Array of points with the same Fxt::Point type, e.g "analogInputs", "digitalOutputs", etc.
                {
-                 "channel":             <reference to a physical terminal/connector as a number. Range: 1 to N>
+                 "channel":             <reference to a physical terminal/connector as a number. Range: 1 to 64K>
                  "id":                  <Virtual Point ID.  Must be unique.  Range: 0-4GB>,
                  "ioRegId":             <The ID of the Point's IO register. Must be unique.  Range: 0-4GB>,
-                 "name":                "<human readable name for the point/channel/IO>"
-                 "type":                "*<Points's Type GUID: 8-4-4-4-12 format>",
-                 "typeName":            "*<OPTIONAL: human readable card type>",
+                 "name":                "*<human readable name for the point/channel/IO>"
+                 "type":                "<Points's Type GUID: 8-4-4-4-12 format>",
+                 "typeCfg:              <OPTIONAL type configuration for complex types, e.g. "typeCfg":{"numElems":2}>,
+                 "typeName":            "*<OPTIONAL: human readable point type>",
                  "initial": {           // OPTIONAL initial value/state specifier for the Point
-                   "valid": true|false  // Initial valid state for the internal point
-                   "val":               <point value as defined by the Point type's fromJSON syntax - only required when 'valid' is 'true'>
+                   "valid": true|false  // Initial valid state for the internal point,
+                   "val":               <point value as defined by the Point type's fromJSON syntax - only required when 'valid' is 'true' OR when 'valid' is ommitted>,
                    "id":                <The ID of the internal 'setter' point that is used store the initial value in binary form>
                  }
                },
@@ -92,6 +93,7 @@ public:
                          Fxt::Type::Error&                  cardErrorCode,
                          Cpl::Memory::ContiguousAllocator&  generalAllocator,
                          Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                         Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
                          Fxt::Point::DatabaseApi&           dbForPoints ) noexcept = 0;
 
 

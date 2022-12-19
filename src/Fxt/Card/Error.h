@@ -32,27 +32,27 @@ namespace Card {
 
     @param SUCCESS                          NO ERROR
     @param MEMORY_CARD                      Unable to allocate memory for the card
-    @param MEMORY_DESCRIPTORS               Out-of-memory when parsing/creating Descriptors
+    @param FAILED_POINT_CREATED             Failed to create the a Point for a channel
     @param UNKNOWN_GUID                     Configuration contains the unknown/unsupported card type GUID 
     @param POINT_MISSING_ID                 Configuration does NOT contain a valid ID value for one of it Points
     @param TOO_MANY_INPUT_POINTS            Configuration contains TOO many input Points
     @param TOO_MANY_OUTPUT_POINTS           Configuration contains TOO many output Points
     @param BAD_CHANNEL_ASSIGNMENTS          Configuration contains duplicate or our-of-range Channel IDs
-    @param CARD_SETTER_ERROR                Error occurred while parsing/creating a Setter instance
-    @param MEMORY_DESCRIPTOR_NAME           Out-of-memory when parsing/creating a Descriptor's name
+    @param BAD_JSON                         Invalid JSON object syntax for a Channel Object
+    @param MISSING_SLOT                     Configuration does NOT contain a slot number
     @param MOCK                             A Mock Card sub-system specific error
  */
 BETTER_ENUM( Err_T, uint8_t
              , SUCCESS = 0
              , MEMORY_CARD
-             , MEMORY_DESCRIPTORS
+             , FAILED_POINT_CREATED
              , UNKNOWN_GUID
              , POINT_MISSING_ID          
              , TOO_MANY_INPUT_POINTS     
              , TOO_MANY_OUTPUT_POINTS    
              , BAD_CHANNEL_ASSIGNMENTS   
-             , CARD_SETTER_ERROR         
-             , MEMORY_DESCRIPTOR_NAME    
+             , BAD_JSON
+             , MISSING_SLOT
              , MOCK
 );
 

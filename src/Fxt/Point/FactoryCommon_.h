@@ -41,7 +41,8 @@ public:
                  Cpl::Memory::ContiguousAllocator&  generalAllocator,
                  Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
                  Fxt::Point::DatabaseApi&           dbForPoints,
-                 const char*                        pointIdKeyName   = "id" ) noexcept;
+                 const char*                        pointIdKeyName = "id",
+                 bool                               createSetter   = true ) noexcept;
 };
 
 };      // end namespaces

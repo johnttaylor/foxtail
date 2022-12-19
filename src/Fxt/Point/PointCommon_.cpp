@@ -39,7 +39,7 @@ PointCommon_::PointCommon_( DatabaseApi&                        db,
     else
     {
         m_setter = nullptr;
-        pointId  = INVALID_ID;
+        m_id     = INVALID_ID;
         CPL_SYSTEM_TRACE_MSG( FXT_POINT_TRACE_SECT_, ("State Memory allocation failed for pointID: %lu", pointId) );
     }
 
@@ -49,7 +49,7 @@ PointCommon_::PointCommon_( DatabaseApi&                        db,
         // DB Error -->put the point in a non-functioning/error state
         m_state  = nullptr;
         m_setter = nullptr;
-        pointId  = INVALID_ID;
+        m_id     = INVALID_ID;
         CPL_SYSTEM_TRACE_MSG( FXT_POINT_TRACE_SECT_, ("Failed DB add (duplicate ID?) pointID: %lu", pointId) );
     }
 }

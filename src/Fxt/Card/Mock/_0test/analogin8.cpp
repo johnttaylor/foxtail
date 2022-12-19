@@ -17,6 +17,8 @@
 #include "Cpl/Memory/LeanHeap.h"
 #include "Cpl/System/Trace.h"
 #include "Cpl/Math/real.h"
+#include "Fxt/Point/FactoryDatabase.h"
+#include "Fxt/Point/Factory.h"
 #include <string.h>
 
 #define SECT_   "_0test"
@@ -37,6 +39,8 @@ using namespace Fxt::Card::Mock;
                            "               \"channel\": 2," \
                            "                   \"id\": 1," \
                            "                   \"ioRegId\": 2," \
+                           "                   \"type\": \"708745fa-cef6-4364-abad-063a40f35cbc\"," \
+                           "                   \"typeName\": \"Fxt::Point::Float\"," \
                            "                   \"name\": \"Motor Temperature\"," \
                            "                   \"initial\": {" \
                            "                     \"valid\": true," \
@@ -48,22 +52,26 @@ using namespace Fxt::Card::Mock;
                            "               \"channel\": 5," \
                            "                   \"id\": 3," \
                            "                   \"ioRegId\": 4," \
+                           "                   \"type\": \"708745fa-cef6-4364-abad-063a40f35cbc\"," \
+                           "                   \"typeName\": \"Fxt::Point::Float\"," \
                            "                   \"name\": \"Motor Voltage\"," \
                            "                   \"initial\": {" \
                            "                     \"valid\": true," \
                            "                     \"val\": 3.5," \
-                           "                     \"id\": 0" \
+                           "                     \"id\": 7" \
                            "                   }" \
                            "           }," \
                            "           {" \
                            "               \"channel\": 6," \
                            "                   \"id\": 5," \
                            "                   \"ioRegId\": 6," \
+                           "                   \"type\": \"708745fa-cef6-4364-abad-063a40f35cbc\"," \
+                           "                   \"typeName\": \"Fxt::Point::Float\"," \
                            "                   \"name\": \"Motor Current\"," \
                            "                   \"initial\": {" \
                            "                     \"valid\": true," \
                            "                     \"val\": 0.0," \
-                           "                     \"id\": 0" \
+                           "                     \"id\": 8" \
                            "                   }" \
                            "           }" \
                            "       ]" \
@@ -81,9 +89,11 @@ static size_t statefulHeap_[10000];
 TEST_CASE( "AnalogIn8" )
 {
     Cpl::System::Shutdown_TS::clearAndUseCounter();
-    Cpl::Memory::LeanHeap generalAllocator( generalHeap_, sizeof( generalHeap_ ) );
-    Cpl::Memory::LeanHeap statefulAllocator( statefulHeap_, sizeof( statefulHeap_ ) );
-    Fxt::Point::Database<MAX_POINTS> pointDb;
+    Cpl::Memory::LeanHeap                              generalAllocator( generalHeap_, sizeof( generalHeap_ ) );
+    Cpl::Memory::LeanHeap                              statefulAllocator( statefulHeap_, sizeof( statefulHeap_ ) );
+    Fxt::Point::Database<MAX_POINTS>                   pointDb;
+    Fxt::Point::FactoryDatabase                        pointFactoryDb;
+    Fxt::Point::Factory<Fxt::Point::Float>             factoryFloat( pointFactoryDb );
     Cpl::Text::FString<Fxt::Type::Error::MAX_TEXT_LEN> errText;
 
     SECTION( "create card" )
@@ -95,6 +105,7 @@ TEST_CASE( "AnalogIn8" )
         JsonVariant cardObj = doc["cards"][0];
         AnalogIn8 uut( generalAllocator,
                        statefulAllocator,
+                       pointFactoryDb,
                        pointDb,
                        cardObj );
 
@@ -103,36 +114,34 @@ TEST_CASE( "AnalogIn8" )
 
         REQUIRE( strcmp( uut.getTypeName(), AnalogIn8::TYPE_NAME ) == 0 );
         REQUIRE( strcmp( uut.getTypeGuid(), AnalogIn8::GUID_STRING ) == 0 );
+        REQUIRE( uut.getSlotNumber() == 22 );
 
         Fxt::Point::Float* pointPtr = (Fxt::Point::Float*) pointDb.lookupById( 1 );
         REQUIRE( pointPtr );
-        REQUIRE( strcmp( pointPtr->getName(), "Motor Temperature" ) == 0 );
         REQUIRE( pointPtr->isNotValid() );
 
         pointPtr = (Fxt::Point::Float*) pointDb.lookupById( 2 );
         REQUIRE( pointPtr );
-        REQUIRE( strcmp( pointPtr->getName(), "Motor Temperature" ) == 0 );
-        REQUIRE( pointPtr->isNotValid() );
+        REQUIRE( pointPtr->isNotValid() == false );
+        pointPtr->setInvalid();
 
         pointPtr = (Fxt::Point::Float*) pointDb.lookupById( 3 );
         REQUIRE( pointPtr );
-        REQUIRE( strcmp( pointPtr->getName(), "Motor Voltage" ) == 0 );
         REQUIRE( pointPtr->isNotValid() );
 
         pointPtr = (Fxt::Point::Float*) pointDb.lookupById( 4 );
         REQUIRE( pointPtr );
-        REQUIRE( strcmp( pointPtr->getName(), "Motor Voltage" ) == 0 );
-        REQUIRE( pointPtr->isNotValid() );
+        REQUIRE( pointPtr->isNotValid() == false );
+        pointPtr->setInvalid();
 
         pointPtr = (Fxt::Point::Float*) pointDb.lookupById( 5 );
         REQUIRE( pointPtr );
-        REQUIRE( strcmp( pointPtr->getName(), "Motor Current" ) == 0 );
         REQUIRE( pointPtr->isNotValid() );
 
         pointPtr = (Fxt::Point::Float*) pointDb.lookupById( 6 );
         REQUIRE( pointPtr );
-        REQUIRE( strcmp( pointPtr->getName(), "Motor Current" ) == 0 );
-        REQUIRE( pointPtr->isNotValid() );
+        REQUIRE( pointPtr->isNotValid() == false );
+        pointPtr->setInvalid();
 
         REQUIRE( uut.isStarted() == false );
         REQUIRE( uut.start() );
@@ -221,6 +230,7 @@ TEST_CASE( "AnalogIn8" )
         JsonVariant cardObj = doc["cards"][0];
         AnalogIn8 uut( generalAllocator,
                        statefulAllocator,
+                       pointFactoryDb,
                        pointDb,
                        cardObj );
 

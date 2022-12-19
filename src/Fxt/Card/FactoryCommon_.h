@@ -74,6 +74,7 @@ public:
                  Fxt::Type::Error&                  cardErrorCode,
                  Cpl::Memory::ContiguousAllocator&  generalAllocator,
                  Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                 Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
                  Fxt::Point::DatabaseApi&           dbForPoints ) noexcept
     {
         //  Get basic info about the card
@@ -84,6 +85,7 @@ public:
             // Create the card
             CARDTYPE* card = new(memCardInstance) CARDTYPE( generalAllocator,
                                                             statefulDataAllocator,
+                                                            pointFactoryDb,
                                                             dbForPoints,
                                                             cardObject );
 

@@ -33,21 +33,22 @@ Api* FactoryCommon_::create( JsonObject&                        pointObject,
                              Cpl::Memory::ContiguousAllocator&  generalAllocator,
                              Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
                              Fxt::Point::DatabaseApi&           dbForPoints,
-                             const char*                        pointIdKeyName ) noexcept
+                             const char*                        pointIdKeyName,
+                             bool                               createSetter ) noexcept
 {
     // Get the reference to the typeCfg key/object
     JsonObject typeCfgJson = pointObject["typeCfg"].as<JsonObject>();
 
     // Is there a Setter/Initial-value
     Api* setter = nullptr;
-    if ( pointObject["initial"].is<JsonObject>() == true )
+    if ( createSetter && pointObject["initial"].is<JsonObject>() == true )
     {
-        // Create the Setter
+        // Create the Setter (note: Setter's are 'static'ish' so they are considered to have 'stateful' data -->so use the general Allocator for all allocation)
         JsonObject setterJson  = pointObject["initial"].as<JsonObject>();
         setter                 = createRawPoint( setterJson,
                                                  pointErrorCode,
                                                  generalAllocator,
-                                                 statefulDataAllocator,
+                                                 generalAllocator,
                                                  dbForPoints,
                                                  typeCfgJson,
                                                  "id",
@@ -93,7 +94,6 @@ Api* FactoryCommon_::create( JsonObject&                        pointObject,
         return nullptr;
     }
 
-    
     // If I get there -->everything worked!
     pointErrorCode = Fxt::Type::Error::SUCCESS();
     return point;

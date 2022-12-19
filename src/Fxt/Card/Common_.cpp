@@ -13,25 +13,44 @@
 
 #include "Common_.h"
 #include "Cpl/System/Assert.h"
+#include "Cpl/System/Trace.h"
 #include "Fxt/Point/Bank.h"
 #include "Fxt/Point/Api.h"
 #include <new>
 
+#define SECT_   "Fxt::Card"
 
 ///
 using namespace Fxt::Card;
 
 //////////////////////////////////////////////////
-Common_::Common_( Cpl::Memory::ContiguousAllocator& m_generalAllocator,
-                  Cpl::Memory::ContiguousAllocator& statefulDataAllocator,
-                  Fxt::Point::DatabaseApi&          dbForPoints)
-    : m_dbForPoints( dbForPoints )
-    , m_generalAllocator( m_generalAllocator )
-    , m_statefulDataAllocator( statefulDataAllocator )
+Common_::Common_( uint16_t                           totalNumChannels,
+                  Cpl::Memory::ContiguousAllocator&  generalAllocator,
+                  JsonVariant&                       cardObject )
+    : m_ioRegisterPoints( nullptr )
     , m_error( Fxt::Type::Error::SUCCESS() )
+    , m_slotNum( 0xFF )
     , m_started( false )
 {
-    CPL_SYSTEM_ASSERT( cardName );
+    // Create the array of IO Register point pointers
+    m_ioRegisterPoints = (Fxt::Point::Api**) generalAllocator.allocate( sizeof( Fxt::Point::Api* ) * totalNumChannels );
+    if ( m_ioRegisterPoints )
+    {
+        memset( m_ioRegisterPoints, 0, sizeof( Fxt::Point::Api* ) * totalNumChannels );
+
+        if ( cardObject["slot"].is<uint8_t>() == false )
+        {
+            m_error = fullErr( Err_T::MISSING_SLOT );
+        }
+        else
+        {
+            m_slotNum = cardObject["slot"];
+        }
+    }
+    else
+    {
+        m_error = fullErr( Err_T::MEMORY_CARD );
+    }
 }
 
 Common_::~Common_()
@@ -70,128 +89,82 @@ Fxt::Type::Error Common_::getErrorCode() const noexcept
     return m_error;
 }
 
+uint8_t Common_::getSlotNumber() const noexcept
+{
+    return m_slotNum;
+}
 
 //////////////////////////////////////////////////
 bool Common_::scanInputs() noexcept
 {
-    return m_virtualInputs.copyStatefulMemoryFrom( m_registerInputs );
+    return m_virtualInputs.copyStatefulMemoryFrom( m_ioRegisterInputs );
 }
 
 bool Common_::flushOutputs() noexcept
 {
-    return m_registerOutputs.copyStatefulMemoryFrom( m_virtualOutputs );
+    return m_ioRegisterOutputs.copyStatefulMemoryFrom( m_virtualOutputs );
 }
 
+//////////////////////////////////////////////////
 
-bool Common_::createDescriptors( Fxt::Point::Descriptor::CreateFunc_T createFunc,
-                                 Fxt::Point::Descriptor*              vpointDesc[],
-                                 Fxt::Point::Descriptor*              ioRegDesc[],
-                                 uint16_t                             channelIds[],
-                                 JsonArray&                           json,
-                                 size_t                               numDescriptors ) noexcept
+Fxt::Point::Api* Common_::createPointForChannel( Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
+                                                 Fxt::Point::Bank&                  pointBank,
+                                                 bool                               isIoRegPt,
+                                                 JsonObject&                        channelObject,
+                                                 Fxt::Type::Error&                  cardErrorCode,
+                                                 uint16_t                           maxChannels,
+                                                 uint16_t                           channelIndexOffset,
+                                                 uint16_t&                          channelNum,
+                                                 Cpl::Memory::ContiguousAllocator&  generalAllocator,
+                                                 Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                                                 Fxt::Point::DatabaseApi&           dbForPoints ) noexcept
 {
-    // Initialize the descriptor elements
-    for ( size_t i=0; i < numDescriptors; i++ )
+    // Validate that we have a JSON object
+    if ( channelObject.isNull() )
     {
-        // Parse IDs, and Name
-        uint32_t id         = json[i]["id"] | Point::Api::INVALID_ID;
-        uint32_t ioRegId    = json[i]["ioRegId"] | Point::Api::INVALID_ID;
-        if ( id == Point::Api::INVALID_ID || ioRegId == Point::Api::INVALID_ID  )
-        {
-            m_error = fullErr(Err_T::POINT_MISSING_ID);
-            return false;
-        }
-
-        // Parse channel Number
-        channelIds[i] = json[i]["channel"] | 0;   // Zero is NOT a valid channel number
-        if ( channelIds[i] == 0 )
-        {
-            m_error = fullErr(Err_T::BAD_CHANNEL_ASSIGNMENTS);
-            return false;
-        }
-        
-        // Ensure Channel Number is unique
-        for ( size_t j=0; j < numDescriptors; j++ )
-        {
-            if ( j != i && channelIds[j] == channelIds[i] )
-            {
-                m_error = fullErr(Err_T::BAD_CHANNEL_ASSIGNMENTS);
-                return false;
-            }
-        }
-
-        // Parse and Allocate memory for the point name
-        const char* name          = json[i]["name"];
-        char*       nameMemoryPtr = (char*) m_generalAllocator.allocate( strlen( name ) + 1 );
-        if ( nameMemoryPtr == nullptr )
-        {
-            m_error = fullErr(Err_T::MEMORY_DESCRIPTOR_NAME);
-            return false;
-        }
-        strcpy( nameMemoryPtr, name );
-
-        // Create Virtual Point descriptor
-        Fxt::Point::Descriptor* memDescriptor = (Fxt::Point::Descriptor*) m_generalAllocator.allocate( sizeof( Fxt::Point::Descriptor ) );
-        if ( memDescriptor == nullptr )
-        {
-            m_error = fullErr(Err_T::MEMORY_DESCRIPTORS);
-            return false;
-        }
-        vpointDesc[i] = new(memDescriptor) Fxt::Point::Descriptor( id, nameMemoryPtr, createFunc );
-
-        // Parse the optional Initial value (aka a 'setter point')
-        Fxt::Point::Setter* setter    = nullptr;
-        JsonVariant         setterObj = json[i]["initial"];
-        if ( !setterObj.isNull() )
-        {
-            uint32_t setterId = setterObj["id"] | Point::Api::INVALID_ID;
-            if ( setterId == Point::Api::INVALID_ID )
-            {
-                m_error = fullErr(Err_T::POINT_MISSING_ID);
-                return false;
-            }
-
-            setter = Fxt::Point::Setter::create( m_dbForPoints,
-                                                 createFunc,
-                                                 setterId,
-                                                 name,
-                                                 m_generalAllocator,
-                                                 m_generalAllocator,
-                                                 setterObj );
-            if ( setter == nullptr )
-            {
-                m_error = fullErr(Err_T::CARD_SETTER_ERROR);
-                return false;
-            }
-        }
-
-
-        // Create IO Register descriptor
-        memDescriptor = (Fxt::Point::Descriptor*) m_generalAllocator.allocate( sizeof( Fxt::Point::Descriptor ) );
-        if ( memDescriptor == nullptr )
-        {
-            m_error = fullErr(Err_T::MEMORY_DESCRIPTORS);
-            return false;
-        }
-        ioRegDesc[i] = new(memDescriptor) Fxt::Point::Descriptor( ioRegId, nameMemoryPtr, createFunc, setter );
+        cardErrorCode = fullErr( Err_T::BAD_JSON );
+        return nullptr;
     }
-    return true;
-}
 
-void Common_::setInitialValue( Fxt::Point::Descriptor* descriptor ) noexcept
-{
-    if ( descriptor != nullptr )
+    // Parse IDs
+    const char* idName  = isIoRegPt ? "ioRegId" : "id";
+    uint32_t    id      = channelObject[idName] | Fxt::Point::Api::INVALID_ID;
+    if ( id == Point::Api::INVALID_ID )
     {
-        // Set the initial INPUT value (if one was provided)
-        Fxt::Point::Setter* setterPtr = descriptor->getSetter();
-        if ( setterPtr )
-        {
-            Fxt::Point::Api* ioRegPtr = m_dbForPoints.lookupById( descriptor->getPointId() );
-            if ( ioRegPtr )
-            {
-                // Set the IO Register state
-                setterPtr->setValue( *ioRegPtr );
-            }
-        }
+        cardErrorCode = fullErr( Err_T::POINT_MISSING_ID );
+        return nullptr;
     }
+
+    // Parse channel Number
+    channelNum          = channelObject["channel"] | 0;   // Zero is NOT a valid channel number
+    uint16_t channelIdx = channelIndexOffset + channelNum - 1;
+    if ( channelNum == 0 || channelNum > maxChannels || m_ioRegisterPoints[channelIdx] != nullptr )
+    {
+        m_error = fullErr( Err_T::BAD_CHANNEL_ASSIGNMENTS );
+        return nullptr;
+    }
+
+    // Create Point
+    Fxt::Type::Error pointErr;
+    bool result = pointBank.createPoint( pointFactoryDb, 
+                                         channelObject, 
+                                         pointErr, 
+                                         generalAllocator, 
+                                         statefulDataAllocator, 
+                                         dbForPoints, 
+                                         idName, 
+                                         isIoRegPt );
+    if ( !result )
+    {
+        m_error = fullErr( Err_T::FAILED_POINT_CREATED );
+        return nullptr;
+    }
+    
+    // Cache the point for the IO Point register
+    if ( isIoRegPt )
+    {
+        m_ioRegisterPoints[channelIdx] = dbForPoints.lookupById( id );
+    }
+
+    return m_ioRegisterPoints[channelIdx];
 }

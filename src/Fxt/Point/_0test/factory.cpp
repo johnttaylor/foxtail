@@ -200,5 +200,30 @@ TEST_CASE( "Factory" )
         REQUIRE( bufString == "bob's your uncle!" );
     }
 
+    SECTION( "factory create - no setter - uint32" )
+    {
+        StaticJsonDocument<1024> doc;
+        DeserializationError errJson = deserializeJson( doc, JSON_UINT32_VAL );
+        REQUIRE( errJson == DeserializationError::Ok );
+        JsonObject  jsonObj = doc.as<JsonObject>();
+
+        Uint32* pointU32 = uutFactoryUint32.createTypeSafe( jsonObj, err, generalHeap, stateHeap, db, "id", false );
+        REQUIRE( pointU32 != nullptr );
+        REQUIRE( pointU32->isNotValid() );
+    }
+
+    SECTION( "factory create - no setter - string" )
+    {
+        StaticJsonDocument<1024> doc;
+        DeserializationError errJson = deserializeJson( doc, JSON_STRING_VAL );
+        REQUIRE( errJson == DeserializationError::Ok );
+        JsonObject  jsonObj = doc.as<JsonObject>();
+
+        String* pointString = (String*) uutFactoryString.createTypeSafe( jsonObj, err, generalHeap, stateHeap, db, "id", false );
+        REQUIRE( pointString != nullptr );
+        REQUIRE( pointString->getMaxLength() == 17 );
+        REQUIRE( pointString->isNotValid() );
+    }
+
     REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );
 }

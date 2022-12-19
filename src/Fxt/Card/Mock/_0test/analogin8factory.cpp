@@ -13,8 +13,10 @@
 #include "Cpl/System/_testsupport/Shutdown_TS.h"
 #include "Fxt/Card/Mock/AnalogIn8.h"
 #include "Fxt/Card/Mock/AnalogIn8Factory.h"
-#include "Fxt/Point/Uint8.h"
+#include "Fxt/Point/Float.h"
 #include "Fxt/Point/Database.h"
+#include "Fxt/Point/FactoryDatabase.h"
+#include "Fxt/Point/Factory.h"
 #include "Fxt/Card/FactoryDatabase.h"
 #include "Cpl/Memory/LeanHeap.h"
 #include "Cpl/System/Trace.h"
@@ -29,7 +31,6 @@ using namespace Fxt::Card::Mock;
 #define CARD_DEFINTION     "{\"cards\":[" \
                            "{" \
                            "  \"name\": \"bob\"," \
-                           "  \"id\": 1," \
                            "  \"type\": \"1968f533-e323-4ae4-8493-9a572f3bd195\"," \
                            "  \"typename\": \"Fxt::Card::HW::Mock::AnalogIn8\"," \
                            "  \"slot\": 22," \
@@ -39,6 +40,8 @@ using namespace Fxt::Card::Mock;
                            "               \"channel\": 2," \
                            "                   \"id\": 1," \
                            "                   \"ioRegId\": 2," \
+                           "                   \"type\": \"708745fa-cef6-4364-abad-063a40f35cbc\"," \
+                           "                   \"typeName\": \"Fxt::Point::Float\"," \
                            "                   \"name\": \"Motor Temperature\"," \
                            "                   \"initial\": {" \
                            "                     \"valid\": true," \
@@ -50,22 +53,26 @@ using namespace Fxt::Card::Mock;
                            "               \"channel\": 5," \
                            "                   \"id\": 3," \
                            "                   \"ioRegId\": 4," \
+                           "                   \"type\": \"708745fa-cef6-4364-abad-063a40f35cbc\"," \
+                           "                   \"typeName\": \"Fxt::Point::Float\"," \
                            "                   \"name\": \"Motor Voltage\"," \
                            "                   \"initial\": {" \
                            "                     \"valid\": true," \
                            "                     \"val\": 3.5," \
-                           "                     \"id\": 0" \
+                           "                     \"id\": 7" \
                            "                   }" \
                            "           }," \
                            "           {" \
                            "               \"channel\": 6," \
                            "                   \"id\": 5," \
                            "                   \"ioRegId\": 6," \
+                           "                   \"type\": \"708745fa-cef6-4364-abad-063a40f35cbc\"," \
+                           "                   \"typeName\": \"Fxt::Point::Float\"," \
                            "                   \"name\": \"Motor Current\"," \
                            "                   \"initial\": {" \
                            "                     \"valid\": true," \
                            "                     \"val\": 0.0," \
-                           "                     \"id\": 0" \
+                           "                     \"id\": 8" \
                            "                   }" \
                            "           }" \
                            "       ]" \
@@ -83,12 +90,14 @@ static size_t statefulHeap_[10000];
 TEST_CASE( "AnalogIn8Factory" )
 {
     Cpl::System::Shutdown_TS::clearAndUseCounter();
-    Cpl::Memory::LeanHeap            generalAllocator( generalHeap_, sizeof( generalHeap_ ) );
-    Cpl::Memory::LeanHeap            statefulAllocator( statefulHeap_, sizeof( statefulHeap_ ) );
-    Fxt::Point::Database<MAX_POINTS> pointDb;
-    Fxt::Card::FactoryDatabase       cardFactoryDb;
-    AnalogIn8Factory                 uut( cardFactoryDb );
-    Fxt::Type::Error                 componentErrorCode;
+    Cpl::Memory::LeanHeap                              generalAllocator( generalHeap_, sizeof( generalHeap_ ) );
+    Cpl::Memory::LeanHeap                              statefulAllocator( statefulHeap_, sizeof( statefulHeap_ ) );
+    Fxt::Point::Database<MAX_POINTS>                   pointDb;
+    Fxt::Point::FactoryDatabase                        pointFactoryDb;
+    Fxt::Point::Factory<Fxt::Point::Float>             factoryFloat( pointFactoryDb );
+    Fxt::Card::FactoryDatabase                         cardFactoryDb;
+    AnalogIn8Factory                                   uut( cardFactoryDb );
+    Fxt::Type::Error                                   cardErrorCode;
     Cpl::Text::FString<Fxt::Type::Error::MAX_TEXT_LEN> errText;
 
     SECTION( "create/destroy card" )
@@ -98,45 +107,40 @@ TEST_CASE( "AnalogIn8Factory" )
         REQUIRE( err == DeserializationError::Ok );
 
         JsonVariant cardObj = doc["cards"][0];
-        Fxt::Card::Api* card = uut.create( cardObj, componentErrorCode, generalAllocator, statefulAllocator, pointDb );
+        Fxt::Card::Api* card = uut.create( cardObj, cardErrorCode, generalAllocator, statefulAllocator, pointFactoryDb, pointDb );
         REQUIRE( card != nullptr );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", componentErrorCode.toText( errText )) );
-        REQUIRE( componentErrorCode == Fxt::Type::Error::SUCCESS()  );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", cardErrorCode.toText( errText )) );
+        REQUIRE( cardErrorCode == Fxt::Type::Error::SUCCESS()  );
 
         REQUIRE( strcmp( uut.getGuid(), card->getTypeGuid() ) == 0 );
 
         REQUIRE( strcmp( card->getTypeName(), AnalogIn8::TYPE_NAME ) == 0 );
         REQUIRE( strcmp( card->getTypeGuid(), AnalogIn8::GUID_STRING ) == 0 );
+        REQUIRE( card->getSlotNumber() == 22 );
 
-        Fxt::Point::Uint8* pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 1 );
+        Fxt::Point::Float* pointPtr = (Fxt::Point::Float*) pointDb.lookupById( 1 );
         REQUIRE( pointPtr );
-        REQUIRE( strcmp( pointPtr->getName(), "Motor Temperature" ) == 0 );
         REQUIRE( pointPtr->isNotValid() );
 
-        pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 2 );
+        pointPtr = (Fxt::Point::Float*) pointDb.lookupById( 2 );
         REQUIRE( pointPtr );
-        REQUIRE( strcmp( pointPtr->getName(), "Motor Temperature" ) == 0 );
+        REQUIRE( pointPtr->isNotValid() == false);
+
+        pointPtr = (Fxt::Point::Float*) pointDb.lookupById( 3 );
+        REQUIRE( pointPtr );
         REQUIRE( pointPtr->isNotValid() );
 
-        pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 3 );
+        pointPtr = (Fxt::Point::Float*) pointDb.lookupById( 4 );
         REQUIRE( pointPtr );
-        REQUIRE( strcmp( pointPtr->getName(), "Motor Voltage" ) == 0 );
+        REQUIRE( pointPtr->isNotValid() == false );
+
+        pointPtr = (Fxt::Point::Float*) pointDb.lookupById( 5 );
+        REQUIRE( pointPtr );
         REQUIRE( pointPtr->isNotValid() );
 
-        pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 4 );
+        pointPtr = (Fxt::Point::Float*) pointDb.lookupById( 6 );
         REQUIRE( pointPtr );
-        REQUIRE( strcmp( pointPtr->getName(), "Motor Voltage" ) == 0 );
-        REQUIRE( pointPtr->isNotValid() );
-
-        pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 5 );
-        REQUIRE( pointPtr );
-        REQUIRE( strcmp( pointPtr->getName(), "Motor Current" ) == 0 );
-        REQUIRE( pointPtr->isNotValid() );
-
-        pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 6 );
-        REQUIRE( pointPtr );
-        REQUIRE( strcmp( pointPtr->getName(), "Motor Current" ) == 0 );
-        REQUIRE( pointPtr->isNotValid() );
+        REQUIRE( pointPtr->isNotValid() == false);
 
         uut.destroy( *card );
     }
@@ -148,10 +152,10 @@ TEST_CASE( "AnalogIn8Factory" )
         REQUIRE( err == DeserializationError::Ok );
 
         JsonVariant cardObj = doc["cards"][0];
-        Fxt::Card::Api* card = cardFactoryDb.createCardfromJSON( cardObj, generalAllocator, statefulAllocator, pointDb, componentErrorCode );
+        Fxt::Card::Api* card = cardFactoryDb.createCardfromJSON( cardObj, generalAllocator, statefulAllocator, pointFactoryDb, pointDb, cardErrorCode );
         REQUIRE( card != nullptr );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", componentErrorCode.toText( errText )) );
-        REQUIRE( componentErrorCode == Fxt::Type::Error::SUCCESS()  );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", cardErrorCode.toText( errText )) );
+        REQUIRE( cardErrorCode == Fxt::Type::Error::SUCCESS()  );
     }
 
     REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );

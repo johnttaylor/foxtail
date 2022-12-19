@@ -40,9 +40,10 @@ public:
                                Cpl::Memory::ContiguousAllocator&  generalAllocator,
                                Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
                                Fxt::Point::DatabaseApi&           dbForPoints,
-                               const char*                        pointIdKeyName = "id" ) noexcept
+                               const char*                        pointIdKeyName = "id",
+                               bool                               createSetter   = true ) noexcept
     {
-        return (POINTTYPE*) create( pointObject, pointErrorCode, generalAllocator, statefulDataAllocator, dbForPoints, pointIdKeyName );
+        return (POINTTYPE*) create( pointObject, pointErrorCode, generalAllocator, statefulDataAllocator, dbForPoints, pointIdKeyName, createSetter );
     }
 
     /// See Fxt::Point::FactoryApi
@@ -113,9 +114,10 @@ public:
                                     Cpl::Memory::ContiguousAllocator&  generalAllocator,
                                     Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
                                     Fxt::Point::DatabaseApi&           dbForPoints,
-                                    const char*                        pointIdKeyName = "id" ) noexcept
+                                    const char*                        pointIdKeyName = "id",
+                                    bool                               createSetter   = true ) noexcept
     {
-        return (ARRAYPOINTTYPE*) create( pointObject, pointErrorCode, generalAllocator, statefulDataAllocator, dbForPoints, pointIdKeyName );
+        return (ARRAYPOINTTYPE*) create( pointObject, pointErrorCode, generalAllocator, statefulDataAllocator, dbForPoints, pointIdKeyName, createSetter );
     }
 
     /// See Fxt::Point::FactoryApi

@@ -74,7 +74,8 @@ public:
                          Cpl::Memory::ContiguousAllocator&  generalAllocator,
                          Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
                          Fxt::Point::DatabaseApi&           dbForPoints,
-                         const char*                        pointIdKeyName = "id" ) noexcept = 0;
+                         const char*                        pointIdKeyName = "id",
+                         bool                               createSetter   = true ) noexcept = 0;
 
 
     /** This method is similar to create(), except that is ONLY creates a

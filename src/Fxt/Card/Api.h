@@ -38,9 +38,6 @@ namespace Card {
  */
 class Api : public Cpl::Container::Item
 {
-    /// Magic value for an Invalid Point ID
-    static constexpr uint16_t INVALID_ID = 0xFFFF;
-
 public:
     /** This method is used to start/activate the IO card.  If the card fails
         to be started the method returns false; else true is returned.
@@ -98,6 +95,8 @@ public:
     /// Returns the card's 'human readable' type name (note: this is NOT guaranteed to be unique)
     virtual const char* getTypeName() const noexcept = 0;
 
+    /// This method returns the card's slot number within it chassis
+    virtual uint8_t getSlotNumber() const noexcept = 0;
 
 public:
     /** This method returns the current error state of the card.  A value

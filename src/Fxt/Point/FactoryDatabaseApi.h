@@ -51,7 +51,8 @@ public:
                                       Cpl::Memory::ContiguousAllocator&  generalAllocator,
                                       Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
                                       Fxt::Point::DatabaseApi&           dbForPoints,
-                                      const char*                        pointIdKeyName = "id" ) noexcept = 0;
+                                      const char*                        pointIdKeyName = "id",
+                                      bool                               createSetter   = true ) noexcept = 0;
 
 public:
     /** This method looks-up the Point Factory by its GUID.  If the

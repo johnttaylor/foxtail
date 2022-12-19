@@ -38,7 +38,8 @@ bool Bank::createPoint( FactoryDatabaseApi&                pointFactoryDb,
                         Cpl::Memory::ContiguousAllocator&  generalAllocator,
                         Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
                         Fxt::Point::DatabaseApi&           dbForPoints,
-                        const char*                        pointIdKeyName ) noexcept
+                        const char*                        pointIdKeyName,
+                        bool                               createSetter ) noexcept
 {
     // Fail - if I have previously failed
     if ( m_error )
@@ -53,7 +54,8 @@ bool Bank::createPoint( FactoryDatabaseApi&                pointFactoryDb,
                                                      generalAllocator,
                                                      statefulDataAllocator,
                                                      dbForPoints,
-                                                     pointIdKeyName );
+                                                     pointIdKeyName,
+                                                     createSetter );
     if ( point == nullptr )
     {
         // Error: Failed to create the point
@@ -69,12 +71,8 @@ bool Bank::createPoint( FactoryDatabaseApi&                pointFactoryDb,
         m_memStart = point->getStartOfStatefulMemory_();
     }
 
-    // Keep track of the allocated size (account for the 'Setter' when it is present)
+    // Keep track of the allocated size 
     m_memSize += point->getStatefulMemorySize();
-    if ( point->hasSetter() )
-    {
-        m_memSize += point->getStatefulMemorySize();
-    }
 
     // If I get here the Point was successfully added to the bank
     return true;
@@ -117,7 +115,7 @@ bool Bank::copyStatefulMemoryFrom( const void* src, size_t srcSizeInBytes ) noex
 bool Bank::copyStatefulMemoryFrom( BankApi& src ) noexcept
 {
     size_t srcSizeInBytes = src.getStatefulAllocatedSize();
-    if ( srcSizeInBytes != m_memSize )
+    if ( srcSizeInBytes != m_memSize  )
     {
         return false;
     }

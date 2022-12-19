@@ -35,7 +35,8 @@ Api* FactoryDatabase::createPointfromJSON( JsonObject&                        po
                                            Cpl::Memory::ContiguousAllocator&  generalAllocator,
                                            Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
                                            Fxt::Point::DatabaseApi&           dbForPoints,
-                                           const char*                        pointIdKeyName ) noexcept
+                                           const char*                        pointIdKeyName,
+                                           bool                               createSetter  ) noexcept
 {
     // Ensure that a Id has been assigned
     const char* typeGuid = pointObject["type"];
@@ -52,7 +53,7 @@ Api* FactoryDatabase::createPointfromJSON( JsonObject&                        po
         return nullptr;
     }
 
-    return factory->create( pointObject, pointErrorCode, generalAllocator, statefulDataAllocator, dbForPoints, pointIdKeyName );
+    return factory->create( pointObject, pointErrorCode, generalAllocator, statefulDataAllocator, dbForPoints, pointIdKeyName, createSetter );
 }
 
 

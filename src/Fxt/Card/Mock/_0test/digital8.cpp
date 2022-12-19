@@ -13,6 +13,8 @@
 #include "Cpl/System/_testsupport/Shutdown_TS.h"
 #include "Fxt/Card/Mock/Digital8.h"
 #include "Fxt/Point/Database.h"
+#include "Fxt/Point/FactoryDatabase.h"
+#include "Fxt/Point/Factory.h"
 #include "Fxt/Point/Uint8.h"
 #include "Cpl/Memory/LeanHeap.h"
 #include "Cpl/System/Trace.h"
@@ -34,14 +36,16 @@ using namespace Fxt::Card::Mock;
                            "       \"inputs\": [" \
                            "           {" \
                            "               \"channel\": 1," \
-                           "                   \"id\": 1," \
-                           "                   \"ioRegId\": 2," \
-                           "                   \"name\": \"InputPt\"," \
-                           "                   \"initial\": {" \
-                           "                     \"valid\": true," \
-                           "                     \"val\": 128," \
-                           "                     \"id\": 0" \
-                           "                   }" \
+                           "                \"id\": 1," \
+                           "                \"ioRegId\": 2," \
+                           "                \"type\": \"918cff9e-8007-4666-99ac-384b9624329c\"," \
+                           "                \"typeName\": \"Fxt::Point::Uint8\"," \
+                           "                \"name\": \"InputPt\"," \
+                           "                \"initial\": {" \
+                           "                  \"valid\": true," \
+                           "                  \"val\": 128," \
+                           "                  \"id\": 0" \
+                           "                }" \
                            "           }" \
                            "       ]," \
                            "       \"outputs\": [" \
@@ -49,11 +53,13 @@ using namespace Fxt::Card::Mock;
                            "              \"channel\": 1," \
                            "              \"id\": 3," \
                            "              \"ioRegId\": 4," \
+                           "              \"type\": \"918cff9e-8007-4666-99ac-384b9624329c\"," \
+                           "              \"typeName\": \"Fxt::Point::Uint8\"," \
                            "              \"name\": \"OutputPt\"," \
                            "              \"initial\": {" \
                            "                 \"valid\": true," \
                            "                 \"val\": 1," \
-                           "                 \"id\": 0" \
+                           "                 \"id\": 5" \
                            "              }" \
                            "           }" \
                            "       ]" \
@@ -71,11 +77,12 @@ static size_t statefulHeap_[10000];
 TEST_CASE( "Digital8" )
 {
     Cpl::System::Shutdown_TS::clearAndUseCounter();
-    Cpl::Memory::LeanHeap generalAllocator( generalHeap_, sizeof( generalHeap_ ) );
-    Cpl::Memory::LeanHeap statefulAllocator( statefulHeap_, sizeof( statefulHeap_ ) );
-    Fxt::Point::Database<MAX_POINTS> pointDb;
+    Cpl::Memory::LeanHeap                              generalAllocator( generalHeap_, sizeof( generalHeap_ ) );
+    Cpl::Memory::LeanHeap                              statefulAllocator( statefulHeap_, sizeof( statefulHeap_ ) );
+    Fxt::Point::Database<MAX_POINTS>                   pointDb;
+    Fxt::Point::FactoryDatabase                        pointFactoryDb;
+    Fxt::Point::Factory<Fxt::Point::Uint8>             factoryFloat( pointFactoryDb );
     Cpl::Text::FString<Fxt::Type::Error::MAX_TEXT_LEN> errText;
-
 
     SECTION( "create card" )
     {
@@ -86,6 +93,7 @@ TEST_CASE( "Digital8" )
         JsonVariant cardObj = doc["cards"][0];
         Digital8 uut( generalAllocator,
                       statefulAllocator,
+                      pointFactoryDb,
                       pointDb,
                       cardObj );
 
@@ -97,23 +105,22 @@ TEST_CASE( "Digital8" )
 
         Fxt::Point::Uint8* pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 1 );
         REQUIRE( pointPtr );
-        REQUIRE( strcmp( pointPtr->getName(), "InputPt" ) == 0 );
         REQUIRE( pointPtr->isNotValid() );
 
         pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 2 );
         REQUIRE( pointPtr );
-        REQUIRE( strcmp( pointPtr->getName(), "InputPt" ) == 0 );
-        REQUIRE( pointPtr->isNotValid() );
+        REQUIRE( pointPtr->isNotValid() == false );
+        pointPtr->setInvalid();
 
         pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 3 );
         REQUIRE( pointPtr );
-        REQUIRE( strcmp( pointPtr->getName(), "OutputPt" ) == 0 );
         REQUIRE( pointPtr->isNotValid() );
 
         pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 4 );
         REQUIRE( pointPtr );
-        REQUIRE( strcmp( pointPtr->getName(), "OutputPt" ) == 0 );
-        REQUIRE( pointPtr->isNotValid() );
+        REQUIRE( pointPtr->isNotValid() == false );
+        pointPtr->setInvalid();
+
 
         REQUIRE( uut.isStarted() == false );
         REQUIRE( uut.start() );
@@ -168,6 +175,7 @@ TEST_CASE( "Digital8" )
         JsonVariant cardObj = doc["cards"][0];
         Digital8 uut( generalAllocator,
                       statefulAllocator,
+                      pointFactoryDb,
                       pointDb,
                       cardObj );
 
@@ -187,11 +195,11 @@ TEST_CASE( "Digital8" )
         REQUIRE( pointPtr->read( pointValue ) );
         REQUIRE( pointValue == 0x01 );
 
-        pointPtr   = (Fxt::Point::Uint8*) pointDb.lookupById( 3 );
+        pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 3 );
         pointPtr->write( 0xAA );
         uut.flushOutputs();
         REQUIRE( uut.getOutputs( pointValue ) );
-        REQUIRE( pointValue == 0xAA );
+        REQUIRE( pointValue == 0x01 );
     }
 
     REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );

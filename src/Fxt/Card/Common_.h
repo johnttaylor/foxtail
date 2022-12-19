@@ -17,7 +17,7 @@
 #include "Fxt/Card/Error.h"
 #include "Fxt/Point/Bank.h"
 #include "Fxt/Point/DatabaseApi.h"
-#include "Fxt/Point/Descriptor.h"
+#include "Fxt/Point/FactoryDatabaseApi.h"
 #include "Cpl/Json/Arduino.h"
 #include "Cpl/Memory/ContiguousAllocator.h"
 
@@ -32,12 +32,10 @@ namespace Card {
 class Common_ : public Api
 {
 public:
-
-public:
     /// Constructor
-    Common_( Cpl::Memory::ContiguousAllocator&  generalAllocator,
-             Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
-             Fxt::Point::DatabaseApi&           dbForPoints );
+    Common_( uint16_t                           totalNumChannels,
+             Cpl::Memory::ContiguousAllocator&  generalAllocator,
+             JsonVariant&                       cardObject );
 
     /// Destructor
     ~Common_();
@@ -48,6 +46,9 @@ public:
 
     /// See Fxt::Card::Api
     bool stop() noexcept;
+
+    /// See Fxt::Card::Api
+    uint8_t getSlotNumber() const noexcept;
 
     /// See Fxt::Card::Api
     bool isStarted() const noexcept;
@@ -61,46 +62,44 @@ public:
     /// See Fxt::Card::Api
     Fxt::Type::Error getErrorCode() const noexcept;
 
-
 protected:
-    /// Helper method to create descriptor instances
-    bool createDescriptors( Fxt::Point::Descriptor::CreateFunc_T createFunc,
-                            Fxt::Point::Descriptor*              vpointDesc[],
-                            Fxt::Point::Descriptor*              ioRegDesc[],
-                            uint16_t                             channelIds[],
-                            JsonArray&                           json,
-                            size_t                               numDescriptors ) noexcept;
-    
-    /** Helper method to set an initial value from a 'setter'.  If the 
-        the descriptor is null or the descriptor has no 'setter' then nothing 
-        is done
+    /** Helper method to create the points for a single channel.  Returns a pointer
+        to the created 'IO Register' Point if all points were successfully created;
+        else nullptr is returned.
      */
-    void setInitialValue( Fxt::Point::Descriptor* descriptor ) noexcept;
-    
+    Fxt::Point::Api* createPointForChannel( Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
+                                            Fxt::Point::Bank&                  pointBank,
+                                            bool                               isIoRegPt,
+                                            JsonObject&                        channelObject,
+                                            Fxt::Type::Error&                  cardErrorCode,
+                                            uint16_t                           maxChannels,
+                                            uint16_t                           channelIndexOffset,
+                                            uint16_t&                          channelNum,
+                                            Cpl::Memory::ContiguousAllocator&  generalAllocator,
+                                            Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                                            Fxt::Point::DatabaseApi&           dbForPoints ) noexcept;
+
 protected:
-    /// Handle to the Point data base
-    Fxt::Point::DatabaseApi&            m_dbForPoints; 
-
-    /// General purpose allocator
-    Cpl::Memory::ContiguousAllocator&   m_generalAllocator;
-
-    /// Allocator for a Point's stateful data
-    Cpl::Memory::ContiguousAllocator&   m_statefulDataAllocator;
-    
     /// Bank for the Card's Input IO Register Points
-    Fxt::Point::Bank                    m_registerInputs;
+    Fxt::Point::Bank                    m_ioRegisterInputs;
 
     /// Bank for the Card's Input Virtual Points
-    Fxt::Point::Bank                    m_virtualInputs;          
+    Fxt::Point::Bank                    m_virtualInputs;
 
     /// Bank for the Card's Output IO Register Points
-    Fxt::Point::Bank                    m_registerOutputs;        
-    
+    Fxt::Point::Bank                    m_ioRegisterOutputs;
+
     /// Bank for the Card's OUtput Virtual Points
-    Fxt::Point::Bank                    m_virtualOutputs;         
+    Fxt::Point::Bank                    m_virtualOutputs;
+
+    /// Array of IoRegister Point Pointers.  Ordered by Channel Index
+    Fxt::Point::Api**                   m_ioRegisterPoints;
 
     /// Error state. A value of 0 indicates NO error
     Fxt::Type::Error                    m_error;
+
+    /// My slot number
+    uint8_t                             m_slotNum;
 
     /// My started state
     bool                                m_started;

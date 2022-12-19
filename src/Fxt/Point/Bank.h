@@ -39,7 +39,8 @@ public:
                       Cpl::Memory::ContiguousAllocator&  generalAllocator,
                       Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
                       Fxt::Point::DatabaseApi&           dbForPoints,
-                      const char*                        pointIdKeyName = "id" ) noexcept;
+                      const char*                        pointIdKeyName = "id",
+                      bool                               createSetter   = true ) noexcept;
 
     /// See Fxt::Point::BankApi
     bool copyStatefulMemoryTo( void* dst, size_t maxDstSizeInBytes ) noexcept;

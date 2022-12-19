@@ -66,7 +66,7 @@ namespace Mock {
             }
           }
         ],
-        "outputs": [                                        // Outputs. The card supports 0 to 32 output points
+        "outputs": [                                        // Outputs. The card supports 8 output points that is exposed a single Byte
           {
             "channel": 1                                    // Always set to 1
             "id": 0,                                        // ID assigned to the Virtual Point that represents the output value
@@ -108,11 +108,9 @@ public:
     /// Constructor
     Digital8( Cpl::Memory::ContiguousAllocator&  generalAllocator,
               Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+              Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
               Fxt::Point::DatabaseApi&           dbForPoints,
               JsonVariant&                       cardObject );
-
-    /// Destructor
-    ~Digital8();
 
 public:
     /// See Fxt::Card::Api
@@ -152,27 +150,17 @@ public:
 
 protected:
     /// Helper method to parse the card's JSON config
-    virtual bool parseConfiguration( JsonVariant& obj ) noexcept;
-
-    /// Helper method to create the point instances
-    virtual void createPoints() noexcept;
+    void parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAllocator,
+                             Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                             Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
+                             Fxt::Point::DatabaseApi&           dbForPoints,
+                             JsonVariant&                       cardObject ) noexcept;
 
 
 protected:
     /// Mutex to provide thread safety for the application driving/reading the mocked IO
     Cpl::System::Mutex                  m_lock;
 
-    /// List of Virtual Point Input Descriptors (allocate space for max IO plus a list-terminator)
-    Fxt::Point::Descriptor*             m_virtualInDescriptors[MAX_DESCRIPTORS + 1];
-
-    /// List of IO Register Input Descriptors (allocate space for max IO plus a list-terminator)
-    Fxt::Point::Descriptor*             m_ioRegInDescriptors[MAX_DESCRIPTORS + 1];
-
-    /// List of Virtual Point Output Descriptors (allocate space for max IO plus a list-terminator)
-    Fxt::Point::Descriptor*             m_virtualOutDescriptors[MAX_DESCRIPTORS + 1];
-
-    /// List of IO Register Output Descriptors (allocate space for max IO plus a list-terminator)
-    Fxt::Point::Descriptor*             m_ioRegOutDescriptors[MAX_DESCRIPTORS + 1];
 };
 
 
