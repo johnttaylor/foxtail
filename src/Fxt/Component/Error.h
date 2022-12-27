@@ -38,7 +38,6 @@ namespace Component {
     @param BAD_OUTPUT_REFERENCE             Bad or Missing output reference
     @param UNRESOLVED_INPUT_REFRENCE        Failed to resolve input references
     @param UNRESOLVED_OUTPUT_REFRENCE       Failed to resolve output references
-    @param MISSING_INVALID_EXE_ORDER        Missing Execution order
     @param OUT_OF_MEMORY                    Insufficient memory to allocate the component
     @param FAILED_START                     Failed to start the component (e.g. already running)
     @param INPUT_REFRENCE_BAD_TYPE          Input Point Reference is the wrong type
@@ -54,7 +53,6 @@ BETTER_ENUM( Err_T, uint8_t
              , BAD_OUTPUT_REFERENCE
              , UNRESOLVED_INPUT_REFRENCE
              , UNRESOLVED_OUTPUT_REFRENCE
-             , MISSING_INVALID_EXE_ORDER
              , OUT_OF_MEMORY
              , FAILED_START
              , INPUT_REFRENCE_BAD_TYPE
@@ -74,7 +72,7 @@ void errorCodetoText_( Cpl::Text::String& buffer, Fxt::Type::Error errorCode, ui
 /// Helper method to build a 'complete/full' error from a component specific error code
 inline Fxt::Type::Error fullErr( Err_T localErr )
 {
-    return Fxt::Type::Error( Fxt::Type::Err_T::LOGIC_CHAIN, localErr );
+    return Fxt::Type::Error( Fxt::Type::Err_T::COMPONENT, localErr );
 }
 
 

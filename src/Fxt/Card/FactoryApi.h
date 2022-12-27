@@ -69,21 +69,10 @@ namespace Card {
 class FactoryApi: public Cpl::Container::Item
 {
 public:
-    /** This method creates a Card and inserts the instance into the Card 
-        Database. The concrete type of the IO card is dependent on the concrete 
-        Factory that is ultimately invoked to create the IO card.
+    /** This method creates a Card. The concrete type of the IO card is 
+        dependent on the concrete Factory that is ultimately invoked to create 
+        the IO card.
 
-        Each individual Card Type defines the content/structure of its JSON
-        'cardObject'.  The 'cardObject' must contain sufficient information to 
-        construct a Point Descriptor for each internal Point and each 
-        external/visible/Register Point created by the IO card.
-
-        NOTE: Only the 'Virtual Points' are accessible via Point Descriptors
-
-        Note: The IO Card is responsible for allocating the memory for the
-              Point Descriptors and the memory must stay in scope until the
-              IO card is destroyed.
- 
         The method returns a pointer to the created card when successful; else 
         if an error occurred (e.g. out-of-memory) nullptr is returned.
         When an error occurs, the 'cardErrorCode' argument is updated with 

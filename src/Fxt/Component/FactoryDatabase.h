@@ -60,6 +60,7 @@ public:
                                   Fxt::Point::BankApi&               statePointBank,
                                   Cpl::Memory::ContiguousAllocator&  generalAllocator,
                                   Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                                  Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
                                   Fxt::Point::DatabaseApi&           dbForPoints,
                                   Fxt::Type::Error&                  componentErrorCode ) noexcept;
 

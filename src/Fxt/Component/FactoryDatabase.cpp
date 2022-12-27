@@ -34,6 +34,7 @@ Api* FactoryDatabase::createComponentfromJSON( JsonVariant&                     
                                                Fxt::Point::BankApi&               statePointBank,
                                                Cpl::Memory::ContiguousAllocator&  generalAllocator,
                                                Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                                               Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
                                                Fxt::Point::DatabaseApi&           dbForPoints,
                                                Fxt::Type::Error&                  componentErrorCode ) noexcept
 {
@@ -57,6 +58,7 @@ Api* FactoryDatabase::createComponentfromJSON( JsonVariant&                     
                             componentErrorCode,
                             generalAllocator,
                             statefulDataAllocator,
+                            pointFactoryDb,
                             dbForPoints );
 }
 

@@ -14,6 +14,8 @@
 #include "Fxt/Component/Digital/ByteSplitter.h"
 #include "Fxt/Component/Digital/Error.h"
 #include "Fxt/Point/Database.h"
+#include "Fxt/Point/FactoryDatabase.h"
+#include "Fxt/Point/Bank.h"
 #include "Cpl/Memory/LeanHeap.h"
 #include <string.h>
 
@@ -100,6 +102,8 @@ TEST_CASE( "ByteSplitter" )
     Cpl::System::Shutdown_TS::clearAndUseCounter();
     Cpl::Memory::LeanHeap generalAllocator( generalHeap_, sizeof( generalHeap_ ) );
     Cpl::Memory::LeanHeap statefulAllocator( statefulHeap_, sizeof( statefulHeap_ ) );
+    Fxt::Point::Bank                 pointBank;
+    Fxt::Point::FactoryDatabase      pointFactoryDb;
     Fxt::Point::Database<MAX_POINTS> pointDb;
 
     SECTION( "create component" )
@@ -112,6 +116,8 @@ TEST_CASE( "ByteSplitter" )
         ByteSplitter uut( componentObj,
                           generalAllocator,
                           statefulAllocator,
+                          pointBank,
+                          pointFactoryDb,
                           pointDb );
 
         REQUIRE( uut.getErrorCode() == Fxt::Type::Error::SUCCESS() );
@@ -132,6 +138,8 @@ TEST_CASE( "ByteSplitter" )
         ByteSplitter uut( componentObj,
                           generalAllocator,
                           statefulAllocator,
+                          pointBank,
+                          pointFactoryDb,
                           pointDb );
 
         REQUIRE( uut.getErrorCode() == Fxt::Type::Error::SUCCESS() );
@@ -152,16 +160,18 @@ TEST_CASE( "ByteSplitter" )
         ByteSplitter uut( componentObj,
                           generalAllocator,
                           statefulAllocator,
+                          pointBank,
+                          pointFactoryDb,
                           pointDb );
 
         REQUIRE( uut.getErrorCode() == Fxt::Type::Error::SUCCESS() );
 
-        Fxt::Point::Uint8* ptIn1  = new(std::nothrow) Fxt::Point::Uint8( pointDb, POINT_ID__IN_SIGNAL_1, "inSig1", statefulAllocator );
-        Fxt::Point::Bool* ptOutBit1 = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT1_OUT, "outBit1", statefulAllocator );
-        Fxt::Point::Bool* ptOutBit1_N = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT1_NEGATED, "/outBit1", statefulAllocator );
-        Fxt::Point::Bool* ptOutBit4 = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT4_OUT, "outBit4", statefulAllocator );
-        Fxt::Point::Bool* ptOutBit4_N = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT4_NEGATED, "/outBit4", statefulAllocator );
-        Fxt::Point::Bool* ptOutBit5_N = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT5_NEGATED, "/outBit5", statefulAllocator );
+        Fxt::Point::Uint8* ptIn1  = new(std::nothrow) Fxt::Point::Uint8( pointDb, POINT_ID__IN_SIGNAL_1,  statefulAllocator );
+        Fxt::Point::Bool* ptOutBit1 = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT1_OUT, statefulAllocator );
+        Fxt::Point::Bool* ptOutBit1_N = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT1_NEGATED, statefulAllocator );
+        Fxt::Point::Bool* ptOutBit4 = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT4_OUT, statefulAllocator );
+        Fxt::Point::Bool* ptOutBit4_N = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT4_NEGATED, statefulAllocator );
+        Fxt::Point::Bool* ptOutBit5_N = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT5_NEGATED, statefulAllocator );
 
         REQUIRE( uut.resolveReferences( pointDb ) == Fxt::Type::Error::SUCCESS() );
 

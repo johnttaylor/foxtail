@@ -74,6 +74,7 @@ public:
                  Fxt::Type::Error&                  componentErrorCode,
                  Cpl::Memory::ContiguousAllocator&  generalAllocator,
                  Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                 Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
                  Fxt::Point::DatabaseApi&           dbForPoints ) noexcept
     {
         //  Get basic info about the card
@@ -86,6 +87,7 @@ public:
                                                                                 generalAllocator,
                                                                                 statefulDataAllocator,
                                                                                 statePointBank,
+                                                                                pointFactoryDb,
                                                                                 dbForPoints );
 
             componentErrorCode = component->getErrorCode();

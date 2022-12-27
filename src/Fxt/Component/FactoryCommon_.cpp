@@ -19,7 +19,7 @@ using namespace Fxt::Component;
 
 FactoryCommon_::FactoryCommon_( Fxt::Component::FactoryDatabaseApi& factoryDb )
 {
-    // Auto register the card factory
+    // Auto register the component factory
     factoryDb.insert_( *this );
 }
 
@@ -30,7 +30,7 @@ FactoryCommon_::~FactoryCommon_()
 
 void FactoryCommon_::destroy( Api& componentToDestory ) noexcept
 {
-    // Call the card's destructor. Note: The Application is still responsible for 'freeing/reseting' the card's memory allocator
+    // Call the card's destructor. Note: The Application is still responsible for 'freeing/reseting' the component's memory allocator
     componentToDestory.~Api();
 }
 

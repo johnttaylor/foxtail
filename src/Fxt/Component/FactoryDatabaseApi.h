@@ -26,7 +26,7 @@ namespace Component {
     The database contains the list of Factory instances for all supported
     Components
 
-    Note: There is no guaranteed order Component Factory list.
+    Note: There is no guaranteed order to the Component Factory list.
 
     The semantics of the Database interface is NOT thread safe.
  */
@@ -54,6 +54,7 @@ public:
                                           Fxt::Point::BankApi&               statePointBank,
                                           Cpl::Memory::ContiguousAllocator&  generalAllocator,
                                           Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                                          Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
                                           Fxt::Point::DatabaseApi&           dbForPoints,
                                           Fxt::Type::Error&                  componentErrorCode ) noexcept = 0;
 

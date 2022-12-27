@@ -99,7 +99,7 @@ bool Common_::resolveReferences( Fxt::Point::DatabaseApi& pointDb,
                                  Fxt::Point::Api*         srcIdsAndDstPointers[],
                                  unsigned                 numElements )
 {
-    // Fail is component has been started
+    // Fail if component has been started
     if ( m_lastExeCycleTimeUsec != INVALID_ELAPSED_TIME )
     {
         return false;

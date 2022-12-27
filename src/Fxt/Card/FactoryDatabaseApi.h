@@ -26,7 +26,7 @@ namespace Card {
     The database contains the list of Factory instances for all support IO
     card types.
 
-    Note: There is no guaranteed order IO Card Factory list.
+    Note: There is no guaranteed order to the IO Card Factory list.
 
     The semantics of the Database interface is NOT thread safe.
  */

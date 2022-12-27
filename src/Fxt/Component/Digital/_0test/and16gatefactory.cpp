@@ -17,6 +17,7 @@
 #include "Fxt/Component/FactoryDatabase.h"
 #include "Fxt/Point/Database.h"
 #include "Fxt/Point/Bank.h"
+#include "Fxt/Point/FactoryDatabase.h"
 #include "Cpl/Memory/LeanHeap.h"
 #include <string.h>
 
@@ -94,6 +95,7 @@ TEST_CASE( "And16GateFactory" )
     Fxt::Point::Database<MAX_POINTS>    pointDb;
     Fxt::Point::Bank                    pointBank;
     Fxt::Component::FactoryDatabase     componentFactoryDb;
+    Fxt::Point::FactoryDatabase         pointFactoryDb;
     And16GateFactory                    uut( componentFactoryDb );
     Fxt::Type::Error                    componentErrorCode;
     Cpl::Text::FString<Fxt::Type::Error::MAX_TEXT_LEN> buf;
@@ -110,6 +112,7 @@ TEST_CASE( "And16GateFactory" )
                                                      componentErrorCode,
                                                      generalAllocator,
                                                      statefulAllocator,
+                                                     pointFactoryDb,
                                                      pointDb );
         REQUIRE( component != nullptr );
         CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", componentErrorCode.toText( buf )) );
@@ -120,11 +123,11 @@ TEST_CASE( "And16GateFactory" )
 
         REQUIRE( component->resolveReferences( pointDb ) == fullErr( Fxt::Component::Err_T::UNRESOLVED_INPUT_REFRENCE) );
 
-        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_1, "inSig1", statefulAllocator );
-        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_2, "inSig2", statefulAllocator );
-        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_3, "inSig3", statefulAllocator );
-        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__OUT, "out", statefulAllocator );
-        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__OUT_NEGATED, "/out", statefulAllocator );
+        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_1,  statefulAllocator );
+        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_2,  statefulAllocator );
+        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_3,  statefulAllocator );
+        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__OUT, statefulAllocator );
+        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__OUT_NEGATED, statefulAllocator );
         REQUIRE( component->resolveReferences( pointDb ) == Fxt::Type::Error::SUCCESS() );
 
         uut.destroy( *component );
@@ -141,6 +144,7 @@ TEST_CASE( "And16GateFactory" )
                                                                                      pointBank,
                                                                                      generalAllocator,
                                                                                      statefulAllocator,
+                                                                                     pointFactoryDb,
                                                                                      pointDb,
                                                                                      componentErrorCode );
         REQUIRE( component  );
@@ -152,11 +156,11 @@ TEST_CASE( "And16GateFactory" )
 
         REQUIRE( component->resolveReferences( pointDb ) == fullErr( Fxt::Component::Err_T::UNRESOLVED_INPUT_REFRENCE) );
 
-        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_1, "inSig1", statefulAllocator );
-        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_2, "inSig2", statefulAllocator );
-        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_3, "inSig3", statefulAllocator );
-        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__OUT, "out", statefulAllocator );
-        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__OUT_NEGATED, "/out", statefulAllocator );
+        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_1, statefulAllocator );
+        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_2, statefulAllocator );
+        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_3, statefulAllocator );
+        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__OUT, statefulAllocator );
+        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__OUT_NEGATED, statefulAllocator );
         REQUIRE( component->resolveReferences( pointDb ) == Fxt::Type::Error::SUCCESS() );
 
         uut.destroy( *component );
