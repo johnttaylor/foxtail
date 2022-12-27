@@ -16,7 +16,7 @@
 #include "Cpl/Container/Item.h"
 #include "Cpl/Type/Guid.h"
 #include "Fxt/Type/Error.h"
-#include "Fxt/Point/CreateFuncDatabaseApi.h"
+#include "Fxt/Point/FactoryDatabaseApi.h"
 #include "Fxt/Point/BankApi.h"
 #include "Fxt/Point/Api.h"
 #include "Cpl/Memory/ContiguousAllocator.h"
@@ -47,29 +47,32 @@ namespace LogicChain {
 
     "logicChains": [
             {
-              "name":           "<human readable name for the Logic Chain - not required to be unique>",
+              "name":           "*<human readable name for the Logic Chain - not required to be unique>",
               "id":             <Local ID for the Logic Chain.  Range: 0-64K.  NOTE: Not consumed by the firmware>,
               "components":[    <array of components>  
                 {....},
                 ...
               ],
-              "numPtSetters":   <number of connection points that have a default value. Range: 0-64K>,
               "connectionPts":[ <Array of connector Points for the LC>
                 {
-                  "name":           "<human readable name for the connector point">,
-                  "type":           "<OPTIONAL: human readable point type>",
-                  "id": 4294967295  <Point ID>,
-                  "initial": {           // OPTIONAL initial value/state specifier for the Point
-                    "valid": true|false  // Initial valid state for the internal point
-                    "val":               <point value as defined by the Point type's fromJSON syntax - only required when 'valid' is 'true'>
-                    "id":                <The ID of the internal 'setter' point that is used store the initial value in binary form>
-                 }
+                  "id":           <ID. Note: the ID key can vary, e.g. 'id', 'ioRegId', etc.>,
+                  "type":         "<Points's Type GUID: 8-4-4-4-12 format>",
+                  "typeCfg:       <OPTIONAL type configuration for complex types, e.g. "typeCfg":{"numElems":2}>,
+                  "typeName":     "*<OPTIONAL: human readable point type>",
+                  "name":         "*<human readable name for the point>"
+                  "initial": {    // OPTIONAL initial value/state specifier for the Point
+                      "valid":    <true|false  // Initial valid state for the internal point>,
+                      "val":      <point value as defined by the Point type's fromJSON syntax - only required when 'valid' is 'true' OR when 'valid' is ommitted>
+                      "id":       <The ID of the internal 'setter' point that is used store the initial value in binary form>
+                   }
                 },
                 ...
               ]
             },
             ...
     ]
+
+    *The field is NOT parsed/used by the firmware
 
     \endcode
  */
@@ -98,9 +101,6 @@ public:
         A Logic Chain can be started/stopped multiple times, however it should only
         started/stopped when its containing Chassis is started/stopped. When
         a Logic Chain is created it is in the 'stopped' state.
-
-        Restarting (after being stopped) a Logic Chain will clear any existing
-        error conditions.
      */
     virtual Fxt::Type::Error start( uint64_t currentElapsedTimeUsec ) noexcept = 0;
 
@@ -163,8 +163,8 @@ public:
                                           Fxt::Point::BankApi&                statePointBank,
                                           Cpl::Memory::ContiguousAllocator&   generalAllocator,
                                           Cpl::Memory::ContiguousAllocator&   statefulDataAllocator,
+                                          Fxt::Point::FactoryDatabaseApi&     pointFactoryDb,
                                           Fxt::Point::DatabaseApi&            dbForPoints,
-                                          Fxt::Point::CreateFuncDatabaseApi&  pointCreateFuncDb,
                                           Fxt::Type::Error&                   logicChainErrorode ) noexcept;
 public:
     /// Virtual destructor to make the compiler happy

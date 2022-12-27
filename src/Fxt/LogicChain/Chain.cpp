@@ -150,8 +150,8 @@ Api* Api::createLogicChainfromJSON( JsonVariant                         logicCha
                                     Fxt::Point::BankApi&                statePointBank,
                                     Cpl::Memory::ContiguousAllocator&   generalAllocator,
                                     Cpl::Memory::ContiguousAllocator&   statefulDataAllocator,
+                                    Fxt::Point::FactoryDatabaseApi&     pointFactoryDb,
                                     Fxt::Point::DatabaseApi&            dbForPoints,
-                                    Fxt::Point::CreateFuncDatabaseApi&  pointCreateFuncDb,
                                     Fxt::Type::Error&                   logicChainErrorode ) noexcept
 {
     // Minimal syntax checking of the JSON input
@@ -187,6 +187,7 @@ Api* Api::createLogicChainfromJSON( JsonVariant                         logicCha
                                                                                        statePointBank,
                                                                                        generalAllocator,
                                                                                        statefulDataAllocator,
+                                                                                       pointFactoryDb,
                                                                                        dbForPoints,
                                                                                        errorCode );
         if ( component == nullptr )

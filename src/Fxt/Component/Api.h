@@ -61,9 +61,6 @@ public:
         A Component can be started/stopped multiple times, however it should only
         started/stopped when its containing Logic Chain is started/stopped. When 
         a Component is created it is in the 'stopped' state.
-        
-        Restarting (after being stopped) a component will clear any existing 
-        error conditions.
      */
     virtual Fxt::Type::Error start( uint64_t currentElapsedTimeUsec ) noexcept = 0;
 
