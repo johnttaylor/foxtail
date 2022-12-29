@@ -157,8 +157,10 @@ TEST_CASE( "And16Gate" )
         Fxt::Point::Bool* ptIn3  = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_3, statefulAllocator );
         Fxt::Point::Bool* ptOut1 = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__OUT, statefulAllocator );
         Fxt::Point::Bool* ptOut2 = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__OUT_NEGATED, statefulAllocator );
-        REQUIRE( uut.resolveReferences( pointDb ) == Fxt::Type::Error::SUCCESS() );
-
+        
+        Fxt::Type::Error errCode = uut.resolveReferences( pointDb );
+        REQUIRE( errCode == Fxt::Type::Error::SUCCESS() );
+        
         uint64_t nowUsec = Cpl::System::ElapsedTime::milliseconds() * 1000;
         REQUIRE( uut.start( nowUsec ) == Fxt::Type::Error::SUCCESS() );
         REQUIRE( uut.isStarted() == true );

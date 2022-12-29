@@ -173,7 +173,8 @@ TEST_CASE( "ByteSplitter" )
         Fxt::Point::Bool* ptOutBit4_N = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT4_NEGATED, statefulAllocator );
         Fxt::Point::Bool* ptOutBit5_N = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT5_NEGATED, statefulAllocator );
 
-        REQUIRE( uut.resolveReferences( pointDb ) == Fxt::Type::Error::SUCCESS() );
+        Fxt::Type::Error errCode = uut.resolveReferences( pointDb );
+        REQUIRE( errCode == Fxt::Type::Error::SUCCESS() );
 
         uint64_t nowUsec = Cpl::System::ElapsedTime::milliseconds() * 1000;
         REQUIRE( uut.start( nowUsec ) == Fxt::Type::Error::SUCCESS() );

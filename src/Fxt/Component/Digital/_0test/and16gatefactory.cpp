@@ -115,13 +115,13 @@ TEST_CASE( "And16GateFactory" )
                                                      pointFactoryDb,
                                                      pointDb );
         REQUIRE( component != nullptr );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", componentErrorCode.toText( buf )) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", Fxt::Type::Error::toText( componentErrorCode, buf )) );
         REQUIRE( componentErrorCode == Fxt::Type::Error::SUCCESS() );
 
         REQUIRE( strcmp( component->getTypeName(), And16Gate::TYPE_NAME ) == 0 );
         REQUIRE( strcmp( component->getTypeGuid(), And16Gate::GUID_STRING ) == 0 );
 
-        REQUIRE( component->resolveReferences( pointDb ) == fullErr( Fxt::Component::Err_T::UNRESOLVED_INPUT_REFRENCE) );
+        REQUIRE( component->resolveReferences( pointDb ) == Fxt::Component::fullErr( Fxt::Component::Err_T::UNRESOLVED_INPUT_REFRENCE) );
 
         new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_1,  statefulAllocator );
         new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_2,  statefulAllocator );
@@ -148,7 +148,7 @@ TEST_CASE( "And16GateFactory" )
                                                                                      pointDb,
                                                                                      componentErrorCode );
         REQUIRE( component  );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", componentErrorCode.toText( buf )) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", Fxt::Type::Error::toText( componentErrorCode, buf )) );
         REQUIRE( componentErrorCode == Fxt::Type::Error::SUCCESS() );
         
         REQUIRE( strcmp( component->getTypeName(), And16Gate::TYPE_NAME ) == 0 );

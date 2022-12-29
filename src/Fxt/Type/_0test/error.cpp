@@ -43,17 +43,17 @@ TEST_CASE( "Error" )
         }
         {
             Error uut = Fxt::Card::fullErr( Fxt::Card::Err_T::SUCCESS );
-            REQUIRE( uut.errVal == Fxt::Card::ErrCategory::g_theOne.getCategoryIdentifier() );
+            REQUIRE( uut == Fxt::Type::Error::SUCCESS() );
             buf = Error::toText( uut.errVal, buf );
             CPL_SYSTEM_TRACE_MSG( SECT_, ("toText: [%s]", buf.getString()) );
-            REQUIRE( buf == "CARD:SUCCESS" );
+            REQUIRE( buf == "SUCCESS" );
         }
         {
             Error uut = Fxt::Component::fullErr( Fxt::Component::Err_T::SUCCESS );
-            REQUIRE( uut.errVal == Fxt::Component::ErrCategory::g_theOne.getCategoryIdentifier() );
+            REQUIRE( uut == Fxt::Type::Error::SUCCESS() );
             buf = Error::toText( uut.errVal, buf );
             CPL_SYSTEM_TRACE_MSG( SECT_, ("toText: [%s]", buf.getString()) );
-            REQUIRE( buf == "COMPONENT:SUCCESS" );
+            REQUIRE( buf == "SUCCESS" );
         }
     }
 
@@ -84,9 +84,10 @@ TEST_CASE( "Error" )
         }
         {
             Error uut = Fxt::Component::Digital::fullErr( Fxt::Component::Digital::Err_T::SUCCESS );
+            REQUIRE( uut == Fxt::Type::Error::SUCCESS() );
             buf = Error::toText( uut.errVal, buf );
             CPL_SYSTEM_TRACE_MSG( SECT_, ("toText: [%s]", buf.getString()) );
-            REQUIRE( buf == "COMPONENT:DIGITAL:SUCCESS" );
+            REQUIRE( buf == "SUCCESS" );
         }
         {
             Error uut( (uint32_t) 0x320000 | ((uint32_t)(Fxt::Component::Digital::ErrCategory::g_theOne.getCategoryIdentifier())) << 8 | Fxt::Component::ErrCategory::g_theOne.getCategoryIdentifier() );

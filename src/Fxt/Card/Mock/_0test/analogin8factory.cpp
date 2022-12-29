@@ -109,7 +109,7 @@ TEST_CASE( "AnalogIn8Factory" )
         JsonVariant cardObj = doc["cards"][0];
         Fxt::Card::Api* card = uut.create( cardObj, cardErrorCode, generalAllocator, statefulAllocator, pointFactoryDb, pointDb );
         REQUIRE( card != nullptr );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", cardErrorCode.toText( errText )) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", Fxt::Type::Error::toText( cardErrorCode, errText )) );
         REQUIRE( cardErrorCode == Fxt::Type::Error::SUCCESS()  );
 
         REQUIRE( strcmp( uut.getGuid(), card->getTypeGuid() ) == 0 );
@@ -153,8 +153,8 @@ TEST_CASE( "AnalogIn8Factory" )
 
         JsonVariant cardObj = doc["cards"][0];
         Fxt::Card::Api* card = cardFactoryDb.createCardfromJSON( cardObj, generalAllocator, statefulAllocator, pointFactoryDb, pointDb, cardErrorCode );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", Fxt::Type::Error::toText( cardErrorCode, errText )) );
         REQUIRE( card != nullptr );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", cardErrorCode.toText( errText )) );
         REQUIRE( cardErrorCode == Fxt::Type::Error::SUCCESS()  );
     }
 

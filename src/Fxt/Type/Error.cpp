@@ -27,17 +27,21 @@ Error::Error( const ErrorBase& leafErrorCategory, uint8_t localCategoryErrorNumb
 {
     CPL_SYSTEM_ASSERT( localCategoryErrorNumber < 128 );
 
-    uint8_t    levelShift = leafErrorCategory.getLevelIndex() * 8;
-    errVal               |= ((uint32_t) localCategoryErrorNumber) << levelShift;
-    uint8_t    catId      = leafErrorCategory.getCategoryIdentifier();
-    ErrorBase* parent     = leafErrorCategory.getParent();
-
-    while ( parent )
+    // Build error code
+    if ( localCategoryErrorNumber > 0 )
     {
-        levelShift -= 8;
-        errVal     |= ((uint32_t) catId) << levelShift;
-        catId       = parent->getCategoryIdentifier();
-        parent      = parent->getParent();
+        uint8_t    levelShift = leafErrorCategory.getLevelIndex() * 8;
+        errVal               |= ((uint32_t) localCategoryErrorNumber) << levelShift;
+        uint8_t    catId      = leafErrorCategory.getCategoryIdentifier();
+        ErrorBase* parent     = leafErrorCategory.getParent();
+
+        while ( parent )
+        {
+            levelShift -= 8;
+            errVal     |= ((uint32_t) catId) << levelShift;
+            catId       = parent->getCategoryIdentifier();
+            parent      = parent->getParent();
+        }
     }
 }
 

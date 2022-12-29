@@ -97,7 +97,7 @@ TEST_CASE( "Digital8" )
                       pointDb,
                       cardObj );
 
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", uut.getErrorCode().toText( errText )) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", Fxt::Type::Error::toText( uut.getErrorCode(), errText )) );
         REQUIRE( uut.getErrorCode() == Fxt::Type::Error::SUCCESS()  );
 
         REQUIRE( strcmp( uut.getTypeName(), Digital8::TYPE_NAME ) == 0 );
