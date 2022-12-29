@@ -13,9 +13,13 @@
 #include "Cpl/System/_testsupport/Shutdown_TS.h"
 #include "Fxt/LogicChain/Chain.h"
 #include "Fxt/Point/Database.h"
+#include "Fxt/Point/FactoryDatabase.h"
 #include "Fxt/Point/Uint8.h"
+#include "Fxt/Point/Bool.h"
+#include "Fxt/Point/Factory.h"
 #include "Fxt/Component/Digital/And16GateFactory.h"
 #include "Fxt/Component/Digital/ByteSplitterFactory.h"
+#include "Fxt/Component/FactoryDatabase.h"
 #include "Cpl/Memory/LeanHeap.h"
 #include "Cpl/System/Trace.h"
 #include <string.h>
@@ -25,12 +29,14 @@
 /// 
 using namespace Fxt::LogicChain;
 
+#define ID_INPUT_BYTE_SPLITTER          0
+#define ID_OUTPUT_AND16GATE             2                   
 
-#define LC_DEFINTION        "{\"name\":\"my logic chain\", \
-                            " \"id\":1 \
+#define LC_DEFINTION        "{\"name\":\"my logic chain\"," \
+                            " \"id\":1," \
                             " \"components\":[" \
                             "  {" \
-                            "  \"id\": 100" \
+                            "  \"id\": 100," \
                             "  \"name\": \"ByteSplitter #1\"," \
                             "  \"type\": \"8c55aa52-3bc8-4b8a-ad73-c434a0bbd4b4\"," \
                             "  \"typeName\": \"Fxt::Component::Digital::ByteSplitter\"," \
@@ -48,13 +54,12 @@ using namespace Fxt::LogicChain;
                             "          \"name\": \"/bit4\"," \
                             "          \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
                             "          \"typeName\": \"Fxt::Point::Bool\"," \
-                            "          \"idRef\": 1," \
-                            "          \"negate\": true" \
+                            "          \"idRef\": 1" \
                             "      }" \
                             "    ]" \
                             "  }," \
                             "  {" \
-                            "  \"id\": 101" \
+                            "  \"id\": 101," \
                             "  \"name\": \"AND Gate#1\"," \
                             "  \"type\": \"e62e395c-d27a-4821-bba9-aa1e6de42a05\"," \
                             "  \"typeName\": \"Fxt::Component::Digital::And16Gate\"," \
@@ -121,87 +126,133 @@ static size_t generalHeap_[10000];
 static size_t statefulHeap_[10000];
 
 #define MAX_POINTS      100
-#define MAX_CARDS       2
 
-#define MAX_POINT_TYPES     3
 
-static Fxt::Point::CreateFuncDatabase<MAX_POINT_TYPES> uut1_( "static constructor" );
-
-static RegisterCreateFunc<Uint32> uint32_( uut1_ );
-static RegisterCreateFunc<Int64>  int64_( uut1_ );
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE( "LogicChain" )
 {
     Cpl::System::Shutdown_TS::clearAndUseCounter();
-    Cpl::Memory::LeanHeap generalAllocator( generalHeap_, sizeof( generalHeap_ ) );
-    Cpl::Memory::LeanHeap statefulAllocator( statefulHeap_, sizeof( statefulHeap_ ) );
-    Fxt::Point::Database<MAX_POINTS> pointDb;
+    Cpl::Memory::LeanHeap                               generalAllocator( generalHeap_, sizeof( generalHeap_ ) );
+    Cpl::Memory::LeanHeap                               statefulAllocator( statefulHeap_, sizeof( statefulHeap_ ) );
+    Fxt::Point::Database<MAX_POINTS>                    pointDb;
+    Fxt::Point::Bank                                    pointBank;
+    Fxt::Component::FactoryDatabase                     componentFactoryDb;
+    Fxt::Point::FactoryDatabase                         pointFactoryDb;
+    Fxt::Component::Digital::ByteSplitterFactory        byteSplitterFactory( componentFactoryDb );
+    Fxt::Component::Digital::And16GateFactory           and16GateFactory( componentFactoryDb );
+    Fxt::Type::Error                                    logicChainError;
+    Fxt::Point::Factory<Fxt::Point::Uint8>              factoryUint8( pointFactoryDb );
+    Fxt::Point::Factory<Fxt::Point::Bool>               factoryBool( pointFactoryDb );
+
+    Cpl::Text::FString<Fxt::Type::Error::MAX_TEXT_LEN>  buf;
 
 
-    SECTION( "create" )
+
+    SECTION( "raw create" )
     {
 
-        StaticJsonDocument<10240> doc;
-        DeserializationError err = deserializeJson( doc, CARD_DEFINTION );
-        REQUIRE( err == DeserializationError::Ok );
-
-        REQUIRE( uut.lookupById( 0 ) == nullptr );
-
-        JsonVariant cardObj = doc["cards"][0];
-        Fxt::Card::Mock::Digital8* card1 = new Fxt::Card::Mock::Digital8( uut,
-                                                                         generalAllocator,
-                                                                         statefulAllocator,
-                                                                         pointDb,
-                                                                         0,
-                                                                         cardObj );
-        REQUIRE( card1 != nullptr );
-        REQUIRE( uut.lookupById( 0 ) == card1 );
-        REQUIRE( card1->getErrorCode() == Fxt::Type::Error::SUCCESS()  );
-
-        Fxt::Card::Mock::Digital8* card2 = new Fxt::Card::Mock::Digital8( uut,
-                                              generalAllocator,
-                                              statefulAllocator,
-                                              pointDb,
-                                              0,
-                                              cardObj );
-        REQUIRE( card2 != nullptr );
-        REQUIRE( uut.lookupById( 0 ) == card1 );
-        REQUIRE( card2->getErrorCode() == Fxt::Type::Error( Fxt::Type::Err_T::CARD, Err_T::CARD_INVALID_ID ) );
-
-        uut.clearCards();
-        REQUIRE( uut.lookupById( 0 ) == nullptr );
-        card2 = new Fxt::Card::Mock::Digital8( uut,
-                                              generalAllocator,
-                                              statefulAllocator,
-                                              pointDb,
-                                              0,
-                                              cardObj );
-        REQUIRE( card2 != nullptr );
-        REQUIRE( uut.lookupById( 0 ) == card2 );
-        REQUIRE( card2->getErrorCode() == Fxt::Type::Error::SUCCESS()  );
-
-        Fxt::Card::Mock::Digital8* card3 = new Fxt::Card::Mock::Digital8( uut,
-                                                                          generalAllocator,
-                                                                          statefulAllocator,
-                                                                          pointDb,
-                                                                          1,
-                                                                          cardObj );
-        REQUIRE( card3 != nullptr );
-        REQUIRE( uut.lookupById( 1 ) == card3 );
-        REQUIRE( card3->getErrorCode() == Fxt::Type::Error::SUCCESS()  );
-
-        Fxt::Card::Mock::Digital8* card4 = new Fxt::Card::Mock::Digital8( uut,
-                                                                          generalAllocator,
-                                                                          statefulAllocator,
-                                                                          pointDb,
-                                                                          2,
-                                                                          cardObj );
-        REQUIRE( card4 != nullptr );
-        REQUIRE( uut.lookupById( 2 ) == nullptr );
-        REQUIRE( card4->getErrorCode() == Fxt::Type::Error( Fxt::Type::Err_T::CARD, Err_T::CARD_INVALID_ID ) );
+        Api* uut = new Chain( generalAllocator, 2, 1 );
+        REQUIRE( uut );
+        delete uut;
     }
 
+    SECTION( "json create" )
+    {
+        StaticJsonDocument<10240> doc;
+        DeserializationError err = deserializeJson( doc, LC_DEFINTION );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("json error=%s", err.c_str()) );
+        REQUIRE( err == DeserializationError::Ok );
+
+        JsonVariant lcJsonObj = doc.as<JsonVariant>();
+        Api* uut = Api::createLogicChainfromJSON( lcJsonObj,
+                                                  componentFactoryDb,
+                                                  pointBank,
+                                                  generalAllocator,
+                                                  statefulAllocator,
+                                                  pointFactoryDb,
+                                                  pointDb,
+                                                  logicChainError );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("lc error=%s", logicChainError.toText( buf )) );
+        REQUIRE( uut );
+        REQUIRE( uut->getErrorCode() == Fxt::Type::Error::SUCCESS() );
+    }
+
+    SECTION( "execute" )
+    {
+        StaticJsonDocument<10240> doc;
+        DeserializationError err = deserializeJson( doc, LC_DEFINTION );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("json error=%s", err.c_str()) );
+        REQUIRE( err == DeserializationError::Ok );
+
+        JsonVariant lcJsonObj = doc.as<JsonVariant>();
+        Api* uut = Api::createLogicChainfromJSON( lcJsonObj,
+                                                  componentFactoryDb,
+                                                  pointBank,
+                                                  generalAllocator,
+                                                  statefulAllocator,
+                                                  pointFactoryDb,
+                                                  pointDb,
+                                                  logicChainError );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("lc error=%s", logicChainError.toText( buf )) );
+        REQUIRE( uut );
+        REQUIRE( uut->getErrorCode() == Fxt::Type::Error::SUCCESS() );
+
+        logicChainError = uut->resolveReferences( pointDb );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("lc error=%s", logicChainError.toText( buf )) );
+        REQUIRE( logicChainError == Fxt::Type::Error::SUCCESS() );
+
+        uint64_t now = Cpl::System::ElapsedTime::milliseconds();
+        logicChainError = uut->start( now );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("lc error=%s", logicChainError.toText( buf )) );
+        REQUIRE( logicChainError == Fxt::Type::Error::SUCCESS() );
+
+        now += 1000;
+        logicChainError = uut->execute( now );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("lc error=%s", logicChainError.toText( buf )) );
+        REQUIRE( logicChainError == Fxt::Type::Error::SUCCESS() );
+
+        // Output should be invalid - since not all of the inputs are valid
+        Fxt::Point::Bool* lcOutput = (Fxt::Point::Bool*) pointDb.lookupById( ID_OUTPUT_AND16GATE );
+        REQUIRE( lcOutput );
+        REQUIRE( lcOutput->isNotValid() );
+
+        // Execute again with valid inputs (but Bit 4 not set)
+        Fxt::Point::Uint8* lcInput = (Fxt::Point::Uint8*) pointDb.lookupById( ID_INPUT_BYTE_SPLITTER );
+        REQUIRE( lcInput );
+        REQUIRE( lcInput->isNotValid() );
+        lcInput->write( 0 );
+
+        now += 1000;
+        logicChainError = uut->execute( now );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("lc error=%s", logicChainError.toText( buf )) );
+        REQUIRE( logicChainError == Fxt::Type::Error::SUCCESS() );
+
+        // Output should be valid - and false
+        bool outVal;
+        bool valid = lcOutput->read( outVal );
+        REQUIRE( valid );
+        REQUIRE( outVal == false );
+
+        // Execute again with valid inputs WITH Bit 4 set
+        lcInput->write( 0x10 );
+
+        now += 1000;
+        logicChainError = uut->execute( now );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("lc error=%s", logicChainError.toText( buf )) );
+        REQUIRE( logicChainError == Fxt::Type::Error::SUCCESS() );
+
+        // Output should be valid - and true
+        valid = lcOutput->read( outVal );
+        REQUIRE( valid );
+        REQUIRE( outVal == true );
+
+        // Stop
+        uut->stop();
+
+        // Destroy the LC
+        uut->~Api();
+    }
 
     REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );
 }

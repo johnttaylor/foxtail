@@ -138,6 +138,30 @@ TEST_CASE( "ByteSplitterFactory" )
         REQUIRE( strcmp( component->getTypeGuid(), ByteSplitter::GUID_STRING ) == 0 );
 
         REQUIRE( component->resolveReferences( pointDb ) == Fxt::Component::fullErr( Fxt::Component::Err_T::UNRESOLVED_INPUT_REFRENCE ) );
+        uut.destroy( *component );
+    }
+
+    SECTION( "create - resolve references" )
+    {
+        StaticJsonDocument<10240> doc;
+        DeserializationError err = deserializeJson( doc, COMP_DEFINTION );
+        REQUIRE( err == DeserializationError::Ok );
+
+        JsonVariant componentObj = doc["components"][0];
+        Fxt::Component::Api* component = uut.create( pointBank,
+                                                     componentObj,
+                                                     componentErrorCode,
+                                                     generalAllocator,
+                                                     statefulAllocator,
+                                                     pointFactoryDb,
+                                                     pointDb );
+        REQUIRE( component != nullptr );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", Fxt::Type::Error::toText( componentErrorCode, buf )) );
+
+        REQUIRE( componentErrorCode == Fxt::Type::Error::SUCCESS() );
+
+        REQUIRE( strcmp( component->getTypeName(), ByteSplitter::TYPE_NAME ) == 0 );
+        REQUIRE( strcmp( component->getTypeGuid(), ByteSplitter::GUID_STRING ) == 0 );
 
         new(std::nothrow) Fxt::Point::Uint8( pointDb, POINT_ID__IN_SIGNAL_1, statefulAllocator );
         new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT1_OUT, statefulAllocator );
@@ -171,8 +195,6 @@ TEST_CASE( "ByteSplitterFactory" )
 
         REQUIRE( strcmp( component->getTypeName(), ByteSplitter::TYPE_NAME ) == 0 );
         REQUIRE( strcmp( component->getTypeGuid(), ByteSplitter::GUID_STRING ) == 0 );
-
-        REQUIRE( component->resolveReferences( pointDb ) == fullErr( Fxt::Component::Err_T::UNRESOLVED_INPUT_REFRENCE ) );
 
         new(std::nothrow) Fxt::Point::Uint8( pointDb, POINT_ID__IN_SIGNAL_1, statefulAllocator );
         new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT1_OUT, statefulAllocator );

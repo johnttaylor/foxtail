@@ -123,16 +123,42 @@ TEST_CASE( "And16GateFactory" )
 
         REQUIRE( component->resolveReferences( pointDb ) == Fxt::Component::fullErr( Fxt::Component::Err_T::UNRESOLVED_INPUT_REFRENCE) );
 
-        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_1,  statefulAllocator );
-        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_2,  statefulAllocator );
-        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_3,  statefulAllocator );
-        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__OUT, statefulAllocator );
-        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__OUT_NEGATED, statefulAllocator );
-        REQUIRE( component->resolveReferences( pointDb ) == Fxt::Type::Error::SUCCESS() );
-
         uut.destroy( *component );
     }
 
+    SECTION( "create - resolve references" )
+    {
+        StaticJsonDocument<10240> doc;
+        DeserializationError err = deserializeJson( doc, COMP_DEFINTION );
+        REQUIRE( err == DeserializationError::Ok );
+
+        JsonVariant componentObj = doc["components"][0];
+        Fxt::Component::Api* component = uut.create( pointBank,
+                                                     componentObj,
+                                                     componentErrorCode,
+                                                     generalAllocator,
+                                                     statefulAllocator,
+                                                     pointFactoryDb,
+                                                     pointDb );
+        REQUIRE( component != nullptr );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", Fxt::Type::Error::toText( componentErrorCode, buf )) );
+        REQUIRE( componentErrorCode == Fxt::Type::Error::SUCCESS() );
+
+        REQUIRE( strcmp( component->getTypeName(), And16Gate::TYPE_NAME ) == 0 );
+        REQUIRE( strcmp( component->getTypeGuid(), And16Gate::GUID_STRING ) == 0 );
+
+        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_1, statefulAllocator );
+        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_2, statefulAllocator );
+        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_3, statefulAllocator );
+        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__OUT, statefulAllocator );
+        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__OUT_NEGATED, statefulAllocator );
+        componentErrorCode = component->resolveReferences( pointDb );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", Fxt::Type::Error::toText( componentErrorCode, buf )) );
+
+        REQUIRE( componentErrorCode == Fxt::Type::Error::SUCCESS() );
+
+        uut.destroy( *component );
+    }
     SECTION( "create from factory db" )
     {
         StaticJsonDocument<10240> doc;
@@ -153,8 +179,6 @@ TEST_CASE( "And16GateFactory" )
         
         REQUIRE( strcmp( component->getTypeName(), And16Gate::TYPE_NAME ) == 0 );
         REQUIRE( strcmp( component->getTypeGuid(), And16Gate::GUID_STRING ) == 0 );
-
-        REQUIRE( component->resolveReferences( pointDb ) == fullErr( Fxt::Component::Err_T::UNRESOLVED_INPUT_REFRENCE) );
 
         new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_1, statefulAllocator );
         new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_2, statefulAllocator );

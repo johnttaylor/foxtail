@@ -132,6 +132,12 @@ public:
         return *this;
     }
 
+    /// Converts the error code to text
+    inline const char* toText( Cpl::Text::String& buf ) const noexcept
+    {
+        return Fxt::Type::Error::toText( *this, buf );
+    }
+
 public:
     /** Maximum string size when converting a error code to text (NOT including
         the null terminator

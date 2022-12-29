@@ -28,7 +28,8 @@ Chain::Chain( Cpl::Memory::ContiguousAllocator&   generalAllocator,
     , m_error( Fxt::Type::Error::SUCCESS() )
     , m_numComponents( numComponents )
     , m_numAutoPoints( numAutoPoints )
-    , m_nextIdx( 0 )
+    , m_nextComponentIdx( 0 )
+    , m_nextAutoPtsIdx( 0 )
 {
     // Allocate my array of Component pointers
     m_components = (Fxt::Component::Api**) generalAllocator.allocate( sizeof( Fxt::Component::Api* ) * numComponents );
@@ -59,6 +60,9 @@ Chain::Chain( Cpl::Memory::ContiguousAllocator&   generalAllocator,
 
 Chain::~Chain()
 {
+    // Ensure stop is called first
+    stop();
+
     // Call the destructors on all of the components
     for ( uint16_t i=0; i < m_numComponents; i++ )
     {
@@ -133,8 +137,13 @@ void Chain::stop() noexcept
         // Always stop the components - even if there is an internal error
         for ( uint16_t i=0; i < m_numComponents; i++ )
         {
-            m_components[i]->stop();
+            if ( m_components[i] )
+            {
+                m_components[i]->stop();
+            }
         }
+
+        m_started = false;
     }
 }
 
@@ -179,14 +188,14 @@ Fxt::Type::Error Chain::add( Fxt::Component::Api& componentToAdd ) noexcept
 {
     if ( m_error == Fxt::Type::Error::SUCCESS() )
     {
-        if ( m_nextIdx >= m_numComponents )
+        if ( m_nextComponentIdx >= m_numComponents )
         {
             m_error = fullErr( Err_T::TOO_MANY_COMPONENTS );
         }
         else
         {
-            m_components[m_nextIdx] = &componentToAdd;
-            m_nextIdx++;
+            m_components[m_nextComponentIdx] = &componentToAdd;
+            m_nextComponentIdx++;
         }
     }
 
@@ -197,14 +206,14 @@ Fxt::Type::Error Chain::add( Fxt::Point::Api& autoPointToAdd ) noexcept
 {
     if ( m_error == Fxt::Type::Error::SUCCESS() )
     {
-        if ( m_nextIdx >= m_numAutoPoints )
+        if ( m_nextAutoPtsIdx >= m_numAutoPoints )
         {
             m_error = fullErr( Err_T::TOO_MANY_AUTO_POINTS );
         }
         else
         {
-            m_autoPoints[m_nextIdx] = &autoPointToAdd;
-            m_nextIdx++;
+            m_autoPoints[m_nextAutoPtsIdx] = &autoPointToAdd;
+            m_nextAutoPtsIdx++;
         }
     }
 
@@ -229,7 +238,7 @@ Api* Api::createLogicChainfromJSON( JsonVariant                         logicCha
     }
 
     JsonArray components    = logicChainObject["components"];
-    uint16_t  numComponents = components.size();
+    size_t    numComponents = components.size();
     if ( numComponents == 0 )
     {
         logicChainErrorode = fullErr( Err_T::NO_COMPONENTS );
@@ -237,11 +246,12 @@ Api* Api::createLogicChainfromJSON( JsonVariant                         logicCha
     }
 
     // Get the number of auto points
-    uint16_t  numAutoPts = 0;
-    JsonArray autoPts    = logicChainObject["autoPts"];
-    if ( autoPts.isNull() != false )
+    size_t    numAutoPts = 0;
+    JsonArray autoPts;
+    if ( logicChainObject["autoPts"].is<JsonArray>() )
     {
-        numAutoPts = autoPts.size();
+        autoPts     = logicChainObject["autoPts"];
+        numAutoPts  = autoPts.size();
     }
 
     // Create Logic Chain instance
@@ -251,7 +261,7 @@ Api* Api::createLogicChainfromJSON( JsonVariant                         logicCha
         logicChainErrorode = fullErr( Err_T::NO_MEMORY_LOGIC_CHAIN );
         return nullptr;
     }
-    Api* logicChain = new(memLogicChain) Chain( generalAllocator, numComponents, numAutoPts );
+    Api* logicChain = new(memLogicChain) Chain( generalAllocator, (uint16_t) numComponents, (uint16_t) numAutoPts );
 
     // Create Components
     for ( uint16_t i=0; i < numComponents; i++ )
@@ -312,11 +322,9 @@ Api* Api::createLogicChainfromJSON( JsonVariant                         logicCha
     }
 
     // Create Auto Points
-    if ( logicChainObject["autoPts"].is<JsonArray>() )
+    if ( numAutoPts > 0 )
     {
-        JsonArray autoPts   = logicChainObject["autoPts"];
-        size_t    numPoints = autoPts.size();
-        for ( size_t i=0; i < numPoints; i++ )
+        for ( size_t i=0; i < numAutoPts; i++ )
         {
             Fxt::Type::Error pointError;
             JsonObject       pointJson = autoPts[i];
@@ -326,7 +334,7 @@ Api* Api::createLogicChainfromJSON( JsonVariant                         logicCha
                                                                       statefulDataAllocator,
                                                                       dbForPoints,
                                                                       "id",
-                                                                      true ); 
+                                                                      true );
             if ( pt == nullptr )
             {
                 logicChainErrorode = fullErr( Err_T::FAILED_CREATE_AUTO_POINTS );

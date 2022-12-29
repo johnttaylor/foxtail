@@ -55,6 +55,8 @@ Common_::Common_( uint16_t                           totalNumChannels,
 
 Common_::~Common_()
 {
+    // ensure stop gets called
+    stop();
 }
 
 //////////////////////////////////////////////////

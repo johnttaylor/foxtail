@@ -17,7 +17,6 @@
 #include "Fxt/LogicChain/Error.h"
 #include "Fxt/Point/Bank.h"
 #include "Fxt/Point/DatabaseApi.h"
-#include "Fxt/Point/Descriptor.h"
 #include "Cpl/Json/Arduino.h"
 #include "Cpl/Memory/ContiguousAllocator.h"
 
@@ -82,7 +81,10 @@ protected:
     uint16_t                            m_numAutoPoints;
 
     /// Array index for the next Component add operation
-    uint16_t                            m_nextIdx;
+    uint16_t                            m_nextComponentIdx;
+
+    /// Array index for the next Auto Points add operation
+    uint16_t                            m_nextAutoPtsIdx;
 
     /// My started state
     bool                                m_started;

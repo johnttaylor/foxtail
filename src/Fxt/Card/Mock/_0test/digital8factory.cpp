@@ -83,7 +83,7 @@ TEST_CASE( "Digital8Factory" )
     Cpl::Memory::LeanHeap                              statefulAllocator( statefulHeap_, sizeof( statefulHeap_ ) );
     Fxt::Point::Database<MAX_POINTS>                   pointDb;
     Fxt::Point::FactoryDatabase                        pointFactoryDb;
-    Fxt::Point::Factory<Fxt::Point::Uint8>             factoryFloat( pointFactoryDb );
+    Fxt::Point::Factory<Fxt::Point::Uint8>             factoryUint8( pointFactoryDb );
     Fxt::Card::FactoryDatabase                         cardFactoryDb;
     Digital8Factory                                    uut( cardFactoryDb );
     Fxt::Type::Error                                   cardErrorCode;

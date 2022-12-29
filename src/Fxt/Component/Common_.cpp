@@ -29,6 +29,8 @@ Common_::Common_( )
 
 Common_::~Common_()
 {
+    // ensure stop gets called
+    stop();
 }
 
 //////////////////////////////////////////////////
@@ -99,8 +101,8 @@ bool Common_::resolveReferences( Fxt::Point::DatabaseApi& pointDb,
                                  Fxt::Point::Api*         srcIdsAndDstPointers[],
                                  unsigned                 numElements )
 {
-    // Fail if component has not been started
-    if ( !m_started )
+    // Fail if the component HAS started (i.e. resolving references has to be done BEFORE starting the components)
+    if ( m_started || m_error != Fxt::Type::Error::SUCCESS() )
     {
         return false;
     }
