@@ -13,7 +13,6 @@
 #include "Cpl/System/_testsupport/Shutdown_TS.h"
 #include "Fxt/Type/Error.h"
 #include "Fxt/Card/Error.h"
-#include "Fxt/Card/Mock/Error.h"
 #include "Fxt/Component/Error.h"
 #include "Fxt/Component/Digital/Error.h"
 #include "Cpl/Text/FString.h"
@@ -38,23 +37,21 @@ TEST_CASE( "Error" )
             Error uut;
             REQUIRE( uut.errVal == 0 );
             REQUIRE( uut == Fxt::Type::Error::SUCCESS() );
-            buf = uut.toText( buf );
+            buf = Error::toText( uut.errVal, buf );
             CPL_SYSTEM_TRACE_MSG( SECT_, ("toText: [%s]", buf.getString()) );
             REQUIRE( buf == "SUCCESS" );
         }
         {
-            Error uut( Err_T::CARD );
-            REQUIRE( uut.errVal == Err_T::CARD );
-            REQUIRE( uut == fullErr( Err_T::CARD ) );
-            buf = uut.toText( buf );
+            Error uut = Fxt::Card::fullErr( Fxt::Card::Err_T::SUCCESS );
+            REQUIRE( uut.errVal == Fxt::Card::ErrCategory::g_theOne.getCategoryIdentifier() );
+            buf = Error::toText( uut.errVal, buf );
             CPL_SYSTEM_TRACE_MSG( SECT_, ("toText: [%s]", buf.getString()) );
             REQUIRE( buf == "CARD:SUCCESS" );
         }
         {
-            Error uut( Err_T::COMPONENT );
-            REQUIRE( uut.errVal == Err_T::COMPONENT );
-            REQUIRE( uut == fullErr( Err_T::COMPONENT ) );
-            buf = uut.toText( buf );
+            Error uut = Fxt::Component::fullErr( Fxt::Component::Err_T::SUCCESS );
+            REQUIRE( uut.errVal == Fxt::Component::ErrCategory::g_theOne.getCategoryIdentifier() );
+            buf = Error::toText( uut.errVal, buf );
             CPL_SYSTEM_TRACE_MSG( SECT_, ("toText: [%s]", buf.getString()) );
             REQUIRE( buf == "COMPONENT:SUCCESS" );
         }
@@ -63,45 +60,47 @@ TEST_CASE( "Error" )
     SECTION( "Card Errors" )
     {
         {
-            Error uut = fullErr( Fxt::Card::Err_T::BAD_CHANNEL_ASSIGNMENTS );
-            REQUIRE( uut == fullErr( Fxt::Card::Err_T::BAD_CHANNEL_ASSIGNMENTS ) );
-            buf = uut.toText( buf );
+            Error uut = Fxt::Card::fullErr( Fxt::Card::Err_T::BAD_CHANNEL_ASSIGNMENTS );
+            buf = Error::toText( uut.errVal, buf );
             CPL_SYSTEM_TRACE_MSG( SECT_, ("toText: [%s]", buf.getString()) );
             REQUIRE( buf == "CARD:BAD_CHANNEL_ASSIGNMENTS" );
         }
         {
-            Error uut = fullErr( Fxt::Card::Err_T::MOCK );;
-            REQUIRE( uut == fullErr( Fxt::Card::Err_T::MOCK ) );
-            buf = uut.toText( buf );
+            Error uut( (uint32_t) 0x3200 | Fxt::Card::ErrCategory::g_theOne.getCategoryIdentifier() );
+            buf = Error::toText( uut.errVal, buf );
             CPL_SYSTEM_TRACE_MSG( SECT_, ("toText: [%s]", buf.getString()) );
-            REQUIRE( buf == "CARD:MOCK:<unknown>" );
+            REQUIRE( buf == "CARD:<unknown>" );
         }
     }
 
     SECTION( "Component Errors" )
     {
         {
-            Error uut = fullErr( Fxt::Component::Err_T::BAD_OUTPUT_REFERENCE );
+            Error uut = Fxt::Component::fullErr( Fxt::Component::Err_T::BAD_OUTPUT_REFERENCE );
             REQUIRE( uut == fullErr( Fxt::Component::Err_T::BAD_OUTPUT_REFERENCE ) );
-            buf = uut.toText( buf );
+            buf = Error::toText( uut.errVal, buf );
             CPL_SYSTEM_TRACE_MSG( SECT_, ("toText: [%s]", buf.getString()) );
             REQUIRE( buf == "COMPONENT:BAD_OUTPUT_REFERENCE" );
         }
         {
-            Error uut = fullErr( Fxt::Component::Err_T::DIGITAL );;
-            REQUIRE( uut == fullErr( Fxt::Component::Err_T::DIGITAL ) );
-            buf = uut.toText( buf );
+            Error uut = Fxt::Component::Digital::fullErr( Fxt::Component::Digital::Err_T::SUCCESS );
+            buf = Error::toText( uut.errVal, buf );
             CPL_SYSTEM_TRACE_MSG( SECT_, ("toText: [%s]", buf.getString()) );
             REQUIRE( buf == "COMPONENT:DIGITAL:SUCCESS" );
+        }
+        {
+            Error uut( (uint32_t) 0x320000 | ((uint32_t)(Fxt::Component::Digital::ErrCategory::g_theOne.getCategoryIdentifier())) << 8 | Fxt::Component::ErrCategory::g_theOne.getCategoryIdentifier() );
+            buf = Error::toText( uut.errVal, buf );
+            CPL_SYSTEM_TRACE_MSG( SECT_, ("toText: [%s]", buf.getString()) );
+            REQUIRE( buf == "COMPONENT:DIGITAL:<unknown>" );
         }
     }
 
     SECTION( "Digital Errors" )
     {
         {
-            Error uut = fullErr( Fxt::Component::Digital::Err_T::SPLITTER_INVALID_BIT_OFFSET );
-            REQUIRE( uut == fullErr( Fxt::Component::Digital::Err_T::SPLITTER_INVALID_BIT_OFFSET ) );
-            buf = uut.toText( buf );
+            Error uut = Fxt::Component::Digital::fullErr( Fxt::Component::Digital::Err_T::SPLITTER_INVALID_BIT_OFFSET );
+            buf = Error::toText( uut.errVal, buf );
             CPL_SYSTEM_TRACE_MSG( SECT_, ("toText: [%s]", buf.getString()) );
             REQUIRE( buf == "COMPONENT:DIGITAL:SPLITTER_INVALID_BIT_OFFSET" );
         }

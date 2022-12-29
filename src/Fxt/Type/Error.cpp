@@ -15,47 +15,169 @@
 #include "Fxt/Point/Error.h"
 #include "Fxt/Card/Error.h"
 #include "Fxt/Component/Error.h"
+#include "Cpl/System/Assert.h"
 
 ///
 using namespace Fxt::Type;
 
-const char* Error::toText( Cpl::Text::String& buffer ) const noexcept
+
+/////////////////////////////////////////////////////
+Error::Error( const ErrorBase& leafErrorCategory, uint8_t localCategoryErrorNumber )
+    : errVal( 0 )
 {
-    // Level 1
-    better_enums::optional<Err_T> maybe = Err_T::_from_integral_nothrow( (errVal&0xFF) );
-    if ( !maybe )
+    CPL_SYSTEM_ASSERT( localCategoryErrorNumber < 128 );
+
+    uint8_t    levelShift = leafErrorCategory.getLevelIndex() * 8;
+    errVal               |= ((uint32_t) localCategoryErrorNumber) << levelShift;
+    uint8_t    catId      = leafErrorCategory.getCategoryIdentifier();
+    ErrorBase* parent     = leafErrorCategory.getParent();
+
+    while ( parent )
     {
-        buffer = UNKNOWN_TEXT;
+        levelShift -= 8;
+        errVal     |= ((uint32_t) catId) << levelShift;
+        catId       = parent->getCategoryIdentifier();
+        parent      = parent->getParent();
     }
-    else
+}
+
+
+/////////////////////////////////////////////////////
+
+static void categoryToText( uint32_t fullErrValue, uint8_t levelShift, Cpl::Text::String& buffer, ErrorBase& category ) noexcept
+{
+    uint8_t     levelErrValue = (fullErrValue >> levelShift) & 0xFF;
+    const char* text;
+
+    // Check for Zero/Success
+    if ( levelErrValue == 0 )
     {
-        buffer = maybe->_to_string();
+        text = "SUCCESS";
+    }
 
-        // Level 2
-        switch ( *maybe )
+    // Current level is enum value, i.e. leaf value/level
+    else if ( levelErrValue < 128 )
+    {
+        text = category.getLocalText( levelErrValue );
+        if ( text == nullptr )
         {
-        case Err_T::POINT:
-            Fxt::Point::errorCodetoText_( buffer, *this, 1 );
-            break;
-
-        case Err_T::CARD:
-            Fxt::Card::errorCodetoText_( buffer, *this, 1 );
-            break;
-
-        case Err_T::COMPONENT:
-            Fxt::Component::errorCodetoText_( buffer, *this, 1 );
-            break;
-
-        case Err_T::CHASSIS:
-        case Err_T::LOGIC_CHAIN:
-
-            // Not a nested 'sub-level' - all done
-        default:
-            break;
+            text = Error::UNKNOWN_TEXT;
         }
     }
- 
+
+    // Level value is a child category
+    else
+    {
+        ErrorBase* child = category.getFirstChild();
+        while ( child )
+        {
+            if ( child->getCategoryIdentifier() == levelErrValue )
+            {
+                // Update the text
+                if ( levelShift != 0 )
+                {
+                    buffer += ':';
+                }
+                buffer += child->getCategoryName();
+
+                categoryToText( fullErrValue, levelShift + 8, buffer, *child );
+                return;
+            }
+
+            child = category.getNextChild( *child );
+        }
+
+        // Unknown category
+        text = Error::UNKNOWN_TEXT;
+    }
+
+    // Update the text
+    if ( levelShift != 0 )
+    {
+        buffer += ':';
+    }
+    buffer += text;
+}
+
+
+const char* Error::toText( Error errCode, Cpl::Text::String& buffer ) noexcept
+{
+    buffer.clear();
+    categoryToText( errCode.errVal, 0, buffer, Error::getErrorCategoriesRoot() );
     return buffer.getString();
 }
 
 
+///////////////////////////////////////////
+ErrorBase::ErrorBase( ErrorBase&   parentCategory,
+                      uint8_t      levelIndex,
+                      const char*  nameForErrorCategory )
+    : m_children()
+    , m_parent( &parentCategory )
+    , m_name( nameForErrorCategory )
+    , m_numChildren( 0 )
+    , m_level( levelIndex )
+{
+    // Self register with my Parent and get/generate my category ID
+    parentCategory.m_children.put( *this );
+    parentCategory.m_numChildren++;
+    m_categoryId = parentCategory.m_numChildren + 127;
+    m_level      = parentCategory.m_level + 1;
+}
+
+ErrorBase::ErrorBase( ErrorBase&   parentCategory,
+                      uint8_t      levelIndex,
+                      const char*  nameForErrorCategory,
+                      const char*  ignoreThisParameter_usedToCreateAUniqueConstructor )
+    : m_children( ignoreThisParameter_usedToCreateAUniqueConstructor )
+    , m_parent( &parentCategory )
+    , m_name( nameForErrorCategory )
+    , m_level( levelIndex )
+{
+    // Self register with my Parent and get/generate my category ID
+    parentCategory.m_children.put( *this );
+    parentCategory.m_numChildren++;
+    m_categoryId = parentCategory.m_numChildren + 127;
+}
+
+ErrorBase::ErrorBase()
+    : m_children()
+    , m_parent( nullptr )
+    , m_name( nullptr )
+    , m_numChildren( 0 )
+    , m_level( 0 )
+{
+}
+
+ErrorBase::ErrorBase( const char* ignoreThisParameter_usedToCreateAUniqueConstructor )
+    : m_children( ignoreThisParameter_usedToCreateAUniqueConstructor )
+    , m_parent( nullptr )
+    , m_name( nullptr )
+{
+}
+
+ErrorBase* ErrorBase::getFirstChild() const noexcept
+{
+    return m_children.first();
+}
+
+ErrorBase* ErrorBase::getNextChild( ErrorBase& currentChild ) const noexcept
+{
+    return m_children.next( currentChild );
+}
+
+///////////////////////////////////////////
+ErrorCategoryRoot::ErrorCategoryRoot()
+    : ErrorBase()
+{
+}
+
+ErrorCategoryRoot::ErrorCategoryRoot( const char* ignoreThisParameter_usedToCreateAUniqueConstructor )
+    : ErrorBase( ignoreThisParameter_usedToCreateAUniqueConstructor )
+{
+}
+
+const char* ErrorCategoryRoot::getLocalText( uint8_t localCategoryErrorNumber ) const noexcept
+{
+    return nullptr;
+}

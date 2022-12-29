@@ -44,33 +44,29 @@ namespace LogicChain {
 
    \code
     Required/Defined JSON fields/structure:
-
-    "logicChains": [
-            {
-              "name":           "*<human readable name for the Logic Chain - not required to be unique>",
-              "id":             <Local ID for the Logic Chain.  Range: 0-64K.  NOTE: Not consumed by the firmware>,
-              "components":[    <array of components>  
-                {....},
-                ...
-              ],
-              "connectionPts":[ <Array of connector Points for the LC>
-                {
-                  "id":           <ID. Note: the ID key can vary, e.g. 'id', 'ioRegId', etc.>,
-                  "type":         "<Points's Type GUID: 8-4-4-4-12 format>",
-                  "typeCfg:       <OPTIONAL type configuration for complex types, e.g. "typeCfg":{"numElems":2}>,
-                  "typeName":     "*<OPTIONAL: human readable point type>",
-                  "name":         "*<human readable name for the point>"
-                  "initial": {    // OPTIONAL initial value/state specifier for the Point
-                      "valid":    <true|false  // Initial valid state for the internal point>,
-                      "val":      <point value as defined by the Point type's fromJSON syntax - only required when 'valid' is 'true' OR when 'valid' is ommitted>
-                      "id":       <The ID of the internal 'setter' point that is used store the initial value in binary form>
-                   }
-                },
-                ...
-              ]
-            },
-            ...
-    ]
+        {
+            "name":                 "*<human readable name for the Logic Chain - not required to be unique>",
+            "id":                   <*Local ID for the Logic Chain.  Range: 0-64K. >,
+            "components":[          <array of components. The order of the comopnents IS the order that the components are executed>  
+              {...},
+              ...
+            ],
+            "connectionPts":[       <Array of connector Points for the LC>
+              {
+                  "id":             <ID. Note: the ID key can vary, e.g. 'id', 'ioRegId', etc.>,
+                  "type":           "<Points's Type GUID: 8-4-4-4-12 format>",
+                  "typeCfg:         <OPTIONAL type configuration for complex types, e.g. "typeCfg":{"numElems":2}>,
+                  "typeName":       "*<OPTIONAL: human readable point type>",
+                  "name":           "*<human readable name for the point>"
+                  "initial": {      // OPTIONAL initial value/state specifier for the Point
+                      "valid":      <true|false  // Initial valid state for the internal point>,
+                      "val":        <point value as defined by the Point type's fromJSON syntax - only required when 'valid' is 'true' OR when 'valid' is ommitted>
+                      "id":         <The ID of the internal 'setter' point that is used store the initial value in binary form>
+                  }
+              },
+              ...
+            ]
+        }
 
     *The field is NOT parsed/used by the firmware
 

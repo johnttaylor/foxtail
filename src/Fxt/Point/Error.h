@@ -50,21 +50,28 @@ BETTER_ENUM( Err_T, uint8_t
              , FAILED_DB_INSERT
 );
 
-/** This method has 'PACKAGE Scope' in that is should only be called by
-    other classes in the Fxt namespace.  It is ONLY public to avoid
-    the tight coupling of C++ friend mechanism.
-        
-    This function is used to help with convert a full qualified error code
-    into text
+/** This concrete class defines the Error Category for the Point namespace.
+    This class is designed as SINGLETON.
  */
-void errorCodetoText_( Cpl::Text::String& buffer, Fxt::Type::Error errorCode, uint8_t levelIndex ) noexcept;
+class ErrCategory : public Fxt::Type::ErrorCategory<Err_T>
+{
+public:
+    /// Constructor
+    ErrCategory()
+        :Fxt::Type::ErrorCategory<Err_T>( "POINT", 1, Fxt::Type::Error::getErrorCategoriesRoot() )
+    {
+    }
 
-/// Helper method to build a 'complete/full' error from a card specific error code
+public:
+    /// Singleton
+    static ErrCategory g_theOne;
+};
+
+/// Helper method to build a 'complete/full' error from a specific error code
 inline Fxt::Type::Error fullErr( Err_T localErr )
 {
-    return Fxt::Type::Error( Fxt::Type::Err_T::POINT, localErr );
+    return Fxt::Type::Error( ErrCategory::g_theOne, localErr );
 }
-
 
 
 };      // end namespaces

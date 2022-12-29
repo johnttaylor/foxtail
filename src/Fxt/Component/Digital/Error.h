@@ -43,20 +43,29 @@ BETTER_ENUM( Err_T, uint8_t
              , SPLITTER_INVALID_BIT_OFFSET = 1
 );
 
-/** This method has 'PACKAGE Scope' in that is should only be called by
-    other classes in the Fxt namespace.  It is ONLY public to avoid
-    the tight coupling of C++ friend mechanism.
-        
-    This function is used to help with convert a full qualified error code
-    into text
+/** This concrete class defines the Error Category for the Digital namespace.
+    This class is designed as SINGLETON.
  */
-void errorCodetoText_( Cpl::Text::String& buffer, Fxt::Type::Error errorCode, uint8_t levelIndex ) noexcept;
+class ErrCategory : public Fxt::Type::ErrorCategory<Err_T>
+{
+public:
+    /// Constructor
+    ErrCategory( Fxt::Type::ErrorBase& parent = Fxt::Component::ErrCategory::g_theOne )
+        :Fxt::Type::ErrorCategory<Err_T>( "DIGITAL", 2, parent )
+    {
+    }
 
-/// Helper method to build a 'complete/full' error from a Digital component specific error code
+public:
+    /// Singleton
+    static ErrCategory g_theOne;
+};
+
+/// Helper method to build a 'complete/full' error from a specific error code
 inline Fxt::Type::Error fullErr( Err_T localErr )
 {
-    return Fxt::Type::Error( Fxt::Type::Err_T::COMPONENT, Fxt::Component::Err_T::DIGITAL, localErr );
+    return Fxt::Type::Error( ErrCategory::g_theOne, localErr );
 }
+
 
 };      // end namespaces
 };
