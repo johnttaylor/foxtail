@@ -29,12 +29,11 @@ Fxt::Type::ErrorBase& Fxt::Type::Error::getErrorCategoriesRoot() noexcept
     return root_;
 }
 
-// Instantiate Error categories (and their children)
-Fxt::Point::ErrCategory                     Fxt::Point::ErrCategory::g_theOne;
+// Instantiate Error categories (Level 1)
+Fxt::Point::ErrCategory                     Fxt::Point::ErrCategory::g_theOne;      
+Fxt::Card::ErrCategory                      Fxt::Card::ErrCategory::g_theOne;       
+Fxt::Component::ErrCategory                 Fxt::Component::ErrCategory::g_theOne;  
+Fxt::LogicChain::ErrCategory                Fxt::LogicChain::ErrCategory::g_theOne; 
 
-Fxt::Card::ErrCategory                      Fxt::Card::ErrCategory::g_theOne;
-
-Fxt::Component::ErrCategory                 Fxt::Component::ErrCategory::g_theOne;
-Fxt::Component::Digital::ErrCategory        Fxt::Component::Digital::ErrCategory::g_theOne;
-
-Fxt::LogicChain::ErrCategory                Fxt::LogicChain::ErrCategory::g_theOne;
+// Instantiate Error categories (Level 2)
+Fxt::Component::Digital::ErrCategory        Fxt::Component::Digital::ErrCategory::g_theOne; 
