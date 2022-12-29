@@ -159,7 +159,12 @@ Fxt::Point::Api* Common_::createPointForChannel( Fxt::Point::FactoryDatabaseApi&
         m_error = fullErr( Err_T::FAILED_POINT_CREATED );
         return nullptr;
     }
-    
+    if ( pointErr != Fxt::Type::Error::SUCCESS() )
+    {
+        m_error = fullErr( Err_T::POINT_CREATE_ERROR );
+        return nullptr;
+    }
+
     // Cache the point for the IO Point register
     if ( isIoRegPt )
     {

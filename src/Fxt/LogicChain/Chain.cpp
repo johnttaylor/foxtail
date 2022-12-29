@@ -21,14 +21,17 @@ using namespace Fxt::LogicChain;
 
 //////////////////////////////////////////////////
 Chain::Chain( Cpl::Memory::ContiguousAllocator&   generalAllocator,
-              uint16_t                            numComponents )
+              uint16_t                            numComponents,
+              uint16_t                            numAutoPoints )
     : m_components( nullptr )
+    , m_autoPoints( nullptr )
     , m_error( Fxt::Type::Error::SUCCESS() )
     , m_numComponents( numComponents )
+    , m_numAutoPoints( numAutoPoints )
     , m_nextIdx( 0 )
 {
     // Allocate my array of Component pointers
-    m_components = (Fxt::Component::Api**) generalAllocator.allocate( sizeof( Api* ) * numComponents );
+    m_components = (Fxt::Component::Api**) generalAllocator.allocate( sizeof( Fxt::Component::Api* ) * numComponents );
     if ( m_components == nullptr )
     {
         m_numComponents = 0;
@@ -37,7 +40,20 @@ Chain::Chain( Cpl::Memory::ContiguousAllocator&   generalAllocator,
     else
     {
         // Zero the array so we can tell if there are missing components
-        memset( m_components, 0, sizeof( Api* ) * numComponents );
+        memset( m_components, 0, sizeof( Fxt::Component::Api* ) * numComponents );
+    }
+
+    // Allocate my array of Auto Point pointers
+    m_autoPoints = (Fxt::Point::Api**) generalAllocator.allocate( sizeof( Fxt::Point::Api* ) * numAutoPoints );
+    if ( m_autoPoints == nullptr )
+    {
+        m_numAutoPoints = 0;
+        m_error         = fullErr( Err_T::NO_MEMORY_AUTO_POINT_LIST );
+    }
+    else
+    {
+        // Zero the array so we can tell if there are missing auto points
+        memset( m_autoPoints, 0, sizeof( Fxt::Point::Api* ) * m_numAutoPoints );
     }
 }
 
@@ -54,25 +70,52 @@ Chain::~Chain()
 }
 
 //////////////////////////////////////////////////
+Fxt::Type::Error Chain::resolveReferences( Fxt::Point::DatabaseApi & pointDb )  noexcept
+{
+    if ( m_error == Fxt::Type::Error::SUCCESS() )
+    {
+        for ( uint16_t i=0; i < m_numComponents; i++ )
+        {
+            if ( m_components[i] == nullptr )
+            {
+                m_error = fullErr( Err_T::MISSING_COMPONENTS );
+                break;
+            }
+            if ( m_components[i]->resolveReferences( pointDb ) != Fxt::Type::Error::SUCCESS() )
+            {
+                m_error = fullErr( Err_T::FAILED_POINT_RESOLVE );
+                break;
+            }
+        }
+    }
+
+    return m_error;
+}
+
 Fxt::Type::Error Chain::start( uint64_t currentElapsedTimeUsec ) noexcept
 {
     // Do nothing if already started
-    if ( !m_started )
+    if ( !m_started && m_error == Fxt::Type::Error::SUCCESS() )
     {
-        if ( m_error == Fxt::Type::Error::SUCCESS() )
+        // Star the individual components (and additional error checking)
+        for ( uint16_t i=0; i < m_numComponents; i++ )
         {
-            for ( uint16_t i=0; i < m_numComponents; i++ )
+            // NOTE: The resolveReferences() method has already validated that
+            //       array of components is fully populated with non-null pointers
+            if ( m_components[i]->start( currentElapsedTimeUsec ) != Fxt::Type::Error::SUCCESS() )
             {
-                if ( m_components[i] == nullptr )
-                {
-                    m_error = fullErr( Err_T::MISSING_COMPONENTS );
-                    break;
-                }
-                if ( m_components[i]->start( currentElapsedTimeUsec ) != Fxt::Type::Error::SUCCESS() )
-                {
-                    m_error = fullErr( Err_T::FAILED_START );
-                    break;
-                }
+                m_error = fullErr( Err_T::FAILED_START );
+                return m_error;
+            }
+        }
+
+        // More error checking for Auto Points
+        for ( uint16_t i=0; i < m_numAutoPoints; i++ )
+        {
+            if ( m_autoPoints[i] == nullptr )
+            {
+                m_error = fullErr( Err_T::MISSING_AUTO_POINTS );
+                return m_error;
             }
         }
 
@@ -95,10 +138,14 @@ void Chain::stop() noexcept
     }
 }
 
-/// See Fxt::LogicChain::Api
 bool Chain::isStarted() const noexcept
 {
     return m_started;
+}
+
+Fxt::Type::Error Chain::getErrorCode() const noexcept
+{
+    return m_error;
 }
 
 Fxt::Type::Error Chain::execute( int64_t currentTickUsec ) noexcept
@@ -106,6 +153,13 @@ Fxt::Type::Error Chain::execute( int64_t currentTickUsec ) noexcept
     // Only execute if there is no error AND the LC was actually started
     if ( m_error == Fxt::Type::Error::SUCCESS() && m_started )
     {
+        // Initialize the Auto points at the start of execution cycle
+        for ( uint16_t i=0; i < m_numAutoPoints; i++ )
+        {
+            m_autoPoints[i]->updateFromSetter();
+        }
+
+        // Execute the Components
         for ( uint16_t i=0; i < m_numComponents; i++ )
         {
             if ( m_components[i]->execute( currentTickUsec ) != Fxt::Type::Error::SUCCESS() )
@@ -116,12 +170,6 @@ Fxt::Type::Error Chain::execute( int64_t currentTickUsec ) noexcept
         }
     }
 
-    return m_error;
-}
-
-
-Fxt::Type::Error Chain::getErrorCode() const noexcept
-{
     return m_error;
 }
 
@@ -145,6 +193,25 @@ Fxt::Type::Error Chain::add( Fxt::Component::Api& componentToAdd ) noexcept
     return m_error;
 }
 
+Fxt::Type::Error Chain::add( Fxt::Point::Api& autoPointToAdd ) noexcept
+{
+    if ( m_error == Fxt::Type::Error::SUCCESS() )
+    {
+        if ( m_nextIdx >= m_numAutoPoints )
+        {
+            m_error = fullErr( Err_T::TOO_MANY_AUTO_POINTS );
+        }
+        else
+        {
+            m_autoPoints[m_nextIdx] = &autoPointToAdd;
+            m_nextIdx++;
+        }
+    }
+
+    return m_error;
+}
+
+//////////////////////////////////////////////////
 Api* Api::createLogicChainfromJSON( JsonVariant                         logicChainObject,
                                     Fxt::Component::FactoryDatabaseApi& componentFactory,
                                     Fxt::Point::BankApi&                statePointBank,
@@ -161,12 +228,20 @@ Api* Api::createLogicChainfromJSON( JsonVariant                         logicCha
         return nullptr;
     }
 
-    JsonArray components  = logicChainObject["components"];
+    JsonArray components    = logicChainObject["components"];
     uint16_t  numComponents = components.size();
     if ( numComponents == 0 )
     {
         logicChainErrorode = fullErr( Err_T::NO_COMPONENTS );
         return nullptr;
+    }
+
+    // Get the number of auto points
+    uint16_t  numAutoPts = 0;
+    JsonArray autoPts    = logicChainObject["autoPts"];
+    if ( autoPts.isNull() != false )
+    {
+        numAutoPts = autoPts.size();
     }
 
     // Create Logic Chain instance
@@ -176,9 +251,9 @@ Api* Api::createLogicChainfromJSON( JsonVariant                         logicCha
         logicChainErrorode = fullErr( Err_T::NO_MEMORY_LOGIC_CHAIN );
         return nullptr;
     }
-    Api* logicChain = new(memLogicChain) Chain( generalAllocator, numComponents );
+    Api* logicChain = new(memLogicChain) Chain( generalAllocator, numComponents, numAutoPts );
 
-    //  Create Components
+    // Create Components
     for ( uint16_t i=0; i < numComponents; i++ )
     {
         Fxt::Type::Error     errorCode     = Fxt::Type::Error::SUCCESS();
@@ -195,6 +270,11 @@ Api* Api::createLogicChainfromJSON( JsonVariant                         logicCha
             logicChainErrorode = fullErr( Err_T::FAILED_CREATE_COMPONENT );
             return nullptr;
         }
+        if ( errorCode != Fxt::Type::Error::SUCCESS() )
+        {
+            logicChainErrorode = fullErr( Err_T::COMPONENT_CREATE_ERROR );
+            return nullptr;
+        }
         logicChainErrorode = logicChain->add( *component );
         if ( logicChainErrorode != Fxt::Type::Error::SUCCESS() )
         {
@@ -202,28 +282,75 @@ Api* Api::createLogicChainfromJSON( JsonVariant                         logicCha
         }
     }
 
-    // If I get here -->everything worked
-    return logicChain;
-}
-
-Fxt::Type::Error Chain::resolveReferences( Fxt::Point::DatabaseApi& pointDb )  noexcept
-{
-    if ( m_error == Fxt::Type::Error::SUCCESS() )
+    // Create Connector Points
+    if ( logicChainObject["connectionPts"].is<JsonArray>() )
     {
-        for ( uint16_t i=0; i < m_numComponents; i++ )
+        JsonArray connectionPts = logicChainObject["connectionPts"];
+        size_t    numPoints     = connectionPts.size();
+        for ( size_t i=0; i < numPoints; i++ )
         {
-            if ( m_components[i] == nullptr )
+            Fxt::Type::Error pointError;
+            JsonObject       pointJson = connectionPts[i];
+            Fxt::Point::Api* pt = pointFactoryDb.createPointfromJSON( pointJson,
+                                                                      pointError,
+                                                                      generalAllocator,
+                                                                      statefulDataAllocator,
+                                                                      dbForPoints,
+                                                                      "id",
+                                                                      false ); // Do NOT create setters (connector points can NOT have an initial value)
+            if ( pt == nullptr )
             {
-                m_error = fullErr( Err_T::MISSING_COMPONENTS );
-                break;
+                logicChainErrorode = fullErr( Err_T::FAILED_CREATE_POINTS );
+                return nullptr;
             }
-            if ( m_components[i]->resolveReferences( pointDb ) != Fxt::Type::Error::SUCCESS() )
+            if ( pointError != Fxt::Type::Error::SUCCESS() )
             {
-                m_error = fullErr( Err_T::FAILED_POINT_RESOLVE );
-                break;
+                logicChainErrorode = fullErr( Err_T::POINT_CREATE_ERROR );
+                return nullptr;
             }
         }
     }
 
-    return m_error;
+    // Create Auto Points
+    if ( logicChainObject["autoPts"].is<JsonArray>() )
+    {
+        JsonArray autoPts   = logicChainObject["autoPts"];
+        size_t    numPoints = autoPts.size();
+        for ( size_t i=0; i < numPoints; i++ )
+        {
+            Fxt::Type::Error pointError;
+            JsonObject       pointJson = autoPts[i];
+            Fxt::Point::Api* pt = pointFactoryDb.createPointfromJSON( pointJson,
+                                                                      pointError,
+                                                                      generalAllocator,
+                                                                      statefulDataAllocator,
+                                                                      dbForPoints,
+                                                                      "id",
+                                                                      true ); 
+            if ( pt == nullptr )
+            {
+                logicChainErrorode = fullErr( Err_T::FAILED_CREATE_AUTO_POINTS );
+                return nullptr;
+            }
+            if ( pointError != Fxt::Type::Error::SUCCESS() )
+            {
+                logicChainErrorode = fullErr( Err_T::AUTO_POINT_CREATE_ERROR );
+                return nullptr;
+            }
+            if ( pt->hasSetter() == false )
+            {
+                logicChainErrorode = fullErr( Err_T::NO_INITIAL_VAL_AUTO_POINT );
+                return nullptr;
+            }
+            logicChainErrorode = logicChain->add( *pt );
+            if ( logicChainErrorode != Fxt::Type::Error::SUCCESS() )
+            {
+                return nullptr;
+            }
+        }
+    }
+
+    // If I get here -->everything worked
+    return logicChain;
 }
+

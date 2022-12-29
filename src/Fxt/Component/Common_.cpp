@@ -18,12 +18,12 @@
 ///
 using namespace Fxt::Component;
 
-#define INVALID_ELAPSED_TIME        0
 
 //////////////////////////////////////////////////
 Common_::Common_( )
-    : m_lastExeCycleTimeUsec( INVALID_ELAPSED_TIME )
+    : m_lastExeCycleTimeUsec( 0 )
     , m_error( Fxt::Type::Error::SUCCESS() )
+    , m_started( false )
 {
 }
 
@@ -35,8 +35,9 @@ Common_::~Common_()
 Fxt::Type::Error Common_::start( uint64_t currentElapsedTimeUsec ) noexcept
 {
     // Use an invalid time marker to indicate the not-started state
-    if ( m_lastExeCycleTimeUsec == INVALID_ELAPSED_TIME && m_error == Fxt::Type::Error::SUCCESS() )
+    if ( !m_started && m_error == Fxt::Type::Error::SUCCESS() )
     {
+        m_started              = true;
         m_lastExeCycleTimeUsec = currentElapsedTimeUsec;
         return Fxt::Type::Error::SUCCESS();
     }
@@ -46,16 +47,15 @@ Fxt::Type::Error Common_::start( uint64_t currentElapsedTimeUsec ) noexcept
 
 void Common_::stop() noexcept
 {
-    if ( m_lastExeCycleTimeUsec != INVALID_ELAPSED_TIME )
+    if ( m_started )
     {
-        m_lastExeCycleTimeUsec = INVALID_ELAPSED_TIME;
-        m_error                = Fxt::Type::Error::SUCCESS();
+        m_started = false;
     }
 }
 
 bool Common_::isStarted() const noexcept
 {
-    return m_lastExeCycleTimeUsec != INVALID_ELAPSED_TIME;
+    return m_started;
 }
 
 Fxt::Type::Error Common_::getErrorCode() const noexcept
@@ -99,8 +99,8 @@ bool Common_::resolveReferences( Fxt::Point::DatabaseApi& pointDb,
                                  Fxt::Point::Api*         srcIdsAndDstPointers[],
                                  unsigned                 numElements )
 {
-    // Fail if component has been started
-    if ( m_lastExeCycleTimeUsec != INVALID_ELAPSED_TIME )
+    // Fail if component has not been started
+    if ( !m_started )
     {
         return false;
     }

@@ -67,8 +67,14 @@ void Digital8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAll
             }
 
             // Create Virtual Points
-            for ( size_t idx=0; idx < numInputs && m_error == Fxt::Type::Error::SUCCESS(); idx++ )
+            for ( size_t idx=0; idx < numInputs; idx++ )
             {
+                // Stop processing if/when an error occurred
+                if ( m_error != Fxt::Type::Error::SUCCESS() )
+                {
+                    return;
+                }
+                
                 uint16_t   channelNum_notUsed;
                 JsonObject channelObj = inputs[idx].as<JsonObject>();
                 createPointForChannel( pointFactoryDb,
@@ -85,8 +91,14 @@ void Digital8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAll
             }
 
             // Create IO Register Points
-            for ( size_t idx=0; idx < numInputs && m_error == Fxt::Type::Error::SUCCESS(); idx++ )
+            for ( size_t idx=0; idx < numInputs; idx++ )
             {
+                // Stop processing if/when an error occurred
+                if ( m_error != Fxt::Type::Error::SUCCESS() )
+                {
+                    return;
+                }
+
                 uint16_t   channelNum_notUsed;
                 JsonObject channelObj = inputs[idx].as<JsonObject>();
                 createPointForChannel( pointFactoryDb,
@@ -136,7 +148,6 @@ void Digital8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAll
                 {
                     return;
                 }
-
             }
 
             // Create IO Register Points

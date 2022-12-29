@@ -30,33 +30,7 @@ using namespace Fxt::LogicChain;
                             " \"id\":1 \
                             " \"components\":[" \
                             "  {" \
-                            "  \"name\": \"AND Gate#1\"," \
-                            "  \"type\": \"e62e395c-d27a-4821-bba9-aa1e6de42a05\"," \
-                            "  \"typeName\": \"Fxt::Component::Digital::And16Gate\"," \
-                            "  \"inputs\": [" \
-                            "      {" \
-                            "          \"name\": \"Signal#1\"," \
-                            "          \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
-                            "          \"typeName\": \"Fxt::Point::Bool\"," \
-                            "          \"idRef\": 2" \
-                            "      }," \
-                            "      {" \
-                            "          \"name\": \"Signal#2\"," \
-                            "          \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
-                            "          \"typeName\": \"Fxt::Point::Bool\"," \
-                            "          \"idRef\": 0" \
-                            "      }" \
-                            "    ]," \
-                            "  \"outputs\": [" \
-                            "      {" \
-                            "          \"name\": \"out\"," \
-                            "          \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
-                            "          \"typeName\": \"Fxt::Point::Bool\"," \
-                            "          \"idRef\": 3" \
-                            "      }" \
-                            "    ]" \
-                            "  }," \
-                            "  {" \
+                            "  \"id\": 100" \
                             "  \"name\": \"ByteSplitter #1\"," \
                             "  \"type\": \"8c55aa52-3bc8-4b8a-ad73-c434a0bbd4b4\"," \
                             "  \"typeName\": \"Fxt::Component::Digital::ByteSplitter\"," \
@@ -65,28 +39,83 @@ using namespace Fxt::LogicChain;
                             "          \"name\": \"input byte\"," \
                             "          \"type\": \"918cff9e-8007-4666-99ac-384b9624329c\"," \
                             "          \"typeName\": \"Fxt::Point::Uint8\"," \
-                            "          \"idRef\": 2" \
+                            "          \"idRef\": 0" \
                             "      }" \
                             "    ]," \
                             "  \"outputs\": [" \
-                            "      {" \
-                            "          \"bit\": 1," \
-                            "          \"name\": \"bit1\"," \
-                            "          \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
-                            "          \"typeName\": \"Fxt::Point::Bool\"," \
-                            "          \"idRef\": 3" \
-                            "      }," \
                             "      {" \
                             "          \"bit\": 4," \
                             "          \"name\": \"/bit4\"," \
                             "          \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
                             "          \"typeName\": \"Fxt::Point::Bool\"," \
-                            "          \"idRef\": 4," \
+                            "          \"idRef\": 1," \
                             "          \"negate\": true" \
                             "      }" \
                             "    ]" \
+                            "  }," \
+                            "  {" \
+                            "  \"id\": 101" \
+                            "  \"name\": \"AND Gate#1\"," \
+                            "  \"type\": \"e62e395c-d27a-4821-bba9-aa1e6de42a05\"," \
+                            "  \"typeName\": \"Fxt::Component::Digital::And16Gate\"," \
+                            "  \"inputs\": [" \
+                            "      {" \
+                            "          \"name\": \"Signal#1\"," \
+                            "          \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
+                            "          \"typeName\": \"Fxt::Point::Bool\"," \
+                            "          \"idRef\": 1" \
+                            "      }," \
+                            "      {" \
+                            "          \"name\": \"Signal#2\"," \
+                            "          \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
+                            "          \"typeName\": \"Fxt::Point::Bool\"," \
+                            "          \"idRef\": 3" \
+                            "      }" \
+                            "    ]," \
+                            "  \"outputs\": [" \
+                            "      {" \
+                            "          \"name\": \"out\"," \
+                            "          \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
+                            "          \"typeName\": \"Fxt::Point::Bool\"," \
+                            "          \"idRef\": 2" \
+                            "      }" \
+                            "    ]" \
                             "  }" \
-                            "]}"
+                            "]," \
+                            " \"connectionPts\":[" \
+                            "     {"\
+                            "       \"id\": 0, "\
+                            "       \"name\": \"Input to ByteSplitter\"," \
+                            "       \"type\": \"918cff9e-8007-4666-99ac-384b9624329c\"," \
+                            "       \"typeName\": \"Fxt::Point::Uint8\" " \
+                            "      }, "\
+                            "     {"\
+                            "       \"id\": 1, "\
+                            "       \"name\": \"Output ByteSplitter: Bit 4\"," \
+                            "       \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
+                            "       \"typeName\": \"Fxt::Point::Bool\" " \
+                            "      }, "\
+                            "     {"\
+                            "       \"id\": 2, "\
+                            "       \"name\": \"Output AndGate\"," \
+                            "       \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
+                            "       \"typeName\": \"Fxt::Point::Bool\" " \
+                            "      } "\
+                            "]," \
+                            " \"autoPts\":[" \
+                            "     {"\
+                            "       \"id\": 3, "\
+                            "       \"name\": \"Auto-true\"," \
+                            "       \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
+                            "       \"typeName\": \"Fxt::Point::Bool\"," \
+                            "           \"initial\": {" \
+                            "              \"val\" : true, " \
+                            "              \"id\" : 4 " \
+                            "            } "\
+                            "      } "\
+                            "]" \
+                            "}"
+
 
 static size_t generalHeap_[10000];
 static size_t statefulHeap_[10000];

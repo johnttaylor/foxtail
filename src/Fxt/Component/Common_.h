@@ -69,6 +69,9 @@ protected:
 
     /// Error state. A value of 0 indicates NO error
     Fxt::Type::Error m_error;
+
+    /// My started state
+    bool             m_started;
 };
 
 

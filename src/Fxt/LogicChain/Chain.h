@@ -34,7 +34,8 @@ class Chain : public Api
 public:
     /// Constructor
     Chain( Cpl::Memory::ContiguousAllocator&   generalAllocator,
-           uint16_t                            numComponents );
+           uint16_t                            numComponents,
+           uint16_t                            numAutoPoints );
 
     /// Destructor
     ~Chain();
@@ -61,16 +62,24 @@ public:
     /// See Fxt::LogicChain::Api
     Fxt::Type::Error add( Fxt::Component::Api& componentToAdd ) noexcept;
 
+    /// See Fxt::LogicChain::Api
+    Fxt::Type::Error add( Fxt::Point::Api& autoPointToAdd ) noexcept;
 
 protected:
     /// Array/List of components in the logic chain
     Fxt::Component::Api**               m_components;
+
+    /// Array/List of Auto points in the logic chain
+    Fxt::Point::Api**                   m_autoPoints;
 
     /// Error state. A value of 0 indicates NO error
     Fxt::Type::Error                    m_error;
 
     /// Number of components
     uint16_t                            m_numComponents;
+
+    /// Number of Auto Point
+    uint16_t                            m_numAutoPoints;
 
     /// Array index for the next Component add operation
     uint16_t                            m_nextIdx;

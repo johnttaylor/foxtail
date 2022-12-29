@@ -40,7 +40,7 @@ namespace Card {
     @param BAD_CHANNEL_ASSIGNMENTS          Configuration contains duplicate or our-of-range Channel IDs
     @param BAD_JSON                         Invalid JSON object syntax for a Channel Object
     @param MISSING_SLOT                     Configuration does NOT contain a slot number
-    @param MOCK                             A Mock Card sub-system specific error
+    @param POINT_CREATE_ERROR               One or more points were not successfully created
  */
 BETTER_ENUM( Err_T, uint8_t
              , SUCCESS = 0
@@ -53,6 +53,7 @@ BETTER_ENUM( Err_T, uint8_t
              , BAD_CHANNEL_ASSIGNMENTS   
              , BAD_JSON
              , MISSING_SLOT
+             , POINT_CREATE_ERROR
 );
 
 /** This concrete class defines the Error Category for the Card namespace.

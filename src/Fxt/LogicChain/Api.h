@@ -51,16 +51,26 @@ namespace LogicChain {
               {...},
               ...
             ],
-            "connectionPts":[       <Array of connector Points for the LC>
+            "connectionPts":[       <Array of connector Points for the LC. Note: The points can NOT have an 'initial' value>
               {
                   "id":             <ID. Note: the ID key can vary, e.g. 'id', 'ioRegId', etc.>,
                   "type":           "<Points's Type GUID: 8-4-4-4-12 format>",
                   "typeCfg:         <OPTIONAL type configuration for complex types, e.g. "typeCfg":{"numElems":2}>,
                   "typeName":       "*<OPTIONAL: human readable point type>",
                   "name":           "*<human readable name for the point>"
+              },
+              ...
+            ]
+            "autoPts":[       <Array of Auto Points for the LC. Note: The points MUST have an 'initial' value>
+              {
+                  "id":             <ID. Note: the ID key can vary, e.g. 'id', 'ioRegId', etc.>,
+                  "type":           "<Points's Type GUID: 8-4-4-4-12 format>",
+                  "typeCfg:         <OPTIONAL type configuration for complex types, e.g. "typeCfg":{"numElems":2}>,
+                  "typeName":       "*<OPTIONAL: human readable point type>",
+                  "name":           "*<human readable name for the point>",
                   "initial": {      // OPTIONAL initial value/state specifier for the Point
                       "valid":      <true|false  // Initial valid state for the internal point>,
-                      "val":        <point value as defined by the Point type's fromJSON syntax - only required when 'valid' is 'true' OR when 'valid' is ommitted>
+                      "val":        <point value as defined by the Point type's fromJSON syntax - only required when 'valid' is 'true' OR when 'valid' is ommitted>,
                       "id":         <The ID of the internal 'setter' point that is used store the initial value in binary form>
                   }
               },
@@ -120,6 +130,13 @@ public:
         else and error code is returned.
      */
     virtual Fxt::Type::Error add( Fxt::Component::Api& componentToAdd ) noexcept = 0;
+
+    /** This method is used to add an 'Auto Point' to the logic chain.  Auto
+        Points are updated to their initial value at the start of execution
+        cycle. If the add is successful then Fxt::Type::Err_T::SUCCESS is returned;
+        else and error code is returned.
+     */
+    virtual Fxt::Type::Error add( Fxt::Point::Api& autoPointToAdd ) noexcept = 0;
 
 public:
     /** This method is called to have a Logic execute is contained Components.
