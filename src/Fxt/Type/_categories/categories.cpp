@@ -17,6 +17,7 @@
 
 #include "Fxt/Card/Error.h"
 #include "Fxt/Point/Error.h"
+#include "Fxt/Chassis/Error.h"
 #include "Fxt/Component/Error.h"
 #include "Fxt/Component/Digital/Error.h"
 #include "Fxt/LogicChain/Error.h"
@@ -33,7 +34,8 @@ Fxt::Type::ErrorBase& Fxt::Type::Error::getErrorCategoriesRoot() noexcept
 Fxt::Point::ErrCategory                     Fxt::Point::ErrCategory::g_theOne;      
 Fxt::Card::ErrCategory                      Fxt::Card::ErrCategory::g_theOne;       
 Fxt::Component::ErrCategory                 Fxt::Component::ErrCategory::g_theOne;  
-Fxt::LogicChain::ErrCategory                Fxt::LogicChain::ErrCategory::g_theOne; 
+Fxt::LogicChain::ErrCategory                Fxt::LogicChain::ErrCategory::g_theOne;
+Fxt::Chassis::ErrCategory                   Fxt::Chassis::ErrCategory::g_theOne;
 
 // Instantiate Error categories (Level 2)
 Fxt::Component::Digital::ErrCategory        Fxt::Component::Digital::ErrCategory::g_theOne; 

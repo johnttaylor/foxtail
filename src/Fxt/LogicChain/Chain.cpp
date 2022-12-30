@@ -30,6 +30,7 @@ Chain::Chain( Cpl::Memory::ContiguousAllocator&   generalAllocator,
     , m_numAutoPoints( numAutoPoints )
     , m_nextComponentIdx( 0 )
     , m_nextAutoPtsIdx( 0 )
+    , m_started( false )
 {
     // Allocate my array of Component pointers
     m_components = (Fxt::Component::Api**) generalAllocator.allocate( sizeof( Fxt::Component::Api* ) * numComponents );

@@ -147,7 +147,7 @@ TEST_CASE( "AnalogIn8" )
         pointPtr->setInvalid();
 
         REQUIRE( uut.isStarted() == false );
-        REQUIRE( uut.start() );
+        REQUIRE( uut.start( 0LL ) );
         REQUIRE( uut.isStarted() );
 
         pointPtr = (Fxt::Point::Float*) pointDb.lookupById( 2 );
@@ -220,7 +220,7 @@ TEST_CASE( "AnalogIn8" )
         REQUIRE( pointPtr->isNotValid() );
 
 
-        REQUIRE( uut.stop() );
+        uut.stop();
         REQUIRE( uut.isStarted() == false );
     }
 
@@ -240,7 +240,7 @@ TEST_CASE( "AnalogIn8" )
 
         REQUIRE( uut.getErrorCode() == Fxt::Type::Error::SUCCESS()  );
 
-        REQUIRE( uut.start() );
+        REQUIRE( uut.start( 0LL ) );
 
         uut.setInputs( 1, 22.2F );
         uut.setInputs( 2, 2 );

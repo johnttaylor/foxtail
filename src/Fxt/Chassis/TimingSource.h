@@ -30,6 +30,14 @@ namespace LogicChain {
 class Chain : public Api, public Cpl::Itc::MailboxServer
 {
 public:
+    /// Associates a scanner's instance with its execution multiplier
+    struct Scanner_T
+    {
+        Scanner*    scannerPtr;     //!< Scanner instance
+        size_t      multipler;      //!< Scan Rate Multiplier 
+    };
+
+public:
     /// Constructor
     Chain( Cpl::Memory::ContiguousAllocator&   generalAllocator,
            uint16_t                            numComponents,

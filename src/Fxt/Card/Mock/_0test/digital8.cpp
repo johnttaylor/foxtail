@@ -126,7 +126,7 @@ TEST_CASE( "Digital8" )
 
 
         REQUIRE( uut.isStarted() == false );
-        REQUIRE( uut.start() );
+        REQUIRE( uut.start( 0LL ) );
         REQUIRE( uut.isStarted() );
 
         pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 2 );
@@ -164,7 +164,7 @@ TEST_CASE( "Digital8" )
         pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 4 );
         REQUIRE( pointPtr->isNotValid() );
 
-        REQUIRE( uut.stop() );
+        uut.stop();
         REQUIRE( uut.isStarted() == false );
     }
 
@@ -184,7 +184,7 @@ TEST_CASE( "Digital8" )
                       cardObj );
 
         REQUIRE( uut.getErrorCode() == Fxt::Type::Error::SUCCESS()  );
-        REQUIRE( uut.start() );
+        REQUIRE( uut.start( 0LL ) );
 
         uut.setInputBit( 1 );
         Fxt::Point::Uint8* pointPtr   = (Fxt::Point::Uint8*) pointDb.lookupById( 2 );

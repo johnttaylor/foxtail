@@ -23,7 +23,7 @@ namespace Fxt {
 ///
 namespace LogicChain {
 
-/** This enumeration defines error codes that are unique to the Card Sub-system
+/** This enumeration defines error codes that are unique to the Logic Chain Sub-system
 
         Note: Each error code symbol must be less than 32 characters
            123456789 123456789 12345678 12

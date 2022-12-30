@@ -42,17 +42,19 @@ public:
     /** This method is used to start/activate the IO card.  If the card fails
         to be started the method returns false; else true is returned.
 
+        The 'currentElapsedTimeUsec' argument represents the current elapsed
+        time in microseconds since power-up of the application.
+
         A card can be started/stopped multiple times. When a card is created
         it is in the 'stopped' state.
      */
-    virtual bool start() noexcept = 0;
+    virtual bool start( uint64_t currentElapsedTimeUsec ) noexcept = 0;
 
-    /** This method is used to stop/deactivate the IO card.  If the card fails
-        to be stopped the method returns false; else true is returned.
+    /** This method is used to stop/deactivate the IO card. 
 
         A card MUST be in the 'stopped state' before it can be deleted/destroyed
      */
-    virtual bool stop() noexcept = 0;
+    virtual void stop() noexcept = 0;
 
     /** This method returns true if the card is in the started state
      */

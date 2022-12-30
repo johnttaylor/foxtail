@@ -13,80 +13,72 @@
 /** @file */
 
 
-#include "Fxt/LogicChain/Api.h"
-#include "Fxt/LogicChain/Error.h"
-#include "Fxt/Point/DatabaseApi.h"
-#include "Cpl/Json/Arduino.h"
-#include "Cpl/Memory/ContiguousAllocator.h"
+#include "Fxt/Chassis/ScannerApi.h"
+#include "Fxt/Card/Api.h"
 
 ///
 namespace Fxt {
 ///
-namespace LogicChain {
+namespace Chassis {
 
 
-/** This concrete class implements the LogicChain interface
+/** This concrete class implements the ScannerAPI interface
  */
-class Chain : public Api
+class Scanner : public ScannerApi
 {
+
 public:
     /// Constructor
-    Chain( Cpl::Memory::ContiguousAllocator&   generalAllocator,
-           uint16_t                            numComponents,
-           uint16_t                            numAutoPoints );
+    Scanner( Cpl::Memory::ContiguousAllocator&   generalAllocator,
+             uint16_t                            numCards,
+             size_t                              scanRateMultipler );
 
     /// Destructor
-    ~Chain();
+    ~Scanner();
 
 public:
-    /// See Fxt::LogicChain::Api
-    Fxt::Type::Error resolveReferences( Fxt::Point::DatabaseApi& pointDb )  noexcept;
+    /// Set Fxt::Chassis::ScannerApi
+    bool start( uint64_t currentElapsedTimeUsec ) noexcept;
 
-    /// See Fxt::LogicChain::Api
-    Fxt::Type::Error start( uint64_t currentElapsedTimeUsec ) noexcept;
-
-    /// See Fxt::LogicChain::Api
+    /// Set Fxt::Chassis::ScannerApi
     void stop() noexcept;
 
-    /// See Fxt::LogicChain::Api
+    /// Set Fxt::Chassis::ScannerApi
     bool isStarted() const noexcept;
 
-    /// See Fxt::LogicChain::Api
-    Fxt::Type::Error execute( int64_t currentTickUsec ) noexcept;
+    /// Set Fxt::Chassis::ScannerApi
+    bool scanInputs() noexcept;
 
-    /// See Fxt::LogicChain::Api
+    /// Set Fxt::Chassis::ScannerApi
+    bool flushOutputs() noexcept;
+
+    /// Set Fxt::Chassis::ScannerApi
     Fxt::Type::Error getErrorCode() const noexcept;
 
-    /// See Fxt::LogicChain::Api
-    Fxt::Type::Error add( Fxt::Component::Api& componentToAdd ) noexcept;
+    /// Set Fxt::Chassis::ScannerApi
+    Fxt::Type::Error add( Fxt::Card::Api& cardToAdd ) noexcept;
 
-    /// See Fxt::LogicChain::Api
-    Fxt::Type::Error add( Fxt::Point::Api& autoPointToAdd ) noexcept;
+    /// Set Fxt::Chassis::ScannerApi
+    size_t getScanRateMultiplier() const noexcept;
 
 protected:
-    /// Array/List of components in the logic chain
-    Fxt::Component::Api**               m_components;
-
-    /// Array/List of Auto points in the logic chain
-    Fxt::Point::Api**                   m_autoPoints;
+    /// Array/List of IO Cards
+    Fxt::Card::Api**         m_cards;
 
     /// Error state. A value of 0 indicates NO error
-    Fxt::Type::Error                    m_error;
+    Fxt::Type::Error         m_error;
 
-    /// Number of components
-    uint16_t                            m_numComponents;
+    /// The Scanner's Scan Rate Multiplier (SRM)
+    size_t                   m_srm;
 
-    /// Number of Auto Point
-    uint16_t                            m_numAutoPoints;
+    /// Number of Cards
+    uint16_t                 m_numCards;
 
-    /// Array index for the next Component add operation
-    uint16_t                            m_nextComponentIdx;
-
-    /// Array index for the next Auto Points add operation
-    uint16_t                            m_nextAutoPtsIdx;
+    /// Array index for the next Card add operation
+    uint16_t                 m_nextCardIdx;
 
     /// My started state
-    bool                                m_started;
+    bool                     m_started;
 };
 
 

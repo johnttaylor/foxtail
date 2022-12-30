@@ -117,10 +117,10 @@ void AnalogIn8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAl
 
 
 ///////////////////////////////////////////////////////////////////////////////
-bool AnalogIn8::start() noexcept
+bool AnalogIn8::start( uint64_t currentElapsedTimeUsec ) noexcept
 {
     // Call the parent's start-up actions
-    if ( Common_::start() )
+    if ( Common_::start( currentElapsedTimeUsec ) )
     {
         // Set the initial IO Register values
         for ( unsigned i=0; i < MAX_CHANNELS; i++ )
@@ -141,9 +141,9 @@ bool AnalogIn8::start() noexcept
 
 
 
-bool AnalogIn8::stop() noexcept
+void AnalogIn8::stop() noexcept
 {
-    return Common_::stop();
+    Common_::stop();
 }
 
 bool AnalogIn8::flushOutputs() noexcept

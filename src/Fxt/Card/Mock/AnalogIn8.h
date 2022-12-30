@@ -102,10 +102,10 @@ public:
 
 public:
     /// See Fxt::Card::Api
-    bool start() noexcept;
+    bool start( uint64_t currentElapsedTimeUsec ) noexcept;
 
     /// See Fxt::Card::Api
-    bool stop() noexcept;
+    void stop() noexcept;
 
     /// See Fxt::Card::Api
     bool flushOutputs() noexcept;

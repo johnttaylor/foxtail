@@ -179,10 +179,10 @@ void Digital8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAll
 
 
 ///////////////////////////////////////////////////////////////////////////////
-bool Digital8::start() noexcept
+bool Digital8::start( uint64_t currentElapsedTimeUsec ) noexcept
 {
     // Call the parent's start-up actions
-    if ( Common_::start() )
+    if ( Common_::start( currentElapsedTimeUsec ) )
     {
         // Set the initial IO Register values (both inputs and outputs)
         for ( unsigned i=0; i < TOTAL_MAX_CHANNELS; i++ )
@@ -203,9 +203,9 @@ bool Digital8::start() noexcept
 
 
 
-bool Digital8::stop() noexcept
+void Digital8::stop() noexcept
 {
-    return Common_::stop();
+    Common_::stop();
 }
 
 const char* Digital8::getTypeGuid() const noexcept

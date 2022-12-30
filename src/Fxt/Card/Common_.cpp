@@ -59,7 +59,7 @@ Common_::~Common_()
 }
 
 //////////////////////////////////////////////////
-bool Common_::start() noexcept
+bool Common_::start( uint64_t currentElapsedTimeUsec ) noexcept
 {
     if ( !m_started && m_error == Fxt::Type::Error::SUCCESS() )
     {
@@ -69,14 +69,12 @@ bool Common_::start() noexcept
     return false;
 }
 
-bool Common_::stop() noexcept
+void Common_::stop() noexcept
 {
     if ( m_started )
     {
         m_started = false;
-        return true;
     }
-    return false;
 }
 
 bool Common_::isStarted() const noexcept
