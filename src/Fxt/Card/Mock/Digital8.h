@@ -101,6 +101,8 @@ public:
     /// Size (in bytes) of Stateful data that will be allocated on the Card Heap
     static constexpr const size_t   CARD_STATEFUL_HEAP_SIZE = (1 * 3 * sizeof( Fxt::Point::Uint8::StateBlock_T ));
 
+    /// Size (in bytes) of Stateful data that will be allocated on the HA Heap
+    static constexpr const size_t   HA_STATEFUL_HEAP_SIZE = (1 * sizeof( Fxt::Point::Uint8::StateBlock_T ));
 
 public:
     /// Constructor

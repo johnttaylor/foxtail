@@ -52,7 +52,7 @@ public:
      */
     virtual Api* createComponentfromJSON( JsonVariant&                       componentObject,
                                           Cpl::Memory::ContiguousAllocator&  generalAllocator,
-                                          Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                                          Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
                                           Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
                                           Fxt::Point::DatabaseApi&           dbForPoints,
                                           Fxt::Type::Error&                  componentErrorCode ) noexcept = 0;

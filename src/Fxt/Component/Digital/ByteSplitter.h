@@ -86,10 +86,13 @@ class ByteSplitter : public Fxt::Component::Common_
 {
 public:
     /// Type ID for the card
-    static constexpr const char* GUID_STRING = "8c55aa52-3bc8-4b8a-ad73-c434a0bbd4b4";
+    static constexpr const char*    GUID_STRING = "8c55aa52-3bc8-4b8a-ad73-c434a0bbd4b4";
 
     /// Type name for the card
-    static constexpr const char* TYPE_NAME   = "Fxt::Component::Digital::ByteSplitter";
+    static constexpr const char*    TYPE_NAME   = "Fxt::Component::Digital::ByteSplitter";
+
+    /// Size (in bytes) of Stateful data that will be allocated on the HA Heap
+    static constexpr const size_t   HA_STATEFUL_HEAP_SIZE = 0;
 
 public:
     /// Maximum number of Input signals
@@ -102,7 +105,7 @@ public:
     /// Constructor
     ByteSplitter( JsonVariant&                       componentObject,
                   Cpl::Memory::ContiguousAllocator&  generalAllocator,
-                  Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                  Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
                   Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
                   Fxt::Point::DatabaseApi&           dbForPoints );
 

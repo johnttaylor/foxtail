@@ -37,10 +37,10 @@ void shell_test( Cpl::Io::Input& infd, Cpl::Io::Output& outfd )
     shell_.launch( infd, outfd );
 
     // Create some points
-    new(std::nothrow) Fxt::Point::Int32( db_, APPLE_ID, "apple", stateHeap );
-    new(std::nothrow) Fxt::Point::Int32( db_, ORANGE_ID, "orange", stateHeap, 3 );
-    new(std::nothrow) Fxt::Point::Int32( db_, CHERRY_ID, "cherry", stateHeap, 333 );
-    new(std::nothrow) Fxt::Point::Int32( db_, PLUM_ID, "plum", stateHeap, -42 );
+    new(std::nothrow) Fxt::Point::Int32( db_, APPLE_ID, stateHeap );
+    new(std::nothrow) Fxt::Point::Int32( db_, ORANGE_ID, stateHeap );
+    new(std::nothrow) Fxt::Point::Int32( db_, CHERRY_ID, stateHeap);
+    new(std::nothrow) Fxt::Point::Int32( db_, PLUM_ID, stateHeap );
 
 	// Start the scheduler
     Cpl::System::Api::enableScheduling();

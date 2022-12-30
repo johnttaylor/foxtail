@@ -25,7 +25,7 @@ using namespace Fxt::Component::Digital;
 ///////////////////////////////////////////////////////////////////////////////
 ByteSplitter::ByteSplitter( JsonVariant&                       componentObject,
                             Cpl::Memory::ContiguousAllocator&  generalAllocator,
-                            Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                            Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
                             Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
                             Fxt::Point::DatabaseApi&           dbForPoints )
     : m_numInputs( 0 )

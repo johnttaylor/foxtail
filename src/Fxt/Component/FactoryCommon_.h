@@ -72,7 +72,7 @@ public:
     Api* create( JsonVariant&                       componentObject,
                  Fxt::Type::Error&                  componentErrorCode,
                  Cpl::Memory::ContiguousAllocator&  generalAllocator,
-                 Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                 Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
                  Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
                  Fxt::Point::DatabaseApi&           dbForPoints ) noexcept
     {
@@ -84,7 +84,7 @@ public:
             // Create the Component
             COMPONENTTYPE* component = new(memComponentInstance) COMPONENTTYPE( componentObject,
                                                                                 generalAllocator,
-                                                                                statefulDataAllocator,
+                                                                                haStatefulDataAllocator,
                                                                                 pointFactoryDb,
                                                                                 dbForPoints );
 

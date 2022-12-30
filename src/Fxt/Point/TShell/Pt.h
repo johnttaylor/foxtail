@@ -24,15 +24,13 @@
                                         "         1         2         3         4         5         6         7         8"
                                         "12345678901234567890123456789012345678901234567890123456789012345678901234567890"
 */
-#define FXTPOINTTSHELL_USAGE_PT_        "pt [ls [<filter>]]\n" \
+#define FXTPOINTTSHELL_USAGE_PT_        "pt\n" \
                                         "pt write {<pt-json>}\n" \
                                         "pt read <id>"
 
 /// Detailed Help text
 #ifndef FXTPOINTTSHELL_DETAIL_PT_
 #define FXTPOINTTSHELL_DETAIL_PT_       "  Lists, updates, and displays Points contained in the Model Database.\n" \
-                                        "  When 'ls' is used a list of point ID (and their names) is returned.  The\n" \
-                                        "  <filter> argument will only list points that contain <filter> in their name.\n" \
                                         "  Updating a Point is done by specifying a JSON object. See the concrete class\n" \
                                         "  definition of the Point being updated for the JSON format."
 

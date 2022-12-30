@@ -79,10 +79,13 @@ class And16Gate : public Fxt::Component::Common_
 {
 public:
     /// Type ID for the card
-    static constexpr const char* GUID_STRING = "e62e395c-d27a-4821-bba9-aa1e6de42a05";
+    static constexpr const char*    GUID_STRING = "e62e395c-d27a-4821-bba9-aa1e6de42a05";
 
     /// Type name for the card
-    static constexpr const char* TYPE_NAME   = "Fxt::Component::Digital::And16Gate";
+    static constexpr const char*    TYPE_NAME   = "Fxt::Component::Digital::And16Gate";
+
+    /// Size (in bytes) of Stateful data that will be allocated on the HA Heap
+    static constexpr const size_t   HA_STATEFUL_HEAP_SIZE = 0;
 
 public:
     /// Maximum number of Input signals
@@ -95,7 +98,7 @@ public:
     /// Constructor
     And16Gate( JsonVariant&                       componentObject,
                Cpl::Memory::ContiguousAllocator&  generalAllocator,
-               Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+               Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
                Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
                Fxt::Point::DatabaseApi&           dbForPoints );
 

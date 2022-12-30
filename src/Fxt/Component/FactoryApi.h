@@ -13,10 +13,10 @@
 /** @file */
 
 #include "Cpl/Container/Item.h"
-#include "Cpl/Memory/Allocator.h"
 #include "Cpl/Json/Arduino.h"
+#include "Cpl/Memory/ContiguousAllocator.h"
+#include "Fxt/Point/FactoryDatabaseApi.h"
 #include "Fxt/Component/Api.h"
-#include "Fxt/Point/BankApi.h"
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -98,7 +98,7 @@ public:
     virtual Api* create( JsonVariant&                       componentObject, 
                          Fxt::Type::Error&                  componentErrorCode,
                          Cpl::Memory::ContiguousAllocator&  generalAllocator,
-                         Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                         Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
                          Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
                          Fxt::Point::DatabaseApi&           dbForPoints ) noexcept = 0;
 

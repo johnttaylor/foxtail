@@ -32,7 +32,7 @@ FactoryDatabase::FactoryDatabase( const char* ignoreThisParameter_usedToCreateAU
 ///////////////////////////////////////////////////////////////////////////////
 Api* FactoryDatabase::createComponentfromJSON( JsonVariant&                       componentObj,
                                                Cpl::Memory::ContiguousAllocator&  generalAllocator,
-                                               Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                                               Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
                                                Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
                                                Fxt::Point::DatabaseApi&           dbForPoints,
                                                Fxt::Type::Error&                  componentErrorCode ) noexcept
@@ -55,7 +55,7 @@ Api* FactoryDatabase::createComponentfromJSON( JsonVariant&                     
     return factory->create( componentObj,
                             componentErrorCode,
                             generalAllocator,
-                            statefulDataAllocator,
+                            haStatefulDataAllocator,
                             pointFactoryDb,
                             dbForPoints );
 }

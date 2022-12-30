@@ -17,7 +17,6 @@
 #include "Cpl/Type/Guid.h"
 #include "Fxt/Type/Error.h"
 #include "Fxt/Point/FactoryDatabaseApi.h"
-#include "Fxt/Point/BankApi.h"
 #include "Fxt/Point/Api.h"
 #include "Cpl/Memory/ContiguousAllocator.h"
 #include "Cpl/Json/Arduino.h"
@@ -174,7 +173,7 @@ public:
     static Api* createLogicChainfromJSON( JsonVariant                         logicChainObject,
                                           Fxt::Component::FactoryDatabaseApi& componentFactory,
                                           Cpl::Memory::ContiguousAllocator&   generalAllocator,
-                                          Cpl::Memory::ContiguousAllocator&   statefulDataAllocator,
+                                          Cpl::Memory::ContiguousAllocator&   haStatefulDataAllocator,
                                           Fxt::Point::FactoryDatabaseApi&     pointFactoryDb,
                                           Fxt::Point::DatabaseApi&            dbForPoints,
                                           Fxt::Type::Error&                   logicChainErrorode ) noexcept;

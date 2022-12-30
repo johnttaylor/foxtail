@@ -14,7 +14,6 @@
 #include "Common_.h"
 #include "Cpl/System/Assert.h"
 #include "Cpl/System/Trace.h"
-#include "Fxt/Point/Bank.h"
 #include "Fxt/Point/Api.h"
 #include <new>
 
