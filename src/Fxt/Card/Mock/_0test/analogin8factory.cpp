@@ -81,7 +81,8 @@ using namespace Fxt::Card::Mock;
                            "]}"
 
 static size_t generalHeap_[10000];
-static size_t statefulHeap_[10000];
+static size_t cardStateFullHeap_[10000];
+static size_t haStateFullHeap_[10000];
 
 #define MAX_POINTS      100
 #define MAX_CARDS       3
@@ -91,7 +92,8 @@ TEST_CASE( "AnalogIn8Factory" )
 {
     Cpl::System::Shutdown_TS::clearAndUseCounter();
     Cpl::Memory::LeanHeap                              generalAllocator( generalHeap_, sizeof( generalHeap_ ) );
-    Cpl::Memory::LeanHeap                              statefulAllocator( statefulHeap_, sizeof( statefulHeap_ ) );
+    Cpl::Memory::LeanHeap                              cardStatefulAllocator( cardStateFullHeap_, sizeof( cardStateFullHeap_ ) );
+    Cpl::Memory::LeanHeap                              haStatefulAllocator( haStateFullHeap_, sizeof( haStateFullHeap_ ) );
     Fxt::Point::Database<MAX_POINTS>                   pointDb;
     Fxt::Point::FactoryDatabase                        pointFactoryDb;
     Fxt::Point::Factory<Fxt::Point::Float>             factoryFloat( pointFactoryDb );
@@ -107,7 +109,7 @@ TEST_CASE( "AnalogIn8Factory" )
         REQUIRE( err == DeserializationError::Ok );
 
         JsonVariant cardObj = doc["cards"][0];
-        Fxt::Card::Api* card = uut.create( cardObj, cardErrorCode, generalAllocator, statefulAllocator, pointFactoryDb, pointDb );
+        Fxt::Card::Api* card = uut.create( cardObj, cardErrorCode, generalAllocator, cardStatefulAllocator, haStatefulAllocator, pointFactoryDb, pointDb );
         REQUIRE( card != nullptr );
         CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", Fxt::Type::Error::toText( cardErrorCode, errText )) );
         REQUIRE( cardErrorCode == Fxt::Type::Error::SUCCESS()  );
@@ -152,7 +154,7 @@ TEST_CASE( "AnalogIn8Factory" )
         REQUIRE( err == DeserializationError::Ok );
 
         JsonVariant cardObj = doc["cards"][0];
-        Fxt::Card::Api* card = cardFactoryDb.createCardfromJSON( cardObj, generalAllocator, statefulAllocator, pointFactoryDb, pointDb, cardErrorCode );
+        Fxt::Card::Api* card = cardFactoryDb.createCardfromJSON( cardObj, generalAllocator, cardStatefulAllocator, haStatefulAllocator, pointFactoryDb, pointDb, cardErrorCode );
         CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", Fxt::Type::Error::toText( cardErrorCode, errText )) );
         REQUIRE( card != nullptr );
         REQUIRE( cardErrorCode == Fxt::Type::Error::SUCCESS()  );

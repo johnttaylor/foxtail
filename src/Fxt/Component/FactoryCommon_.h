@@ -69,8 +69,7 @@ public:
     const char* getGuid() const noexcept { return COMPONENTTYPE::GUID_STRING; }
 
     /// See Fxt::Component::FactoryApi
-    Api* create( Fxt::Point::BankApi&               statePointBank,
-                 JsonVariant&                       componentObject,
+    Api* create( JsonVariant&                       componentObject,
                  Fxt::Type::Error&                  componentErrorCode,
                  Cpl::Memory::ContiguousAllocator&  generalAllocator,
                  Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
@@ -86,7 +85,6 @@ public:
             COMPONENTTYPE* component = new(memComponentInstance) COMPONENTTYPE( componentObject,
                                                                                 generalAllocator,
                                                                                 statefulDataAllocator,
-                                                                                statePointBank,
                                                                                 pointFactoryDb,
                                                                                 dbForPoints );
 

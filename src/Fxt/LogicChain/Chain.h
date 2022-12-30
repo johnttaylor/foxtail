@@ -15,7 +15,6 @@
 
 #include "Fxt/LogicChain/Api.h"
 #include "Fxt/LogicChain/Error.h"
-#include "Fxt/Point/Bank.h"
 #include "Fxt/Point/DatabaseApi.h"
 #include "Cpl/Json/Arduino.h"
 #include "Cpl/Memory/ContiguousAllocator.h"

@@ -16,7 +16,6 @@
 #include "Fxt/Component/Digital/And16GateFactory.h"
 #include "Fxt/Component/FactoryDatabase.h"
 #include "Fxt/Point/Database.h"
-#include "Fxt/Point/Bank.h"
 #include "Fxt/Point/FactoryDatabase.h"
 #include "Cpl/Memory/LeanHeap.h"
 #include <string.h>
@@ -93,7 +92,6 @@ TEST_CASE( "And16GateFactory" )
     Cpl::Memory::LeanHeap               generalAllocator( generalHeap_, sizeof( generalHeap_ ) );
     Cpl::Memory::LeanHeap               statefulAllocator( statefulHeap_, sizeof( statefulHeap_ ) );
     Fxt::Point::Database<MAX_POINTS>    pointDb;
-    Fxt::Point::Bank                    pointBank;
     Fxt::Component::FactoryDatabase     componentFactoryDb;
     Fxt::Point::FactoryDatabase         pointFactoryDb;
     And16GateFactory                    uut( componentFactoryDb );
@@ -107,8 +105,7 @@ TEST_CASE( "And16GateFactory" )
         REQUIRE( err == DeserializationError::Ok );
 
         JsonVariant componentObj = doc["components"][0];
-        Fxt::Component::Api* component = uut.create( pointBank,
-                                                     componentObj,
+        Fxt::Component::Api* component = uut.create( componentObj,
                                                      componentErrorCode,
                                                      generalAllocator,
                                                      statefulAllocator,
@@ -133,8 +130,7 @@ TEST_CASE( "And16GateFactory" )
         REQUIRE( err == DeserializationError::Ok );
 
         JsonVariant componentObj = doc["components"][0];
-        Fxt::Component::Api* component = uut.create( pointBank,
-                                                     componentObj,
+        Fxt::Component::Api* component = uut.create( componentObj,
                                                      componentErrorCode,
                                                      generalAllocator,
                                                      statefulAllocator,
@@ -167,7 +163,6 @@ TEST_CASE( "And16GateFactory" )
 
         JsonVariant componentObj = doc["components"][0];
         Fxt::Component::Api* component = componentFactoryDb.createComponentfromJSON( componentObj,
-                                                                                     pointBank,
                                                                                      generalAllocator,
                                                                                      statefulAllocator,
                                                                                      pointFactoryDb,

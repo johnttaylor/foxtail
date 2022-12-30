@@ -136,7 +136,6 @@ TEST_CASE( "LogicChain" )
     Cpl::Memory::LeanHeap                               generalAllocator( generalHeap_, sizeof( generalHeap_ ) );
     Cpl::Memory::LeanHeap                               statefulAllocator( statefulHeap_, sizeof( statefulHeap_ ) );
     Fxt::Point::Database<MAX_POINTS>                    pointDb;
-    Fxt::Point::Bank                                    pointBank;
     Fxt::Component::FactoryDatabase                     componentFactoryDb;
     Fxt::Point::FactoryDatabase                         pointFactoryDb;
     Fxt::Component::Digital::ByteSplitterFactory        byteSplitterFactory( componentFactoryDb );
@@ -167,7 +166,6 @@ TEST_CASE( "LogicChain" )
         JsonVariant lcJsonObj = doc.as<JsonVariant>();
         Api* uut = Api::createLogicChainfromJSON( lcJsonObj,
                                                   componentFactoryDb,
-                                                  pointBank,
                                                   generalAllocator,
                                                   statefulAllocator,
                                                   pointFactoryDb,
@@ -188,7 +186,6 @@ TEST_CASE( "LogicChain" )
         JsonVariant lcJsonObj = doc.as<JsonVariant>();
         Api* uut = Api::createLogicChainfromJSON( lcJsonObj,
                                                   componentFactoryDb,
-                                                  pointBank,
                                                   generalAllocator,
                                                   statefulAllocator,
                                                   pointFactoryDb,

@@ -57,7 +57,6 @@ public:
 public:
     /// See Fxt::Component::FactoryDatabaseApi
     Api* createComponentfromJSON( JsonVariant&                       componentObject,
-                                  Fxt::Point::BankApi&               statePointBank,
                                   Cpl::Memory::ContiguousAllocator&  generalAllocator,
                                   Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
                                   Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,

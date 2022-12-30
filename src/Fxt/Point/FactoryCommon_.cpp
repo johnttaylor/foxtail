@@ -43,7 +43,7 @@ Api* FactoryCommon_::create( JsonObject&                        pointObject,
     Api* setter = nullptr;
     if ( createSetter && pointObject["initial"].is<JsonObject>() == true )
     {
-        // Create the Setter (note: Setter's are 'static'ish' so they are considered to have 'stateful' data -->so use the general Allocator for all allocation)
+        // Create the Setter (note: Setter's are 'static'ish' so they are considered to NOT have 'stateful' data -->so use the general Allocator for all allocation)
         JsonObject setterJson  = pointObject["initial"].as<JsonObject>();
         setter                 = createRawPoint( setterJson,
                                                  pointErrorCode,

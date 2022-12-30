@@ -25,7 +25,6 @@ using namespace Fxt::Component::Digital;
 And16Gate::And16Gate( JsonVariant&                       componentObject,
                       Cpl::Memory::ContiguousAllocator&  generalAllocator,
                       Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
-                      Fxt::Point::BankApi&               statePointBank,
                       Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
                       Fxt::Point::DatabaseApi&           dbForPoints )
     : m_numInputs( 0 )

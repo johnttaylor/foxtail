@@ -13,7 +13,6 @@
 
 #include "Digital8.h"
 #include "Cpl/System/Assert.h"
-#include "Fxt/Point/Uint8.h"
 #include <stdint.h>
 #include <new>
 
@@ -30,7 +29,8 @@ using namespace Fxt::Card::Mock;
 
 ///////////////////////////////////////////////////////////////////////////////
 Digital8::Digital8( Cpl::Memory::ContiguousAllocator&  generalAllocator,
-                    Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                    Cpl::Memory::ContiguousAllocator&  cardStatefulDataAllocator,
+                    Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
                     Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
                     Fxt::Point::DatabaseApi&           dbForPoints,
                     JsonVariant&                       cardObject )
@@ -38,7 +38,7 @@ Digital8::Digital8( Cpl::Memory::ContiguousAllocator&  generalAllocator,
 {
     if ( m_error == Fxt::Type::Error::SUCCESS() )
     {
-        parseConfiguration( generalAllocator, statefulDataAllocator, pointFactoryDb, dbForPoints, cardObject );
+        parseConfiguration( generalAllocator, cardStatefulDataAllocator, haStatefulDataAllocator, pointFactoryDb, dbForPoints, cardObject );
     }
 }
 
@@ -46,7 +46,8 @@ Digital8::Digital8( Cpl::Memory::ContiguousAllocator&  generalAllocator,
 
 ///////////////////////////////////////////////////////////////////////////////
 void Digital8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAllocator,
-                                   Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                                   Cpl::Memory::ContiguousAllocator&  cardStatefulDataAllocator,
+                                   Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
                                    Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
                                    Fxt::Point::DatabaseApi&           dbForPoints,
                                    JsonVariant&                       cardObject ) noexcept
@@ -86,7 +87,7 @@ void Digital8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAll
                                        INPUT_CHANNEL_OFFSET,
                                        channelNum_notUsed,
                                        generalAllocator,
-                                       statefulDataAllocator,
+                                       cardStatefulDataAllocator,
                                        dbForPoints );
             }
 
@@ -110,7 +111,7 @@ void Digital8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAll
                                        INPUT_CHANNEL_OFFSET,
                                        channelNum_notUsed,
                                        generalAllocator,
-                                       statefulDataAllocator,
+                                       cardStatefulDataAllocator,
                                        dbForPoints );
             }
         }
@@ -141,7 +142,7 @@ void Digital8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAll
                                        OUTPUT_CHANNEL_OFFSET,
                                        channelNum_notUsed,
                                        generalAllocator,
-                                       statefulDataAllocator,
+                                       haStatefulDataAllocator,     // All Output Virtual Points are part of the HA Data set
                                        dbForPoints );
 
                 if ( m_error != Fxt::Type::Error::SUCCESS() )
@@ -164,7 +165,7 @@ void Digital8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAll
                                        OUTPUT_CHANNEL_OFFSET,
                                        channelNum_notUsed,
                                        generalAllocator,
-                                       statefulDataAllocator,
+                                       cardStatefulDataAllocator,
                                        dbForPoints );
 
                 if ( m_error != Fxt::Type::Error::SUCCESS() )

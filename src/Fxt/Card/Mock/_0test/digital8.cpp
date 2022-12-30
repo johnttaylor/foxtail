@@ -68,7 +68,8 @@ using namespace Fxt::Card::Mock;
                            "]}"
 
 static size_t generalHeap_[10000];
-static size_t statefulHeap_[10000];
+static size_t cardStateFullHeap_[Digital8::CARD_STATEFUL_HEAP_SIZE];
+static size_t haStateFullHeap_[10000];
 
 #define MAX_POINTS      100
 #define MAX_CARDS       3
@@ -78,7 +79,8 @@ TEST_CASE( "Digital8" )
 {
     Cpl::System::Shutdown_TS::clearAndUseCounter();
     Cpl::Memory::LeanHeap                              generalAllocator( generalHeap_, sizeof( generalHeap_ ) );
-    Cpl::Memory::LeanHeap                              statefulAllocator( statefulHeap_, sizeof( statefulHeap_ ) );
+    Cpl::Memory::LeanHeap                              cardStatefulAllocator( cardStateFullHeap_, sizeof( cardStateFullHeap_ ) );
+    Cpl::Memory::LeanHeap                              haStatefulAllocator( haStateFullHeap_, sizeof( haStateFullHeap_ ) );
     Fxt::Point::Database<MAX_POINTS>                   pointDb;
     Fxt::Point::FactoryDatabase                        pointFactoryDb;
     Fxt::Point::Factory<Fxt::Point::Uint8>             factoryFloat( pointFactoryDb );
@@ -92,7 +94,8 @@ TEST_CASE( "Digital8" )
 
         JsonVariant cardObj = doc["cards"][0];
         Digital8 uut( generalAllocator,
-                      statefulAllocator,
+                      cardStatefulAllocator,
+                      haStatefulAllocator,
                       pointFactoryDb,
                       pointDb,
                       cardObj );
@@ -174,7 +177,8 @@ TEST_CASE( "Digital8" )
 
         JsonVariant cardObj = doc["cards"][0];
         Digital8 uut( generalAllocator,
-                      statefulAllocator,
+                      cardStatefulAllocator,
+                      haStatefulAllocator,
                       pointFactoryDb,
                       pointDb,
                       cardObj );

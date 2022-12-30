@@ -15,7 +15,6 @@
 #include "Fxt/Component/Digital/Error.h"
 #include "Fxt/Point/Database.h"
 #include "Fxt/Point/FactoryDatabase.h"
-#include "Fxt/Point/Bank.h"
 #include "Cpl/Memory/LeanHeap.h"
 #include <string.h>
 
@@ -89,7 +88,6 @@ TEST_CASE( "And16Gate" )
     Cpl::Memory::LeanHeap generalAllocator( generalHeap_, sizeof( generalHeap_ ) );
     Cpl::Memory::LeanHeap statefulAllocator( statefulHeap_, sizeof( statefulHeap_ ) );
     Fxt::Point::Database<MAX_POINTS> pointDb;
-    Fxt::Point::Bank                 pointBank;
     Fxt::Point::FactoryDatabase      pointFactoryDb;
 
     SECTION( "create component" )
@@ -102,7 +100,6 @@ TEST_CASE( "And16Gate" )
         And16Gate uut( componentObj,
                        generalAllocator,
                        statefulAllocator,
-                       pointBank,
                        pointFactoryDb,
                        pointDb );
 
@@ -124,7 +121,6 @@ TEST_CASE( "And16Gate" )
         And16Gate uut( componentObj,
                        generalAllocator,
                        statefulAllocator,
-                       pointBank,
                        pointFactoryDb,
                        pointDb );
 
@@ -146,7 +142,6 @@ TEST_CASE( "And16Gate" )
         And16Gate uut( componentObj,
                        generalAllocator,
                        statefulAllocator,
-                       pointBank,
                        pointFactoryDb,
                        pointDb );
 

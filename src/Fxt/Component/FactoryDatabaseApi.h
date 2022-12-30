@@ -51,7 +51,6 @@ public:
         registered with the Factory Database.
      */
     virtual Api* createComponentfromJSON( JsonVariant&                       componentObject,
-                                          Fxt::Point::BankApi&               statePointBank,
                                           Cpl::Memory::ContiguousAllocator&  generalAllocator,
                                           Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
                                           Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,

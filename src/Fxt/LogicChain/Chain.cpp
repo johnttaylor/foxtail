@@ -223,7 +223,6 @@ Fxt::Type::Error Chain::add( Fxt::Point::Api& autoPointToAdd ) noexcept
 //////////////////////////////////////////////////
 Api* Api::createLogicChainfromJSON( JsonVariant                         logicChainObject,
                                     Fxt::Component::FactoryDatabaseApi& componentFactory,
-                                    Fxt::Point::BankApi&                statePointBank,
                                     Cpl::Memory::ContiguousAllocator&   generalAllocator,
                                     Cpl::Memory::ContiguousAllocator&   statefulDataAllocator,
                                     Fxt::Point::FactoryDatabaseApi&     pointFactoryDb,
@@ -269,7 +268,6 @@ Api* Api::createLogicChainfromJSON( JsonVariant                         logicCha
         Fxt::Type::Error     errorCode     = Fxt::Type::Error::SUCCESS();
         JsonVariant          componentJson = components[i];
         Fxt::Component::Api* component     = componentFactory.createComponentfromJSON( componentJson,
-                                                                                       statePointBank,
                                                                                        generalAllocator,
                                                                                        statefulDataAllocator,
                                                                                        pointFactoryDb,
@@ -304,7 +302,7 @@ Api* Api::createLogicChainfromJSON( JsonVariant                         logicCha
             Fxt::Point::Api* pt = pointFactoryDb.createPointfromJSON( pointJson,
                                                                       pointError,
                                                                       generalAllocator,
-                                                                      statefulDataAllocator,
+                                                                      generalAllocator,     // Note: Connector points are NOT part of the HA data
                                                                       dbForPoints,
                                                                       "id",
                                                                       false ); // Do NOT create setters (connector points can NOT have an initial value)
@@ -331,7 +329,7 @@ Api* Api::createLogicChainfromJSON( JsonVariant                         logicCha
             Fxt::Point::Api* pt = pointFactoryDb.createPointfromJSON( pointJson,
                                                                       pointError,
                                                                       generalAllocator,
-                                                                      statefulDataAllocator,
+                                                                      generalAllocator,     // Note: Auto points are NOT part of the HA data
                                                                       dbForPoints,
                                                                       "id",
                                                                       true );

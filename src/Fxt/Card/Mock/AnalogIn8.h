@@ -13,6 +13,7 @@
 /** @file */
 
 
+#include "Fxt/Point/Float.h"
 #include "Fxt/Card/Common_.h"
 #include "Cpl/Json/Arduino.h"
 #include "Cpl/System/Mutex.h"
@@ -79,22 +80,19 @@ class AnalogIn8 : public Fxt::Card::Common_
 {
 public:
     /// Type ID for the card
-    static constexpr const char* GUID_STRING = "1968f533-e323-4ae4-8493-9a572f3bd195";
+    static constexpr const char*    GUID_STRING = "1968f533-e323-4ae4-8493-9a572f3bd195";
 
     /// Type name for the card
-    static constexpr const char* TYPE_NAME   = "Fxt::Card::Mock::AnalogIn8";
+    static constexpr const char*    TYPE_NAME   = "Fxt::Card::Mock::AnalogIn8";
 
-public:
-
-public:
-    /// Maximum number of descriptors per Input and Output
-    static constexpr unsigned MAX_DESCRIPTORS = 8;
-
+    /// Size (in bytes) of Stateful data that will be allocated on the Card Heap
+    static constexpr const size_t   CARD_STATEFUL_HEAP_SIZE = (8 * 2 * sizeof( Fxt::Point::Float::StateBlock_T ));
 
 public:
     /// Constructor
     AnalogIn8( Cpl::Memory::ContiguousAllocator&  generalAllocator,
-               Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+               Cpl::Memory::ContiguousAllocator&  cardStatefulDataAllocator,
+               Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
                Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
                Fxt::Point::DatabaseApi&           dbForPoints,
                JsonVariant&                       cardObject );
@@ -126,7 +124,8 @@ public:
 protected:
     /// Helper method to parse the card's JSON config
     void parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAllocator,
-                             Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                             Cpl::Memory::ContiguousAllocator&  cardStatefulDataAllocator,
+                             Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
                              Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
                              Fxt::Point::DatabaseApi&           dbForPoints,
                              JsonVariant&                       cardObject ) noexcept;

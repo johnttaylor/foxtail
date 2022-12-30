@@ -31,7 +31,6 @@ FactoryDatabase::FactoryDatabase( const char* ignoreThisParameter_usedToCreateAU
 
 ///////////////////////////////////////////////////////////////////////////////
 Api* FactoryDatabase::createComponentfromJSON( JsonVariant&                       componentObj,
-                                               Fxt::Point::BankApi&               statePointBank,
                                                Cpl::Memory::ContiguousAllocator&  generalAllocator,
                                                Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
                                                Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
@@ -53,8 +52,7 @@ Api* FactoryDatabase::createComponentfromJSON( JsonVariant&                     
         return nullptr;
     }
 
-    return factory->create( statePointBank,
-                            componentObj,
+    return factory->create( componentObj,
                             componentErrorCode,
                             generalAllocator,
                             statefulDataAllocator,

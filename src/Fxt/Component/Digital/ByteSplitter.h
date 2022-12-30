@@ -103,7 +103,6 @@ public:
     ByteSplitter( JsonVariant&                       componentObject,
                   Cpl::Memory::ContiguousAllocator&  generalAllocator,
                   Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
-                  Fxt::Point::BankApi&               statePointBank,
                   Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
                   Fxt::Point::DatabaseApi&           dbForPoints );
 

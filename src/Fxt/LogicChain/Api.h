@@ -173,7 +173,6 @@ public:
      */
     static Api* createLogicChainfromJSON( JsonVariant                         logicChainObject,
                                           Fxt::Component::FactoryDatabaseApi& componentFactory,
-                                          Fxt::Point::BankApi&                statePointBank,
                                           Cpl::Memory::ContiguousAllocator&   generalAllocator,
                                           Cpl::Memory::ContiguousAllocator&   statefulDataAllocator,
                                           Fxt::Point::FactoryDatabaseApi&     pointFactoryDb,

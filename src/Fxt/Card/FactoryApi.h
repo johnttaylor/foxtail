@@ -81,7 +81,8 @@ public:
     virtual Api* create( JsonVariant&                       cardObject, 
                          Fxt::Type::Error&                  cardErrorCode,
                          Cpl::Memory::ContiguousAllocator&  generalAllocator,
-                         Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                         Cpl::Memory::ContiguousAllocator&  cardStatefulDataAllocator,
+                         Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
                          Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
                          Fxt::Point::DatabaseApi&           dbForPoints ) noexcept = 0;
 

@@ -73,7 +73,8 @@ public:
     Api* create( JsonVariant&                       cardObject,
                  Fxt::Type::Error&                  cardErrorCode,
                  Cpl::Memory::ContiguousAllocator&  generalAllocator,
-                 Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                 Cpl::Memory::ContiguousAllocator&  cardStatefulDataAllocator,
+                 Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
                  Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
                  Fxt::Point::DatabaseApi&           dbForPoints ) noexcept
     {
@@ -84,7 +85,8 @@ public:
         {
             // Create the card
             CARDTYPE* card = new(memCardInstance) CARDTYPE( generalAllocator,
-                                                            statefulDataAllocator,
+                                                            cardStatefulDataAllocator,
+                                                            haStatefulDataAllocator,
                                                             pointFactoryDb,
                                                             dbForPoints,
                                                             cardObject );

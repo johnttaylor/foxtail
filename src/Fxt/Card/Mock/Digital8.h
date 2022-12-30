@@ -13,6 +13,7 @@
 /** @file */
 
 
+#include "Fxt/Point/Uint8.h"
 #include "Fxt/Card/Common_.h"
 #include "Cpl/Json/Arduino.h"
 #include "Cpl/System/Mutex.h"
@@ -92,22 +93,20 @@ class Digital8 : public Fxt::Card::Common_
 {
 public:
     /// Type ID for the card
-    static constexpr const char* GUID_STRING = "59d33888-62c7-45b2-a4d4-9dbc55914ed3";
+    static constexpr const char*    GUID_STRING = "59d33888-62c7-45b2-a4d4-9dbc55914ed3";
 
     /// Type name for the card
-    static constexpr const char* TYPE_NAME   = "Fxt::Card::Mock::Digital8";
+    static constexpr const char*    TYPE_NAME   = "Fxt::Card::Mock::Digital8";
 
-public:
-
-public:
-    /// Maximum number of descriptors per Input and Output
-    static constexpr unsigned MAX_DESCRIPTORS = 1;
+    /// Size (in bytes) of Stateful data that will be allocated on the Card Heap
+    static constexpr const size_t   CARD_STATEFUL_HEAP_SIZE = (1 * 3 * sizeof( Fxt::Point::Uint8::StateBlock_T ));
 
 
 public:
     /// Constructor
     Digital8( Cpl::Memory::ContiguousAllocator&  generalAllocator,
-              Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+              Cpl::Memory::ContiguousAllocator&  cardStatefulDataAllocator,
+              Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
               Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
               Fxt::Point::DatabaseApi&           dbForPoints,
               JsonVariant&                       cardObject );
@@ -151,7 +150,8 @@ public:
 protected:
     /// Helper method to parse the card's JSON config
     void parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAllocator,
-                             Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                             Cpl::Memory::ContiguousAllocator&  cardStatefulDataAllocator,
+                             Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
                              Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
                              Fxt::Point::DatabaseApi&           dbForPoints,
                              JsonVariant&                       cardObject ) noexcept;

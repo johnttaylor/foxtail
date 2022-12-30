@@ -95,8 +95,7 @@ public:
         When an error occurs, the 'componentErrorCode' argument is updated with 
         details of the error.
       */
-    virtual Api* create( Fxt::Point::BankApi&               statePointBank, 
-                         JsonVariant&                       componentObject, 
+    virtual Api* create( JsonVariant&                       componentObject, 
                          Fxt::Type::Error&                  componentErrorCode,
                          Cpl::Memory::ContiguousAllocator&  generalAllocator,
                          Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,

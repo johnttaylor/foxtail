@@ -13,7 +13,6 @@
 
 #include "AnalogIn8.h"
 #include "Cpl/System/Assert.h"
-#include "Fxt/Point/Float.h"
 #include <stdint.h>
 #include <new>
 
@@ -22,9 +21,11 @@ using namespace Fxt::Card::Mock;
 
 #define MAX_CHANNELS        8 
 
+
 ///////////////////////////////////////////////////////////////////////////////
 AnalogIn8::AnalogIn8( Cpl::Memory::ContiguousAllocator&  generalAllocator,
-                      Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                      Cpl::Memory::ContiguousAllocator&  cardStatefulDataAllocator,
+                      Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
                       Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
                       Fxt::Point::DatabaseApi&           dbForPoints,
                       JsonVariant&                       cardObject )
@@ -32,14 +33,15 @@ AnalogIn8::AnalogIn8( Cpl::Memory::ContiguousAllocator&  generalAllocator,
 {
     if ( m_error == Fxt::Type::Error::SUCCESS() )
     {
-        parseConfiguration( generalAllocator, statefulDataAllocator, pointFactoryDb, dbForPoints, cardObject );
+        parseConfiguration( generalAllocator, cardStatefulDataAllocator, haStatefulDataAllocator, pointFactoryDb, dbForPoints, cardObject );
     }
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
 void AnalogIn8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAllocator,
-                                    Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
+                                    Cpl::Memory::ContiguousAllocator&  cardStatefulDataAllocator,
+                                    Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
                                     Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
                                     Fxt::Point::DatabaseApi&           dbForPoints,
                                     JsonVariant&                       cardObject ) noexcept
@@ -73,7 +75,7 @@ void AnalogIn8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAl
                                        0,
                                        channelNum_notUsed,
                                        generalAllocator,
-                                       statefulDataAllocator,
+                                       cardStatefulDataAllocator,
                                        dbForPoints );
 
                 if ( m_error != Fxt::Type::Error::SUCCESS() )
@@ -97,7 +99,7 @@ void AnalogIn8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAl
                                        0,
                                        channelNum_notUsed,
                                        generalAllocator,
-                                       statefulDataAllocator,
+                                       cardStatefulDataAllocator,
                                        dbForPoints );
 
                 if ( m_error != Fxt::Type::Error::SUCCESS() )
