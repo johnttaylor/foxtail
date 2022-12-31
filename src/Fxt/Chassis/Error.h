@@ -34,6 +34,7 @@ namespace Chassis {
     @param NO_MEMORY_CARD_LIST              Unable to allocate memory for list of contained IO cards
     @param NO_MEMORY_LOGIC_CHAIN_LIST       Unable to allocate memory for list of Logic Chains
     @param CARD_FAILED_START                One or more IO cards failed to start
+    @param LOGIC CHAIN FAILED_START         One or more Logic Chains failed to start
     @param MISSING_CARDS                    At least one or more IO Cards where not added to a Scanner (as defined by the number specified in the Scanner constructor)
     @param MISSING_LOGIC_CHAINS             At least one or more Logic Chains where not added to the ExecutionSet (as defined by the number specified in the ExecutionSet constructor)
     @param TOO_MANY_CARDS                   Attempted to add more IO Cards that what was specified when the Scanner was constructed
@@ -45,19 +46,14 @@ namespace Chassis {
     @param NO_CARDS                         JSON Input has an empty array of "cards"
     @param NO_LOGIC_CHAINS                  JSON Input has an empty array of "logic chains"
     @param NO_MEMORY_SCANNER                Unable to allocate memory for the Scanner instance
+    @param NO_MEMORY_EXECUTION_SET          Unable to allocate memory for the Execution Set instance
     @param FAILED_CREATE_CARD               Failed to create one or more IO Cards
     @param FAILED_CREATE_LOGIC_CHAINS       Failed to create one or more Logic Chains
     @param CARD_CREATE_ERROR                One or more IO Cards were not successfully created
     @param LOGIC_CHAIN_CREATE_ERROR         One or more Logic CHains were not successfully created
     @param SCANNER_MISSING_SRM              A Scanner's JSON object is missing the ScanRateMultiplier key/value pair
-    @param EXECUTION_SET_MISSING_SRM        A ExecutionSet's JSON object is missing the ScanRateMultiplier key/value pair
-    @param COMPONENT_FAILURE                One or more components failed during execution
-    @param FAILED_START                     Unable to start one or more components
-    @param FAILED_CREATE_POINTS             Failed to create one or more connection points
-    @param FAILED_CREATE_AUTO_POINTS        Failed to create one or more auto points
-    @param NO_INITIAL_VAL_AUTO_POINT        One or more auto points are missing the required initial value specification
-    @param POINT_CREATE_ERROR               One or more connector points were not successfully created
-    @param AUTO_POINT_CREATE_ERROR          One or more connector points were not successfully created
+    @param EXECUTION_SET_MISSING_ERM        A ExecutionSet's JSON object is missing the ExecutionRateMultiplier key/value pair
+    @param LOGIC_CHAIN_FAILURE              One or more Logic Chains failed during execution
     @param FAILED_POINT_RESOLVE             One or more Components failed when resolving their' point references
  */
 BETTER_ENUM( Err_T, uint8_t
@@ -65,6 +61,7 @@ BETTER_ENUM( Err_T, uint8_t
              , NO_MEMORY_CARD_LIST
              , NO_MEMORY_LOGIC_CHAIN_LIST
              , CARD_FAILED_START
+             , LOGIC_CHAIN_FAILED_START
              , MISSING_CARDS
              , MISSING_LOGIC_CHAINS
              , TOO_MANY_CARDS
@@ -76,20 +73,14 @@ BETTER_ENUM( Err_T, uint8_t
              , NO_CARDS
              , NO_LOGIC_CHAINS
              , NO_MEMORY_SCANNER
+             , NO_MEMORY_EXECUTION_SET
              , FAILED_CREATE_CARD
              , FAILED_CREATE_LOGIC_CHAIN
              , CARD_CREATE_ERROR
              , LOGIC_CHAIN_CREATE_ERROR
              , SCANNER_MISSING_SRM
-             , EXECUTION_SET_MISSING_SRM
-
-             , COMPONENT_FAILURE
-             , FAILED_START
-             , FAILED_CREATE_POINTS
-             , FAILED_CREATE_AUTO_POINTS
-             , NO_INITIAL_VAL_AUTO_POINT
-             , POINT_CREATE_ERROR
-             , AUTO_POINT_CREATE_ERROR
+             , EXECUTION_SET_MISSING_ERM
+             , LOGIC_CHAIN_FAILURE
              , FAILED_POINT_RESOLVE
 );
 

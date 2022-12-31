@@ -38,7 +38,7 @@ namespace Chassis {
           "name":                   "*<human readable name for the Scanner - not required to be unique>",
           "id":                     <*Local ID for the Scanner.  Range: 0-64K>,
           "scanRateMultiplier": 1,  <Scan Rate Multiplier (i.e. the scanner executes every: (multiplier * chassis.fer) microseconds>,
-          "cards": [                // List of IO Cards  (must be at least one)
+          "cards": [                // List of IO Cards  (must be at least one). The cards are scanned in the order listed
             {...},
             ...
           ]

@@ -1,5 +1,5 @@
-#ifndef Fxt_Chassis_ExecutionSet_h_
-#define Fxt_Chassis_ExecutionSet_h_
+#ifndef Fxt_Chassis_ExecutionSetApi_h_
+#define Fxt_Chassis_ExecutionSetApi_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -14,6 +14,8 @@
 
 
 #include "Fxt/Point/DatabaseApi.h"
+#include "Fxt/LogicChain/Api.h"
+#include "Fxt/Type/Error.h"
 #include "Cpl/Json/Arduino.h"
 #include "Cpl/Memory/ContiguousAllocator.h"
 
@@ -24,10 +26,33 @@ namespace Chassis {
 
 
 /** This abstract class defines the operations that can be performed on
-    a ExecutionSet
+    a ExecutionSet. A ExecutionSet is collection of Logic Chains where all of
+    the contained Logic Chains are executed at the same frequency/rate.
+
+    NOTE: ExecutionSet semantics are NOT thread-safe.
+
+   \code
+    Required/Defined JSON fields/structure:
+        {
+          "name":                   "*<human readable name for the ExecutionSet - not required to be unique>",
+          "id":                     <*Local ID for the ExecutionSet.  Range: 0-64K>,
+          "exeRateMultipler": 1,    <Execution Rate Multiplier (i.e. the ExecutionSet executes every: (multiplier * chassis.fer) microseconds>,
+          "logicChains": [          // List of Logic Chains  (must be at least one). The Logic Chains are executed in the order listed
+            {...},
+            ...
+          ]
+        }
+
+    *The field is NOT parsed/used by the firmware
+
+    \endcode
  */
 class ExecutionSetApi
 {
+public:
+    /// This method returns the ExecutionSet's Execution Rate Multiplier
+    virtual size_t getExecutionRateMultiplier() const noexcept = 0;
+
 public:
     /** This method is used to resolve Point references once all of the
         configuration (i.e. all Points have been) has been processed. The
@@ -46,10 +71,13 @@ public:
         returned.  Each Scanner is responsible for starting its contained Logic
         Chains
 
+        The 'currentElapsedTimeUsec' argument represents the current elapsed
+        time in microseconds since power-up of the application.
+
         A ExecutionSet can be started/stopped multiple times. When a ExecutionSet
         is created it is in the 'stopped' state.
      */
-    virtual bool start() noexcept = 0;
+    virtual Fxt::Type::Error start( uint64_t currentElapsedTimeUsec ) noexcept = 0;
 
     /** This method is used to stop/deactivate the ExecutionSet.  If the ExecutionSet
         fails to be stopped the method returns false; else true is returned.
@@ -57,7 +85,7 @@ public:
 
         A ExecutionSet MUST be in the 'stopped state' before it can be deleted/destroyed
      */
-    virtual bool stop() noexcept = 0;
+    virtual void stop() noexcept = 0;
 
     /** This method returns true if the ExecutionSet is in the started state
      */
@@ -84,6 +112,12 @@ public:
      */
     virtual Fxt::Type::Error getErrorCode() const noexcept = 0;
 
+public:
+    /** This method is used to add a Logic Chain to the ExecutionSet.  If the
+        add is successful then Fxt::Type::Err_T::SUCCESS is returned; else and
+        error code is returned.
+     */
+    virtual Fxt::Type::Error add( Fxt::LogicChain::Api& logiChainToAdd ) noexcept = 0;
 
 public:
     /** This method attempts to parse the provided JSON Object that represents
@@ -93,12 +127,13 @@ public:
         object is returned.  When an error occurs, details about the specific
         ExecutionSet error is returned via 'executionSetErrorode' argument.
      */
-    static Api* createExecutionSetfromJSON( JsonVariant                         executionSetJsonObject,
-                                            Cpl::Memory::ContiguousAllocator&   generalAllocator,
-                                            Cpl::Memory::ContiguousAllocator&   haStatefulDataAllocator,
-                                            Fxt::Point::FactoryDatabaseApi&     pointFactoryDb,
-                                            Fxt::Point::DatabaseApi&            dbForPoints,
-                                            Fxt::Type::Error&                   executionSetErrorode ) noexcept;
+    static ExecutionSetApi* createExecutionSetfromJSON( JsonVariant                         executionSetObject,
+                                                        Fxt::Component::FactoryDatabaseApi& componentFactory,
+                                                        Cpl::Memory::ContiguousAllocator&   generalAllocator,
+                                                        Cpl::Memory::ContiguousAllocator&   haStatefulDataAllocator,
+                                                        Fxt::Point::FactoryDatabaseApi&     pointFactoryDb,
+                                                        Fxt::Point::DatabaseApi&            dbForPoints,
+                                                        Fxt::Type::Error&                   executionSetErrorode ) noexcept;
 public:
     /// Virtual destructor
     virtual ~ExecutionSetApi(){};

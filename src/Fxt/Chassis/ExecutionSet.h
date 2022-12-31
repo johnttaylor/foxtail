@@ -1,5 +1,5 @@
-#ifndef Fxt_LogicChain_Chain_h_
-#define Fxt_LogicChain_Chain_h_
+#ifndef Fxt_Chassis_ExecutionSet_h_
+#define Fxt_Chassis_ExecutionSet_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -13,77 +13,68 @@
 /** @file */
 
 
+#include "Fxt/Chassis/ExecutionSetApi.h"
 #include "Fxt/LogicChain/Api.h"
-#include "Fxt/LogicChain/Error.h"
-#include "Fxt/Point/DatabaseApi.h"
-#include "Cpl/Json/Arduino.h"
-#include "Cpl/Memory/ContiguousAllocator.h"
 
 ///
 namespace Fxt {
 ///
-namespace LogicChain {
+namespace Chassis {
 
 
-/** This concrete class implements the LogicChain interface
+/** This concrete class implements the ExecutionSet interface
  */
-class Chain : public Api
+class ExecutionSet : public ExecutionSetApi
 {
 public:
     /// Constructor
-    Chain( Cpl::Memory::ContiguousAllocator&   generalAllocator,
-           uint16_t                            numComponents,
-           uint16_t                            numAutoPoints );
+    ExecutionSet( Cpl::Memory::ContiguousAllocator&   generalAllocator,
+                  uint16_t                            numLogicChains,
+                  size_t                              exeRateMultipler );
 
     /// Destructor
-    ~Chain();
+    ~ExecutionSet();
 
 public:
-    /// See Fxt::LogicChain::Api
+    /// See Fxt::Chassis::ExecutionSetApi
     Fxt::Type::Error resolveReferences( Fxt::Point::DatabaseApi& pointDb )  noexcept;
 
-    /// See Fxt::LogicChain::Api
+    /// See Fxt::Chassis::ExecutionSetApi
     Fxt::Type::Error start( uint64_t currentElapsedTimeUsec ) noexcept;
 
-    /// See Fxt::LogicChain::Api
+    /// See Fxt::Chassis::ExecutionSetApi
     void stop() noexcept;
 
-    /// See Fxt::LogicChain::Api
+    /// See Fxt::Chassis::ExecutionSetApi
     bool isStarted() const noexcept;
 
-    /// See Fxt::LogicChain::Api
+    /// See Fxt::Chassis::ExecutionSetApi
     Fxt::Type::Error execute( int64_t currentTickUsec ) noexcept;
 
-    /// See Fxt::LogicChain::Api
+    /// See Fxt::Chassis::ExecutionSetApi
     Fxt::Type::Error getErrorCode() const noexcept;
 
-    /// See Fxt::LogicChain::Api
-    Fxt::Type::Error add( Fxt::Component::Api& componentToAdd ) noexcept;
+    /// See Fxt::Chassis::ExecutionSetApi
+    Fxt::Type::Error add( Fxt::LogicChain::Api& logicChainToAdd ) noexcept;
 
-    /// See Fxt::LogicChain::Api
-    Fxt::Type::Error add( Fxt::Point::Api& autoPointToAdd ) noexcept;
+    /// Set Fxt::Chassis::ExecutionSetApi
+    size_t getExecutionRateMultiplier() const noexcept;
 
 protected:
     /// Array/List of components in the logic chain
-    Fxt::Component::Api**               m_components;
-
-    /// Array/List of Auto points in the logic chain
-    Fxt::Point::Api**                   m_autoPoints;
+    Fxt::LogicChain::Api**               m_logicChains;
 
     /// Error state. A value of 0 indicates NO error
     Fxt::Type::Error                    m_error;
 
-    /// Number of components
-    uint16_t                            m_numComponents;
+    /// The ExecutionSet's Execution Rate Multiplier (ERM)
+    size_t                              m_erm;
 
-    /// Number of Auto Point
-    uint16_t                            m_numAutoPoints;
+    /// Number of Logic Chains
+    uint16_t                            m_numLogicChains;
 
-    /// Array index for the next Component add operation
-    uint16_t                            m_nextComponentIdx;
-
-    /// Array index for the next Auto Points add operation
-    uint16_t                            m_nextAutoPtsIdx;
+    /// Array index for the next Logic Chain add operation
+    uint16_t                            m_nextLogicChainIdx;
 
     /// My started state
     bool                                m_started;
