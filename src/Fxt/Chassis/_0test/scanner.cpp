@@ -31,7 +31,7 @@
 using namespace Fxt::Chassis;
 
 #define SCANNER_DEFINITION "{" \
-                           "\"name\":\"MyChassis\"," \
+                           "\"name\":\"My Scanner\"," \
                            "\"id\":1," \
                            "\"scanRateMultiplier\" : 2," \
                            "\"cards\":[" \

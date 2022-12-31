@@ -180,13 +180,13 @@ Fxt::Type::Error ExecutionSet::add( Fxt::LogicChain::Api& logicChainToAdd ) noex
 
 
 //////////////////////////////////////////////////
-Api* Api::createLogicChainfromJSON( JsonVariant                         executionSetObject,
-                                    Fxt::Component::FactoryDatabaseApi& componentFactory,
-                                    Cpl::Memory::ContiguousAllocator&   generalAllocator,
-                                    Cpl::Memory::ContiguousAllocator&   haStatefulDataAllocator,
-                                    Fxt::Point::FactoryDatabaseApi&     pointFactoryDb,
-                                    Fxt::Point::DatabaseApi&            dbForPoints,
-                                    Fxt::Type::Error&                   executionSetErrorode ) noexcept
+ExecutionSetApi* ExecutionSetApi::createExecutionSetfromJSON( JsonVariant                         executionSetObject,
+                                                              Fxt::Component::FactoryDatabaseApi& componentFactory,
+                                                              Cpl::Memory::ContiguousAllocator&   generalAllocator,
+                                                              Cpl::Memory::ContiguousAllocator&   haStatefulDataAllocator,
+                                                              Fxt::Point::FactoryDatabaseApi&     pointFactoryDb,
+                                                              Fxt::Point::DatabaseApi&            dbForPoints,
+                                                              Fxt::Type::Error&                   executionSetErrorode ) noexcept
 {
     // Minimal syntax checking of the JSON input
     if ( executionSetObject["logicChains"].is<JsonArray>() == false )
