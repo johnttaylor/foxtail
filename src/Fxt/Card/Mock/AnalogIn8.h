@@ -108,7 +108,7 @@ public:
     void stop() noexcept;
 
     /// See Fxt::Card::Api
-    bool flushOutputs() noexcept;
+    bool flushOutputs( uint64_t currentElapsedTimeUsec ) noexcept;
 
     /// See Fxt::Card::Api
     const char* getTypeGuid() const noexcept;

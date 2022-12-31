@@ -140,27 +140,27 @@ TEST_CASE( "Digital8" )
         REQUIRE( pointVal == 1 );
 
 
-        uut.scanInputs();
+        uut.scanInputs( 0LL );
         pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 1 );
         REQUIRE( pointPtr->read( pointVal ) );
         REQUIRE( pointVal == 128 );
 
         pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 2 );
         pointPtr->setInvalid();
-        uut.scanInputs();
+        uut.scanInputs( 0LL );
         pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 1 );
         REQUIRE( pointPtr->isNotValid() );
 
         pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 3 );
         pointPtr->write( 32 );
-        uut.flushOutputs();
+        uut.flushOutputs( 0LL );
         pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 4 );
         REQUIRE( pointPtr->read( pointVal ) );
         REQUIRE( pointVal == 32 );
 
         pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 3 );
         pointPtr->setInvalid();
-        uut.flushOutputs();
+        uut.flushOutputs( 0LL );
         pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 4 );
         REQUIRE( pointPtr->isNotValid() );
 
@@ -201,7 +201,7 @@ TEST_CASE( "Digital8" )
 
         pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 3 );
         pointPtr->write( 0xAA );
-        uut.flushOutputs();
+        uut.flushOutputs( 0LL );
         REQUIRE( uut.getOutputs( pointValue ) );
         REQUIRE( pointValue == 0x01 );
     }

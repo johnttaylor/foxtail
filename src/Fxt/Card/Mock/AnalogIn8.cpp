@@ -146,7 +146,7 @@ void AnalogIn8::stop() noexcept
     Common_::stop();
 }
 
-bool AnalogIn8::flushOutputs() noexcept
+bool AnalogIn8::flushOutputs( uint64_t currentElapsedTimeUsec ) noexcept
 {
     // Do nothing since I have no outputs
     return true;

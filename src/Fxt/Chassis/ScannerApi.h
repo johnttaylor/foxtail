@@ -86,7 +86,7 @@ public:
         The method return false if unrecoverable error occurred; else true
         is returned.
      */
-    virtual bool scanInputs() noexcept = 0;
+    virtual bool scanInputs( uint64_t currentElapsedTimeUsec ) noexcept = 0;
 
     /** This method causes the contained IO Cards to flush their virtual
         output points (associated with the card) to the card's IO Registers
@@ -94,7 +94,7 @@ public:
         The method return false if unrecoverable error occurred; else true
         is returned.
      */
-    virtual bool flushOutputs() noexcept = 0;
+    virtual bool flushOutputs( uint64_t currentElapsedTimeUsec ) noexcept = 0;
 
 public:
     /** This method returns the current error state of the Scanner.  A value

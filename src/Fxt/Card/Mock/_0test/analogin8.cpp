@@ -165,7 +165,7 @@ TEST_CASE( "AnalogIn8" )
         REQUIRE( pointPtr->read( pointVal ) );
         REQUIRE( Cpl::Math::areFloatsEqual( pointVal, 0.0F ) );
 
-        uut.scanInputs();
+        uut.scanInputs( 0LL );
         pointPtr = (Fxt::Point::Float*) pointDb.lookupById( 1 );
         REQUIRE( pointPtr->read( pointVal ) );
         REQUIRE( Cpl::Math::areFloatsEqual( pointVal, 1.2F ) );
@@ -181,7 +181,7 @@ TEST_CASE( "AnalogIn8" )
 
         pointPtr = (Fxt::Point::Float*) pointDb.lookupById( 2 );
         pointPtr->setInvalid();
-        uut.scanInputs();
+        uut.scanInputs( 0LL );
         pointPtr = (Fxt::Point::Float*) pointDb.lookupById( 1 );
         REQUIRE( pointPtr->isNotValid() );
         pointPtr = (Fxt::Point::Float*) pointDb.lookupById( 3 );
@@ -195,7 +195,7 @@ TEST_CASE( "AnalogIn8" )
         pointPtr->write( 3.14F );
         pointPtr = (Fxt::Point::Float*) pointDb.lookupById( 4 );
         pointPtr->setInvalid();
-        uut.scanInputs();
+        uut.scanInputs( 0LL );
         pointPtr = (Fxt::Point::Float*) pointDb.lookupById( 1 );
         REQUIRE( pointPtr->read( pointVal ) );
         REQUIRE( Cpl::Math::areFloatsEqual( pointVal, 3.14F ) );
@@ -209,7 +209,7 @@ TEST_CASE( "AnalogIn8" )
         pointPtr->write( 99.99F );
         pointPtr = (Fxt::Point::Float*) pointDb.lookupById( 6 );
         pointPtr->setInvalid();
-        uut.scanInputs();
+        uut.scanInputs( 0LL );
         pointPtr = (Fxt::Point::Float*) pointDb.lookupById( 1 );
         REQUIRE( pointPtr->read( pointVal ) );
         REQUIRE( Cpl::Math::areFloatsEqual( pointVal, 3.14F ) );
@@ -246,7 +246,7 @@ TEST_CASE( "AnalogIn8" )
         uut.setInputs( 2, 2 );
         uut.setInputs( 5, 5 );
         uut.setInputs( 6, 6 );
-        uut.scanInputs();
+        uut.scanInputs( 0LL );
         float              pointVal = 0;
         Fxt::Point::Float* pointPtr = (Fxt::Point::Float*) pointDb.lookupById( 1 );
         REQUIRE( pointPtr->read( pointVal ) );

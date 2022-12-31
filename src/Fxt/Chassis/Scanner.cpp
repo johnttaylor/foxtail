@@ -70,7 +70,7 @@ bool Scanner::start( uint64_t currentElapsedTimeUsec ) noexcept
         for ( uint16_t i=0; i < m_numCards; i++ )
         {
             // Check that all cards got created
-            if ( m_cards[i] == nullptr );
+            if ( m_cards[i] == nullptr )
             {
                 m_error = fullErr( Err_T::MISSING_CARDS );
                 return false;
@@ -123,7 +123,7 @@ size_t Scanner::getScanRateMultiplier() const noexcept
 }
 
 
-bool Scanner::scanInputs() noexcept
+bool Scanner::scanInputs( uint64_t currentElapsedTimeUsec ) noexcept
 {
     // Only execute if there is no error AND the Scanner was actually started
     if ( m_error == Fxt::Type::Error::SUCCESS() && m_started )
@@ -131,7 +131,7 @@ bool Scanner::scanInputs() noexcept
         // Scan all of the IO Cards
         for ( uint16_t i=0; i < m_numCards; i++ )
         {
-            if ( m_cards[i]->scanInputs() == false )
+            if ( m_cards[i]->scanInputs( currentElapsedTimeUsec ) == false )
             {
                 m_error = fullErr( Err_T::CARD_SCAN_FAILURE );
                 return false;
@@ -142,7 +142,7 @@ bool Scanner::scanInputs() noexcept
     return true;
 }
 
-bool Scanner::flushOutputs() noexcept
+bool Scanner::flushOutputs( uint64_t currentElapsedTimeUsec ) noexcept
 {
     // Only execute if there is no error AND the Scanner was actually started
     if ( m_error == Fxt::Type::Error::SUCCESS() && m_started )
@@ -150,7 +150,7 @@ bool Scanner::flushOutputs() noexcept
         // Flush all of the IO Cards
         for ( uint16_t i=0; i < m_numCards; i++ )
         {
-            if ( m_cards[i]->flushOutputs() == false )
+            if ( m_cards[i]->flushOutputs( currentElapsedTimeUsec ) == false )
             {
                 m_error = fullErr( Err_T::CARD_FLUSH_FAILURE );
                 return false;

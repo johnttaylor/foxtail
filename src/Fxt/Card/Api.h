@@ -66,6 +66,9 @@ public:
         input points (associated with the card) from the content of the IO
         Registers.
 
+        The 'currentElapsedTimeUsec' argument represents the current elapsed
+        time in microseconds since power-up of the application.
+
         Note: The Chassis Card scanner is responsible for ensuring the
               thread-safety/integrity of its virtual input points being
               updated.
@@ -73,10 +76,13 @@ public:
         The method return false if unrecoverable error occurred; else true
         is returned.
      */
-    virtual bool scanInputs() noexcept = 0;
+    virtual bool scanInputs( uint64_t currentElapsedTimeUsec ) noexcept = 0;
 
     /** This method is used by the Chassis Card scanner to flush its virtual
         output points (associated with the card) to the card's IO Registers
+
+        The 'currentElapsedTimeUsec' argument represents the current elapsed
+        time in microseconds since power-up of the application.
 
         Note: The Chassis Card scanner is responsible for ensuring the
               thread-safety/integrity of its virtual output points being
@@ -85,7 +91,7 @@ public:
         The method return false if unrecoverable error occurred; else true
         is returned.
      */
-    virtual bool flushOutputs() noexcept = 0;
+    virtual bool flushOutputs( uint64_t currentElapsedTimeUsec ) noexcept = 0;
 
 
 public:

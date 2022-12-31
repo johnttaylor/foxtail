@@ -47,10 +47,10 @@ public:
     bool isStarted() const noexcept;
 
     /// Set Fxt::Chassis::ScannerApi
-    bool scanInputs() noexcept;
+    bool scanInputs( uint64_t currentElapsedTimeUsec ) noexcept;
 
     /// Set Fxt::Chassis::ScannerApi
-    bool flushOutputs() noexcept;
+    bool flushOutputs( uint64_t currentElapsedTimeUsec ) noexcept;
 
     /// Set Fxt::Chassis::ScannerApi
     Fxt::Type::Error getErrorCode() const noexcept;

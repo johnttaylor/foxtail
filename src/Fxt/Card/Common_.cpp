@@ -94,12 +94,12 @@ uint8_t Common_::getSlotNumber() const noexcept
 }
 
 //////////////////////////////////////////////////
-bool Common_::scanInputs() noexcept
+bool Common_::scanInputs( uint64_t currentElapsedTimeUsec ) noexcept
 {
     return m_virtualInputs.copyStatefulMemoryFrom( m_ioRegisterInputs );
 }
 
-bool Common_::flushOutputs() noexcept
+bool Common_::flushOutputs( uint64_t currentElapsedTimeUsec ) noexcept
 {
     return m_ioRegisterOutputs.copyStatefulMemoryFrom( m_virtualOutputs );
 }

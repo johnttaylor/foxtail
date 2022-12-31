@@ -54,10 +54,10 @@ public:
     bool isStarted() const noexcept;
 
     /// See Fxt::Card::Api
-    bool scanInputs() noexcept;
+    bool scanInputs( uint64_t currentElapsedTimeUsec ) noexcept;
 
     /// See Fxt::Card::Api
-    bool flushOutputs() noexcept;
+    bool flushOutputs( uint64_t currentElapsedTimeUsec ) noexcept;
 
     /// See Fxt::Card::Api
     Fxt::Type::Error getErrorCode() const noexcept;
