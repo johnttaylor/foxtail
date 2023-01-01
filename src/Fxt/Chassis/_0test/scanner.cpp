@@ -238,7 +238,7 @@ TEST_CASE( "Scanner" )
         REQUIRE( pointVal2 == 1 );
 
         
-        result = uut->scanInputs( 0LL );
+        result = uut->getInputPeriod().execute( 0LL, 0LL );
         scannerError = uut->getErrorCode();
         CPL_SYSTEM_TRACE_MSG( SECT_, ("result=%d, scanner error=%s", result, scannerError.toText( buf )) );
         REQUIRE( result );
@@ -266,7 +266,7 @@ TEST_CASE( "Scanner" )
         pointPtr2->write( 32 );
 
 
-        uut->flushOutputs( 0LL );
+        result = uut->getOutputPeriod().execute( 0LL, 0LL );
 
 
         // Digital Card

@@ -4,6 +4,8 @@ src/Fxt/Chassis < Scanner.cpp ExecutionSet.cpp
 # tests
 src/Fxt/Chassis/_0test 
 
+src/Fxt/System
+src/Fxt/System/_cpl
 src/Fxt/Type
 src/Fxt/Type/_categories
 src/Fxt/Point

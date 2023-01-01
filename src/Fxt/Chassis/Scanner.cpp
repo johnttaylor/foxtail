@@ -124,6 +124,17 @@ size_t Scanner::getScanRateMultiplier() const noexcept
     return m_srm;
 }
 
+Fxt::System::PeriodApi& Scanner::getInputPeriod() noexcept
+{
+    return m_inputPeriod;
+}
+
+/// Set Fxt::Chassis::ScannerApi
+Fxt::System::PeriodApi& Scanner::getOutputPeriod() noexcept
+{
+    return m_outputPeriod;
+}
+
 
 bool Scanner::scanInputs( uint64_t currentElapsedTimeUsec ) noexcept
 {

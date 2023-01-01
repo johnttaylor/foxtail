@@ -215,9 +215,10 @@ TEST_CASE( "LogicChain" )
         REQUIRE( uut->isStarted() );
 
         now += 1000;
-        executionSetError = uut->execute( now );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("exeSet error=%s", executionSetError.toText( buf )) );
+        bool exeSucces = uut->execute( now, now );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("exeSet error=%s, success=%d", uut->getErrorCode().toText( buf ), exeSucces) );
         REQUIRE( executionSetError == Fxt::Type::Error::SUCCESS() );
+        REQUIRE( exeSucces );
 
         // Output should be invalid - since not all of the inputs are valid
         Fxt::Point::Bool* lcOutput = (Fxt::Point::Bool*) pointDb.lookupById( ID_OUTPUT_AND16GATE );
@@ -231,9 +232,10 @@ TEST_CASE( "LogicChain" )
         lcInput->write( 0 );
 
         now += 1000;
-        executionSetError = uut->execute( now );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("exeSet error=%s", executionSetError.toText( buf )) );
+        exeSucces = uut->execute( now, now );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("exeSet error=%s, success=%d", uut->getErrorCode().toText( buf ), exeSucces) );
         REQUIRE( executionSetError == Fxt::Type::Error::SUCCESS() );
+        REQUIRE( exeSucces );
 
         // Output should be valid - and false
         bool outVal;
@@ -245,8 +247,8 @@ TEST_CASE( "LogicChain" )
         lcInput->write( 0x10 );
 
         now += 1000;
-        executionSetError = uut->execute( now );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("exeSet error=%s", executionSetError.toText( buf )) );
+        exeSucces = uut->execute( now, now );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("exeSet error=%s, success=%d", uut->getErrorCode().toText( buf ), exeSucces) );
         REQUIRE( executionSetError == Fxt::Type::Error::SUCCESS() );
 
         // Output should be valid - and true
