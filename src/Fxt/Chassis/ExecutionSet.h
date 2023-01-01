@@ -49,9 +49,6 @@ public:
     bool isStarted() const noexcept;
 
     /// See Fxt::Chassis::ExecutionSetApi
-    Fxt::Type::Error execute( int64_t currentTickUsec ) noexcept;
-
-    /// See Fxt::Chassis::ExecutionSetApi
     Fxt::Type::Error getErrorCode() const noexcept;
 
     /// See Fxt::Chassis::ExecutionSetApi
@@ -59,6 +56,10 @@ public:
 
     /// Set Fxt::Chassis::ExecutionSetApi
     size_t getExecutionRateMultiplier() const noexcept;
+
+    /// See Fxt::System::PeriodApi
+    bool execute( uint64_t currentTick, uint64_t currentInterval ) noexcept;
+
 
 protected:
     /// Array/List of components in the logic chain

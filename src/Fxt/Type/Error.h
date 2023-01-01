@@ -62,7 +62,7 @@ class Error
 {
 public:
     /// Short hand for SUCCESS 
-    inline static Error SUCCESS() { return Error( (uint32_t)0 ); };
+    inline static constexpr Error SUCCESS() { return Error( (uint32_t)0 ); };
 
 public:
     /// Constructor. No error

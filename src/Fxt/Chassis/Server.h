@@ -15,14 +15,15 @@
 
 #include "Cpl/Itc/Mailbox.h"
 #include "Cpl/Itc/CloseSync.h"
+#include "Cpl/System/Assert.h"
 #include "Fxt/System/PeriodicScheduler.h"
 #include "Fxt/System/ElapsedTime.h"
+#include "Fxt/Chassis/ServerApi.h"
 
 ///
 namespace Fxt {
 ///
 namespace Chassis {
-
 
 /** This concrete template class providing the Chassis timing, scheduling, and
     'executing' of the Chassis's Scanners and ExecutionSets.  There is one-to-one
@@ -37,20 +38,23 @@ namespace Chassis {
 template <class TICKSOURCE>
 class Server : public TICKSOURCE, 
     public Cpl::Itc::Mailbox,
-    public Fxt::System::PeriodicScheduler,
-    public Cpl::Itc::CloseSync
+    public ServerApi
 {
 public:
     /** Constructor.  The argument 'timingTickInMicroseconds' specifies the 
         tick timing resolution.
      */
     Server( uint64_t                                                timingTickInMicroseconds,
-            Fxt::System::PeriodicScheduler::ReportSlippageFunc_T    slippageFunc          = nullptr,
-            Cpl::System::SharedEventHandlerApi*                     eventHandler          = nullptr ) noexcept
+            Fxt::System::PeriodicScheduler::ReportSlippageFunc_T    inSlippageFunc  = nullptr,
+            Fxt::System::PeriodicScheduler::ReportSlippageFunc_T    exeSlippageFunc = nullptr,
+            Fxt::System::PeriodicScheduler::ReportSlippageFunc_T    outSlippageFunc = nullptr,
+            Cpl::System::SharedEventHandlerApi*                     eventHandler    = nullptr ) noexcept
         : TICKSOURCE( timingTickInMicroseconds, eventHandler )
         , Cpl::Itc::Mailbox( *((Cpl::System::Signable*) this) )
-        , Cpl::System::PeriodicScheduler( slippageFunc )
         , Cpl::Itc::CloseSync( *this )
+        , m_inputScheduler( inSlippageFunc )
+        , m_executionScheduler( exeSlippageFunc )
+        , m_outputScheduler( outSlippageFunc )
     {
     }
 
@@ -67,32 +71,48 @@ protected:
             if ( run )
             {
                 processMessages();
-                m_scheduler.executeScheduler( ElapsedTime::now() );
+                uint64_t now = ElapsedTime::now();
+                m_inputScheduler.executeScheduler( now );
+                m_executionScheduler.executeScheduler( now );
+                m_outputScheduler.executeScheduler( now );
             }
         }
         stopMainLoop();
     }
 
 protected:
-    /// Starts the Chassis. The Chassis can be opened/closed multiple times
+    /// Starts the Chassis execution. The Chassis can be opened/closed multiple times
     void request( Cpl::Itc::OpenRequest::OpenMsg& msg )
     {
-        // TODO: Create List of Periods, i.e. executionSets and scanner instances
-        //       ? Can pass the list of Periods in the OpenMsg
-        m_scheduler.start( arrayOfPeriods );
+        ChassisPeriods_T* chassisPeriods = (ChassisPeriods_T*) = msg.getPayload().m_args;
+        CPL_SYSTEM_ASSERT( chassisPeriods );
+
+        // Start the schedulers
+        m_inputScheduler.start( chassisPeriods->inputPeriods );
+        m_executionScheduler.start( chassisPeriods->executionPeriods );
+        m_outputScheduler.start( chassisPeriods->outputPeriods );
+
         msg.returnToSender();
     }
 
-    /// Stops the Chassis
+    /// Stops the Chassis execution
     void request( Cpl::Itc::CloseRequest::CloseMsg& msg )
     {
-        m_scheduler.stop();
+        m_outputScheduler.stop();
+        m_executionScheduler.stop();
+        m_inputScheduler.stop();
         msg.returnToSender();
     }
 
 protected:
-    /// Periodic scheduler
-    PeriodicScheduler   m_scheduler;
+    /// Periodic scheduler for scanning inputs
+    PeriodicScheduler   m_inputScheduler;
+
+    /// Periodic scheduler for executing Execution sets
+    PeriodicScheduler   m_executionScheduler;
+
+    /// Periodic scheduler for flushing outputs
+    PeriodicScheduler   m_outputScheduler;
 };
 
 

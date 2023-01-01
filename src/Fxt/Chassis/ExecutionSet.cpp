@@ -139,23 +139,24 @@ size_t ExecutionSet::getExecutionRateMultiplier() const noexcept
 }
 
 
-Fxt::Type::Error ExecutionSet::execute( int64_t currentTickUsec ) noexcept
+bool ExecutionSet::execute( uint64_t currentTick, uint64_t currentInterval ) noexcept
 {
     // Only execute if there is no error AND the Execution Set was actually started
     if ( m_error == Fxt::Type::Error::SUCCESS() && m_started )
     {
-        // Execute the Logic Chain
+        // Execute the Logic Chains
         for ( uint16_t i=0; i < m_numLogicChains; i++ )
         {
-            if ( m_logicChains[i]->execute( currentTickUsec ) != Fxt::Type::Error::SUCCESS() )
+            if ( m_logicChains[i]->execute( currentInterval ) != Fxt::Type::Error::SUCCESS() )
             {
                 m_error = fullErr( Err_T::LOGIC_CHAIN_FAILURE );
-                break;
+                return false;
             }
         }
     }
 
-    return m_error;
+    // If I get here, then everything executed okay
+    return true;
 }
 
 
@@ -235,6 +236,7 @@ ExecutionSetApi* ExecutionSetApi::createExecutionSetfromJSON( JsonVariant       
         if ( logicChain == nullptr )
         {
             executionSetErrorode = fullErr( Err_T::FAILED_CREATE_LOGIC_CHAIN );
+            executionSet->~ExecutionSetApi();
             return nullptr;
         }
         if ( errorCode != Fxt::Type::Error::SUCCESS() )

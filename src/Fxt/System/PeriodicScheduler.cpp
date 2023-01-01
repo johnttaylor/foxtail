@@ -15,7 +15,6 @@
 
 #define SECT_ "Fxt::System"
 
-
 ///
 using namespace Fxt::System;
 
@@ -30,7 +29,8 @@ PeriodicScheduler::PeriodicScheduler( ReportSlippageFunc_T slippageFunc )
 /////////////////////
 void PeriodicScheduler::start( PeriodApi** arrayOfPeriods ) noexcept
 {
-    m_periods = arrayOfPeriods;
+    m_firstExecution = true;
+    m_periods        = arrayOfPeriods;
 }
 
 void PeriodicScheduler::stop() noexcept
@@ -57,7 +57,18 @@ void PeriodicScheduler::executeScheduler( uint64_t currentTick )
             if ( ElapsedTime::expired( period->m_timeMarker, period->m_duration, currentTick ) )
             {
                 period->m_timeMarker += period->m_duration;
-                period->execute( currentTick, period->m_timeMarker );
+                CPL_SYSTEM_TRACE_MSG( SECT_, ("Executing Period: interval=%lu, tick=%lu, period=%p, dur=%lu",
+                                               (unsigned long) period->m_timeMarker,
+                                               (unsigned long) currentTick,
+                                               period,
+                                               (unsigned long) period->m_duration) );
+
+                if ( period->execute( currentTick, period->m_timeMarker ) == false )
+                {
+                    // The period encountered a fatal error -->STOP the scheduler
+                    stop();
+                    return;
+                }
 
                 // Check for slippage
                 if ( ElapsedTime::expired( period->m_timeMarker, period->m_duration, currentTick ) )
@@ -65,6 +76,13 @@ void PeriodicScheduler::executeScheduler( uint64_t currentTick )
                     // Report the slippage to the application
                     if ( m_reportSlippage )
                     {
+                        CPL_SYSTEM_TRACE_MSG( SECT_, ("Slippage: interval=%lu, tick=%lu, period=%p, dur=%lu",
+                                                       ,
+                                                       (unsigned long) period->m_timeMarker,
+                                                       (unsigned long) currentTick,
+                                                       period,
+                                                       (unsigned long) period->m_duration) );
+
                         (m_reportSlippage) (*period, currentTick, period->m_timeMarker);
                     }
 
@@ -95,5 +113,5 @@ void PeriodicScheduler::setTimeMarker( PeriodApi& period, uint64_t currentTick )
     }
 
     // Round down to the nearest period boundary
-    period.m_timeMarker = (currentTick / duration ) * duration;
+    period.m_timeMarker = (currentTick / duration) * duration;
 }

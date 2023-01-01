@@ -26,6 +26,45 @@ namespace Chassis {
  */
 class Scanner : public ScannerApi
 {
+protected:
+    /// Period for Scanning inputs
+    class Inputs : public Fxt::System::PeriodApi
+    {
+    public:
+        /// Constructor
+        Inputs( Scanner& context): m_scanner(context) {}
+
+    public:
+        /// Execute function
+        bool execute( uint64_t currentTick, uint64_t currentInterval ) noexcept
+        {
+            return m_scanner.scanInputs( currentInterval );
+        }
+
+    protected:
+        /// The scanner instance that we are scanning for
+        Scanner& m_scanner;
+    };
+
+    /// Period for flushing outputs
+    class Outputs : public Fxt::System::PeriodApi
+    {
+    public:
+        /// Constructor
+        Outputs( Scanner& context ) : m_scanner( context ) {}
+
+    public:
+        /// Execute function
+        bool execute( uint64_t currentTick, uint64_t currentInterval ) noexcept
+        {
+            return m_scanner.flushOutputs( currentInterval );
+        }
+
+    protected:
+        /// The scanner instance that we are scanning for
+        Scanner& m_scanner;
+    };
+
 
 public:
     /// Constructor
@@ -47,10 +86,10 @@ public:
     bool isStarted() const noexcept;
 
     /// Set Fxt::Chassis::ScannerApi
-    bool scanInputs( uint64_t currentElapsedTimeUsec ) noexcept;
+    Fxt::System::PeriodApi& getInputPeriod() noexcept;
 
     /// Set Fxt::Chassis::ScannerApi
-    bool flushOutputs( uint64_t currentElapsedTimeUsec ) noexcept;
+    Fxt::System::PeriodApi& getOutputPeriod() noexcept;
 
     /// Set Fxt::Chassis::ScannerApi
     Fxt::Type::Error getErrorCode() const noexcept;
@@ -62,23 +101,46 @@ public:
     size_t getScanRateMultiplier() const noexcept;
 
 protected:
+    /** This method invokes the scanInputs() method on all contained
+        IO cards.
+
+        The method return false if unrecoverable error occurred; else true
+        is returned.
+     */
+    bool scanInputs( uint64_t currentElapsedTimeUsec ) noexcept;
+
+    /** This method invokes the flushOutputs() method on all contained
+        IO Cards.
+
+        The method return false if unrecoverable error occurred; else true
+        is returned.
+     */
+    bool flushOutputs( uint64_t currentElapsedTimeUsec ) noexcept;
+
+protected:
+    /// Input Period instance
+    Inputs              m_inputPeriod;
+
+    /// Output Period instance
+    Outputs             m_outputPeriod;
+
     /// Array/List of IO Cards
-    Fxt::Card::Api**         m_cards;
+    Fxt::Card::Api**    m_cards;
 
     /// Error state. A value of 0 indicates NO error
-    Fxt::Type::Error         m_error;
+    Fxt::Type::Error    m_error;
 
     /// The Scanner's Scan Rate Multiplier (SRM)
-    size_t                   m_srm;
+    size_t              m_srm;
 
     /// Number of Cards
-    uint16_t                 m_numCards;
+    uint16_t            m_numCards;
 
     /// Array index for the next Card add operation
-    uint16_t                 m_nextCardIdx;
+    uint16_t            m_nextCardIdx;
 
     /// My started state
-    bool                     m_started;
+    bool                m_started;
 };
 
 

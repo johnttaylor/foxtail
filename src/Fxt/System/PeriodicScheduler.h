@@ -105,7 +105,7 @@ public:
 protected:
     /** Helper method to Round DOWN to the nearest 'period' boundary.
         A side effect the rounding-down is the FIRST execution of an period
-        will NOT be accurate (i.e. will be something less than 'periodMs').
+        will NOT be accurate (i.e. will be something less than 'intervalTime').
      */
     void setTimeMarker( PeriodApi& period, uint64_t currentTick ) noexcept;
 

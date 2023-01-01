@@ -277,16 +277,19 @@ Api* Api::createLogicChainfromJSON( JsonVariant                         logicCha
         if ( component == nullptr )
         {
             logicChainErrorode = fullErr( Err_T::FAILED_CREATE_COMPONENT );
+            logicChain->~Api();
             return nullptr;
         }
         if ( errorCode != Fxt::Type::Error::SUCCESS() )
         {
             logicChainErrorode = fullErr( Err_T::COMPONENT_CREATE_ERROR );
+            logicChain->~Api();
             return nullptr;
         }
         logicChainErrorode = logicChain->add( *component );
         if ( logicChainErrorode != Fxt::Type::Error::SUCCESS() )
         {
+            logicChain->~Api();
             return nullptr;
         }
     }
@@ -310,11 +313,13 @@ Api* Api::createLogicChainfromJSON( JsonVariant                         logicCha
             if ( pt == nullptr )
             {
                 logicChainErrorode = fullErr( Err_T::FAILED_CREATE_POINTS );
+                logicChain->~Api();
                 return nullptr;
             }
             if ( pointError != Fxt::Type::Error::SUCCESS() )
             {
                 logicChainErrorode = fullErr( Err_T::POINT_CREATE_ERROR );
+                logicChain->~Api();
                 return nullptr;
             }
         }
@@ -337,21 +342,25 @@ Api* Api::createLogicChainfromJSON( JsonVariant                         logicCha
             if ( pt == nullptr )
             {
                 logicChainErrorode = fullErr( Err_T::FAILED_CREATE_AUTO_POINTS );
+                logicChain->~Api();
                 return nullptr;
             }
             if ( pointError != Fxt::Type::Error::SUCCESS() )
             {
                 logicChainErrorode = fullErr( Err_T::AUTO_POINT_CREATE_ERROR );
+                logicChain->~Api();
                 return nullptr;
             }
             if ( pt->hasSetter() == false )
             {
                 logicChainErrorode = fullErr( Err_T::NO_INITIAL_VAL_AUTO_POINT );
+                logicChain->~Api();
                 return nullptr;
             }
             logicChainErrorode = logicChain->add( *pt );
             if ( logicChainErrorode != Fxt::Type::Error::SUCCESS() )
             {
+                logicChain->~Api();
                 return nullptr;
             }
         }

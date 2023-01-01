@@ -12,6 +12,7 @@
 *----------------------------------------------------------------------------*/
 /** @file */
 
+#include "Cpl/Container/Item.h"
 #include <stdint.h>
 
 ///
@@ -27,7 +28,7 @@ namespace System {
           access multiple times per the main loop iterations!
           
  */
-class PeriodApi
+class PeriodApi: public Cpl::Container::ExtendedItem
 {
 public:
     /** This method is called when the period time has expired for its interval.
@@ -44,15 +45,18 @@ public:
 
                 currentTick:=      10212000 us
                 currentInterval:=  10200000 us
-      */
-    virtual void execute( uint64_t currentTick, uint64_t currentInterval ) noexcept = 0;
+
+        The method return false if unrecoverable error occurred; else true
+        is returned.
+     */
+    virtual bool execute( uint64_t currentTick, uint64_t currentInterval ) noexcept = 0;
 
 public:
     /// Period duration in microseconds
-    uint64_t                m_duration;
+    uint64_t    m_duration;
 
     /// Time, in microseconds, of the Period's last interval/execution time
-    uint64_t                m_timeMarker;
+    uint64_t    m_timeMarker;
 
 public:
     /// Virtual destructor

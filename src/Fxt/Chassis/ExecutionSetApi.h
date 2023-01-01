@@ -16,6 +16,7 @@
 #include "Fxt/Point/DatabaseApi.h"
 #include "Fxt/LogicChain/Api.h"
 #include "Fxt/Type/Error.h"
+#include "Fxt/System/PeriodApi.h"
 #include "Cpl/Json/Arduino.h"
 #include "Cpl/Memory/ContiguousAllocator.h"
 
@@ -47,7 +48,7 @@ namespace Chassis {
 
     \endcode
  */
-class ExecutionSetApi
+class ExecutionSetApi: public Fxt::System::PeriodApi
 {
 public:
     /// This method returns the ExecutionSet's Execution Rate Multiplier
@@ -67,9 +68,9 @@ public:
 
 public:
     /** This method is used to start/activate the ExecutionSet.  If the
-        ExecutionSet fails to be started the method returns false; else true is
-        returned.  Each Scanner is responsible for starting its contained Logic
-        Chains
+        ExecutionSet fails to be started the method returns an Error code; else 
+        Fxt::Type::Error::SUCESS() is returned.  Each Scanner is responsible for 
+        starting its contained Logic Chains
 
         The 'currentElapsedTimeUsec' argument represents the current elapsed
         time in microseconds since power-up of the application.
@@ -90,21 +91,6 @@ public:
     /** This method returns true if the ExecutionSet is in the started state
      */
     virtual bool isStarted() const noexcept = 0;
-
-public:
-    /** This method is called to have a ExecutionSet execute its contained
-        Logic Chains. It should be called periodically by the 'Chassis' object
-
-        The 'currentTickUsec' argument represents the current elapsed time
-        in microseconds since power-up of the application.  For given execution
-        cycle,
-
-        This method return Fxt::Type::Err_T::SUCCESS if the ExecutionSet completed
-        ALL of its logic for the current processing cycle; else if error occurred
-        then an error code is returned. Once the ExecutionSet has encountered
-        an error, subsequence calls to this method will always fail.
-     */
-    virtual Fxt::Type::Error execute( int64_t currentTickUsec ) noexcept = 0;
 
 public:
     /** This method returns the current error state of the ExecutionSet.  A value

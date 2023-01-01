@@ -55,6 +55,26 @@ namespace Chassis {
     @param EXECUTION_SET_MISSING_ERM        A ExecutionSet's JSON object is missing the ExecutionRateMultiplier key/value pair
     @param LOGIC_CHAIN_FAILURE              One or more Logic Chains failed during execution
     @param FAILED_POINT_RESOLVE             One or more Components failed when resolving their' point references
+    @param NO_MEMORY_SCANNER_LIST           Unable to allocate memory for list of Scanners
+    @param NO_MEMORY_EXESET_LIST            Unable to allocate memory for list of Execution Sets
+    @param NO_MEMORY_PERIOD_LISTS           Unable to allocate memory for list of schedulable periods
+    @param MISSING_EXECUTION_SETS           At least one or more ExecutionSets where not added to the Chassis (as defined by the number specified in the Chassis constructor)
+    @param MISSING_SCANNERS                 At least one or more Scanners where not added to the Chassis (as defined by the number specified in the Chassis constructor)
+    @param SCANNER_FAILED_START             One or more Scanners failed to start
+    @param EXECUTION_SET_FAILED_START       One or more ExecutionSets failed to start
+    @param TOO_MANY_SCANNERS                Attempted to add more Scanners that what was specified when the Chassis was constructed
+    @param TOO_MANY_EXECUTION_SETS          Attempted to add more ExecutionSets that what was specified when the Chassis was constructed
+    @param PARSE_EXECUTION_SET_ARRAY        JSON input does not contain "executionSet"/array
+    @param PARSE_SCANNER_ARRAY              JSON input does not contain "scanner"/array
+    @param MISSING_FER                      A Chassis's JSON object is missing the 'fer' key/value pair
+    @param NO_MEMORY_CHASSIS                Unable to allocate memory for the Chassis instance
+    @param SCANNER_CREATE_ERROR             One or more Scanners were not successfully created
+    @param FAILED_CREATE_SCANNER            Failed to create one or more Scanners
+    @param EXESET_CREATE_ERROR              One or more ExecutionSets were not successfully created
+    @param FAILED_CREATE_EXESET             Failed to create one or more ExecutionSets
+    @param FAILED_CREATE_SHARED_POINTS      Failed to create one or more Shared Points
+    @param FAILED_SCANNER_SCHEDULE_BUILD    Failed to build the list of Periods for the Scanner schedules
+    @param FAILED_EXESET_SCHEDULE_BUILD     Failed to build the list of Periods for the ExecutionSet schedule
  */
 BETTER_ENUM( Err_T, uint8_t
              , SUCCESS = 0
@@ -82,6 +102,26 @@ BETTER_ENUM( Err_T, uint8_t
              , EXECUTION_SET_MISSING_ERM
              , LOGIC_CHAIN_FAILURE
              , FAILED_POINT_RESOLVE
+             , NO_MEMORY_SCANNER_LIST 
+             , NO_MEMORY_EXESET_LIST  
+             , NO_MEMORY_PERIOD_LISTS     
+             , MISSING_EXECUTION_SETS
+             , MISSING_SCANNERS
+             , SCANNER_FAILED_START
+             , EXECUTION_SET_FAILED_START
+             , TOO_MANY_SCANNERS,
+             , TOO_MANY_EXECUTION_SETS
+             , PARSE_EXECUTION_SET_ARRAY
+             , PARSE_SCANNER_ARRAY
+             , MISSING_FER
+             , NO_MEMORY_CHASSIS
+             , SCANNER_CREATE_ERROR
+             , FAILED_CREATE_SCANNER
+             , EXESET_CREATE_ERROR
+             , FAILED_CREATE_EXESET
+             , FAILED_CREATE_SHARED_POINTS
+             , FAILED_SCANNER_SCHEDULE_BUILD
+             , FAILED_EXESET_SCHEDULE_BUILD
 );
 
 /** This concrete class defines the Error Category for the Logic Chain namespace.

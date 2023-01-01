@@ -17,6 +17,7 @@
 #include "Fxt/Point/DatabaseApi.h"
 #include "Fxt/Card/Api.h"
 #include "Fxt/Card/FactoryDatabaseApi.h"
+#include "Fxt/System/PeriodApi.h"
 #include "Cpl/Json/Arduino.h"
 #include "Cpl/Memory/ContiguousAllocator.h"
 
@@ -79,22 +80,15 @@ public:
     virtual bool isStarted() const noexcept = 0;
 
 public:
-    /** This method cause the contained IO cards to update the their virtual
-        input points (associated with the card) from the content of the IO
-        Registers.
-
-        The method return false if unrecoverable error occurred; else true
-        is returned.
+    /** This method returns the Period for scheduling the scanning of the
+        IO cards inputs
      */
-    virtual bool scanInputs( uint64_t currentElapsedTimeUsec ) noexcept = 0;
+    virtual Fxt::System::PeriodApi& getInputPeriod() noexcept = 0;
 
-    /** This method causes the contained IO Cards to flush their virtual
-        output points (associated with the card) to the card's IO Registers
-
-        The method return false if unrecoverable error occurred; else true
-        is returned.
+    /** This method returns the Period for scheduling the flushing of the
+        IO Cards outputs
      */
-    virtual bool flushOutputs( uint64_t currentElapsedTimeUsec ) noexcept = 0;
+    virtual Fxt::System::PeriodApi& getOutputPeriod() noexcept = 0;
 
 public:
     /** This method returns the current error state of the Scanner.  A value

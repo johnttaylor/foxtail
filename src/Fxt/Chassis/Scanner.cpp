@@ -24,7 +24,9 @@ using namespace Fxt::Chassis;
 Scanner::Scanner( Cpl::Memory::ContiguousAllocator&   generalAllocator,
                   uint16_t                            numCards,
                   size_t                              scanRateMultipler )
-    : m_cards( nullptr )
+    : m_inputPeriod( *this )
+    , m_outputPeriod( *this )
+    , m_cards( nullptr )
     , m_error( Fxt::Type::Error::SUCCESS() )
     , m_srm( scanRateMultipler )
     , m_numCards( numCards )
@@ -222,7 +224,7 @@ ScannerApi* ScannerApi::createScannerfromJSON( JsonVariant                      
         scannerErrorode = fullErr( Err_T::NO_MEMORY_SCANNER );
         return nullptr;
     }
-    Scanner* scanner = new(memScanner) Scanner( generalAllocator, (uint16_t) numCards, srm );
+    ScannerApi* scanner = new(memScanner) Scanner( generalAllocator, (uint16_t) numCards, srm );
 
     // Create IO Cards
     for ( uint16_t i=0; i < numCards; i++ )
@@ -239,16 +241,19 @@ ScannerApi* ScannerApi::createScannerfromJSON( JsonVariant                      
         if ( card == nullptr )
         {
             scannerErrorode = fullErr( Err_T::FAILED_CREATE_CARD );
+            scanner->~ScannerApi();
             return nullptr;
         }
         if ( errorCode != Fxt::Type::Error::SUCCESS() )
         {
             scannerErrorode = fullErr( Err_T::CARD_CREATE_ERROR );
+            scanner->~ScannerApi();
             return nullptr;
         }
         scannerErrorode = scanner->add( *card );
         if ( scannerErrorode != Fxt::Type::Error::SUCCESS() )
         {
+            scanner->~ScannerApi();
             return nullptr;
         }
     }
