@@ -37,6 +37,13 @@ namespace Mp {
 /** This a mostly concrete class provides 'common' implementation for a Model
     Point who's data is a array of elements
 
+    The toJSON()/fromJSON format is:
+    \code
+
+    { name:"<mpname>", type:"<mptypestring>", valid:true|false seqnum:nnnn, locked:true|false, val:{start:<firstIndex>,elems:[<elemN>,<elemN+1>,...]}}" }
+
+    \endcode
+
  */
 class ArrayBase_ : public Cpl::Dm::ModelPointCommon_
 {
@@ -176,6 +183,26 @@ public:
         return ArrayBase_::writeArrayElements( srcArray, srcNumElements, dstIndex, lockRequest );
     }
 
+public:
+    /** This method is used to read the MP contents and synchronize
+        the observer with the current MP contents.  This method should ONLY be
+        used in the notification callback method and the 'observerToSync'
+        argument MUST be the argument provided by the callback method
+
+        Note: The observer will be subscribed for change notifications after
+              this call.
+     */
+    inline bool readAndSync( ELEMTYPE*      dstArrray,
+                             size_t         dstNumElements,
+                             SubscriberApi& observerToSync,
+                             size_t         srcIndex = 0 )
+    {
+        uint16_t seqNum;
+        bool result = read( dstArrray, dstNumElements, srcIndex, &seqNum );
+        ArrayBase_::attachSubscriber( observerToSync, seqNum );
+        return result;
+    }
+
 protected:
     /// See Cpl::Dm::Point.  
     void setJSONVal( JsonDocument& doc ) noexcept
@@ -309,6 +336,227 @@ public:
     {
         ArrayBase_::detachSubscriber( observer );
     }
+
+};
+
+//////////////////////////////////////////////////////////////////////////////
+/* The following classes provide concrete numeric Array types for basic types
+ */
+
+/// uint8_t Array
+template <int N>
+class ArrayUint8: public NumericArray_<uint8_t, N, ArrayUint8<N>>
+{
+public:
+    /// Constructor. Invalid Point
+    ArrayUint8( Cpl::Dm::ModelDatabase& myModelBase, const char* symbolicName )
+        : Mp::NumericArray_<uint8_t, N, ArrayUint8<N>>( myModelBase, symbolicName )
+    {
+    }
+
+    /// Constructor. Valid Point.  Requires an initial value. The array size of 'initialValueArray' must match 'N'
+    ArrayUint8( Cpl::Dm::ModelDatabase& myModelBase, const char* symbolicName, uint8_t initialValueArray[] )
+        : Mp::NumericArray_<uint8_t, N, ArrayUint8<N>>( myModelBase, symbolicName, initialValueArray )
+    {
+    }
+
+    ///  See Cpl::Dm::ModelPoint.
+    const char* getTypeAsText() const noexcept
+    {
+        return "Cpl::Dm::Mp::ArrayUint8";
+    }
+
+    /// Type safe subscriber
+    typedef Cpl::Dm::Subscriber<ArrayUint8> Observer;
+};
+
+/// uint32_t Array
+template <int N>
+class ArrayUint32 : public NumericArray_<uint32_t, N, ArrayUint32<N>>
+{
+public:
+    /// Constructor. Invalid Point
+    ArrayUint32( Cpl::Dm::ModelDatabase& myModelBase, const char* symbolicName )
+        : Mp::NumericArray_<uint8_t, N, ArrayUint32<N>>( myModelBase, symbolicName )
+    {
+    }
+
+    /// Constructor. Valid Point.  Requires an initial value. The array size of 'initialValueArray' must match 'N'
+    ArrayUint32( Cpl::Dm::ModelDatabase& myModelBase, const char* symbolicName, uint32_t initialValueArray[] )
+        : Mp::NumericArray_<uint32_t, N, ArrayUint32<N>>( myModelBase, symbolicName, initialValueArray )
+    {
+    }
+
+    ///  See Cpl::Dm::ModelPoint.
+    const char* getTypeAsText() const noexcept
+    {
+        return "Cpl::Dm::Mp::ArrayUint32";
+    }
+
+    /// Type safe subscriber
+    typedef Cpl::Dm::Subscriber<ArrayUint32> Observer;
+};
+
+/// uint64_t Array
+template <int N>
+class ArrayUint64 : public NumericArray_<uint64_t, N, ArrayUint64<N>>
+{
+public:
+    /// Constructor. Invalid Point
+    ArrayUint64( Cpl::Dm::ModelDatabase& myModelBase, const char* symbolicName )
+        : Mp::NumericArray_<uint8_t, N, ArrayUint64<N>>( myModelBase, symbolicName )
+    {
+    }
+
+    /// Constructor. Valid Point.  Requires an initial value. The array size of 'initialValueArray' must match 'N'
+    ArrayUint64( Cpl::Dm::ModelDatabase& myModelBase, const char* symbolicName, uint64_t initialValueArray[] )
+        : Mp::NumericArray_<uint64_t, N, ArrayUint64<N>>( myModelBase, symbolicName, initialValueArray )
+    {
+    }
+
+    ///  See Cpl::Dm::ModelPoint.
+    const char* getTypeAsText() const noexcept
+    {
+        return "Cpl::Dm::Mp::ArrayUint64";
+    }
+
+    /// Type safe subscriber
+    typedef Cpl::Dm::Subscriber<ArrayUint64> Observer;
+};
+
+/// int8_t Array
+template <int N>
+class ArrayInt8 : public NumericArray_<int8_t, N, ArrayInt8<N>>
+{
+public:
+    /// Constructor. Invalid Point
+    ArrayInt8( Cpl::Dm::ModelDatabase& myModelBase, const char* symbolicName )
+        : Mp::NumericArray_<int8_t, N, ArrayInt8<N>>( myModelBase, symbolicName )
+    {
+    }
+
+    /// Constructor. Valid Point.  Requires an initial value. The array size of 'initialValueArray' must match 'N'
+    ArrayInt8( Cpl::Dm::ModelDatabase& myModelBase, const char* symbolicName, int8_t initialValueArray[] )
+        : Mp::NumericArray_<int8_t, N, ArrayInt8<N>>( myModelBase, symbolicName, initialValueArray )
+    {
+    }
+
+    ///  See Cpl::Dm::ModelPoint.
+    const char* getTypeAsText() const noexcept
+    {
+        return "Cpl::Dm::Mp::ArrayInt8";
+    }
+
+    /// Type safe subscriber
+    typedef Cpl::Dm::Subscriber<ArrayInt8> Observer;
+};
+
+/// int32_t Array
+template <int N>
+class ArrayInt32 : public NumericArray_<int32_t, N, ArrayInt32<N>>
+{
+public:
+    /// Constructor. Invalid Point
+    ArrayInt32( Cpl::Dm::ModelDatabase& myModelBase, const char* symbolicName )
+        : Mp::NumericArray_<int8_t, N, ArrayInt32<N>>( myModelBase, symbolicName )
+    {
+    }
+
+    /// Constructor. Valid Point.  Requires an initial value. The array size of 'initialValueArray' must match 'N'
+    ArrayInt32( Cpl::Dm::ModelDatabase& myModelBase, const char* symbolicName, int32_t initialValueArray[] )
+        : Mp::NumericArray_<int32_t, N, ArrayInt32<N>>( myModelBase, symbolicName, initialValueArray )
+    {
+    }
+
+    ///  See Cpl::Dm::ModelPoint.
+    const char* getTypeAsText() const noexcept
+    {
+        return "Cpl::Dm::Mp::ArrayInt32";
+    }
+
+    /// Type safe subscriber
+    typedef Cpl::Dm::Subscriber<ArrayInt32> Observer;
+};
+
+/// int64_t Array
+template <int N>
+class ArrayInt64 : public NumericArray_<int64_t, N, ArrayInt64<N>>
+{
+public:
+    /// Constructor. Invalid Point
+    ArrayInt64( Cpl::Dm::ModelDatabase& myModelBase, const char* symbolicName )
+        : Mp::NumericArray_<int8_t, N, ArrayInt64<N>>( myModelBase, symbolicName )
+    {
+    }
+
+    /// Constructor. Valid Point.  Requires an initial value. The array size of 'initialValueArray' must match 'N'
+    ArrayInt64( Cpl::Dm::ModelDatabase& myModelBase, const char* symbolicName, int64_t initialValueArray[] )
+        : Mp::NumericArray_<int64_t, N, ArrayInt64<N>>( myModelBase, symbolicName, initialValueArray )
+    {
+    }
+
+    ///  See Cpl::Dm::ModelPoint.
+    const char* getTypeAsText() const noexcept
+    {
+        return "Cpl::Dm::Mp::ArrayInt64";
+    }
+
+    /// Type safe subscriber
+    typedef Cpl::Dm::Subscriber<ArrayInt64> Observer;
+};
+
+/// float Array
+template <int N>
+class ArrayFloat : public NumericArray_<float, N, ArrayFloat<N>>
+{
+public:
+    /// Constructor. Invalid Point
+    ArrayFloat( Cpl::Dm::ModelDatabase& myModelBase, const char* symbolicName )
+        : Mp::NumericArray_<float, N, ArrayFloat<N>>( myModelBase, symbolicName )
+    {
+    }
+
+    /// Constructor. Valid Point.  Requires an initial value. The array size of 'initialValueArray' must match 'N'
+    ArrayFloat( Cpl::Dm::ModelDatabase& myModelBase, const char* symbolicName, float initialValueArray[] )
+        : Mp::NumericArray_<float, N, ArrayFloat<N>>( myModelBase, symbolicName, initialValueArray )
+    {
+    }
+
+    ///  See Cpl::Dm::ModelPofloat.
+    const char* getTypeAsText() const noexcept
+    {
+        return "Cpl::Dm::Mp::ArrayFloat";
+    }
+
+    /// Type safe subscriber
+    typedef Cpl::Dm::Subscriber<ArrayFloat> Observer;
+};
+
+/// double Array
+template <int N>
+class ArrayDouble : public NumericArray_<double, N, ArrayDouble<N>>
+{
+public:
+    /// Constructor. Invalid Point
+    ArrayDouble( Cpl::Dm::ModelDatabase& myModelBase, const char* symbolicName )
+        : Mp::NumericArray_<double, N, ArrayDouble<N>>( myModelBase, symbolicName )
+    {
+    }
+
+    /// Constructor. Valid Point.  Requires an initial value. The array size of 'initialValueArray' must match 'N'
+    ArrayDouble( Cpl::Dm::ModelDatabase& myModelBase, const char* symbolicName, double initialValueArray[] )
+        : Mp::NumericArray_<double, N, ArrayDouble<N>>( myModelBase, symbolicName, initialValueArray )
+    {
+    }
+
+    ///  See Cpl::Dm::ModelPodouble.
+    const char* getTypeAsText() const noexcept
+    {
+        return "Cpl::Dm::Mp::ArrayDouble";
+    }
+
+    /// Type safe subscriber
+    typedef Cpl::Dm::Subscriber<ArrayDouble> Observer;
 };
 
 };      // end namespaces
