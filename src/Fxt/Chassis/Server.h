@@ -42,7 +42,7 @@ public:
     Server( uint64_t                            timingTickInMicroseconds,
             Cpl::System::SharedEventHandlerApi* eventHandler = 0 ) noexcept
         : MAINLOOP( timingTickInMicroseconds, eventHandler )
-        , Cpl::Itc::Mailbox( *((Cpl::System::EventLoop*) this) )
+        , Cpl::Itc::Mailbox( *((Cpl::System::Signable*) this) )
     {
     }
 
