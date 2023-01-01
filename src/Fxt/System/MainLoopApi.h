@@ -38,7 +38,7 @@ namespace System {
     events don't wake-up/unblock/unwait the loop - the event processing is
     deferred until the tick has expired. Possible 'events' are:
         1. The main-loop/runnable-object is signaled
-        2. Event Flags is set (see Cpl::System::EventFlag)
+        2. Event Flags are set (see Cpl::System::EventFlag)
 
     NOTE: All of the PUBLIC method come from the parent classes.
  */
