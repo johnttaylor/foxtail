@@ -98,7 +98,7 @@ protected:
         the Main Loop.  For this use case - this method MUST be called once
         AFTER the event-processing loop has exited.  
      */
-    virtual void stopMainLoop() noexcept {};
+    virtual void stopMainLoop() noexcept;
 
 protected:
     /** This method is used (by the concrete child class(es)) to process one

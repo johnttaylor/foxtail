@@ -109,7 +109,7 @@ BETTER_ENUM( Err_T, uint8_t
              , MISSING_SCANNERS
              , SCANNER_FAILED_START
              , EXECUTION_SET_FAILED_START
-             , TOO_MANY_SCANNERS,
+             , TOO_MANY_SCANNERS
              , TOO_MANY_EXECUTION_SETS
              , PARSE_EXECUTION_SET_ARRAY
              , PARSE_SCANNER_ARRAY

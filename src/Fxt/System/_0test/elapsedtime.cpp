@@ -12,6 +12,7 @@
 #include "Catch/catch.hpp"
 #include "Cpl/System/Api.h"
 #include "Cpl/System/ElapsedTime.h"
+#include "Fxt/System/ElapsedTime.h"
 #include "Cpl/System/Trace.h"
 #include "Cpl/System/_testsupport/Shutdown_TS.h"
 #include <string.h>
@@ -19,144 +20,67 @@
 
 #define SECT_     "_0test"
 /// 
-using namespace Cpl::System;
+using namespace Fxt::System;
 
 
 
 ////////////////////////////////////////////////////////////////////////////////
+static bool     useCpl_ = true;
+static uint64_t mockNow_;
+static uint64_t mockRealTimeNow_;
+uint64_t Fxt::System::ElapsedTime::now() noexcept
+{
+    if ( useCpl_ )
+    {
+        return millisecondsToMicroseconds( Cpl::System::ElapsedTime::milliseconds() );
+    }
+    else
+    {
+        return mockNow_;
+    }
+}
+
+uint64_t Fxt::System::ElapsedTime::nowInRealTime() noexcept
+{
+    if ( useCpl_ )
+    {
+        return millisecondsToMicroseconds( Cpl::System::ElapsedTime::millisecondsInRealTime() );
+    }
+    else
+    {
+        return mockRealTimeNow_;
+    }
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE( "elaspedtime", "[elaspedtime]" )
+#define DELAY_MS        2000
+#define DELAY_SEC       2
+#define DLEAY_MICROSEC  (2000*1000LL)
+
+
+TEST_CASE( "elapsedtime"  )
 {
     CPL_SYSTEM_TRACE_FUNC( SECT_ );
-    Shutdown_TS::clearAndUseCounter();
-
-    unsigned long            secs;
-    unsigned long            msecs;
-    ElapsedTime::Precision_T precision;
-    ElapsedTime::Precision_T precValue;
+    Cpl::System::Shutdown_TS::clearAndUseCounter();
 
     // Get current time
-    secs      = ElapsedTime::seconds();
-    msecs     = ElapsedTime::milliseconds();
-    precision = ElapsedTime::precision();
+    uint64_t startTime = ElapsedTime::now();
 
     // Sleep at least 1.5 second
-    Api::sleep( 1510 );
-    //unsigned long n = ElapsedTime::milliseconds();
-    //printf( "now=%lu, msec=%lu, delta=%lu\n", n, msecs, n - msecs );
+    Cpl::System::Api::sleep( DELAY_MS );
+    uint64_t endTime      = ElapsedTime::now();
+    uint64_t expectedDelta = DELAY_MS * 1000LL;
 
     // Verify delta time
-    REQUIRE( ElapsedTime::expiredMilliseconds( msecs, 1500 ) == true );
-    REQUIRE( ElapsedTime::expiredSeconds( secs, 1 ) == true );
-    precValue.m_seconds     = 1;
-    precValue.m_thousandths = 500;
-    REQUIRE( ElapsedTime::expiredPrecision( precision, precValue ) == true );
-    precision.m_thousandths++;
-    REQUIRE( precValue != precision );
-    precision.m_seconds     = 1;
-    precision.m_thousandths = 500;
-    REQUIRE( precValue.asMilliseconds() == 1500 );
-    REQUIRE( precValue == precision );
-    CPL_SYSTEM_TRACE_MSG( SECT_, ("Post verify: sleep = 1.5") );
+    REQUIRE( ElapsedTime::delta( startTime, endTime ) >= expectedDelta );
+    REQUIRE( ElapsedTime::expired( startTime, 1500*1000LL, endTime ) == true );
 
-    // Get current time
-    precision = ElapsedTime::precision();
-    secs      = ElapsedTime::seconds();
-    msecs     = ElapsedTime::milliseconds();
+    // Verify helper functions
+    REQUIRE( ElapsedTime::toMilliseconds( expectedDelta + 600LL ) == DELAY_MS );
+    REQUIRE( ElapsedTime::toSeconds( expectedDelta + 600 * 1000LL ) == DELAY_SEC );
+    REQUIRE( ElapsedTime::secondsToMicroseconds( DELAY_SEC  ) == DLEAY_MICROSEC );
+    REQUIRE( ElapsedTime::millisecondsToMicroseconds( DELAY_MS ) == DLEAY_MICROSEC );
 
-    // Sleep at least 1.0 second
-    Api::sleep( 1010 );
-
-    // Verify delta time
-    REQUIRE( ElapsedTime::expiredMilliseconds( msecs, 1000 ) == true );
-    REQUIRE( ElapsedTime::expiredSeconds( secs, 1 ) == true );
-    precValue.m_seconds     = 1;
-    precValue.m_thousandths = 0;
-    REQUIRE( ElapsedTime::expiredPrecision( precision, precValue ) == true );
-    CPL_SYSTEM_TRACE_MSG( SECT_, ("Post verify: sleep = 1.0") );
-
-    // Get current time
-    msecs     = ElapsedTime::milliseconds();
-    secs      = ElapsedTime::seconds();
-    precision = ElapsedTime::precision();
-
-    // Sleep at least 3.7 second
-    Api::sleep( 3710 );
-
-    // Verify delta time
-    REQUIRE( ElapsedTime::expiredMilliseconds( msecs, 3700 ) == true );
-    REQUIRE( ElapsedTime::expiredSeconds( secs, 3 ) == true );
-    precValue.m_seconds     = 3;
-    precValue.m_thousandths = 700;
-    REQUIRE( ElapsedTime::expiredPrecision( precision, precValue ) == true );
-    CPL_SYSTEM_TRACE_MSG( SECT_, ("Post verify: sleep = 3.7") );
-
-    CPL_SYSTEM_TRACE_MSG( SECT_, ("msec=%lu, secs=%lu, prec.sec=%lu, prec.msec=%u", msecs, secs, precision.m_seconds, precision.m_thousandths) );
-
-    int i;
-    for ( i=0; i < 50; i++ )
-    {
-        Api::sleep( 21 );
-        msecs     = ElapsedTime::milliseconds();
-        secs      = ElapsedTime::seconds();
-        precision = ElapsedTime::precision();
-
-        unsigned long prec_as_ms = precision.m_seconds * 1000 + precision.m_thousandths;
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("msec(%lu) =? prec(%lu)", msecs, prec_as_ms) );
-        REQUIRE( msecs <= prec_as_ms );
-        REQUIRE( secs <= precision.m_seconds );
-    }
-
-    // Comparison operators
-    ElapsedTime::Precision_T timeA = { 10, 11 };
-    ElapsedTime::Precision_T timeB = { 10, 12 };
-    REQUIRE( timeA < timeB );
-    REQUIRE( timeA <= timeB );
-    REQUIRE( timeB > timeA );
-    REQUIRE( timeB >= timeA );
-    REQUIRE( timeA != timeB );
-    REQUIRE( (timeA == timeB) == false );
-
-    timeA = timeB;
-    REQUIRE( (timeA < timeB) == false );
-    REQUIRE( timeA <= timeB );
-    REQUIRE( (timeB > timeA) == false );
-    REQUIRE( timeB >= timeA );
-    REQUIRE( (timeA != timeB) == false );
-    REQUIRE( timeA == timeB  );
-
-    timeA = { 12, 10 };
-    timeB = { 13, 10 };
-    REQUIRE( timeA < timeB );
-    REQUIRE( timeA <= timeB );
-    REQUIRE( timeB > timeA );
-    REQUIRE( timeB >= timeA );
-    REQUIRE( timeA != timeB );
-    REQUIRE( ( timeA == timeB ) == false );
-
-    timeA = timeB;
-    REQUIRE( ( timeA < timeB ) == false );
-    REQUIRE( timeA <= timeB );
-    REQUIRE( ( timeB > timeA ) == false );
-    REQUIRE( timeB >= timeA );
-    REQUIRE( ( timeA != timeB ) == false );
-    REQUIRE( timeA == timeB );
-
-    timeA ={ 12, 10 };
-    timeB ={ 13, 10 };
-    uint64_t flatTimeA = timeA.asFlatTime();
-    uint64_t flatTimeB = timeB.asFlatTime();
-    REQUIRE( flatTimeA == 12010LL );
-    REQUIRE( flatTimeB == 13010LL );
-    timeA.setFlatTime( 123456LL );
-    REQUIRE( timeA.asFlatTime() == 123456LL );
-    REQUIRE( timeA.m_seconds == 123 );
-    REQUIRE( timeA.m_thousandths == 456 );
-    ElapsedTime::Precision_T timeC( 666005LL );
-    REQUIRE( timeC.m_seconds == 666 );
-    REQUIRE( timeC.m_thousandths == 5 );
-    REQUIRE( timeC.asFlatTime() == 666005LL );
-
-    REQUIRE( Shutdown_TS::getAndClearCounter() == 0u );
+    REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );
 }

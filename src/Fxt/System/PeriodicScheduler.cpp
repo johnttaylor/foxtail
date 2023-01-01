@@ -42,7 +42,8 @@ void PeriodicScheduler::executeScheduler( uint64_t currentTick )
 {
     if ( m_periods )
     {
-        PeriodApi* period = m_periods[0];
+        PeriodApi* period    = m_periods[0];
+        unsigned   periodIdx = 0;
 
         // Scan all Periods
         while ( period )
@@ -50,7 +51,7 @@ void PeriodicScheduler::executeScheduler( uint64_t currentTick )
             // Initialize the Periods' time (but only once)
             if ( m_firstExecution )
             {
-                period->m_timeMarker = currentTick;
+                setTimeMarker( *period, currentTick );
             }
 
             // Has the period expired?
@@ -77,7 +78,6 @@ void PeriodicScheduler::executeScheduler( uint64_t currentTick )
                     if ( m_reportSlippage )
                     {
                         CPL_SYSTEM_TRACE_MSG( SECT_, ("Slippage: interval=%lu, tick=%lu, period=%p, dur=%lu",
-                                                       ,
                                                        (unsigned long) period->m_timeMarker,
                                                        (unsigned long) currentTick,
                                                        period,
@@ -94,7 +94,7 @@ void PeriodicScheduler::executeScheduler( uint64_t currentTick )
             }
 
             // Get the next period
-            period++;
+            period = m_periods[++periodIdx];
         }
 
         // Clear flag now that we have properly initialized each period

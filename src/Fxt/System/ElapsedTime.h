@@ -62,7 +62,7 @@ public:
     /// Converts microseconds to seconds (rounds down)
     inline static uint64_t toSeconds( uint64_t elapsedTime ) noexcept
     {
-        return elapsedTime / (60LL * 1000LL);
+        return elapsedTime / (1000LL * 1000LL);
     }
 
     /// Convert milliseconds to microseconds
@@ -74,7 +74,7 @@ public:
     /// Convert seconds to microseconds
     inline static uint64_t secondsToMicroseconds( uint64_t seconds ) noexcept
     {
-        return seconds * 1000LL * 60LL;
+        return seconds * 1000LL * 1000LL;
     }
 
 public:
