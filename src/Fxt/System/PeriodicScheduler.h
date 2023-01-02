@@ -42,6 +42,7 @@ namespace System {
  */
 class PeriodicScheduler
 {
+public:    
     /** Defines the method that is used to report to the Application when an
         Period does not execute 'on time'.  When the method returns true
         the scheduler continues; else the Scheduler puts itself into the

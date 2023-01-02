@@ -79,7 +79,7 @@ static bool reportSlippage( PeriodApi& periodThatSlipped, uint64_t currentTick, 
     slippageLastMissedInterval_  = missedInterval;
     slippageLastPeriod_          = &periodThatSlipped;
     displayInfo( "SLIPPAGE", slippageCount_, slippageLastCurrentTick_, slippageLastMissedInterval_, &periodThatSlipped );
-    return slippageCount_;
+    return slippageResult_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

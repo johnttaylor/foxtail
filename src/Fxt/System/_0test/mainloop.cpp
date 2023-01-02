@@ -11,6 +11,7 @@
 
 #include "Catch/catch.hpp"
 #include "Fxt/System/MainLoop.h"
+#include "Fxt/System/Tick1MsecBlocking.h"
 #include "Cpl/System/Api.h"
 #include "Cpl/System/Thread.h"
 #include "Cpl/System/Semaphore.h"
@@ -30,26 +31,6 @@ using namespace Fxt::System;
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace {
-class TickSource : public MainLoop
-{
-public:
-    unsigned long m_tickDelayMs;
-
-public:
-    /// Constructor
-    TickSource( unsigned long tickTimingMs = 1,
-                Cpl::System::SharedEventHandlerApi* eventHandler = 0 )
-        : MainLoop( eventHandler )
-        , m_tickDelayMs( tickTimingMs )
-    {
-    }
-
-    /// Tick
-    void waitTickDuration() noexcept
-    {
-        Cpl::System::Api::sleep( m_tickDelayMs );
-    }
-};
 
 class MyRunnable : public MainLoop
 {
@@ -182,9 +163,9 @@ TEST_CASE( "mainloop" )
         Cpl::System::SharedEventHandler<3> eventHandler2( callbacks2 );
         Cpl::System::SharedEventHandler<1> eventHandler3( callbacks3 );
 
-        TickSource fruits( 10, &eventHandler1 );
-        TickSource trees( 10, &eventHandler2 );
-        TickSource flowers( 10, &eventHandler3 );
+        Tick1MsecBlocking fruits( 10, &eventHandler1 );
+        Tick1MsecBlocking trees( 10, &eventHandler2 );
+        Tick1MsecBlocking flowers( 10, &eventHandler3 );
 
         // Create all of the threads
         Cpl::System::Thread* t1  = Cpl::System::Thread::create( fruits, "FRUITS" );

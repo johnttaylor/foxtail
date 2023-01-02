@@ -33,6 +33,9 @@ public:
              uint64_t                           fer,
              uint16_t                           numScanners,
              uint16_t                           numExecutionSets );
+    
+    /// Destructor
+    ~Chassis();
 
 public:
     /// See Fxt::Chassis::Api

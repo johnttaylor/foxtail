@@ -16,6 +16,7 @@
 #include "Cpl/Itc/Mailbox.h"
 #include "Cpl/Itc/CloseSync.h"
 #include "Cpl/System/Assert.h"
+#include "Cpl/System/SharedEventHandler.h"
 #include "Fxt/System/PeriodicScheduler.h"
 #include "Fxt/System/ElapsedTime.h"
 #include "Fxt/Chassis/ServerApi.h"
@@ -51,40 +52,42 @@ public:
             Cpl::System::SharedEventHandlerApi*                     eventHandler    = nullptr ) noexcept
         : TICKSOURCE( timingTickInMicroseconds, eventHandler )
         , Cpl::Itc::Mailbox( *((Cpl::System::Signable*) this) )
-        , Cpl::Itc::CloseSync( *this )
+        , ServerApi( *((Cpl::Itc::PostApi*) this) )
         , m_inputScheduler( inSlippageFunc )
         , m_executionScheduler( exeSlippageFunc )
         , m_outputScheduler( outSlippageFunc )
     {
     }
 
+    /// Destructor
+    ~Server() {}
 
 protected:
     /// See Cpl::System::Runnable (adds ITC messaging support to the TICKSOURCE)
     void appRun()
     {
-        startMainLoop();
+        TICKSOURCE::startMainLoop();
         bool run = true;
         while ( run )
         {
-            run = waitAndProcessEvents();
+            run = TICKSOURCE::waitAndProcessEvents();
             if ( run )
             {
                 processMessages();
-                uint64_t now = ElapsedTime::now();
+                uint64_t now = Fxt::System::ElapsedTime::now();
                 m_inputScheduler.executeScheduler( now );
                 m_executionScheduler.executeScheduler( now );
                 m_outputScheduler.executeScheduler( now );
             }
         }
-        stopMainLoop();
+        TICKSOURCE::stopMainLoop();
     }
 
 protected:
     /// Starts the Chassis execution. The Chassis can be opened/closed multiple times
     void request( Cpl::Itc::OpenRequest::OpenMsg& msg )
     {
-        ChassisPeriods_T* chassisPeriods = (ChassisPeriods_T*) = msg.getPayload().m_args;
+        ChassisPeriods_T* chassisPeriods = (ChassisPeriods_T*) msg.getPayload().m_args;
         CPL_SYSTEM_ASSERT( chassisPeriods );
 
         // Start the schedulers
@@ -106,13 +109,13 @@ protected:
 
 protected:
     /// Periodic scheduler for scanning inputs
-    PeriodicScheduler   m_inputScheduler;
+    Fxt::System::PeriodicScheduler   m_inputScheduler;
 
     /// Periodic scheduler for executing Execution sets
-    PeriodicScheduler   m_executionScheduler;
+    Fxt::System::PeriodicScheduler   m_executionScheduler;
 
     /// Periodic scheduler for flushing outputs
-    PeriodicScheduler   m_outputScheduler;
+    Fxt::System::PeriodicScheduler   m_outputScheduler;
 };
 
 

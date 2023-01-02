@@ -49,7 +49,7 @@ namespace Chassis {
 
     \endcode
  */
-class ScannerApi
+class ScannerApi: public Cpl::Container::ExtendedItem
 {
 public:
     /// This method returns the Scanner' Scan Rate Multiplier

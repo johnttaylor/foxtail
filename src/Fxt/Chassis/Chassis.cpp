@@ -371,6 +371,8 @@ Fxt::Type::Error Chassis::buildSchedule() noexcept
         m_executionPeriods[i]->m_duration = curExeSetElem->getExecutionRateMultiplier() * m_fer;
         curExeSetElem                     = sortedExecutionSetList.next( *curExeSetElem );
     }
+
+    return Fxt::Type::Error::SUCCESS();
 }
 
 //////////////////////////////////////////////////

@@ -40,8 +40,12 @@ struct ChassisPeriods_T
  */
 class ServerApi : public Cpl::Itc::CloseSync
 {
-    /// Virtual destructor
-    ~ServerApi() {}
+public:
+    /// Constructor  
+    ServerApi( Cpl::Itc::PostApi& myMbox ) 
+        : Cpl::Itc::CloseSync( myMbox )
+    {
+    }
 };
 
 

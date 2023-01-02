@@ -1,5 +1,5 @@
 # Unit under test
-src/Fxt/Chassis < Scanner.cpp ExecutionSet.cpp
+src/Fxt/Chassis 
 
 # tests
 src/Fxt/Chassis/_0test 
