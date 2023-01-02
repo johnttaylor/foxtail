@@ -27,6 +27,7 @@
 #include "Fxt/Component/Digital/ByteSplitterFactory.h"
 #include "Cpl/Memory/LeanHeap.h"
 #include "Cpl/System/Trace.h"
+#include "Cpl/System/Api.h"
 #include "Cpl/Math/real.h"
 #include <string.h>
 
@@ -65,7 +66,7 @@ using namespace Fxt::Chassis;
                                         "    { " \
                                         "      \"name\": \"My Scanner\", " \
                                         "      \"id\": 1, " \
-                                        "      \"scanRateMultiplier\": 2, " \
+                                        "      \"scanRateMultiplier\": 1, " \
                                         "      \"cards\": [ " \
                                         "        { " \
                                         "          \"name\": \"bob\", " \
@@ -161,7 +162,7 @@ using namespace Fxt::Chassis;
                                         "    { " \
                                         "      \"name\": \"My Execution Set\", " \
                                         "      \"id\": 1, " \
-                                        "      \"exeRateMultiplier\": 2, " \
+                                        "      \"exeRateMultiplier\": 1, " \
                                         "      \"logicChains\": [ " \
                                         "        { " \
                                         "          \"name\": \"my logic chain\", " \
@@ -177,7 +178,7 @@ using namespace Fxt::Chassis;
                                         "                  \"name\": \"input byte\", " \
                                         "                  \"type\": \"918cff9e-8007-4666-99ac-384b9624329c\", " \
                                         "                  \"typeName\": \"Fxt::Point::Uint8\", " \
-                                        "                  \"idRef\": 19 " \
+                                        "                  \"idRef\": 9 " \
                                         "                } " \
                                         "              ], " \
                                         "              \"outputs\": [ " \
@@ -220,12 +221,6 @@ using namespace Fxt::Chassis;
                                         "            } " \
                                         "          ], " \
                                         "          \"connectionPts\": [ " \
-                                        "            { " \
-                                        "              \"id\": 19, " \
-                                        "              \"name\": \"Input to ByteSplitter\", " \
-                                        "              \"type\": \"918cff9e-8007-4666-99ac-384b9624329c\", " \
-                                        "              \"typeName\": \"Fxt::Point::Uint8\" " \
-                                        "            }, " \
                                         "            { " \
                                         "              \"id\": 20, " \
                                         "              \"name\": \"Output ByteSplitter: Bit 4\", " \
@@ -291,7 +286,7 @@ TEST_CASE( "Chassis" )
     SECTION( "raw create" )
     {
 
-        Chassis* uut = new Chassis( chassisServer, generalAllocator, 666, 2, 13 );
+        Chassis* uut = new Chassis( chassisServer, generalAllocator, 666, 2, 13, 4 );
         REQUIRE( uut );
         REQUIRE( uut->getFER() == 666 );
         REQUIRE( uut->getErrorCode() == Fxt::Type::Error::SUCCESS() );
@@ -320,113 +315,159 @@ TEST_CASE( "Chassis" )
         CPL_SYSTEM_TRACE_MSG( SECT_, ("chassis error=%s", chassisError.toText( buf )) );
         REQUIRE( uut );
         REQUIRE( uut->getErrorCode() == Fxt::Type::Error::SUCCESS() );
+        uut->~Api();
     }
 
-#if 0
     SECTION( "execute" )
     {
+        // Chassis thread and wait for it to start
         Cpl::System::Thread* t1  = Cpl::System::Thread::create( chassisServer, "Chassis" );
+        for ( uint8_t i=0; i < 100; i++ )
+        {
+            Cpl::System::Api::sleep( 10 );
+            if ( chassisServer.isRunning() )
+            {
+                break;
+            }
+        }
+        REQUIRE( chassisServer.isRunning() );
 
         StaticJsonDocument<10240> doc;
         DeserializationError err = deserializeJson( doc, CHASSIS_DEFINITION );
         CPL_SYSTEM_TRACE_MSG( SECT_, ("json error=%s", err.c_str()) );
         REQUIRE( err == DeserializationError::Ok );
 
-        JsonVariant scannerJsonObj = doc.as<JsonVariant>();
-        ScannerApi* uut = ScannerApi::createScannerfromJSON( scannerJsonObj,
-                                                             generalAllocator,
-                                                             cardStatefulAllocator,
-                                                             haStatefulAllocator,
-                                                             cardFactoryDb,
-                                                             pointFactoryDb,
-                                                             pointDb,
-                                                             chassisError );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("scanner error=%s", chassisError.toText( buf )) );
+        JsonVariant chassisJsonObj = doc.as<JsonVariant>();
+        Api* uut = Chassis::createChassisfromJSON( chassisJsonObj,
+                                                   chassisServer,
+                                                   componentFactoryDb,
+                                                   cardFactoryDb,
+                                                   generalAllocator,
+                                                   cardStatefulAllocator,
+                                                   haStatefulAllocator,
+                                                   pointFactoryDb,
+                                                   pointDb,
+                                                   chassisError );
+
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("chassis error=%s", chassisError.toText( buf )) );
         REQUIRE( uut );
         REQUIRE( uut->getErrorCode() == Fxt::Type::Error::SUCCESS() );
-        REQUIRE( uut->getScanRateMultiplier() == 2 );
+        REQUIRE( uut->getFER() == 1000 );
+        REQUIRE( uut->isStarted() == false);
+        
+        chassisError = uut->resolveReferences( pointDb );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("chassis error=%s", chassisError.toText( buf )) );
+        REQUIRE( uut->getErrorCode() == Fxt::Type::Error::SUCCESS() );
+
+        // AnalogCard: Verify Points are invalid
+        Fxt::Point::Float* floatPointPtr = (Fxt::Point::Float*) pointDb.lookupById( 1 ); 
+        REQUIRE( floatPointPtr );
+        REQUIRE( floatPointPtr->isNotValid() );
+        floatPointPtr = (Fxt::Point::Float*) pointDb.lookupById( 3 );                   
+        REQUIRE( floatPointPtr );
+        REQUIRE( floatPointPtr->isNotValid() );
+        floatPointPtr = (Fxt::Point::Float*) pointDb.lookupById( 5 );                   
+        REQUIRE( floatPointPtr );
+        REQUIRE( floatPointPtr->isNotValid() );
+
+        // Digital: Verify Points are invalid
+        Fxt::Point::Uint8* uint8PointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 9 );    
+        REQUIRE( uint8PointPtr );
+        REQUIRE( uint8PointPtr->isNotValid() );
+        uint8PointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 12 );                      
+        REQUIRE( uint8PointPtr );
+        REQUIRE( uint8PointPtr->isNotValid() );
+
+        // Shared Points: Verify Points are valid
+        bool boolPointVal = false;
+        Fxt::Point::Bool* boolPointPtr = (Fxt::Point::Bool*) pointDb.lookupById( 15 );
+        REQUIRE( boolPointPtr );
+        REQUIRE( boolPointPtr->read( boolPointVal ) );
+        REQUIRE( boolPointVal == true );
+        boolPointPtr->write( false ); // Change so we can verify the start() re-initializes the pt
+        boolPointPtr = (Fxt::Point::Bool*) pointDb.lookupById( 17 );
+        REQUIRE( boolPointPtr );
+        REQUIRE( boolPointPtr->read( boolPointVal ) );
+        REQUIRE( boolPointVal == false );
+        boolPointPtr->write( true ); // Change so we can verify the start() re-initializes the pt
 
 
-        bool result  = uut->start( 00L );
-        chassisError = uut->getErrorCode();
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("result=%d, scanner error=%s", result, chassisError.toText( buf )) );
-        REQUIRE( result );
-        REQUIRE( chassisError == Fxt::Type::Error::SUCCESS() );
-        REQUIRE( uut->isStarted() );
+        // Logic Chain Output: Verify Points are invalid
+        boolPointPtr = (Fxt::Point::Bool*) pointDb.lookupById( 23 );
+        REQUIRE( boolPointPtr );
+        REQUIRE( boolPointPtr->isNotValid() );
 
-        // Analog card
-        Fxt::Point::Float* pointPtr = (Fxt::Point::Float*) pointDb.lookupById( 2 );
-        float pointVal = 0;
-        REQUIRE( pointPtr->read( pointVal ) );
-        REQUIRE( Cpl::Math::areFloatsEqual( pointVal, 1.2F ) );
+        // Logic Chain Auto Pt: Verify Points are valid
+        boolPointPtr = (Fxt::Point::Bool*) pointDb.lookupById( 21 );
+        REQUIRE( boolPointPtr );
+        REQUIRE( boolPointPtr->read( boolPointVal ) );
+        REQUIRE( boolPointVal == true );
+        boolPointPtr->write( false ); // Change so we can verify the start() re-initializes the pt
 
-        pointPtr = (Fxt::Point::Float*) pointDb.lookupById( 4 );
-        pointVal = 0;
-        REQUIRE( pointPtr->read( pointVal ) );
-        REQUIRE( Cpl::Math::areFloatsEqual( pointVal, 3.5F ) );
+        // Run at least one interval
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("Starting... chassis error=%s", chassisError.toText( buf )) );
+        REQUIRE( uut->getErrorCode() == Fxt::Type::Error::SUCCESS() );
+        uut->start( Fxt::System::ElapsedTime::now() );
+        Cpl::System::Api::sleep( 2500 );
+        uut->stop();
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("Stop chassis error=%s", uut->getErrorCode().toText( buf )) );
+        REQUIRE( uut->getErrorCode() == Fxt::Type::Error::SUCCESS() );
 
-        pointPtr = (Fxt::Point::Float*) pointDb.lookupById( 6 );
-        pointVal = 0;
-        REQUIRE( pointPtr->read( pointVal ) );
-        REQUIRE( Cpl::Math::areFloatsEqual( pointVal, 0.0F ) );
+        // AnalogCard: Verify Point values
+        float floatPointVal = 0;
+        floatPointPtr = (Fxt::Point::Float*) pointDb.lookupById( 1 ); 
+        REQUIRE( floatPointPtr );
+        REQUIRE( floatPointPtr->read( floatPointVal ) );
+        REQUIRE( Cpl::Math::areFloatsEqual( floatPointVal, 1.2F ) );
+        floatPointPtr = (Fxt::Point::Float*) pointDb.lookupById( 3 );                   
+        REQUIRE( floatPointPtr );
+        REQUIRE( floatPointPtr->read( floatPointVal ) );
+        REQUIRE( Cpl::Math::areFloatsEqual( floatPointVal, 3.5F ) );
+        floatPointPtr = (Fxt::Point::Float*) pointDb.lookupById( 5 );                   
+        REQUIRE( floatPointPtr );
+        REQUIRE( floatPointPtr->read( floatPointVal ) );
+        REQUIRE( Cpl::Math::areFloatsEqual( floatPointVal, 0.0F ) );
+     
+        // Digital: Verify Point values
+        uint8_t uint8PointVal = 0;
+        uint8PointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 9 );
+        REQUIRE( uint8PointPtr );
+        REQUIRE( uint8PointPtr->read( uint8PointVal ) );
+        REQUIRE( uint8PointVal == 128 );
+        uint8PointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 12 );
+        REQUIRE( uint8PointPtr->isNotValid() );  // Nothing drives this output
 
-        // Digital card
-        Fxt::Point::Uint8* pointPtr2 = (Fxt::Point::Uint8*) pointDb.lookupById( 10 );
-        uint8_t pointVal2 = 0;
-        REQUIRE( pointPtr2->read( pointVal2 ) );
-        REQUIRE( pointVal2 == 128 );
+        // Shared Points: Verify Point values
+        boolPointPtr = (Fxt::Point::Bool*) pointDb.lookupById( 15 );
+        REQUIRE( boolPointPtr );
+        REQUIRE( boolPointPtr->read( boolPointVal ) );
+        REQUIRE( boolPointVal == true );
+        boolPointPtr = (Fxt::Point::Bool*) pointDb.lookupById( 17 );
+        REQUIRE( boolPointPtr );
+        REQUIRE( boolPointPtr->read( boolPointVal ) );
+        REQUIRE( boolPointVal == false );
 
-        pointPtr2 = (Fxt::Point::Uint8*) pointDb.lookupById( 13 );
-        pointVal2 = 0;
-        REQUIRE( pointPtr2->read( pointVal2 ) );
-        REQUIRE( pointVal2 == 1 );
+        // Logic Chain Output: Verify Point values
+        boolPointPtr = (Fxt::Point::Bool*) pointDb.lookupById( 23 );
+        REQUIRE( boolPointPtr );
+        REQUIRE( boolPointPtr->read( boolPointVal ) );
+        REQUIRE( boolPointVal == false );
 
-
-        result = uut->getInputPeriod().execute( 0LL, 0LL );
-        chassisError = uut->getErrorCode();
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("result=%d, scanner error=%s", result, chassisError.toText( buf )) );
-        REQUIRE( result );
-        REQUIRE( chassisError == Fxt::Type::Error::SUCCESS() );
-
-
-        // Analog card
-        pointPtr = (Fxt::Point::Float*) pointDb.lookupById( 1 );
-        REQUIRE( pointPtr->read( pointVal ) );
-        REQUIRE( Cpl::Math::areFloatsEqual( pointVal, 1.2F ) );
-
-        pointPtr = (Fxt::Point::Float*) pointDb.lookupById( 3 );
-        REQUIRE( pointPtr->read( pointVal ) );
-        REQUIRE( Cpl::Math::areFloatsEqual( pointVal, 3.5F ) );
-
-        pointPtr = (Fxt::Point::Float*) pointDb.lookupById( 5 );
-        REQUIRE( pointPtr->read( pointVal ) );
-        REQUIRE( Cpl::Math::areFloatsEqual( pointVal, 0.0F ) );
-
-        // Digital card
-        pointPtr2 = (Fxt::Point::Uint8*) pointDb.lookupById( 9 );
-        REQUIRE( pointPtr2->read( pointVal2 ) );
-        REQUIRE( pointVal2 == 128 );
-        pointPtr2 = (Fxt::Point::Uint8*) pointDb.lookupById( 12 );
-        pointPtr2->write( 32 );
-
-
-        result = uut->getOutputPeriod().execute( 0LL, 0LL );
-
-
-        // Digital Card
-        pointPtr2 = (Fxt::Point::Uint8*) pointDb.lookupById( 13 );
-        REQUIRE( pointPtr2->read( pointVal2 ) );
-        REQUIRE( pointVal2 == 32 );
+        // Logic Chain Auto Pt: Verify Point values
+        boolPointPtr = (Fxt::Point::Bool*) pointDb.lookupById( 21 );
+        REQUIRE( boolPointPtr );
+        REQUIRE( boolPointPtr->read( boolPointVal ) );
+        REQUIRE( boolPointVal == true );
 
 
         // Shutdown threads
-        uut.pleaseStop();
+        uut->~Api();
+        chassisServer.pleaseStop();
         Cpl::System::Api::sleep( 300 ); // allow time for threads to stop
         REQUIRE( t1->isRunning() == false );
         Cpl::System::Thread::destroy( *t1 );
         Cpl::System::Api::sleep( 300 ); // allow time for threads to stop
     }
-#endif
 
     REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );
 }

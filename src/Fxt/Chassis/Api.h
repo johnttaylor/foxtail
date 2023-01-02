@@ -107,6 +107,12 @@ public:
      */
     virtual Fxt::Type::Error add( ExecutionSetApi& executionSetToAdd ) noexcept = 0;
 
+    /** This method is used to add a Shared Point to the Chassis.  If the add is
+        successful then Fxt::Type::Err_T::SUCCESS is returned; else and error
+        code is returned.
+     */
+    virtual Fxt::Type::Error add( Fxt::Point::Api& sharedPtToAdd ) noexcept = 0;
+
     /** This method instructs the Chassis to 'build' it schedulers. If the operation
         is successful then Fxt::Type::Err_T::SUCCESS is returned; else and error
         code is returned.

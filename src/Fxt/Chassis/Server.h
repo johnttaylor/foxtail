@@ -101,6 +101,7 @@ protected:
     /// Stops the Chassis execution
     void request( Cpl::Itc::CloseRequest::CloseMsg& msg )
     {
+        // Stop the schedulers
         m_outputScheduler.stop();
         m_executionScheduler.stop();
         m_inputScheduler.stop();

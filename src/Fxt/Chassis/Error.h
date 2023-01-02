@@ -75,6 +75,9 @@ namespace Chassis {
     @param FAILED_CREATE_SHARED_POINTS      Failed to create one or more Shared Points
     @param FAILED_SCANNER_SCHEDULE_BUILD    Failed to build the list of Periods for the Scanner schedules
     @param FAILED_EXESET_SCHEDULE_BUILD     Failed to build the list of Periods for the ExecutionSet schedule
+    @param NO_MEMORY_SHARED_PTS_LIST        Unable to allocate memory for list of Shared Points
+    @param TOO_MANY_SHARED_PTS              Attempted to add more Shared Points that what was specified when the Chassis was constructed
+    @param MISSING_SHARED_PTS               At least one or more Shared Points where not added to the Chassis (as defined by the number specified in the Chassis constructor)
  */
 BETTER_ENUM( Err_T, uint8_t
              , SUCCESS = 0
@@ -122,6 +125,9 @@ BETTER_ENUM( Err_T, uint8_t
              , FAILED_CREATE_SHARED_POINTS
              , FAILED_SCANNER_SCHEDULE_BUILD
              , FAILED_EXESET_SCHEDULE_BUILD
+             , NO_MEMORY_SHARED_PTS_LIST
+             , TOO_MANY_SHARED_PTS
+             , MISSING_SHARED_PTS
 );
 
 /** This concrete class defines the Error Category for the Logic Chain namespace.

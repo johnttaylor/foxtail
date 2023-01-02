@@ -32,7 +32,8 @@ public:
              Cpl::Memory::ContiguousAllocator&  generalAllocator, 
              uint64_t                           fer,
              uint16_t                           numScanners,
-             uint16_t                           numExecutionSets );
+             uint16_t                           numExecutionSets,
+             uint16_t                           numSharedPts );
     
     /// Destructor
     ~Chassis();
@@ -57,6 +58,9 @@ public:
     Fxt::Type::Error add( ExecutionSetApi& autoPointToAdd ) noexcept;
 
     /// See Fxt::Chassis::Api
+    Fxt::Type::Error add( Fxt::Point::Api& sharedPtToAdd ) noexcept;
+    
+    /// See Fxt::Chassis::Api
     Fxt::Type::Error buildSchedule() noexcept;
 
     /// See Fxt::Chassis::Api
@@ -74,6 +78,9 @@ protected:
 
     /// Array/List of Scanners
     ScannerApi**                        m_scanners;
+
+    /// Array/List of Shared points
+    Fxt::Point::Api**                   m_sharedPts;
 
     /// Array/List of Periods for scanning inputs
     Fxt::System::PeriodApi**            m_inputPeriods;
@@ -96,11 +103,17 @@ protected:
     /// Number of Card Scanners
     uint16_t                            m_numScanners;
 
+    /// Number of Shared Points
+    uint16_t                            m_numSharedPts;
+
     /// Array index for the next Execution add operation
     uint16_t                            m_nextExecutionSetIdx;
 
     /// Array index for the next card Scanner add operation
     uint16_t                            m_nextScannerIdx;
+
+    /// Array index for the next Shared Pt add operation
+    uint16_t                            m_nextSharedPtIdx;
 
     /// My started state
     bool                                m_started;

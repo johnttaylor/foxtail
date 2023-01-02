@@ -26,10 +26,12 @@ Chassis::Chassis( ServerApi&                         chassisServer,
                   Cpl::Memory::ContiguousAllocator&  generalAllocator,
                   uint64_t                           fer,
                   uint16_t                           numScanners,
-                  uint16_t                           numExecutionSets )
+                  uint16_t                           numExecutionSets,
+                  uint16_t                           numSharedPts )
     : m_server( chassisServer )
     , m_executionSets( nullptr )
     , m_scanners( nullptr )
+    , m_sharedPts( nullptr )
     , m_inputPeriods( nullptr )
     , m_executionPeriods( nullptr )
     , m_outputPeriods( nullptr )
@@ -37,8 +39,10 @@ Chassis::Chassis( ServerApi&                         chassisServer,
     , m_fer( fer )
     , m_numExecutionSets( numExecutionSets )
     , m_numScanners( numScanners )
+    , m_numSharedPts( numSharedPts )
     , m_nextExecutionSetIdx( 0 )
     , m_nextScannerIdx( 0 )
+    , m_nextSharedPtIdx( 0 )
     , m_started( false )
 {
     // Allocate my array of scanner pointers
@@ -65,6 +69,19 @@ Chassis::Chassis( ServerApi&                         chassisServer,
     {
         // Zero the array so we can tell if there are Execution Sets
         memset( m_executionSets, 0, sizeof( ExecutionSetApi* ) * numExecutionSets );
+    }
+
+    // Allocate my array of SharedPoints pointers
+    m_sharedPts = (Fxt::Point::Api**) generalAllocator.allocate( sizeof( Fxt::Point::Api* ) * numSharedPts );
+    if ( m_sharedPts == nullptr )
+    {
+        m_numSharedPts = 0;
+        m_error        = fullErr( Err_T::NO_MEMORY_SHARED_PTS_LIST );
+    }
+    else
+    {
+        // Zero the array so we can tell if there are Shared Pts
+        memset( m_sharedPts, 0, sizeof( Fxt::Point::Api* ) * numSharedPts );
     }
 
     // Allocate Period arrays
@@ -173,11 +190,24 @@ bool Chassis::start( uint64_t currentElapsedTimeUsec ) noexcept
         for ( uint16_t i=0; i < m_numExecutionSets; i++ )
         {
             // NOTE: The list executionSets is verified for non-null pointers in resolveReferences()
-            if ( m_executionSets[i]->start( currentElapsedTimeUsec ) == false )
+            if ( m_executionSets[i]->start( currentElapsedTimeUsec ) != Fxt::Type::Error::SUCCESS() )
             {
                 m_error = fullErr( Err_T::EXECUTION_SET_FAILED_START );
                 return false;
             }
+        }
+
+        // Initialize the Shared Points
+        for ( uint16_t i=0; i < m_numSharedPts; i++ )
+        {
+            // Check that all Shared Points got created
+            if ( m_sharedPts[i] == nullptr )
+            {
+                m_error = fullErr( Err_T::MISSING_SHARED_PTS );
+                return false;
+            }
+
+            m_sharedPts[i]->updateFromSetter();
         }
 
         // Start the Chassis server
@@ -268,6 +298,24 @@ Fxt::Type::Error Chassis::add( ExecutionSetApi& exeSetToAdd ) noexcept
         {
             m_executionSets[m_nextExecutionSetIdx] = &exeSetToAdd;
             m_nextExecutionSetIdx++;
+        }
+    }
+
+    return m_error;
+}
+
+Fxt::Type::Error Chassis::add( Fxt::Point::Api& sharedPtToAdd ) noexcept
+{
+    if ( m_error == Fxt::Type::Error::SUCCESS() )
+    {
+        if ( m_nextSharedPtIdx >= m_numSharedPts )
+        {
+            m_error = fullErr( Err_T::TOO_MANY_SHARED_PTS );
+        }
+        else
+        {
+            m_sharedPts[m_nextSharedPtIdx] = &sharedPtToAdd;
+            m_nextSharedPtIdx++;
         }
     }
 
@@ -417,6 +465,11 @@ Api* Api::createChassisfromJSON( JsonVariant                         chassisJson
         return nullptr;
     }
 
+    // Get Shared Points Array
+    JsonArray sharedPtsObj = chassisJsonObject["sharedPts"];
+    size_t    numSharedPts = sharedPtsObj.size();
+
+
     // Parse Fundamental Execution Rate
     size_t fer = chassisJsonObject["fer"] | ((size_t) (-1));
     if ( fer == ((size_t) (-1)) )
@@ -432,7 +485,7 @@ Api* Api::createChassisfromJSON( JsonVariant                         chassisJson
         chassisErrorode = fullErr( Err_T::NO_MEMORY_CHASSIS );
         return nullptr;
     }
-    Api* chassis = new(memChassis) Chassis( chassisServer, generalAllocator, fer, (uint16_t) numScanners, (uint16_t) numExecutionSets );
+    Api* chassis = new(memChassis) Chassis( chassisServer, generalAllocator, fer, (uint16_t) numScanners, (uint16_t) numExecutionSets, (uint16_t) numSharedPts );
 
     // Create Scanners
     for ( uint16_t i=0; i < numScanners; i++ )
@@ -500,26 +553,28 @@ Api* Api::createChassisfromJSON( JsonVariant                         chassisJson
     }
 
     // Create Shared Points
-    if ( chassisJsonObject["sharedPts"].is<JsonArray>() == true )
+    for ( size_t i=0; i < sharedPtsObj.size(); i++ )
     {
-        JsonArray sharedPtsObj = chassisJsonObject["sharedPts"];
-        for ( size_t i=0; i < sharedPtsObj.size(); i++ )
+        Fxt::Type::Error pointError;
+        JsonObject       pointJson = sharedPtsObj[i];
+        Fxt::Point::Api* pt = pointFactoryDb.createPointfromJSON( pointJson,
+                                                                  pointError,
+                                                                  generalAllocator,
+                                                                  haStatefulDataAllocator,     // Note: Share points ARE part of the HA data
+                                                                  dbForPoints,
+                                                                  "id",
+                                                                  true );
+        if ( pt == nullptr )
         {
-            Fxt::Type::Error pointError;
-            JsonObject       pointJson = sharedPtsObj[i];
-            Fxt::Point::Api* pt = pointFactoryDb.createPointfromJSON( pointJson,
-                                                                      pointError,
-                                                                      generalAllocator,
-                                                                      haStatefulDataAllocator,     // Note: Share points ARE part of the HA data
-                                                                      dbForPoints,
-                                                                      "id",
-                                                                      true );
-            if ( pt == nullptr )
-            {
-                chassisErrorode = fullErr( Err_T::FAILED_CREATE_SHARED_POINTS );
-                chassis->~Api();
-                return nullptr;
-            }
+            chassisErrorode = fullErr( Err_T::FAILED_CREATE_SHARED_POINTS );
+            chassis->~Api();
+            return nullptr;
+        }
+        chassisErrorode = chassis->add( *pt );
+        if ( chassisErrorode != Fxt::Type::Error::SUCCESS() )
+        {
+            chassis->~Api();
+            return nullptr;
         }
     }
 
