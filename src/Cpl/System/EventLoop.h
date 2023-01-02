@@ -175,7 +175,11 @@ public:
 
 public:
     /// See Cpl::System::Runnable
+    Thread* getMyThread() noexcept;
+
+    /// See Cpl::System::Runnable
     void setThreadOfExecution_( Thread* myThreadPtr );
+
 
 protected:
     /// A pointer to the thread the Event Loop executes in

@@ -68,6 +68,12 @@ public:
      */
     virtual bool isRunning() noexcept;
 
+    /** This method returns a pointer to the Thread that the runnable instance
+        executes in.  The method will return a nullptr if the runnable instance
+        has been associated with a thread, i.e. the thread has not started
+        executing yet.
+     */
+    virtual Thread* getMyThread() noexcept = 0;
 
 protected:
     /// Constructor

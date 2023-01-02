@@ -145,6 +145,9 @@ public:
 
 public:
     /// See Cpl::System::Runnable
+    Cpl::System::Thread* getMyThread() noexcept;
+    
+    /// See Cpl::System::Runnable
     void setThreadOfExecution_( Cpl::System::Thread* myThreadPtr );
 
 protected:
