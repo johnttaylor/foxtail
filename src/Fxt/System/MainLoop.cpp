@@ -32,12 +32,6 @@ MainLoop::MainLoop( Cpl::System::SharedEventHandlerApi* eventHandler )
     CPL_SYSTEM_ASSERT( timeOutPeriodInMicroseconds != 0 )
 }
 
-Cpl::System::Thread* MainLoop::getMyThread() noexcept
-{
-    return m_myThreadPtr;
-}
-
-
 void MainLoop::setThreadOfExecution_( Cpl::System::Thread* myThreadPtr )
 {
     m_myThreadPtr = myThreadPtr;

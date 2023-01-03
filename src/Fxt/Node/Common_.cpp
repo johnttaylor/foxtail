@@ -13,24 +13,28 @@
 
 #include "Common_.h"
 #include "Error.h"
+#include "FactoryApi.h"
 #include "Cpl/System/Assert.h"
 #include "Cpl/System/Thread.h"
 #include "Cpl/System/Api.h"
 #include <new>
 
-#define BYTES_AS_SIZET(n)       ((n+sizeof(size_t)-1)/ sizeof(size_t))
+// Note: The LeanHeap expect memory to aligned to size_t -->hence the extra macros to help with the allocation/sizing
+#define BYTES_AS_SIZET(n)       (((n)+sizeof(size_t)-1)/ sizeof(size_t))
+#define SIZET_TO_BYTES(m)       (m*sizeof(size_t))
 
 ///
 using namespace Fxt::Node;
+
 
 //////////////////////////////////////////////////
 Common_::Common_( uint8_t numChassis,
                   size_t  sizeGeneralHeap,
                   size_t  sizeCardStatefulHeap,
                   size_t  sizeHaStatefulHeap )
-    : m_generalAllocator( new size_t[BYTES_AS_SIZET( sizeGeneralHeap )], BYTES_AS_SIZET( sizeGeneralHeap ) )
-    , m_cardStatefulAllocator( new size_t[BYTES_AS_SIZET( sizeCardStatefulHeap )], BYTES_AS_SIZET( sizeCardStatefulHeap ) )
-    , m_haStatefulAllocator( new size_t[BYTES_AS_SIZET( sizeHaStatefulHeap )], BYTES_AS_SIZET( sizeHaStatefulHeap ) )
+    : m_generalAllocator( new size_t[BYTES_AS_SIZET( sizeGeneralHeap )], SIZET_TO_BYTES(BYTES_AS_SIZET( sizeGeneralHeap )) )
+    , m_cardStatefulAllocator( new size_t[BYTES_AS_SIZET( sizeCardStatefulHeap )], SIZET_TO_BYTES(BYTES_AS_SIZET( sizeCardStatefulHeap )) )
+    , m_haStatefulAllocator( new size_t[BYTES_AS_SIZET( sizeHaStatefulHeap )], SIZET_TO_BYTES(BYTES_AS_SIZET( sizeHaStatefulHeap )) )
     , m_chassis( nullptr )
     , m_error( Fxt::Type::Error::SUCCESS() )
     , m_numChassis( numChassis )
@@ -79,11 +83,12 @@ Common_::~Common_()
             m_chassis[i].chassis->~Api();
         }
 
-        // Destroy the Chassis's thread (and runnable object) instances
+        // Destroy the Chassis's thread instance
         if ( m_chassis[i].thread )
         {
             destroyChassisThread( *m_chassis[i].thread );
         }
+
     }
 
     // Free my local heaps
@@ -170,6 +175,21 @@ void Common_::destroyChassisThread( Cpl::System::Thread& chassisThreadToDelete )
     Cpl::System::Thread::destroy( chassisThreadToDelete );
 }
 
+bool Common_::waitForThreadToRun( Cpl::System::Runnable& threadsRunnable )
+{
+    // Chassis thread and wait for it to start
+    for ( uint8_t i=0; i < 100; i++ )
+    {
+        Cpl::System::Api::sleep( 2 );
+        if ( threadsRunnable.isRunning() )
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 //////////////////////////////////////////////////
 Fxt::Type::Error Common_::add( Fxt::Chassis::Api&     chassisToAdd,
                                Cpl::System::Thread&   chassisThreadToAdd ) noexcept
@@ -193,97 +213,3 @@ Fxt::Type::Error Common_::add( Fxt::Chassis::Api&     chassisToAdd,
 
 
 
-//////////////////////////////////////////////////
-Api* Api::createNodefromJSON( FactoryApi&              nodeFactory,
-                              JsonVariant              nodeJsonObject,
-                              Fxt::Point::DatabaseApi& dbForPoints,
-                              Fxt::Type::Error&        nodeErrorCode ) noexcept
-{
-    // Get the chassis Array
-    JsonArray chassisArray = nodeJsonObject["chassis"];
-    size_t    numChassis   = chassisArray.size();
-    if ( numChassis == 0 )
-    {
-        nodeErrorCode = fullErr( Err_T::PARSE_CHASSIS_ARRAY );
-        return nullptr;
-    }
-    if ( numChassis > nodeFactory.getMaxAllowedChassis() )
-    {
-        nodeErrorCode = fullErr( Err_T::MAX_CHASSIS_EXCEEDED );
-        return nullptr;
-    }
-
-    // Validate the Node type
-    const char* typeGuid = nodeJsonObject["type"];
-    if ( typeGuid == nullptr || strcmp( typeGuid, nodeFactory.getGuid() ) != 0 )
-    {
-        nodeErrorCode = fullErr( Err_T::NOT_ME );
-        return nullptr;
-    }
-
-    // Create Node instance
-    Api* node = nodeFactory.create( nodeJsonObject, dbForPoints, nodeErrorCode );
-    if ( node == nullptr )
-    {
-        nodeErrorCode = fullErr( Err_T::NO_MEMORY_NODE );
-        return nullptr;
-    }
-    if ( node->getErrorCode() != Fxt::Type::Error::SUCCESS() )
-    {
-        nodeErrorCode = fullErr( Err_T::NODE_CREATE_ERROR );
-        nodeFactory.destroy( *node );
-        return nullptr;
-    }
-
-    // Create Chassis
-    for ( uint8_t i=0; i < numChassis; i++ )
-    {
-        Fxt::Type::Error   errorCode  = Fxt::Type::Error::SUCCESS();
-
-        // Create the Chassis thread (and runnable obj) instance
-        Fxt::Chassis::ServerApi* serverApi;
-        Cpl::System::Thread*     chassisThread = node->createChassisThread( serverApi );
-        if ( chassisThread == nullptr || serverApi == nullptr )
-        {
-            nodeErrorCode = fullErr( Err_T::FAILED_CREATE_CHASSIS_SERVER );
-            nodeFactory.destroy( *node );
-            return nullptr;
-        }
-
-        // Create the Chassis
-        Fxt::Type::Error   errorCode;
-        JsonObject         chassisObj = chassisArray[i];
-        Fxt::Chassis::Api* chassisPtr = Fxt::Chassis::Api::createChassisfromJSON( chassisObj,
-                                                                                  *serverApi,
-                                                                                  nodeFactory.getComponentFactoryDb(),
-                                                                                  nodeFactory.getCardFactoryDb(),
-                                                                                  node->getGeneralAlloactor(),
-                                                                                  node->getCardStatefulAlloactor(),
-                                                                                  node->getHaStatefulAlloactor(),
-                                                                                  nodeFactory.getPointFactoryDb(),
-                                                                                  dbForPoints,
-                                                                                  errorCode );
-        if ( chassisPtr == nullptr )
-        {
-            nodeErrorCode = fullErr( Err_T::FAILED_CREATE_CHASSIS );
-            nodeFactory.destroy( *node );
-            return nullptr;
-        }
-        if ( errorCode != Fxt::Type::Error::SUCCESS() )
-        {
-            nodeErrorCode = fullErr( Err_T::CHASSIS_CREATE_ERROR );
-            nodeFactory.destroy( *node );
-            return nullptr;
-        }
-        nodeErrorCode = node->add( *chassisPtr, *chassisThread );
-        if ( nodeErrorCode != Fxt::Type::Error::SUCCESS() )
-        {
-            nodeFactory.destroy( *node );
-            return nullptr;
-        }
-    }
-
-
-    // If I get here -->everything worked
-    return node;
-}

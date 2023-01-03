@@ -49,14 +49,3 @@ bool Runnable::isRunning( void ) noexcept
 
     return result;
 }
-
-Thread* Runnable::getMyThread() noexcept
-{
-    Thread* myThread = nullptr;
-
-    Locks_::system().lock();
-    result = m_running;
-    Locks_::system().unlock();
-
-    return result;
-}

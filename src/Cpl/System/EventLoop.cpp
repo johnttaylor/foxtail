@@ -43,11 +43,6 @@ void EventLoop::setThreadOfExecution_( Thread* myThreadPtr )
     m_myThreadPtr = myThreadPtr;
 }
 
-Thread* EventLoop::getMyThread() noexcept
-{
-    return m_myThreadPtr;
-}
-
 int EventLoop::signal( void ) noexcept
 {
     return m_sema.signal();

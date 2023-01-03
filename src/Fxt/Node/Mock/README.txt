@@ -1,6 +1,7 @@
-/** @namespace Cpl::Node
+/** @namespace Fxt::Node::Mock
 
-The 'Node' namespace is the root namespace for a Node (aka a Controller) framework
+The 'Mock' namespace is parent directory for 'Mocked' (i.e. not for real-time control)
+concrete Nodes.
 
 */ 
 

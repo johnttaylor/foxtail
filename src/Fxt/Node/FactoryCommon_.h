@@ -15,9 +15,6 @@
 
 #include "Fxt/Node/FactoryApi.h"
 #include "Fxt/Node/Error.h"
-#include "Fxt/Component/FactoryDatabase.h"
-#include "Fxt/Card/FactoryDatabase.h"
-#include "Fxt/Point/FactoryDatabase.h"
 
 ///
 namespace Fxt {
@@ -48,21 +45,21 @@ public:
 
 protected:
     /// Helper method that perform the Node specific create.  Assumes the new(std::nothrow) is used to allocate the Node instance
-    virtual Api* createNode( uint8_t                    numChassis,
-                             JsonVariant                nodeJsonObject,
-                             Fxt::Point::DatabaseApi&   dbForPoints,
-                             Fxt::Type::Error&          nodeErrorode ) noexcept = 0;
+    virtual Api* createNode( uint8_t            numChassis,
+                             JsonVariant        nodeJsonObject,
+                             Fxt::Type::Error&  nodeErrorCode ) noexcept = 0;
 
-protected:
+public:
+    // NOTE: The following members are made public to facilitate accessing the factory databases
+
     /// Point Factory DB
-    Fxt::Point::FactoryDatabase     m_pointFactoryDb;
+    static Fxt::Point::FactoryDatabase     g_pointFactoryDb;
 
     /// Card Factory DB
-    Fxt::Card::FactoryDatabase      m_cardFactoryDb;
+    static Fxt::Card::FactoryDatabase      g_cardFactoryDb;
 
     /// Component Factory DB
-    Fxt::Component::FactoryDatabase m_componentFactoryDb;
-
+    static Fxt::Component::FactoryDatabase g_componentFactoryDb;
 };
 
 

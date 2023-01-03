@@ -19,7 +19,7 @@
 /** Specifies the tick timeout period
  */
 #ifndef OPTION_FXT_SYSTEM_TICK_1MSEC_BLOCKING_TICK_DELAY_US
-#define OPTION_FXT_SYSTEM_TICK_1MSEC_BLOCKING_TICK_DELAY_US       (1000LL)  //!< 1 msec timeout
+#define OPTION_FXT_SYSTEM_TICK_1MSEC_BLOCKING_TICK_DELAY_US       (1000ULL)  //!< 1 msec timeout
 #endif
 
 ///

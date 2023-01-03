@@ -76,6 +76,10 @@ public:
     void destroyChassisThread( Cpl::System::Thread& chassisThreadToDelete ) noexcept;
 
 protected:
+    /// Helper function that waits for a Chassis thread to spin up
+    bool waitForThreadToRun( Cpl::System::Runnable& runnable );
+
+protected:
     /// Allocator|Heap: General 
     Cpl::Memory::LeanHeap               m_generalAllocator;
 

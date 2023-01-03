@@ -21,6 +21,7 @@
 #include "Fxt/Component/Error.h"
 #include "Fxt/Component/Digital/Error.h"
 #include "Fxt/LogicChain/Error.h"
+#include "Fxt/Node/Error.h"
 
 
 // Instantiate the root.  Note: There are no 'local' error values - only children
@@ -36,6 +37,7 @@ Fxt::Card::ErrCategory                      Fxt::Card::ErrCategory::g_theOne;
 Fxt::Component::ErrCategory                 Fxt::Component::ErrCategory::g_theOne;  
 Fxt::LogicChain::ErrCategory                Fxt::LogicChain::ErrCategory::g_theOne;
 Fxt::Chassis::ErrCategory                   Fxt::Chassis::ErrCategory::g_theOne;
+Fxt::Node::ErrCategory                      Fxt::Node::ErrCategory::g_theOne;
 
 // Instantiate Error categories (Level 2)
 Fxt::Component::Digital::ErrCategory        Fxt::Component::Digital::ErrCategory::g_theOne; 

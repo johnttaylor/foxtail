@@ -12,15 +12,21 @@
 
 
 #include "FactoryCommon_.h"
+#include "Fxt/Chassis/Api.h"
+#include "Cpl/System/Thread.h"
 #include "Error.h"
 
 ///
 using namespace Fxt::Node;
 
+Fxt::Point::FactoryDatabase         Fxt::Node::FactoryCommon_::g_pointFactoryDb;
+Fxt::Card::FactoryDatabase          Fxt::Node::FactoryCommon_::g_cardFactoryDb;
+Fxt::Component::FactoryDatabase     Fxt::Node::FactoryCommon_::g_componentFactoryDb;
+
+/////////////////////////////////
 FactoryCommon_::FactoryCommon_()
 {
     // Nothing needed yet...
-    factoryDb.insert_( *this );
 }
 
 FactoryCommon_::~FactoryCommon_()
@@ -40,7 +46,7 @@ Api* FactoryCommon_::create( JsonVariant              nodeJsonObject,
 {
     // Get the chassis Array
     JsonArray chassisArray = nodeJsonObject["chassis"];
-    size_t    numChassis   = chassisArray.size();
+    uint8_t   numChassis   = (uint8_t) chassisArray.size();
     if ( numChassis == 0 )
     {
         nodeErrorCode = fullErr( Err_T::PARSE_CHASSIS_ARRAY );
@@ -61,7 +67,7 @@ Api* FactoryCommon_::create( JsonVariant              nodeJsonObject,
     }
 
     // Create Node instance
-    Api* node = createNode( numChassis, nodeJsonObject, dbForPoints, nodeErrorCode );
+    Api* node = createNode( numChassis, nodeJsonObject, nodeErrorCode );
     if ( node == nullptr )
     {
         nodeErrorCode = fullErr( Err_T::NO_MEMORY_NODE );
@@ -90,16 +96,15 @@ Api* FactoryCommon_::create( JsonVariant              nodeJsonObject,
         }
 
         // Create the Chassis
-        Fxt::Type::Error   errorCode;
         JsonObject         chassisObj = chassisArray[i];
         Fxt::Chassis::Api* chassisPtr = Fxt::Chassis::Api::createChassisfromJSON( chassisObj,
                                                                                   *serverApi,
-                                                                                  m_componentFactoryDb,
-                                                                                  m_cardFactoryDb,
+                                                                                  g_componentFactoryDb,
+                                                                                  g_cardFactoryDb,
                                                                                   node->getGeneralAlloactor(),
                                                                                   node->getCardStatefulAlloactor(),
                                                                                   node->getHaStatefulAlloactor(),
-                                                                                  m_pointFactoryDb,
+                                                                                  g_pointFactoryDb,
                                                                                   dbForPoints,
                                                                                   errorCode );
         if ( chassisPtr == nullptr )

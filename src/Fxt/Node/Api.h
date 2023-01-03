@@ -13,10 +13,10 @@
 /** @file */
 
 
-#include "Fxt/Node/FactoryApi.h"
 #include "Fxt/Type/Error.h"
 #include "Fxt/Chassis/Api.h"
 #include "Fxt/Point/DatabaseApi.h"
+#include "Cpl/System/Thread.h"
 #include "Cpl/Json/Arduino.h"
 #include <stdint.h>
 
@@ -116,6 +116,6 @@ public:
 };
 
 
-};      // end namespaces
-};
+}       // end namespaces
+}
 #endif  // end header latch
