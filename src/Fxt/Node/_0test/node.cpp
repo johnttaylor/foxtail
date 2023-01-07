@@ -19,6 +19,9 @@
 #include "Cpl/Math/real.h"
 #include "Cpl/Text/FString.h"
 #include <string.h>
+#include "Fxt/Point/Float.h"
+#include "Fxt/Point/Uint8.h"
+#include "Fxt/Point/Bool.h"
 
 #define SECT_   "_0test"
 
@@ -272,129 +275,136 @@ TEST_CASE( "Node" )
         REQUIRE( err == DeserializationError::Ok );
 
         JsonVariant nodeJsonObj = doc.as<JsonVariant>();
-        Api* uut = uutFactory.create( nodeJsonObj,
-                                      pointDb,
-                                      nodeError );
-        
+        Api* uut = uutFactory.createFromJSON( nodeJsonObj,
+                                              pointDb,
+                                              nodeError );
+
         CPL_SYSTEM_TRACE_MSG( SECT_, ("node error=%s", nodeError.toText( buf )) );
         REQUIRE( uut );
         REQUIRE( uut->getErrorCode() == Fxt::Type::Error::SUCCESS() );
         uutFactory.destroy( *uut );
     }
 
-#if 0
     SECTION( "execute" )
     {
-        // Chassis thread and wait for it to start
-        Cpl::System::Thread* t1  = Cpl::System::Thread::create( chassisServer, "Chassis" );
-        for ( uint8_t i=0; i < 100; i++ )
-        {
-            Cpl::System::Api::sleep( 10 );
-            if ( chassisServer.isRunning() )
-            {
-                break;
-            }
-        }
-        REQUIRE( chassisServer.isRunning() );
-
         StaticJsonDocument<10240> doc;
-        DeserializationError err = deserializeJson( doc, CHASSIS_DEFINITION );
+        DeserializationError err = deserializeJson( doc, NODE_DEFINITION );
         CPL_SYSTEM_TRACE_MSG( SECT_, ("json error=%s", err.c_str()) );
         REQUIRE( err == DeserializationError::Ok );
 
-        JsonVariant chassisJsonObj = doc.as<JsonVariant>();
-        Api* uut = Chassis::createChassisfromJSON( chassisJsonObj,
-                                                   chassisServer,
-                                                   componentFactoryDb,
-                                                   cardFactoryDb,
-                                                   generalAllocator,
-                                                   cardStatefulAllocator,
-                                                   haStatefulAllocator,
-                                                   pointFactoryDb,
-                                                   pointDb,
-                                                   nodeError );
+        JsonVariant nodeJsonObj = doc.as<JsonVariant>();
+        Api* uut = uutFactory.createFromJSON( nodeJsonObj,
+                                              pointDb,
+                                              nodeError );
 
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("chassis error=%s", nodeError.toText( buf )) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("node error=%s", nodeError.toText( buf )) );
         REQUIRE( uut );
         REQUIRE( uut->getErrorCode() == Fxt::Type::Error::SUCCESS() );
-        REQUIRE( uut->getFER() == 1000 );
-        REQUIRE( uut->isStarted() == false);
-        
-        nodeError = uut->resolveReferences( pointDb );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("chassis error=%s", nodeError.toText( buf )) );
+
+        // Run at least one interval
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("Starting... node error=%s", nodeError.toText( buf )) );
+        uut->start( Fxt::System::ElapsedTime::now() );
+        Cpl::System::Api::sleep( 2500 );
+        REQUIRE( uut->isStarted() );
+        uut->stop();
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("Stop node error=%s", uut->getErrorCode().toText( buf )) );
         REQUIRE( uut->getErrorCode() == Fxt::Type::Error::SUCCESS() );
 
-        // AnalogCard: Verify Points are invalid
-        Fxt::Point::Float* floatPointPtr = (Fxt::Point::Float*) pointDb.lookupById( 1 ); 
+        // AnalogCard: Verify Point values
+        float floatPointVal = 0;
+        Fxt::Point::Float* floatPointPtr = (Fxt::Point::Float*) pointDb.lookupById( 1 );
         REQUIRE( floatPointPtr );
-        REQUIRE( floatPointPtr->isNotValid() );
-        floatPointPtr = (Fxt::Point::Float*) pointDb.lookupById( 3 );                   
+        REQUIRE( floatPointPtr->read( floatPointVal ) );
+        REQUIRE( Cpl::Math::areFloatsEqual( floatPointVal, 1.2F ) );
+        floatPointPtr = (Fxt::Point::Float*) pointDb.lookupById( 3 );
         REQUIRE( floatPointPtr );
-        REQUIRE( floatPointPtr->isNotValid() );
-        floatPointPtr = (Fxt::Point::Float*) pointDb.lookupById( 5 );                   
+        REQUIRE( floatPointPtr->read( floatPointVal ) );
+        REQUIRE( Cpl::Math::areFloatsEqual( floatPointVal, 3.5F ) );
+        floatPointPtr = (Fxt::Point::Float*) pointDb.lookupById( 5 );
         REQUIRE( floatPointPtr );
-        REQUIRE( floatPointPtr->isNotValid() );
+        REQUIRE( floatPointPtr->read( floatPointVal ) );
+        REQUIRE( Cpl::Math::areFloatsEqual( floatPointVal, 0.0F ) );
 
-        // Digital: Verify Points are invalid
-        Fxt::Point::Uint8* uint8PointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 9 );    
+        // Digital: Verify Point values
+        uint8_t uint8PointVal = 0;
+        Fxt::Point::Uint8* uint8PointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 9 );
         REQUIRE( uint8PointPtr );
-        REQUIRE( uint8PointPtr->isNotValid() );
-        uint8PointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 12 );                      
-        REQUIRE( uint8PointPtr );
-        REQUIRE( uint8PointPtr->isNotValid() );
+        REQUIRE( uint8PointPtr->read( uint8PointVal ) );
+        REQUIRE( uint8PointVal == 128 );
+        uint8PointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 12 );
+        REQUIRE( uint8PointPtr->isNotValid() );  // Nothing drives this output
 
-        // Shared Points: Verify Points are valid
+        // Shared Points: Verify Point values
         bool boolPointVal = false;
         Fxt::Point::Bool* boolPointPtr = (Fxt::Point::Bool*) pointDb.lookupById( 15 );
         REQUIRE( boolPointPtr );
         REQUIRE( boolPointPtr->read( boolPointVal ) );
         REQUIRE( boolPointVal == true );
-        boolPointPtr->write( false ); // Change so we can verify the start() re-initializes the pt
         boolPointPtr = (Fxt::Point::Bool*) pointDb.lookupById( 17 );
         REQUIRE( boolPointPtr );
         REQUIRE( boolPointPtr->read( boolPointVal ) );
         REQUIRE( boolPointVal == false );
-        boolPointPtr->write( true ); // Change so we can verify the start() re-initializes the pt
 
-
-        // Logic Chain Output: Verify Points are invalid
+        // Logic Chain Output: Verify Point values
         boolPointPtr = (Fxt::Point::Bool*) pointDb.lookupById( 23 );
         REQUIRE( boolPointPtr );
-        REQUIRE( boolPointPtr->isNotValid() );
+        REQUIRE( boolPointPtr->read( boolPointVal ) );
+        REQUIRE( boolPointVal == false );
 
-        // Logic Chain Auto Pt: Verify Points are valid
+        // Logic Chain Auto Pt: Verify Point values
         boolPointPtr = (Fxt::Point::Bool*) pointDb.lookupById( 21 );
         REQUIRE( boolPointPtr );
         REQUIRE( boolPointPtr->read( boolPointVal ) );
         REQUIRE( boolPointVal == true );
-        boolPointPtr->write( false ); // Change so we can verify the start() re-initializes the pt
+
+        //
+        // Restart the NODE
+        //
+        floatPointPtr = (Fxt::Point::Float*) pointDb.lookupById( 1 );
+        floatPointPtr->setInvalid();
+        floatPointPtr = (Fxt::Point::Float*) pointDb.lookupById( 3 );
+        floatPointPtr->setInvalid();
+        floatPointPtr = (Fxt::Point::Float*) pointDb.lookupById( 5 );
+        floatPointPtr->setInvalid();
+        uint8PointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 9 );
+        uint8PointPtr->setInvalid();
+        uint8PointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 12 );
+        uint8PointPtr->setInvalid();
+        boolPointPtr = (Fxt::Point::Bool*) pointDb.lookupById( 15 );
+        boolPointPtr->setInvalid();
+        boolPointPtr = (Fxt::Point::Bool*) pointDb.lookupById( 17 );
+        boolPointPtr->setInvalid();
+        boolPointPtr = (Fxt::Point::Bool*) pointDb.lookupById( 23 );
+        boolPointPtr->setInvalid();
+
+        // Logic Chain Auto Pt: Verify Point values
+        boolPointPtr = (Fxt::Point::Bool*) pointDb.lookupById( 21 );
 
         // Run at least one interval
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("Starting... chassis error=%s", nodeError.toText( buf )) );
-        REQUIRE( uut->getErrorCode() == Fxt::Type::Error::SUCCESS() );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("Starting (again)... node error=%s", nodeError.toText( buf )) );
         uut->start( Fxt::System::ElapsedTime::now() );
         Cpl::System::Api::sleep( 2500 );
+        REQUIRE( uut->isStarted() );
         uut->stop();
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("Stop chassis error=%s", uut->getErrorCode().toText( buf )) );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("Stop node error=%s", uut->getErrorCode().toText( buf )) );
         REQUIRE( uut->getErrorCode() == Fxt::Type::Error::SUCCESS() );
 
         // AnalogCard: Verify Point values
-        float floatPointVal = 0;
-        floatPointPtr = (Fxt::Point::Float*) pointDb.lookupById( 1 ); 
+        floatPointVal = 0;
+        floatPointPtr = (Fxt::Point::Float*) pointDb.lookupById( 1 );
         REQUIRE( floatPointPtr );
         REQUIRE( floatPointPtr->read( floatPointVal ) );
         REQUIRE( Cpl::Math::areFloatsEqual( floatPointVal, 1.2F ) );
-        floatPointPtr = (Fxt::Point::Float*) pointDb.lookupById( 3 );                   
+        floatPointPtr = (Fxt::Point::Float*) pointDb.lookupById( 3 );
         REQUIRE( floatPointPtr );
         REQUIRE( floatPointPtr->read( floatPointVal ) );
         REQUIRE( Cpl::Math::areFloatsEqual( floatPointVal, 3.5F ) );
-        floatPointPtr = (Fxt::Point::Float*) pointDb.lookupById( 5 );                   
+        floatPointPtr = (Fxt::Point::Float*) pointDb.lookupById( 5 );
         REQUIRE( floatPointPtr );
         REQUIRE( floatPointPtr->read( floatPointVal ) );
         REQUIRE( Cpl::Math::areFloatsEqual( floatPointVal, 0.0F ) );
-     
+
         // Digital: Verify Point values
-        uint8_t uint8PointVal = 0;
         uint8PointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 9 );
         REQUIRE( uint8PointPtr );
         REQUIRE( uint8PointPtr->read( uint8PointVal ) );
@@ -423,17 +433,7 @@ TEST_CASE( "Node" )
         REQUIRE( boolPointPtr );
         REQUIRE( boolPointPtr->read( boolPointVal ) );
         REQUIRE( boolPointVal == true );
-
-
-        // Shutdown threads
-        uut->~Api();
-        chassisServer.pleaseStop();
-        Cpl::System::Api::sleep( 300 ); // allow time for threads to stop
-        REQUIRE( t1->isRunning() == false );
-        Cpl::System::Thread::destroy( *t1 );
-        Cpl::System::Api::sleep( 300 ); // allow time for threads to stop
     }
-#endif
 
     REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );
 }

@@ -80,12 +80,10 @@ public:
         successful then Fxt::Type::Err_T::SUCCESS is returned; else and error
         code is returned.
 
-        Note: The thread associated with 'runnableObjToAdd' is assumed to be
-              created using the Cpl::System::Thread::create() method. And
-              the Node will destroy the thread when the Node is deleted.
+        Note: Node will destroy the thread when the Node is deleted.
      */
-    virtual Fxt::Type::Error add( Fxt::Chassis::Api&     chassisToAdd,
-                                  Cpl::System::Thread&   chassisThreadToAdd ) noexcept = 0;
+    virtual Fxt::Type::Error add( Fxt::Chassis::Api&       chassisToAdd,
+                                  Cpl::System::Thread&     chassisThreadToAdd ) noexcept = 0;
 
 public:
     /** This method returns the current error state of the Chassis.  A value
@@ -95,10 +93,11 @@ public:
     virtual Fxt::Type::Error getErrorCode() const noexcept = 0;
 
 public:
-    /** This method creates a thread (and is associated runnable object)
-        for the Chassis to execute in. When successful a pointer to the 
-        Thread object is returned; else nullptr is returned.  When an error 
-        occurs - the details are returned view 'errorCode'
+    /** This method creates a Chassis server (aka runnable object) and the 
+        thread that the Chassis to execute in. When successful a pointer to the 
+        Chassis Server's Open/Close interface is returned; else nullptr is 
+        returned.  When an error occurs - the details are returned view 
+        'errorCode'
 
         A pointer to the Chassis' ServerApi instance is returned via
         'serverApi' argument.  If the method fails than 'serverApi'

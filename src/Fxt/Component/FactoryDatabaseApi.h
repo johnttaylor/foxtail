@@ -14,6 +14,7 @@
 
 #include "Fxt/Component/Api.h"
 #include "Fxt/Component/FactoryApi.h"
+#include "Cpl/Container/SList.h"
 
 
 ///
@@ -30,7 +31,7 @@ namespace Component {
 
     The semantics of the Database interface is NOT thread safe.
  */
-class FactoryDatabaseApi
+class FactoryDatabaseApi: public Cpl::Container::SList<FactoryApi>
 {
 public:
     /** This method attempts to parse the provided JSON Object that represents
@@ -67,38 +68,20 @@ public:
      */
     virtual FactoryApi* lookup( const char* guidComponentTypeId ) noexcept = 0;
 
-    /** This method returns a pointer to the first Component Factory in the
-        Database. If there are no Component Factories in the Database, THEN the
-        method returns 0.
+
+protected:
+    /// Constructor
+    FactoryDatabaseApi() : Cpl::Container::SList<FactoryApi>() {}
+
+    /** This is a special constructor for when the Database is
+        statically declared (i.e. it is initialized as part of C++ startup
+        BEFORE main() is executed.  C/C++ does NOT guarantee the order of static
+        initializers.  Since the Database contains a list of IO Card factory
+        that are typically statically created/initialized - we need to do
+        something to ensure my internal list is properly initialized for this
+        scenario - hence this constructor.
      */
-    virtual FactoryApi* first() noexcept = 0;
-
-    /** This method returns the next Component Factory in the Database. If
-        'currentFactory' is the last Component Factory in the Database the method
-        returns 0.
-     */
-    virtual FactoryApi* next( FactoryApi& currentFactory ) noexcept = 0;
-
-
-public:
-    /** This method has 'PACKAGE Scope' in that is should only be called by
-        other classes in the Fxt::Component namespace.  It is ONLY public to avoid
-        the tight coupling of C++ friend mechanism.
-        
-        NOTE: There is NO checks/protection against adding two factories with
-              the same Component GUID
-
-        This method inserts a Component Factory instance into the Database.
-     */
-    virtual void insert_( FactoryApi& componentFactoryToAdd ) noexcept = 0;
-
-    /** This method has 'PACKAGE Scope' in that is should only be called by
-        other classes in the Fxt::Component namespace.  It is ONLY public to avoid
-        the tight coupling of C++ friend mechanism.
-
-        This method removes a Component factory from the Database.
-     */
-    virtual void remove_( FactoryApi& componentFactoryToRemove ) noexcept = 0;
+    FactoryDatabaseApi( const char* ignoreThisParameter_usedToCreateAUniqueConstructor ) : Cpl::Container::SList<FactoryApi>( ignoreThisParameter_usedToCreateAUniqueConstructor ) {}
 
 public:
     /// Virtual destructor to make the compiler happy

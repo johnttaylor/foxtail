@@ -11,6 +11,7 @@
 /** @file */
 
 
+#include "colony_config.h"
 #include "Common_.h"
 #include "Error.h"
 #include "FactoryApi.h"
@@ -18,6 +19,13 @@
 #include "Cpl/System/Thread.h"
 #include "Cpl/System/Api.h"
 #include <new>
+
+#ifndef OPTION_FXT_NODE_WAIT_THREAD_MAX_LOOP_ITERATIONS
+#define OPTION_FXT_NODE_WAIT_THREAD_MAX_LOOP_ITERATIONS 100
+#endif
+#ifndef OPTION_FXT_NODE_WAIT_THREAD_WAIT_TIME_MS
+#define OPTION_FXT_NODE_WAIT_THREAD_WAIT_TIME_MS        1
+#endif
 
 // Note: The LeanHeap expect memory to aligned to size_t -->hence the extra macros to help with the allocation/sizing
 #define BYTES_AS_SIZET(n)       (((n)+sizeof(size_t)-1)/ sizeof(size_t))
@@ -28,18 +36,21 @@ using namespace Fxt::Node;
 
 
 //////////////////////////////////////////////////
-Common_::Common_( uint8_t numChassis,
-                  size_t  sizeGeneralHeap,
-                  size_t  sizeCardStatefulHeap,
-                  size_t  sizeHaStatefulHeap )
-    : m_generalAllocator( new size_t[BYTES_AS_SIZET( sizeGeneralHeap )], SIZET_TO_BYTES(BYTES_AS_SIZET( sizeGeneralHeap )) )
-    , m_cardStatefulAllocator( new size_t[BYTES_AS_SIZET( sizeCardStatefulHeap )], SIZET_TO_BYTES(BYTES_AS_SIZET( sizeCardStatefulHeap )) )
-    , m_haStatefulAllocator( new size_t[BYTES_AS_SIZET( sizeHaStatefulHeap )], SIZET_TO_BYTES(BYTES_AS_SIZET( sizeHaStatefulHeap )) )
+Common_::Common_( uint8_t                  numChassis,
+                  Fxt::Point::DatabaseApi& pointDb,
+                  size_t                   sizeGeneralHeap,
+                  size_t                   sizeCardStatefulHeap,
+                  size_t                   sizeHaStatefulHeap )
+    : m_generalAllocator( new size_t[BYTES_AS_SIZET( sizeGeneralHeap )], SIZET_TO_BYTES( BYTES_AS_SIZET( sizeGeneralHeap ) ) )
+    , m_cardStatefulAllocator( new size_t[BYTES_AS_SIZET( sizeCardStatefulHeap )], SIZET_TO_BYTES( BYTES_AS_SIZET( sizeCardStatefulHeap ) ) )
+    , m_haStatefulAllocator( new size_t[BYTES_AS_SIZET( sizeHaStatefulHeap )], SIZET_TO_BYTES( BYTES_AS_SIZET( sizeHaStatefulHeap ) ) )
+    , m_pointDb( pointDb )
     , m_chassis( nullptr )
     , m_error( Fxt::Type::Error::SUCCESS() )
     , m_numChassis( numChassis )
     , m_nextChassisIdx( 0 )
     , m_started( false )
+    , m_pointReferencesResolved( false )
 {
     // Check if heap allocations worked
     size_t dummy;
@@ -77,18 +88,17 @@ Common_::~Common_()
     // Call the destructors on all of the Chassis
     for ( uint8_t i=0; i < m_numChassis; i++ )
     {
-        // Destroy the Chassis instance
-        if ( m_chassis[i].chassis )
-        {
-            m_chassis[i].chassis->~Api();
-        }
-
         // Destroy the Chassis's thread instance
         if ( m_chassis[i].thread )
         {
             destroyChassisThread( *m_chassis[i].thread );
         }
 
+        // Destroy the Chassis instance
+        if ( m_chassis[i].chassis )
+        {
+            m_chassis[i].chassis->~Api();
+        }
     }
 
     // Free my local heaps
@@ -120,25 +130,45 @@ bool Common_::start( uint64_t currentElapsedTimeUsec ) noexcept
     // Do nothing if already started
     if ( !m_started && m_error == Fxt::Type::Error::SUCCESS() )
     {
-        // Start the individual Scanners (and additional error checking)
+        // Resolve Point references (but only once)
+        if ( !m_pointReferencesResolved )
+        {
+            m_pointReferencesResolved = true;
+
+            for ( uint8_t i=0; i < m_numChassis; i++ )
+            {
+                // Check that all cards got created
+                if ( m_chassis[i].chassis == nullptr )
+                {
+                    m_error = fullErr( Err_T::MISSING_CHASSIS );
+                    return false;
+                }
+
+                // Resolve point references
+                m_error = m_chassis[i].chassis->resolveReferences( m_pointDb );
+                if ( m_error != Fxt::Type::Error::SUCCESS() )
+                {
+                    return false;
+                }
+            }
+        }
+
+        // Start the individual chassis (and additional error checking)
         for ( uint8_t i=0; i < m_numChassis; i++ )
         {
-            // Check that all cards got created
-            if ( m_chassis[i].chassis == nullptr )
-            {
-                m_error = fullErr( Err_T::MISSING_CHASSIS );
-                return false;
-            }
-
+            // NOTE: Execution of the chassis will begin here
             if ( m_chassis[i].chassis->start( currentElapsedTimeUsec ) == false )
             {
                 m_error = fullErr( Err_T::CHASSIS_FAILED_START );
                 return false;
             }
         }
+
+        m_started = true;
+        return true;
     }
 
-    return true;
+    return false;
 }
 
 void Common_::stop() noexcept
@@ -146,10 +176,9 @@ void Common_::stop() noexcept
     // Only stop if I have been started
     if ( m_started )
     {
-        // Stop the Chassis
         for ( uint8_t i=0; i < m_numChassis; i++ )
         {
-            // Check for valid pointer (when stopping when there was a create error)
+            // Stop chassis instances
             if ( m_chassis[i].chassis )
             {
                 m_chassis[i].chassis->stop();
@@ -170,29 +199,27 @@ Fxt::Type::Error Common_::getErrorCode() const noexcept
     return m_error;
 }
 
-void Common_::destroyChassisThread( Cpl::System::Thread& chassisThreadToDelete ) noexcept
+void Common_::destroyChassisThread( Cpl::System::Thread & chassisThreadToDelete ) noexcept
 {
     Cpl::System::Thread::destroy( chassisThreadToDelete );
 }
 
-bool Common_::waitForThreadToRun( Cpl::System::Runnable& threadsRunnable )
+bool Common_::waitForThreadToRun( Cpl::System::Runnable & runnable )
 {
-    // Chassis thread and wait for it to start
-    for ( uint8_t i=0; i < 100; i++ )
+    for ( uint8_t i=0; i < OPTION_FXT_NODE_WAIT_THREAD_MAX_LOOP_ITERATIONS; i++ )
     {
-        Cpl::System::Api::sleep( 2 );
-        if ( threadsRunnable.isRunning() )
+        Cpl::System::Api::sleep( OPTION_FXT_NODE_WAIT_THREAD_WAIT_TIME_MS );
+        if ( runnable.isRunning() )
         {
             return true;
         }
     }
-
     return false;
 }
 
 //////////////////////////////////////////////////
-Fxt::Type::Error Common_::add( Fxt::Chassis::Api&     chassisToAdd,
-                               Cpl::System::Thread&   chassisThreadToAdd ) noexcept
+Fxt::Type::Error Common_::add( Fxt::Chassis::Api&       chassisToAdd,
+                               Cpl::System::Thread&     chassisThreadToAdd ) noexcept
 {
     if ( m_error == Fxt::Type::Error::SUCCESS() )
     {

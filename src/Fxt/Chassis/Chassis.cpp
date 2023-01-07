@@ -214,9 +214,10 @@ bool Chassis::start( uint64_t currentElapsedTimeUsec ) noexcept
         ChassisPeriods_T periodsInfo ={ m_inputPeriods, m_executionPeriods, m_outputPeriods };
         m_server.open( &periodsInfo );
         m_started = true;
+        return true;
     }
 
-    return true;
+    return false;
 }
 
 void Chassis::stop() noexcept

@@ -15,7 +15,6 @@
 
 #include "Fxt/Node/Api.h"
 #include "Cpl/Memory/LeanHeap.h"
-#include "Cpl/System/Thread.h"
 
 ///
 namespace Fxt {
@@ -32,43 +31,44 @@ protected:
     /// Struct to associate a Chassis instance with its Thread
     struct Chassis_T
     {
-        Fxt::Chassis::Api*    chassis;      //!< Chassis pointer
-        Cpl::System::Thread*  thread;       //!< The chassis' thread
+        Fxt::Chassis::Api*          chassis;      //!< Chassis pointer
+        Cpl::System::Thread*        thread;       //!< Chassis thread pointer
     };
 
 protected:
     /// Constructor.  
-    Common_( uint8_t numChassis,
-             size_t  sizeGeneralHeap,
-             size_t  sizeCardStatefulHeap,
-             size_t  sizeHaStatefulHeap );
-    
+    Common_( uint8_t                  numChassis,
+             Fxt::Point::DatabaseApi& pointDb,
+             size_t                   sizeGeneralHeap,
+             size_t                   sizeCardStatefulHeap,
+             size_t                   sizeHaStatefulHeap );
+
     /// Destructor
     ~Common_();
 
 public:
     /// See Fxt::Node::Api
     bool start( uint64_t currentElapsedTimeUsec ) noexcept;
-    
+
     /// See Fxt::Node::Api
     void stop() noexcept;
-    
+
     /// See Fxt::Node::Api
     bool isStarted() const noexcept;
 
     /// See Fxt::Node::Api
-    Fxt::Type::Error add( Fxt::Chassis::Api&     chassisToAdd,
-                          Cpl::System::Thread&   chassisThreadToAdd ) noexcept;
+    Fxt::Type::Error add( Fxt::Chassis::Api&       chassisToAdd,
+                          Cpl::System::Thread&     chassisThreadToAdd ) noexcept;
 
     /// See Fxt::Node::Api
     Fxt::Type::Error getErrorCode() const noexcept;
 
     /// See Fxt::Node::Api
     Cpl::Memory::ContiguousAllocator& getGeneralAlloactor() noexcept;
-    
+
     /// See Fxt::Node::Api
     Cpl::Memory::ContiguousAllocator& getCardStatefulAlloactor() noexcept;
-    
+
     /// See Fxt::Node::Api
     Cpl::Memory::ContiguousAllocator& getHaStatefulAlloactor() noexcept;
 
@@ -76,7 +76,7 @@ public:
     void destroyChassisThread( Cpl::System::Thread& chassisThreadToDelete ) noexcept;
 
 protected:
-    /// Helper function that waits for a Chassis thread to spin up
+    /// Helper function that waits (but not forever) for a Chassis thread to spin up.  Returns true if the thread is running when done waiting
     bool waitForThreadToRun( Cpl::System::Runnable& runnable );
 
 protected:
@@ -88,6 +88,9 @@ protected:
 
     /// Allocator|Heap: HA Stateful data 
     Cpl::Memory::LeanHeap               m_haStatefulAllocator;
+
+    /// Point Database
+    Fxt::Point::DatabaseApi&            m_pointDb;
 
     /// Array/List of Chassis
     Chassis_T*                          m_chassis;
@@ -103,6 +106,9 @@ protected:
 
     /// My started state
     bool                                m_started;
+
+    /// Track if Point references have been resolved
+    bool                                m_pointReferencesResolved;
 };
 
 

@@ -42,6 +42,7 @@ public:
 public:
     /// See Fxt::Node::FactoryCommon_
     Api* createNode( uint8_t                    numChassis,
+                     Fxt::Point::DatabaseApi&   pointDb,
                      JsonVariant                nodeJsonObject,
                      Fxt::Type::Error&          nodeErrorCode ) noexcept;
 

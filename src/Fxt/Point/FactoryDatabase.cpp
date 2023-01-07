@@ -20,12 +20,12 @@ using namespace Fxt::Point;
 
 ///////////////////////////////////////////////////////////////////////////////
 FactoryDatabase::FactoryDatabase() noexcept
-    : m_factories()
+    : FactoryDatabaseApi()
 {
 }
 
 FactoryDatabase::FactoryDatabase( const char* ignoreThisParameter_usedToCreateAUniqueConstructor ) noexcept
-    : m_factories( ignoreThisParameter_usedToCreateAUniqueConstructor )
+    : FactoryDatabaseApi( ignoreThisParameter_usedToCreateAUniqueConstructor )
 {
 }
 
@@ -62,37 +62,17 @@ FactoryApi* FactoryDatabase::lookup( const char* guidPointTypeId ) noexcept
 {
     if ( guidPointTypeId )
     {
-        FactoryApi* item  = m_factories.first();
+        FactoryApi* item  = first();
         while ( item )
         {
             if ( strcmp( item->getGuid(), guidPointTypeId ) == 0 )
             {
                 return item;
             }
-            item = m_factories.next( *item );
+            item = next( *item );
         }
     }
 
     return nullptr;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-FactoryApi* FactoryDatabase::first() noexcept
-{
-    return m_factories.first();
-}
-
-FactoryApi* FactoryDatabase::next( FactoryApi& currentFactory ) noexcept
-{
-    return m_factories.next( currentFactory );
-}
-
-void FactoryDatabase::insert_( FactoryApi& pointFactoryToAdd ) noexcept
-{
-    m_factories.put( pointFactoryToAdd );
-}
-
-void FactoryDatabase::remove_( FactoryApi& pointFactoryToRemove ) noexcept
-{
-    m_factories.remove( pointFactoryToRemove );
-}

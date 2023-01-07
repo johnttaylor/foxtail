@@ -37,18 +37,20 @@ Factory::Factory( size_t                              sizeGeneralHeap,
                   size_t                              sizeHaStatefulHeap,
                   Cpl::System::SharedEventHandlerApi* eventHandler )
     : FactoryCommon_()
+    , m_eventHandler( eventHandler )
     , m_sizeGeneralHeap( sizeGeneralHeap )
     , m_sizeCardStatefulHeap( sizeCardStatefulHeap )
     , m_sizeHaStatefulHeap( sizeHaStatefulHeap )
-    , m_eventHandler( eventHandler )
 {
 }
 
 Fxt::Node::Api* Factory::createNode( uint8_t                    numChassis,
+                                     Fxt::Point::DatabaseApi&   pointDb,
                                      JsonVariant                nodeJsonObject,
                                      Fxt::Type::Error&          nodeErrorCode ) noexcept
 {
-    Api* node = new (std::nothrow) Node( m_sizeGeneralHeap,
+    Api* node = new (std::nothrow) Node( pointDb,
+                                         m_sizeGeneralHeap,
                                          m_sizeCardStatefulHeap,
                                          m_sizeHaStatefulHeap,
                                          m_eventHandler );

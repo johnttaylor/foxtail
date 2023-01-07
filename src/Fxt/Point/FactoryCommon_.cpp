@@ -25,7 +25,7 @@ using namespace Fxt::Point;
 FactoryCommon_::FactoryCommon_( FactoryDatabaseApi& factoryDatabase )
 {
     // Auto register with factory database
-    factoryDatabase.insert_( *this );
+    factoryDatabase.put( *this );
 }
 
 Api* FactoryCommon_::create( JsonObject&                        pointObject,

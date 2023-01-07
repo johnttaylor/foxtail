@@ -68,11 +68,12 @@ public:
 
 public:
     /// Constructor
-    Node( size_t                              sizeGeneralHeap,
+    Node( Fxt::Point::DatabaseApi&            pointDb,
+          size_t                              sizeGeneralHeap,
           size_t                              sizeCardStatefulHeap,
           size_t                              sizeHaStatefulHeap,
           Cpl::System::SharedEventHandlerApi* eventHandler = nullptr)
-        : Common_( MAX_ALLOWED_CHASSIS, sizeGeneralHeap, sizeCardStatefulHeap, sizeHaStatefulHeap )
+        : Common_( MAX_ALLOWED_CHASSIS, pointDb, sizeGeneralHeap, sizeCardStatefulHeap, sizeHaStatefulHeap )
         , m_eventHandler( eventHandler )
     {
     }

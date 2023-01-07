@@ -20,7 +20,7 @@ using namespace Fxt::Card;
 FactoryCommon_::FactoryCommon_( FactoryDatabaseApi& factoryDatabase )
 {
     // Auto register with factory database
-    factoryDatabase.insert_( *this );
+    factoryDatabase.put( *this );
 }
 
 FactoryCommon_::~FactoryCommon_()

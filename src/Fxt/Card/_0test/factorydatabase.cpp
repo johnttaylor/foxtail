@@ -56,7 +56,7 @@ TEST_CASE( "FactoryDatabase" )
 
         REQUIRE( uut.lookup( "00d33888-62c7-45b2-a4d4-9dbc55914ed3" ) == nullptr );
 
-        uut.remove_( factory1 );
+        uut.remove( factory1 );
         REQUIRE( uut.first() == &factory2 );
         REQUIRE( uut.next( factory2 ) == nullptr );
         REQUIRE( uut.lookup( Fxt::Card::Mock::Digital8::GUID_STRING ) == &factory2 );

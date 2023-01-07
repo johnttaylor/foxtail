@@ -14,7 +14,6 @@
 
 
 #include "Fxt/Point/FactoryDatabaseApi.h"
-#include "Cpl/Container/SList.h"
 
 ///
 namespace Fxt {
@@ -47,12 +46,6 @@ public:
     /// See Fxt::Point::FactoryDatabaseApi
     FactoryApi* lookup( const char* guidPointTypeId ) noexcept;
 
-    /// See Fxt::Point::FactoryDatabaseApi
-    FactoryApi* first() noexcept;
-
-    /// See Fxt::Point::FactoryDatabaseApi
-    FactoryApi* next( FactoryApi& currentFactory ) noexcept;
-
 public:
     /// See Fxt::Point::FactoryDatabaseApi
     Api* createPointfromJSON( JsonObject&                        pointObject,
@@ -63,12 +56,6 @@ public:
                               const char*                        pointIdKeyName = "id",
                               bool                               createSetter   = true ) noexcept;
 
-public:
-    /// See Fxt::Point::FactoryDatabaseApi
-    void insert_( FactoryApi& cardFactoryToAdd ) noexcept;
-
-    /// See Fxt::Point::FactoryDatabaseApi
-    void remove_( FactoryApi& cardFactoryToRemove ) noexcept;
 
 private:
     /// Prevent access to the copy constructor -->Databases can not be copied!
@@ -76,11 +63,6 @@ private:
 
     /// Prevent access to the assignment operator -->Databases can not be copied!
     const FactoryDatabase& operator=( const FactoryDatabaseApi& m );
-
-
-protected:
-    /// List of supported Point Factories
-    Cpl::Container::SList<FactoryApi>   m_factories;
 };
 
 

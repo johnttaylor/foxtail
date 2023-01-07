@@ -20,7 +20,7 @@ using namespace Fxt::Component;
 FactoryCommon_::FactoryCommon_( Fxt::Component::FactoryDatabaseApi& factoryDb )
 {
     // Auto register the component factory
-    factoryDb.insert_( *this );
+    factoryDb.put( *this );
 }
 
 FactoryCommon_::~FactoryCommon_()

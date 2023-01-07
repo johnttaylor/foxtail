@@ -20,12 +20,12 @@ using namespace Fxt::Component;
 
 ///////////////////////////////////////////////////////////////////////////////
 FactoryDatabase::FactoryDatabase() noexcept
-    : m_factories()
+    : FactoryDatabaseApi()
 {
 }
 
 FactoryDatabase::FactoryDatabase( const char* ignoreThisParameter_usedToCreateAUniqueConstructor ) noexcept
-    : m_factories( ignoreThisParameter_usedToCreateAUniqueConstructor )
+    : FactoryDatabaseApi( ignoreThisParameter_usedToCreateAUniqueConstructor )
 {
 }
 
@@ -65,37 +65,17 @@ FactoryApi* FactoryDatabase::lookup( const char* guidCardTypeId ) noexcept
 {
     if ( guidCardTypeId )
     {
-        FactoryApi* item  = m_factories.first();
+        FactoryApi* item  = first();
         while ( item )
         {
             if ( strcmp( item->getGuid(), guidCardTypeId ) == 0 )
             {
                 return item;
             }
-            item = m_factories.next( *item );
+            item = next( *item );
         }
     }
 
     return nullptr;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-FactoryApi* FactoryDatabase::first() noexcept
-{
-    return m_factories.first();
-}
-
-FactoryApi* FactoryDatabase::next( FactoryApi& currentFactory ) noexcept
-{
-    return m_factories.next( currentFactory );
-}
-
-void FactoryDatabase::insert_( FactoryApi& componentFactoryToAdd ) noexcept
-{
-    m_factories.put( componentFactoryToAdd );
-}
-
-void FactoryDatabase::remove_( FactoryApi& componentFactoryToRemove ) noexcept
-{
-    m_factories.remove( componentFactoryToRemove );
-}

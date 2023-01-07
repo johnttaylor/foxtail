@@ -19,9 +19,9 @@
 ///
 using namespace Fxt::Node;
 
-Fxt::Point::FactoryDatabase         Fxt::Node::FactoryCommon_::g_pointFactoryDb;
-Fxt::Card::FactoryDatabase          Fxt::Node::FactoryCommon_::g_cardFactoryDb;
-Fxt::Component::FactoryDatabase     Fxt::Node::FactoryCommon_::g_componentFactoryDb;
+Fxt::Point::FactoryDatabase         Fxt::Node::FactoryCommon_::g_pointFactoryDb("ignoreMe-invoke-staticConstructor");
+Fxt::Card::FactoryDatabase          Fxt::Node::FactoryCommon_::g_cardFactoryDb( "ignoreMe-invoke-staticConstructor" );
+Fxt::Component::FactoryDatabase     Fxt::Node::FactoryCommon_::g_componentFactoryDb( "ignoreMe-invoke-staticConstructor" );
 
 /////////////////////////////////
 FactoryCommon_::FactoryCommon_()
@@ -40,9 +40,9 @@ void FactoryCommon_::destroy( Api& nodeToDestroy ) noexcept
     delete &nodeToDestroy;
 }
 
-Api* FactoryCommon_::create( JsonVariant              nodeJsonObject,
-                             Fxt::Point::DatabaseApi& dbForPoints,
-                             Fxt::Type::Error&        nodeErrorCode ) noexcept
+Api* FactoryCommon_::createFromJSON( JsonVariant              nodeJsonObject,
+                                     Fxt::Point::DatabaseApi& dbForPoints,
+                                     Fxt::Type::Error&        nodeErrorCode ) noexcept
 {
     // Get the chassis Array
     JsonArray chassisArray = nodeJsonObject["chassis"];
@@ -67,7 +67,7 @@ Api* FactoryCommon_::create( JsonVariant              nodeJsonObject,
     }
 
     // Create Node instance
-    Api* node = createNode( numChassis, nodeJsonObject, nodeErrorCode );
+    Api* node = createNode( numChassis, dbForPoints, nodeJsonObject, nodeErrorCode );
     if ( node == nullptr )
     {
         nodeErrorCode = fullErr( Err_T::NO_MEMORY_NODE );

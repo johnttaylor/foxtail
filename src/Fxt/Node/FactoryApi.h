@@ -58,23 +58,23 @@ public:
       */
     virtual void destroy( Fxt::Node::Api& nodeToDestroy ) noexcept = 0;
 
-    /** This method creates a Node. The concrete type of the Node is 
-        dependent on the concrete Factory that is ultimately invoked to create 
+    /** This method creates a Node. The concrete type of the Node is
+        dependent on the concrete Factory that is ultimately invoked to create
         the Node.
 
-        The method returns a pointer to the created Node when successful; else 
+        The method returns a pointer to the created Node when successful; else
         if an error occurred (e.g. out-of-memory) nullptr is returned.
-        When an error occurs, the 'nodeErrorode' argument is updated with 
+        When an error occurs, the 'nodeErrorode' argument is updated with
         details of the error.
       */
-    virtual Api* create( JsonVariant              nodeJsonObject,
-                         Fxt::Point::DatabaseApi& dbForPoints,
-                         Fxt::Type::Error&        nodeErrorode ) noexcept = 0;
+    virtual Api* createFromJSON( JsonVariant              nodeJsonObject,
+                                 Fxt::Point::DatabaseApi& dbForPoints,
+                                 Fxt::Type::Error&        nodeErrorode ) noexcept = 0;
 
 
 
 public:
-    /** This method returns the GUID for the type of Node that the factory 
+    /** This method returns the GUID for the type of Node that the factory
         is able to create.  The return value is a null terminated string with
         a 8-4-4-4-12 formatted GUID.
      */
@@ -82,7 +82,7 @@ public:
 
     /// Returns the node's 'human readable' type name (note: this is NOT guaranteed to be unique)
     virtual const char* getTypeName() const noexcept = 0;
-    
+
     /** This method return the maximum chassis the Node supports
      */
     virtual uint8_t getMaxAllowedChassis() const noexcept = 0;

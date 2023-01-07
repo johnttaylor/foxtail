@@ -39,15 +39,16 @@ public:
     void destroy( Api& nodeToDestroy ) noexcept;
 
     /// See Fxt::Node::FactoryApi
-    Api* create( JsonVariant              nodeJsonObject,
-                 Fxt::Point::DatabaseApi& dbForPoints,
-                 Fxt::Type::Error&        nodeErrorode ) noexcept;
+    Api* createFromJSON( JsonVariant              nodeJsonObject,
+                         Fxt::Point::DatabaseApi& dbForPoints,
+                         Fxt::Type::Error&        nodeErrorode ) noexcept;
 
 protected:
     /// Helper method that perform the Node specific create.  Assumes the new(std::nothrow) is used to allocate the Node instance
-    virtual Api* createNode( uint8_t            numChassis,
-                             JsonVariant        nodeJsonObject,
-                             Fxt::Type::Error&  nodeErrorCode ) noexcept = 0;
+    virtual Api* createNode( uint8_t                    numChassis,
+                             Fxt::Point::DatabaseApi&   pointDb,
+                             JsonVariant                nodeJsonObject,
+                             Fxt::Type::Error&          nodeErrorCode ) noexcept = 0;
 
 public:
     // NOTE: The following members are made public to facilitate accessing the factory databases
