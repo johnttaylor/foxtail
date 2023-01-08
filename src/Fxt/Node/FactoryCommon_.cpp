@@ -34,10 +34,19 @@ FactoryCommon_::~FactoryCommon_()
     // Nothing needed yet...
 }
 
+//////////////////////////////////////////////////
+static Api* theOne_;
+
+Api* Api::getNode() noexcept
+{
+    return theOne_;
+}
+
 /////////////////////////////////
 void FactoryCommon_::destroy( Api& nodeToDestroy ) noexcept
 {
     delete &nodeToDestroy;
+    theOne_ = nullptr;
 }
 
 Api* FactoryCommon_::createFromJSON( JsonVariant              nodeJsonObject,
@@ -129,6 +138,7 @@ Api* FactoryCommon_::createFromJSON( JsonVariant              nodeJsonObject,
 
 
     // If I get here -->everything worked
+    theOne_ = node;
     return node;
 }
 

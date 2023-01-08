@@ -174,6 +174,11 @@ TEST_CASE( "LogicChain" )
         CPL_SYSTEM_TRACE_MSG( SECT_, ("lc error=%s", logicChainError.toText( buf )) );
         REQUIRE( uut );
         REQUIRE( uut->getErrorCode() == Fxt::Type::Error::SUCCESS() );
+
+        REQUIRE( uut->getNumComponents() == 2 );
+        REQUIRE( uut->getComponent( 0 ) );
+        REQUIRE( uut->getComponent( 1 ) );
+        REQUIRE( uut->getComponent( 2 ) == nullptr );
     }
 
     SECTION( "execute" )

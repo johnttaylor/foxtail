@@ -41,7 +41,7 @@ namespace Card {
           "id":             <ID.  Must be unique. Range: 0-64K (note: NOT used by the firmware)>,
           "type":           "<Card's Type GUID: 8-4-4-4-12 format>",
           "typeName":       "*<OPTIONAL: human readable card type>",
-          "slot":           <chasis slot number. Range: 0-255>,
+          "slot":           <chassis slot number. Range: 0-255>,
           "points": {
              "<groupingName>": [ // Array of points with the same Fxt::Point type, e.g "analogInputs", "digitalOutputs", etc.
                {

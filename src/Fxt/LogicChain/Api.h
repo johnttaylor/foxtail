@@ -161,6 +161,16 @@ public:
     virtual Fxt::Type::Error getErrorCode() const noexcept = 0;
 
 
+public:
+    /** Returns the total number of Component instances. If the Logic Chain is in an
+        error state, then zero is returned;
+     */
+    virtual uint16_t getNumComponents() const noexcept = 0;
+
+    /** Returns a pointer to the specified Component.  If not a valid index or
+        the Logic Chain is in an error state, then nullptr is returned.
+     */
+    virtual Fxt::Component::Api* getComponent( uint16_t componentIndex ) noexcept = 0;
 
 public:
     /** This method attempts to parse the provided JSON Object that represents

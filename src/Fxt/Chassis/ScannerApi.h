@@ -104,6 +104,18 @@ public:
     virtual Fxt::Type::Error add( Fxt::Card::Api& cardToAdd ) noexcept = 0;
 
 public:
+    /** Returns the total number of Card instances. If the Scanner is in an
+        error state, then zero is returned;
+     */
+    virtual uint16_t getNumCards() const noexcept = 0;
+
+    /** Returns a pointer to the specified Card.  If not a valid index or
+        the Scanner is in an error state, then nullptr is returned.
+     */
+    virtual Fxt::Card::Api* getCard( uint16_t cardIndex ) noexcept = 0;
+
+
+public:
     /** This method attempts to parse the provided JSON Object that represents
         a Scanner and create the contained IO cards.  If there is an error
         (e.g. IO card not supported, missing key/value pairs, etc.) the

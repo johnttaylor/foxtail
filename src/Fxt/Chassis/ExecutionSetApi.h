@@ -106,6 +106,17 @@ public:
     virtual Fxt::Type::Error add( Fxt::LogicChain::Api& logiChainToAdd ) noexcept = 0;
 
 public:
+    /** Returns the total number of Logic Chains instances. If the ExecutionSet 
+        is in an error state, then zero is returned;
+     */
+    virtual uint16_t getNumLogicChains() const noexcept = 0;
+
+    /** Returns a pointer to the specified Logic Chain.  If not a valid index or
+        the ExecutionSet is in an error state, then nullptr is returned.
+     */
+    virtual Fxt::LogicChain::Api* getLogicChain( uint16_t logicChainIndex ) noexcept = 0;
+
+public:
     /** This method attempts to parse the provided JSON Object that represents
         a ExecutionSet and create the contained Logic Chains.  If there is an error
         (e.g. Component not supported, missing key/value pairs, etc.) the

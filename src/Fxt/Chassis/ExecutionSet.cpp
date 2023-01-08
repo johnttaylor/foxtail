@@ -138,6 +138,19 @@ size_t ExecutionSet::getExecutionRateMultiplier() const noexcept
     return m_erm;
 }
 
+uint16_t ExecutionSet::getNumLogicChains() const noexcept
+{
+    return m_error == Fxt::Type::Error::SUCCESS() ? m_numLogicChains : 0;
+}
+
+Fxt::LogicChain::Api* ExecutionSet::getLogicChain( uint16_t logicChainIndex ) noexcept
+{
+    if ( logicChainIndex >= m_numLogicChains || m_error != Fxt::Type::Error::SUCCESS() )
+    {
+        return nullptr;
+    }
+    return m_logicChains[logicChainIndex];
+}
 
 bool ExecutionSet::execute( uint64_t currentTick, uint64_t currentInterval ) noexcept
 {

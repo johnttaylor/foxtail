@@ -295,6 +295,7 @@ TEST_CASE( "Node" )
         REQUIRE( err == DeserializationError::Ok );
 
         JsonVariant nodeJsonObj = doc.as<JsonVariant>();
+        REQUIRE( Api::getNode() == nullptr );
         Api* uut = uutFactory.createFromJSON( nodeJsonObj,
                                               pointDb,
                                               nodeError );
@@ -302,6 +303,12 @@ TEST_CASE( "Node" )
         CPL_SYSTEM_TRACE_MSG( SECT_, ("node error=%s", nodeError.toText( buf )) );
         REQUIRE( uut );
         REQUIRE( uut->getErrorCode() == Fxt::Type::Error::SUCCESS() );
+
+        REQUIRE( uut->getNumChassis() == 1 );
+        REQUIRE( uut->getChassis( 0 ) );
+        REQUIRE( uut->getChassis( 1 ) == nullptr );
+        REQUIRE( Api::getNode() == uut );
+
         uutFactory.destroy( *uut );
     }
 

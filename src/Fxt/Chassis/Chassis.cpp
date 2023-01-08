@@ -267,6 +267,61 @@ uint64_t Chassis::getFER() const noexcept
     return m_fer;
 }
 
+uint16_t Chassis::getNumScanners() const noexcept
+{
+    return m_error == Fxt::Type::Error::SUCCESS() ? m_numScanners : 0;
+}
+
+Fxt::Chassis::ScannerApi* Chassis::getScanner( uint16_t scannerIndex ) noexcept
+{
+    if ( scannerIndex >= m_numScanners || m_error != Fxt::Type::Error::SUCCESS() )
+    {
+        return nullptr;
+    }
+    return m_scanners[scannerIndex];
+}
+
+uint16_t Chassis::getNumExecutionSets() const noexcept
+{
+    return m_error == Fxt::Type::Error::SUCCESS() ? m_numExecutionSets : 0;
+}
+
+Fxt::Chassis::ExecutionSetApi* Chassis::getExecutionSet( uint16_t executionSetIndex ) noexcept
+{
+    if ( executionSetIndex >= m_numExecutionSets || m_error != Fxt::Type::Error::SUCCESS() )
+    {
+        return nullptr;
+    }
+    return m_executionSets[executionSetIndex];
+}
+
+Fxt::Card::Api* Api::getCard( Api& chassis, uint8_t cardSlotNumber ) noexcept
+{
+    for ( uint16_t scannerIdx = 0; scannerIdx < chassis.getNumScanners(); scannerIdx++ )
+    {
+        ScannerApi* scanner = chassis.getScanner( scannerIdx );
+        if ( scanner == nullptr )
+        {
+            return nullptr;
+        }
+
+        for ( uint16_t cardIdx = 0; cardIdx < scanner->getNumCards(); cardIdx++ )
+        {
+            Fxt::Card::Api* card = scanner->getCard( cardIdx );
+            if ( card == nullptr )
+            {
+                return nullptr;
+            }
+            if ( card->getSlotNumber() == cardSlotNumber )
+            {
+                return card;
+            }
+        }
+    }
+
+    return nullptr;
+}
+
 
 //////////////////////////////////////////////////
 Fxt::Type::Error Chassis::add( ScannerApi& scannerToAdd ) noexcept

@@ -135,6 +135,19 @@ Fxt::System::PeriodApi& Scanner::getOutputPeriod() noexcept
     return m_outputPeriod;
 }
 
+uint16_t Scanner::getNumCards() const noexcept
+{
+    return m_error == Fxt::Type::Error::SUCCESS() ? m_numCards : 0;
+}
+
+Fxt::Card::Api* Scanner::getCard( uint16_t cardIndex ) noexcept
+{
+    if ( cardIndex >= m_numCards || m_error != Fxt::Type::Error::SUCCESS() )
+    {
+        return nullptr;
+    }
+    return m_cards[cardIndex];
+}
 
 bool Scanner::scanInputs( uint64_t currentElapsedTimeUsec ) noexcept
 {

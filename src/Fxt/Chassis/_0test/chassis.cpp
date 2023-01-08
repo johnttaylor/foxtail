@@ -315,6 +315,21 @@ TEST_CASE( "Chassis" )
         CPL_SYSTEM_TRACE_MSG( SECT_, ("chassis error=%s", chassisError.toText( buf )) );
         REQUIRE( uut );
         REQUIRE( uut->getErrorCode() == Fxt::Type::Error::SUCCESS() );
+
+        REQUIRE( uut->getNumScanners() == 1 );
+        REQUIRE( uut->getScanner( 0 ) );
+        REQUIRE( uut->getScanner( 1 ) == nullptr );
+        REQUIRE( Api::getCard( *uut, 1 ) == nullptr );
+        Fxt::Card::Api* cardPtr = Api::getCard( *uut, 22 );
+        REQUIRE( cardPtr != nullptr );
+        REQUIRE( strcmp( cardPtr->getTypeGuid(), Fxt::Card::Mock::AnalogIn8::GUID_STRING ) == 0 );
+        cardPtr =  Api::getCard( *uut, 0 );
+        REQUIRE( cardPtr != nullptr );
+        REQUIRE( strcmp( cardPtr->getTypeGuid(), Fxt::Card::Mock::Digital8::GUID_STRING ) == 0 );
+        REQUIRE( uut->getNumExecutionSets() == 1 );
+        REQUIRE( uut->getExecutionSet( 0 ) );
+        REQUIRE( uut->getExecutionSet( 1 ) == nullptr );
+
         uut->~Api();
     }
 

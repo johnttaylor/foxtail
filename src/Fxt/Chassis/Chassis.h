@@ -69,6 +69,18 @@ public:
     /// See Fxt::Chassis::Api
     uint64_t getFER() const noexcept;
 
+    /// See Fxt::Chassis::Api
+    uint16_t getNumScanners() const noexcept;
+
+    /// See Fxt::Chassis::Api
+    Fxt::Chassis::ScannerApi* getScanner( uint16_t scannerIndex ) noexcept;
+
+    /// See Fxt::Chassis::Api
+    uint16_t getNumExecutionSets() const noexcept;
+
+    /// See Fxt::Chassis::Api
+    Fxt::Chassis::ExecutionSetApi* getExecutionSet( uint16_t executionSetIndex ) noexcept;
+
 protected:
     /// Reference/Handle to the Chassis server (aka the runnable-object/thread that executes the chassis)
     ServerApi&                          m_server;

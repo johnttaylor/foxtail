@@ -217,6 +217,24 @@ bool Common_::waitForThreadToRun( Cpl::System::Runnable & runnable )
     return false;
 }
 
+uint16_t Common_::getNumChassis() const noexcept
+{
+    return m_error == Fxt::Type::Error::SUCCESS()? m_numChassis: 0;
+}
+
+/// See Fxt::Node::Api
+Fxt::Chassis::Api* Common_::getChassis( uint16_t chassisIndex ) noexcept
+{
+    if ( chassisIndex >= m_numChassis || m_error != Fxt::Type::Error::SUCCESS() )
+    {
+        return nullptr;
+    }
+    return m_chassis[chassisIndex].chassis;
+}
+
+
+
+
 //////////////////////////////////////////////////
 Fxt::Type::Error Common_::add( Fxt::Chassis::Api&       chassisToAdd,
                                Cpl::System::Thread&     chassisThreadToAdd ) noexcept
@@ -237,6 +255,5 @@ Fxt::Type::Error Common_::add( Fxt::Chassis::Api&       chassisToAdd,
 
     return m_error;
 }
-
 
 

@@ -63,6 +63,12 @@ public:
     /// See Fxt::LogicChain::Api
     Fxt::Type::Error add( Fxt::Point::Api& autoPointToAdd ) noexcept;
 
+    /// See Fxt::LogicChain::Api
+    uint16_t getNumComponents() const noexcept;
+    
+    /// See Fxt::LogicChain::Api
+    Fxt::Component::Api* getComponent( uint16_t componentIndex ) noexcept;
+
 protected:
     /// Array/List of components in the logic chain
     Fxt::Component::Api**               m_components;

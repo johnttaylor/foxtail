@@ -100,6 +100,12 @@ public:
     /// Set Fxt::Chassis::ScannerApi
     size_t getScanRateMultiplier() const noexcept;
 
+    /// Set Fxt::Chassis::ScannerApi
+    uint16_t getNumCards() const noexcept;
+    
+    /// Set Fxt::Chassis::ScannerApi
+    Fxt::Card::Api* getCard( uint16_t cardIndex ) noexcept;
+
 protected:
     /** This method invokes the scanInputs() method on all contained
         IO cards.

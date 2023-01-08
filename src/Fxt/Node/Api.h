@@ -76,6 +76,17 @@ public:
 
 
 public:
+    /**  Returns the total number of Chassis instances. If the Node is in an 
+         error state, then zero is returned;
+     */
+    virtual uint16_t getNumChassis() const noexcept = 0;
+
+    /** Returns a pointer to the specified chassis.  If not a valid index or 
+        the Node is in an error state, then nullptr is returned.
+     */
+    virtual Fxt::Chassis::Api* getChassis( uint16_t chassisIndex ) noexcept = 0;
+
+public:
     /** This method is used to add a Chassis to the Node.  If the add is
         successful then Fxt::Type::Err_T::SUCCESS is returned; else and error
         code is returned.
@@ -108,6 +119,13 @@ public:
     /** This method is used to destroy the thread created by createChassisThread()
      */
     virtual void destroyChassisThread( Cpl::System::Thread& chassisThreadToDelete ) noexcept = 0;
+
+public:
+    /** Returns a pointer to the one-and-only created Node instance for the platform.
+        If the Node has not yet been created (or has been destroyed), then nullptr is 
+        returned.
+     */
+    static Api* getNode() noexcept;
 
 public:
     /// Virtual destructor to make the compiler happy

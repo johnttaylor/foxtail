@@ -75,6 +75,12 @@ public:
     /// See Fxt::Node::Api.  Assumes the thread was created using Cpl::System::Thread::create() method
     void destroyChassisThread( Cpl::System::Thread& chassisThreadToDelete ) noexcept;
 
+    /// See Fxt::Node::Api
+    uint16_t getNumChassis() const noexcept;
+
+    /// See Fxt::Node::Api
+    Fxt::Chassis::Api* getChassis( uint16_t chassisIndex ) noexcept;
+
 protected:
     /// Helper function that waits (but not forever) for a Chassis thread to spin up.  Returns true if the thread is running when done waiting
     bool waitForThreadToRun( Cpl::System::Runnable& runnable );

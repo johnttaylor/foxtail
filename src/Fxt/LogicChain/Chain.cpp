@@ -158,6 +158,20 @@ Fxt::Type::Error Chain::getErrorCode() const noexcept
     return m_error;
 }
 
+uint16_t Chain::getNumComponents() const noexcept
+{
+    return m_error == Fxt::Type::Error::SUCCESS() ? m_numComponents : 0;
+}
+
+Fxt::Component::Api* Chain::getComponent( uint16_t componentIndex ) noexcept
+{
+    if ( componentIndex >= m_numComponents || m_error != Fxt::Type::Error::SUCCESS() )
+    {
+        return nullptr;
+    }
+    return m_components[componentIndex];
+}
+
 Fxt::Type::Error Chain::execute( int64_t currentTickUsec ) noexcept
 {
     // Only execute if there is no error AND the LC was actually started

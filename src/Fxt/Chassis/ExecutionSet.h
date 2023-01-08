@@ -60,6 +60,11 @@ public:
     /// See Fxt::System::PeriodApi
     bool execute( uint64_t currentTick, uint64_t currentInterval ) noexcept;
 
+    /// See Fxt::System::PeriodApi
+    uint16_t getNumLogicChains() const noexcept;
+    
+    /// See Fxt::System::PeriodApi
+    Fxt::LogicChain::Api* getLogicChain( uint16_t logicChainIndex ) noexcept;
 
 protected:
     /// Array/List of components in the logic chain

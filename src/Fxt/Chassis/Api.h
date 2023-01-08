@@ -16,6 +16,8 @@
 #include "Fxt/Type/Error.h"
 #include "Fxt/Point/FactoryDatabaseApi.h"
 #include "Fxt/Component/FactoryDatabaseApi.h"
+#include "Fxt/Chassis/ExecutionSetApi.h"
+#include "Fxt/Chassis/ScannerApi.h"
 #include "Fxt/Chassis/ServerApi.h"
 #include "Fxt/Chassis/ScannerApi.h"
 #include "Fxt/Chassis/ExecutionSetApi.h"
@@ -135,6 +137,33 @@ public:
         properly
      */
     virtual Fxt::Type::Error getErrorCode() const noexcept = 0;
+
+
+public:
+    /** Returns the total number of Scanner instances. If the Chassis is in an
+        error state, then zero is returned;
+     */
+    virtual uint16_t getNumScanners() const noexcept = 0;
+
+    /** Returns a pointer to the specified Scanner.  If not a valid index or
+        the chassis is in an error state, then nullptr is returned.
+     */
+    virtual Fxt::Chassis::ScannerApi* getScanner( uint16_t scannerIndex ) noexcept = 0;
+
+    /** Returns the total number of Execution Sets instances. If the Chassis is 
+        in an error state, then zero is returned;
+     */
+    virtual uint16_t getNumExecutionSets() const noexcept = 0;
+
+    /** Returns a pointer to the specified Execution Set.  If not a valid index or
+        the chassis is in an error state, then nullptr is returned.
+     */
+    virtual Fxt::Chassis::ExecutionSetApi* getExecutionSet( uint16_t executionSetIndex ) noexcept = 0;
+
+    /** This method returns the specified card.  If there is error then a nullptr
+        is returned.
+     */
+    static Fxt::Card::Api* getCard( Api& chassis, uint8_t cardSlotNumber ) noexcept;
 
 
 public:
