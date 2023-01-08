@@ -1,0 +1,13 @@
+#define FXT_PT_SHARED_1    0
+#define FXT_PT_SHARED_2    2
+#define FXT_PT_MOTOR_TEMPERATURE    4
+#define FXT_PT_MOTOR_VOLTAGE    7
+#define FXT_PT_MOTOR_CURRENT    10
+#define FXT_PT_INPUTBYTE    13
+#define FXT_PT_OUTPUTPT    16
+#define FXT_PT_CONNECT_BIT4    19
+#define FXT_PT_OUTPUT_ANDGATE    20
+#define FXT_PT_AUTO_TRUE    21
+
+#define FXT_PT_TOTAL_NUM_PTS      23
+#define FXT_PT_TOTAL_NANMED_PTS   10

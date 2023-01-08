@@ -17,6 +17,9 @@ doskey whatcc=echo:%PIM_ENV_COMPILER%
 doskey killpy=taskkill /F /IM python.exe
 
 
+:: Add the scripts directory to the command path
+set PATH=%PATH%;%_HERE%\scripts
+
 :: Make sure the Outcast environment is setup.  Assumes that the Outcast batch file is in command path
 call outcast.bat
 
