@@ -146,6 +146,13 @@ void AnalogIn8::stop() noexcept
     Common_::stop();
 }
 
+bool AnalogIn8::scanInputs( uint64_t currentElapsedTimeUsec ) noexcept
+{
+    // Need to wrap with a mutex since my input data is coming from a different thread
+    Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
+    return Common_::scanInputs( currentElapsedTimeUsec );
+}
+
 bool AnalogIn8::flushOutputs( uint64_t currentElapsedTimeUsec ) noexcept
 {
     // Do nothing since I have no outputs
@@ -181,3 +188,19 @@ void AnalogIn8::setInputs( uint8_t channelNumber, float newValue )
     }
 }
 
+void AnalogIn8::setInvalid( uint8_t channelNumber )
+{
+    Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
+
+    // Validate the range of channel number
+    if ( channelNumber > 0 && channelNumber <= MAX_CHANNELS )
+    {
+        // Was the channel specified in the JSON syntax?
+        if ( m_ioRegisterPoints[channelNumber - 1] != nullptr )
+        {
+            // Update the IO Register
+            Fxt::Point::Api* pt =  m_ioRegisterPoints[channelNumber - 1];
+            pt->setInvalid();
+        }
+    }
+}

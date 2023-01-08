@@ -1,0 +1,94 @@
+/*-----------------------------------------------------------------------------
+* This file is part of the Colony.Core Project.  The Colony.Core Project is an
+* open source project with a BSD type of licensing agreement.  See the license
+* agreement (license.txt) in the top/ directory or on the Internet at
+* http://integerfox.com/colony.core/license.txt
+*
+* Copyright (c) 2014-2022  John T. Taylor
+*
+* Redistributions of the source code must retain the above copyright notice.
+*----------------------------------------------------------------------------*/
+
+#include "colony_config.h"
+#include "Main.h"
+#include "Cpl/System/Shutdown.h"
+#include "Cpl/TShell/Cmd/Help.h"
+#include "Cpl/TShell/Cmd/Bye.h"
+#include "Cpl/TShell/Cmd/Trace.h"
+#include "Cpl/TShell/Cmd/TPrint.h"
+#include "Cpl/TShell/Maker.h"
+#include "Cpl/Dm/MailboxServer.h"
+#include "Cpl/System/Thread.h"
+#include "Cpl/TShell/Stdio.h"
+#include "Cpl/System/EventLoop.h"
+#include "Cpl/System/Semaphore.h"
+#include "Fxt/Card/Mock/TShell/Ain8.h"
+
+////////////////////////////////////////////////////////////////////////////////
+
+// Create the TShell (aka the debug console) and populate with the basic set 
+// of commands
+Cpl::Container::Map<Cpl::TShell::Command>           g_cmdlist( "ignore_this_parameter-used to invoke the static constructor" );
+static Cpl::TShell::Maker                           cmdProcessor_( g_cmdlist );
+static Cpl::TShell::Stdio                           shell_( cmdProcessor_, "TShell", CPL_SYSTEM_THREAD_PRIORITY_NORMAL + CPL_SYSTEM_THREAD_PRIORITY_LOWER + CPL_SYSTEM_THREAD_PRIORITY_LOWER );
+static Cpl::TShell::Cmd::Help                       helpCmd_( g_cmdlist );
+static Cpl::TShell::Cmd::Bye                        byeCmd_( g_cmdlist );
+static Cpl::TShell::Cmd::Trace                      traceCmd_( g_cmdlist );
+static Cpl::TShell::Cmd::TPrint                     tprintCmd_( g_cmdlist );
+
+static Fxt::Card::Mock::TShell::Ain8                ain8Cmd_( g_cmdlist );
+
+// Stuffs needed for receiving/handle the Shutdown signal (part of the CPL C++ class library)
+static Cpl::System::Semaphore       waitForShutdown_;
+static volatile int                 exitCode_;
+
+
+int runTheApplication( Cpl::Io::Input& infd, Cpl::Io::Output& outfd )
+{
+    // Enable Trace 
+    CPL_SYSTEM_TRACE_ENABLE();
+    // CPL_SYSTEM_TRACE_ENABLE_SECTION( "Algorithm" );
+
+
+    // Start the application
+    //outDriver_.open();
+    //inDriver_.open();
+    //algo_.open();
+
+    // Start the TShell/debug-console
+    shell_.launch( infd, outfd );
+
+    // Wait for the Application to be shutdown
+    waitForShutdown_.wait();
+
+    // Shutdown application objects (MUST be done in the reverse order of the open() calls)
+    //algo_.close();
+    //inDriver_.close();
+    //outDriver_.close();
+    //persistentRunnable_.close();
+
+    // Shutdown the Application threads
+    //appMbox_.pleaseStop();
+    //driverMbox_.pleaseStop();
+    //Cpl::System::Thread::destroy( *persistentThread );
+    //Cpl::System::Thread::destroy( *appThread );
+    //Cpl::System::Thread::destroy( *driverThread );
+
+    // Run any/all register shutdown handlers (as registered by the Cpl::System::Shutdown interface) and then exit
+    return Cpl::System::Shutdown::notifyShutdownHandlers_( exitCode_ );
+}
+
+////////////////////////////////////////////////////////////////////////////////
+int Cpl::System::Shutdown::success( void )
+{
+    exitCode_ = OPTION_CPL_SYSTEM_SHUTDOWN_SUCCESS_ERROR_CODE;
+    waitForShutdown_.signal();
+    return OPTION_CPL_SYSTEM_SHUTDOWN_SUCCESS_ERROR_CODE;
+}
+
+int Cpl::System::Shutdown::failure( int exit_code )
+{
+    exitCode_ = exit_code;
+    waitForShutdown_.signal();
+    return exit_code;
+}

@@ -108,6 +108,9 @@ public:
     void stop() noexcept;
 
     /// See Fxt::Card::Api
+    bool scanInputs( uint64_t currentElapsedTimeUsec ) noexcept;
+
+    /// See Fxt::Card::Api
     bool flushOutputs( uint64_t currentElapsedTimeUsec ) noexcept;
 
     /// See Fxt::Card::Api
@@ -123,6 +126,11 @@ public:
      */
     void setInputs( uint8_t channelNumber, float newValue );
 
+    /** Provide the Application the ability to invalidate the inputs. The range of
+        'channelNumber' is 1...8 (as defined in the Card's JSON object). This
+        method is thread safe
+     */
+    void setInvalid( uint8_t channelNumber );
 
 protected:
     /// Helper method to parse the card's JSON config
