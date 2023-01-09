@@ -10,7 +10,6 @@
 *----------------------------------------------------------------------------*/
 
 #include "Ain8.h"
-#include "Fxt/Card/Mock/AnalogIn8.h"
 #include "Fxt/Node/Api.h"
 #include "Cpl/Text/atob.h"
 #include "Cpl/Text/FString.h"
@@ -44,6 +43,64 @@ Cpl::TShell::Command::Result_T Ain8::execute( Cpl::TShell::Context_& context, ch
         return Command::eERROR_FAILED;
     }
 
+    // Display Card state
+    if ( tokens.numParameters() == 1 )
+    {
+        if ( m_curCard == nullptr )
+        {
+            context.writeFrame( "ERROR: No card set. Type 'help ain8' for additional details." );
+            return Command::eERROR_FAILED;
+        }
+
+        // Loop through all of the card inputs
+        for ( uint8_t channelNum = 1; channelNum <= 8 && io; channelNum++ )
+        {
+            float value;
+            bool  valid;
+            if ( m_curCard->getInput( channelNum, value, valid ) )
+            {
+                if ( valid )
+                {
+                    outtext.format( "Channel #%02u: %f", channelNum, value );
+                }
+                else
+                {
+                    outtext.format( "Channel #%02u: <invalid>", channelNum );
+                }
+                
+                io &= context.writeFrame( outtext );
+            }
+        }
+        return io ? Command::eSUCCESS : Command::eERROR_IO;
+    }
+
+    // Write Input value
+    if ( tokens.numParameters() == 4 && *(tokens.getParameter( 1 )) == 'w' )
+    {
+        // Channel number
+        unsigned channel;
+        if ( Cpl::Text::a2ui( channel, tokens.getParameter( 2 ) ) == false  )
+        {
+            outtext.format( "ERROR: invalid channel number (%s)", tokens.getParameter( 2 ) );
+            context.writeFrame( outtext );
+            return Command::eERROR_INVALID_ARGS;
+        }
+
+        // Input value
+        double inValue;
+        if ( Cpl::Text::a2d( inValue, tokens.getParameter( 3 ) ) == false )
+        {
+            outtext.format( "ERROR: invalid input value (%s)", tokens.getParameter( 3 ) );
+            context.writeFrame( outtext );
+            return Command::eERROR_INVALID_ARGS;
+        }
+
+        m_curCard->setInput( channel, (float) inValue );
+        outtext.format( "Channel #%02u update to: %f", channel, (float) inValue );
+        io &= context.writeFrame( outtext );
+        return io ? Command::eSUCCESS : Command::eERROR_IO;
+    }
+
     // Set Card
     if ( tokens.numParameters() == 4 && *(tokens.getParameter( 1 )) == 's' )
     {
@@ -75,7 +132,7 @@ Cpl::TShell::Command::Result_T Ain8::execute( Cpl::TShell::Context_& context, ch
             return Command::eERROR_INVALID_ARGS;
         }
 
-        m_curCard = card;
+        m_curCard = (Fxt::Card::Mock::AnalogIn8 *) card;
         io &= context.writeFrame( "Card successfully found and set" );
         return io ? Command::eSUCCESS : Command::eERROR_IO;
     }

@@ -171,7 +171,7 @@ const char* AnalogIn8::getTypeName() const noexcept
 
 
 ///////////////////////////////////////////////////////////////////////////////
-void AnalogIn8::setInputs( uint8_t channelNumber, float newValue )
+void AnalogIn8::setInput( uint8_t channelNumber, float newValue )
 {
     Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
 
@@ -203,4 +203,24 @@ void AnalogIn8::setInvalid( uint8_t channelNumber )
             pt->setInvalid();
         }
     }
+}
+
+bool AnalogIn8::getInput( uint8_t channelNumber, float& dstValue, bool& dstIsValid )
+{
+    Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
+
+    // Validate the range of channel number
+    if ( channelNumber > 0 && channelNumber <= MAX_CHANNELS )
+    {
+        // Was the channel specified in the JSON syntax?
+        if ( m_ioRegisterPoints[channelNumber - 1] != nullptr )
+        {
+            // Update the IO Register
+            Fxt::Point::Float* pt = (Fxt::Point::Float*) m_ioRegisterPoints[channelNumber - 1];
+            dstIsValid = pt->read( dstValue );
+            return true;
+        }
+    }
+
+    return false;
 }

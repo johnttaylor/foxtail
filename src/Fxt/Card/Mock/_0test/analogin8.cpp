@@ -242,10 +242,10 @@ TEST_CASE( "AnalogIn8" )
 
         REQUIRE( uut.start( 0LL ) );
 
-        uut.setInputs( 1, 22.2F );
-        uut.setInputs( 2, 2 );
-        uut.setInputs( 5, 5 );
-        uut.setInputs( 6, 6 );
+        uut.setInput( 1, 22.2F );
+        uut.setInput( 2, 2 );
+        uut.setInput( 5, 5 );
+        uut.setInput( 6, 6 );
         uut.scanInputs( 0LL );
         float              pointVal = 0;
         Fxt::Point::Float* pointPtr = (Fxt::Point::Float*) pointDb.lookupById( 1 );
