@@ -1,7 +1,7 @@
-/** @namespace Fxt::Point::TShell
+/** @namespace Fxt::Node::TShell
 
 The 'TShell' namespace contains the implementation of TShell commands that
-access Points at runtime.
+operate on a Node at runtime.
              
 */  
 

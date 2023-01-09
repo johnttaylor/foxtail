@@ -8,6 +8,7 @@ src/Fxt/Node/Mock/Kestrel/_0test
 
 # Foxtail
 src/Fxt/Node
+src/Fxt/Node/TShell
 src/Fxt/System
 src/Fxt/System/_cpl
 src/Fxt/Type
@@ -27,6 +28,7 @@ src/Cpl/Text/Tokenizer
 src/Cpl/Memory
 src/Cpl/Container
 src/Cpl/Checksum
+src/Cpl/Json
 src/Cpl/Text
 src/Cpl/Io
 src/Cpl/Io/File

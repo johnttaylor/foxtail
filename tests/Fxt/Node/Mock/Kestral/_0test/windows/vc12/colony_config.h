@@ -4,5 +4,8 @@
 // Enable Trace
 #define USE_CPL_SYSTEM_TRACE
 
+#define OPTION_CPL_TSHELL_PROCESSOR_INPUT_SIZE              (128*1024)
+#define OPTION_CPL_TSHELL_PROCESSOR_OUTPUT_SIZE             (128*1024)
+
 
 #endif

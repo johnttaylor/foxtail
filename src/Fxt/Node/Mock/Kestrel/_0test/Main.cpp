@@ -23,8 +23,29 @@
 #include "Cpl/System/EventLoop.h"
 #include "Cpl/System/Semaphore.h"
 #include "Fxt/Card/Mock/TShell/Ain8.h"
+#include "Fxt/Node/TShell/Node.h"
+#include "Fxt/Node/Mock/Kestrel/Factory.h"
 
 ////////////////////////////////////////////////////////////////////////////////
+
+#ifndef OPTION_TEST_MAIN_MAX_POINTS
+#define OPTION_TEST_MAIN_MAX_POINTS                 (128*1024)
+#endif
+
+#ifndef OPTION_TEST_MAIN_GENERAL_HEAP_SIZE
+#define OPTION_TEST_MAIN_GENERAL_HEAP_SIZE          (128*1024)
+#endif
+
+#ifndef OPTION_TEST_MAIN_STATEFUL_HEAP_SIZE
+#define OPTION_TEST_MAIN_STATEFUL_HEAP_SIZE         (128*1024)
+#endif
+
+#ifndef OPTION_TEST_MAIN_CARD_STATEFUL_HEAP_SIZE
+#define OPTION_TEST_MAIN_CARD_STATEFUL_HEAP_SIZE    (32*1024)
+#endif
+
+static Fxt::Point::Database<OPTION_TEST_MAIN_MAX_POINTS>   pointDb_("dummyArgUsedToCreateStaticConstructorSignature");
+static Fxt::Node::Mock::Kestrel::Factory                   kestrelFactory_( OPTION_TEST_MAIN_GENERAL_HEAP_SIZE, OPTION_TEST_MAIN_CARD_STATEFUL_HEAP_SIZE, OPTION_TEST_MAIN_STATEFUL_HEAP_SIZE );
 
 // Create the TShell (aka the debug console) and populate with the basic set 
 // of commands
@@ -36,6 +57,7 @@ static Cpl::TShell::Cmd::Bye                        byeCmd_( g_cmdlist );
 static Cpl::TShell::Cmd::Trace                      traceCmd_( g_cmdlist );
 static Cpl::TShell::Cmd::TPrint                     tprintCmd_( g_cmdlist );
 
+static Fxt::Node::TShell::Node                      nodeCmd_( g_cmdlist, kestrelFactory_, pointDb_ );
 static Fxt::Card::Mock::TShell::Ain8                ain8Cmd_( g_cmdlist );
 
 // Stuffs needed for receiving/handle the Shutdown signal (part of the CPL C++ class library)
