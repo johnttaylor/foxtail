@@ -11,11 +11,10 @@
 /** @file */
 
 
-#include "ByteSplitter.h"
+#include "ByteMux.h"
 #include "Error.h"
 #include "Cpl/System/Assert.h"
 #include <stdint.h>
-#include <new>
 
 ///
 using namespace Fxt::Component::Digital;
@@ -23,67 +22,66 @@ using namespace Fxt::Component::Digital;
 #define MAX_BIT_OFFSET      7
 
 ///////////////////////////////////////////////////////////////////////////////
-ByteSplitter::ByteSplitter( JsonVariant&                       componentObject,
-                            Cpl::Memory::ContiguousAllocator&  generalAllocator,
-                            Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
-                            Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
-                            Fxt::Point::DatabaseApi&           dbForPoints )
+ByteMux::ByteMux( JsonVariant&                       componentObject,
+                  Cpl::Memory::ContiguousAllocator&  generalAllocator,
+                  Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
+                  Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
+                  Fxt::Point::DatabaseApi&           dbForPoints )
     : m_numInputs( 0 )
     , m_numOutputs( 0 )
 {
     memset( &m_inputRefs, 0, sizeof( m_inputRefs ) );
     memset( &m_outputRefs, 0, sizeof( m_outputRefs ) );
-    memset( &m_outputNegated, 0, sizeof( m_outputNegated ) );
+    memset( &m_inputNegated, 0, sizeof( m_inputNegated ) );
 
     parseConfiguration( componentObject );
 }
 
-ByteSplitter::~ByteSplitter()
+ByteMux::~ByteMux()
 {
     // Nothing required
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-Fxt::Type::Error ByteSplitter::execute( int64_t currentTickUsec ) noexcept
+Fxt::Type::Error ByteMux::execute( int64_t currentTickUsec ) noexcept
 {
     // NOTE: The method NEVER fails
 
-    // Get my input
-    uint8_t inValue;
-    if ( !m_inputRefs[0]->read( inValue ) )
+    // Walk all of my inputs
+    uint8_t outValue = 0;
+    for ( int i=0; i < m_numInputs; i++ )
     {
-        // Set the outputs to invalid if at least one input is invalid
-        for ( int i=0; i < m_numOutputs; i++ )
+        // Get the input bit
+        bool inBitValue;
+        if ( !m_inputRefs[i]->read( inBitValue ) )
         {
-            m_outputRefs[i]->setInvalid();
+            // Set the output to invalid if any input is invalid
+            m_outputRefs[0]->setInvalid();
+            return Fxt::Type::Error::SUCCESS();
         }
-        return Fxt::Type::Error::SUCCESS();
+
+        inBitValue        = m_inputNegated[i] ? !inBitValue : inBitValue;
+        uint8_t bitMask   = (inBitValue ? 1 : 0) << m_bitOffsets[i];
+        outValue         |= bitMask;
     }
 
-    // Derive my outputs
-    for ( int i=0; i < m_numOutputs; i++ )
-    {
-        uint8_t bitMask   = 1 << m_bitOffsets[i];
-        bool    outputVal = bitMask & inValue;
-        bool    finalOut  = m_outputNegated[i] ? !outputVal : outputVal;
-        m_outputRefs[i]->write( finalOut );
-    }
-
+    // Update the output value
+    m_outputRefs[0]->write( outValue );
     return Fxt::Type::Error::SUCCESS();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-const char* ByteSplitter::getTypeGuid() const noexcept
+const char* ByteMux::getTypeGuid() const noexcept
 {
     return GUID_STRING;
 }
 
-const char* ByteSplitter::getTypeName() const noexcept
+const char* ByteMux::getTypeName() const noexcept
 {
     return TYPE_NAME;
 }
 
-bool ByteSplitter::parseConfiguration( JsonVariant & obj ) noexcept
+bool ByteMux::parseConfiguration( JsonVariant & obj ) noexcept
 {
     // Parse Input Point references
     JsonArray inputs = obj["inputs"];
@@ -101,6 +99,18 @@ bool ByteSplitter::parseConfiguration( JsonVariant & obj ) noexcept
         }
 
         m_numInputs = numInputsFound;
+    }
+
+    // Parse input bit offsets and negate qualifiers
+    for ( unsigned i=0; i < inputs.size(); i++ )
+    {
+        m_inputNegated[i] = inputs[i]["negate"] | false;
+        m_bitOffsets[i]   = inputs[i]["bit"] | (MAX_BIT_OFFSET + 1);
+        if ( m_bitOffsets[i] > MAX_BIT_OFFSET )
+        {
+            m_error = fullErr( Err_T::MUX_INVALID_BIT_OFFSET );
+            return false;
+        }
     }
 
     // Parse Output Point references
@@ -121,23 +131,12 @@ bool ByteSplitter::parseConfiguration( JsonVariant & obj ) noexcept
         m_numOutputs = numOutputsFound;
     }
 
-    // Parse output bit offsets and negate qualifiers
-    for ( unsigned i=0; i < outputs.size(); i++ )
-    {
-        m_outputNegated[i] = outputs[i]["negate"] | false;
-        m_bitOffsets[i]    = outputs[i]["bit"] | (MAX_BIT_OFFSET+1);
-        if ( m_bitOffsets[i] > MAX_BIT_OFFSET )
-        {
-            m_error = fullErr( Err_T::SPLITTER_INVALID_BIT_OFFSET );
-            return false;
-        }
-    }
 
     return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-Fxt::Type::Error ByteSplitter::resolveReferences( Fxt::Point::DatabaseApi& pointDb )  noexcept
+Fxt::Type::Error ByteMux::resolveReferences( Fxt::Point::DatabaseApi& pointDb )  noexcept
 {
     // Resolve INPUT references
     if ( !Common_::resolveReferences( pointDb,
@@ -158,34 +157,18 @@ Fxt::Type::Error ByteSplitter::resolveReferences( Fxt::Point::DatabaseApi& point
     }
 
     // Validate Point types
-    if ( validatePointTypes( (Fxt::Point::Api **) m_inputRefs, m_numInputs, Fxt::Point::Uint8::GUID_STRING) == false )
+    if ( validatePointTypes( (Fxt::Point::Api **) m_inputRefs, m_numInputs, Fxt::Point::Bool::GUID_STRING ) == false )
     {
         m_error = fullErr( Fxt::Component::Err_T::INPUT_REFRENCE_BAD_TYPE );
         return m_error;
     }
-    if ( validatePointTypes( (Fxt::Point::Api **) m_outputRefs, m_numOutputs, Fxt::Point::Bool::GUID_STRING ) == false )
+    if ( validatePointTypes( (Fxt::Point::Api **) m_outputRefs, m_numOutputs, Fxt::Point::Uint8::GUID_STRING ) == false )
     {
         m_error = fullErr( Fxt::Component::Err_T::OUTPUT_REFRENCE_BAD_TYPE );
         return m_error;
     }
 
-    m_error = fullErr( Err_T::SUCCESS);   // Set my state to 'ready-to-start'
+    m_error = fullErr( Err_T::SUCCESS );   // Set my state to 'ready-to-start'
     return m_error;
-}
-
-bool ByteSplitter::validatePointTypes( Fxt::Point::Api* arrayOfPoints[], uint8_t numPoints, const char* expectedGUID )
-{
-    for ( uint8_t i=0; i < numPoints; i++ )
-    {
-        if ( arrayOfPoints[i] != nullptr )
-        {
-            if ( strcmp( arrayOfPoints[i]->getTypeGuid(), expectedGUID ) != 0 )
-            {
-                return false;
-            }
-        }
-    }
-
-    return true;
 }
 

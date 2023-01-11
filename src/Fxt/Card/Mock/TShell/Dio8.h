@@ -1,5 +1,5 @@
-#ifndef Fxt_Card_Mock_TShell_Ain8_h
-#define Fxt_Card_Mock_TShell_Ain8_h
+#ifndef Fxt_Card_Mock_TShell_Dio8_h
+#define Fxt_Card_Mock_TShell_Dio8_h
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -14,24 +14,25 @@
 
 #include "colony_config.h"
 #include "Cpl/TShell/Cmd/Command.h"
-#include "Fxt/Card/Mock/AnalogIn8.h"
+#include "Fxt/Card/Mock/Digital8.h"
 
 
 
-#define FXTCARDMOCKTSHELL_VERB_AIN8_        "ain8"
+#define FXTCARDMOCKTSHELL_VERB_DIO8_        "dio8"
 
 /** Usage
                                             "         1         2         3         4         5         6         7         8"
                                             "12345678901234567890123456789012345678901234567890123456789012345678901234567890"
 */
-#define FXTCARDMOCKTSHELL_USAGE_AIN8_       "ain8\n" \
-                                            "ain8 setcard <chassisIdx> <slot-num> \n" \
-                                            "ain8 write <channel-num> <val>\n" \
-                                            "ain8 invalid <channel-num>" \
+#define FXTCARDMOCKTSHELL_USAGE_DIO8_       "dio8\n" \
+                                            "dio8 setcard <chassisIdx> <slot-num> \n" \
+                                            "dio8 write <byte>\n" \
+                                            "dio8 write <bit-idx> <bitValue>\n" \
+                                            "dio8 invalid in|out" \
 
 /// Detailed Help text
-#ifndef FXTCARDMOCKTSHELL_DETAIL_AIN8_
-#define FXTCARDMOCKTSHELL_DETAIL_AIN8_      "  Reads and writes the mock cards's inputs.  The user must first identify\n" \
+#ifndef FXTCARDMOCKTSHELL_DETAIL_DIO8_
+#define FXTCARDMOCKTSHELL_DETAIL_DIO8_      "  Reads and writes the mock cards's inputs.  The user must first identify\n" \
                                             "  which card instance to operate on by using the 'setcard' subcommand"
 
 #endif // ifndef allows detailed help to be compacted down to a single character if FLASH/code space is an issue
@@ -50,19 +51,19 @@ namespace TShell {
 
 /** This class implements a TShell command.  
  */
-class Ain8 : public Cpl::TShell::Cmd::Command
+class Dio8 : public Cpl::TShell::Cmd::Command
 {
 public:
     /// See Cpl::TShell::Command                                                               `
-    const char* getUsage() const noexcept { return FXTCARDMOCKTSHELL_USAGE_AIN8_; }
+    const char* getUsage() const noexcept { return FXTCARDMOCKTSHELL_USAGE_DIO8_; }
 
     /// See Cpl::TShell::Command
-    const char* getHelp() const noexcept { return FXTCARDMOCKTSHELL_DETAIL_AIN8_; }
+    const char* getHelp() const noexcept { return FXTCARDMOCKTSHELL_DETAIL_DIO8_; }
 
 
 public:
     /// Constructor
-    Ain8( Cpl::Container::Map<Cpl::TShell::Command>& commandList ) noexcept;
+    Dio8( Cpl::Container::Map<Cpl::TShell::Command>& commandList ) noexcept;
 
 
 public:
@@ -71,7 +72,7 @@ public:
 
 protected:
     /// Pointer to the current card
-    Fxt::Card::Mock::AnalogIn8* m_curCard;
+    Fxt::Card::Mock::Digital8* m_curCard;
 };
 
 };      // end namespaces

@@ -24,7 +24,7 @@
 #include "Fxt/Card/Mock/AnalogIn8Factory.h"
 #include "Fxt/Card/Mock/Digital8Factory.h"
 #include "Fxt/Component/Digital/And16GateFactory.h"
-#include "Fxt/Component/Digital/ByteSplitterFactory.h"
+#include "Fxt/Component/Digital/ByteDemuxFactory.h"
 #include "Cpl/Memory/LeanHeap.h"
 #include "Cpl/System/Trace.h"
 #include "Cpl/System/Api.h"
@@ -170,9 +170,9 @@ using namespace Fxt::Chassis;
                                         "          \"components\": [ " \
                                         "            { " \
                                         "              \"id\": 100, " \
-                                        "              \"name\": \"ByteSplitter #1\", " \
+                                        "              \"name\": \"ByteDemux #1\", " \
                                         "              \"type\": \"8c55aa52-3bc8-4b8a-ad73-c434a0bbd4b4\", " \
-                                        "              \"typeName\": \"Fxt::Component::Digital::ByteSplitter\", " \
+                                        "              \"typeName\": \"Fxt::Component::Digital::ByteDemux\", " \
                                         "              \"inputs\": [ " \
                                         "                { " \
                                         "                  \"name\": \"input byte\", " \
@@ -223,7 +223,7 @@ using namespace Fxt::Chassis;
                                         "          \"connectionPts\": [ " \
                                         "            { " \
                                         "              \"id\": 20, " \
-                                        "              \"name\": \"Output ByteSplitter: Bit 4\", " \
+                                        "              \"name\": \"Output ByteDemux: Bit 4\", " \
                                         "              \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\", " \
                                         "              \"typeName\": \"Fxt::Point::Bool\" " \
                                         "            }, " \
@@ -268,7 +268,7 @@ TEST_CASE( "Chassis" )
     Cpl::Memory::LeanHeap                               cardStatefulAllocator( cardStateFullHeap_, sizeof( cardStateFullHeap_ ) );
     Cpl::Memory::LeanHeap                               haStatefulAllocator( haStateFullHeap_, sizeof( haStateFullHeap_ ) );
     Fxt::Component::FactoryDatabase                     componentFactoryDb;
-    Fxt::Component::Digital::ByteSplitterFactory        byteSplitterFactory( componentFactoryDb );
+    Fxt::Component::Digital::ByteDemuxFactory        byteSplitterFactory( componentFactoryDb );
     Fxt::Component::Digital::And16GateFactory           and16GateFactory( componentFactoryDb );
     Fxt::Point::Database<MAX_POINTS>                    pointDb;
     Fxt::Point::FactoryDatabase                         pointFactoryDb;

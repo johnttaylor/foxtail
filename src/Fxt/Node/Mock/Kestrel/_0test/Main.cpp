@@ -23,6 +23,7 @@
 #include "Cpl/System/EventLoop.h"
 #include "Cpl/System/Semaphore.h"
 #include "Fxt/Card/Mock/TShell/Ain8.h"
+#include "Fxt/Card/Mock/TShell/Dio8.h"
 #include "Fxt/Node/TShell/Node.h"
 #include "Fxt/Node/Mock/Kestrel/Factory.h"
 
@@ -59,6 +60,7 @@ static Cpl::TShell::Cmd::TPrint                     tprintCmd_( g_cmdlist );
 
 static Fxt::Node::TShell::Node                      nodeCmd_( g_cmdlist, kestrelFactory_, pointDb_ );
 static Fxt::Card::Mock::TShell::Ain8                ain8Cmd_( g_cmdlist );
+static Fxt::Card::Mock::TShell::Dio8                dio8Cmd_( g_cmdlist );
 
 // Stuffs needed for receiving/handle the Shutdown signal (part of the CPL C++ class library)
 static Cpl::System::Semaphore       waitForShutdown_;

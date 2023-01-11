@@ -100,10 +100,10 @@ TEST_CASE( "Error" )
     SECTION( "Digital Errors" )
     {
         {
-            Error uut = Fxt::Component::Digital::fullErr( Fxt::Component::Digital::Err_T::SPLITTER_INVALID_BIT_OFFSET );
+            Error uut = Fxt::Component::Digital::fullErr( Fxt::Component::Digital::Err_T::DEMUX_INVALID_BIT_OFFSET );
             buf = Error::toText( uut.errVal, buf );
             CPL_SYSTEM_TRACE_MSG( SECT_, ("toText: [%s]", buf.getString()) );
-            REQUIRE( buf == "COMPONENT:DIGITAL:SPLITTER_INVALID_BIT_OFFSET" );
+            REQUIRE( buf == "COMPONENT:DIGITAL:DEMUX_INVALID_BIT_OFFSET" );
         }
     }
 

@@ -128,25 +128,43 @@ public:
 
 public:
     /// Provide the Application the ability to set the inputs. This method is thread safe
-    void setInputs( uint8_t bitMaskToOR );
+    void writeInputs( uint8_t byteTowrite );
 
     /// Provide the Application the ability to clear the inputs. This method is thread safe
-    void clearInputs( uint8_t bitMaskToAND );
+    void clearInputs( uint8_t bitMaskToAND = 0xFF );
+
+    /// Provide the Application the ability to OR the inputs. This method is thread safe
+    void orInputs( uint8_t bitMaskToOR );
 
     /// Provide the Application the ability to toggle the inputs. This method is thread safe
     void toggleInputs( uint8_t bitMaskToXOR );
 
-    /// Provide the Application the ability to read the inputs. Returns false if one or more of the outputs is INVALID; else true is returned
-    bool getOutputs( uint8_t& valueMask );
-
     /// Set input by bit position (zero based bit position)
-    inline void setInputBit( uint8_t bitPosition ) { setInputs( ((uint8_t) 1) << bitPosition ); }
+    inline void setInputBit( uint8_t bitPosition ) { orInputs( ((uint8_t) 1) << bitPosition ); }
 
     /// Clear input by bit position (zero based bit position)
     inline void clearInputBit( uint8_t bitPosition ) { clearInputs( ~(((uint8_t) 1) << bitPosition) ); }
 
     /// Toggle input by bit position (zero based bit position)
     inline void toggleInputBit( uint8_t bitPosition ) { toggleInputs( ((uint8_t) 1) << bitPosition ); }
+
+    /// Provide the Application the ability to read the inputs. Returns false if one or more of the inputs is INVALID; else true is returned
+    bool getInputs( uint8_t& dstInputVal );
+
+    /// Provide the Application the ability to read the outputs. Returns false if one or more of the outputs is INVALID; else true is returned
+    bool getOutputs( uint8_t& dstOutputVal );
+
+public:
+    /** Provide the Application the ability to invalidate the inputs. This
+        method is thread safe
+     */
+    void setInputsInvalid();
+
+    /** Provide the Application the ability to invalidate the outputs. This
+        method is thread safe
+     */
+    void setOutputsInvalid();
+
 
 
 protected:

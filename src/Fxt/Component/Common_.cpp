@@ -120,3 +120,19 @@ bool Common_::resolveReferences( Fxt::Point::DatabaseApi& pointDb,
 
     return true;
 }
+
+bool Common_::validatePointTypes( Fxt::Point::Api* arrayOfPoints[], uint8_t numPoints, const char* expectedGUID )
+{
+    for ( uint8_t i=0; i < numPoints; i++ )
+    {
+        if ( arrayOfPoints[i] != nullptr )
+        {
+            if ( strcmp( arrayOfPoints[i]->getTypeGuid(), expectedGUID ) != 0 )
+            {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}

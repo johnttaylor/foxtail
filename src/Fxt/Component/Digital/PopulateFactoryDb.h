@@ -20,10 +20,10 @@
 
 
 #include "Fxt/Component/Digital/And16GateFactory.h"
-#include "Fxt/Component/Digital/ByteSplitterFactory.h"
+#include "Fxt/Component/Digital/ByteDemuxFactory.h"
 
 static Fxt::Component::Digital::And16GateFactory            and16GateFactory_( FXT_MY_APP_COMPONENT_FACTORY_DB );
-static Fxt::Component::Digital::ByteSplitterFactory         byteSplitterFactory_( FXT_MY_APP_COMPONENT_FACTORY_DB );
+static Fxt::Component::Digital::ByteDemuxFactory         byteSplitterFactory_( FXT_MY_APP_COMPONENT_FACTORY_DB );
 
 
 #endif  // end header latch

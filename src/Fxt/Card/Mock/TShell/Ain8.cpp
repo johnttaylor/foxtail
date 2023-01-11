@@ -101,6 +101,25 @@ Cpl::TShell::Command::Result_T Ain8::execute( Cpl::TShell::Context_& context, ch
         return io ? Command::eSUCCESS : Command::eERROR_IO;
     }
 
+    // Invalid an Input value
+    if ( tokens.numParameters() == 3 && *(tokens.getParameter( 1 )) == 'i' )
+    {
+        // Channel number
+        unsigned channel;
+        if ( Cpl::Text::a2ui( channel, tokens.getParameter( 2 ) ) == false )
+        {
+            outtext.format( "ERROR: invalid channel number (%s)", tokens.getParameter( 2 ) );
+            context.writeFrame( outtext );
+            return Command::eERROR_INVALID_ARGS;
+        }
+
+
+        m_curCard->setInvalid( channel );
+        outtext.format( "Channel #%02u set to INVALID", channel );
+        io &= context.writeFrame( outtext );
+        return io ? Command::eSUCCESS : Command::eERROR_IO;
+    }
+
     // Set Card
     if ( tokens.numParameters() == 4 && *(tokens.getParameter( 1 )) == 's' )
     {

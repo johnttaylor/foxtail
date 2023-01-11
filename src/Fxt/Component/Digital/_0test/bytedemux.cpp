@@ -11,7 +11,7 @@
 
 #include "Catch/catch.hpp"
 #include "Cpl/System/_testsupport/Shutdown_TS.h"
-#include "Fxt/Component/Digital/ByteSplitter.h"
+#include "Fxt/Component/Digital/ByteDemux.h"
 #include "Fxt/Component/Digital/Error.h"
 #include "Fxt/Point/Database.h"
 #include "Fxt/Point/FactoryDatabase.h"
@@ -26,9 +26,9 @@ using namespace Fxt::Component::Digital;
 
 #define COMP_DEFINTION     "{\"components\":[" \
                            "{" \
-                           "  \"name\": \"ByteSplitter #1\"," \
+                           "  \"name\": \"ByteDemux #1\"," \
                            "  \"type\": \"8c55aa52-3bc8-4b8a-ad73-c434a0bbd4b4\"," \
-                           "  \"typeName\": \"Fxt::Component::Digital::ByteSplitter\"," \
+                           "  \"typeName\": \"Fxt::Component::Digital::ByteDemux\"," \
                            "  \"inputs\": [" \
                            "      {" \
                            "          \"name\": \"input byte\"," \
@@ -96,7 +96,7 @@ static size_t statefulHeap_[10000];
 
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE( "ByteSplitter" )
+TEST_CASE( "ByteDemux" )
 {
     Cpl::System::Shutdown_TS::clearAndUseCounter();
     Cpl::Memory::LeanHeap generalAllocator( generalHeap_, sizeof( generalHeap_ ) );
@@ -111,7 +111,7 @@ TEST_CASE( "ByteSplitter" )
         REQUIRE( err == DeserializationError::Ok );
 
         JsonVariant componentObj = doc["components"][0];
-        ByteSplitter uut( componentObj,
+        ByteDemux uut( componentObj,
                           generalAllocator,
                           statefulAllocator,
                           pointFactoryDb,
@@ -119,8 +119,8 @@ TEST_CASE( "ByteSplitter" )
 
         REQUIRE( uut.getErrorCode() == Fxt::Type::Error::SUCCESS() );
 
-        REQUIRE( strcmp( uut.getTypeGuid(), ByteSplitter::GUID_STRING ) == 0 );
-        REQUIRE( strcmp( uut.getTypeName(), ByteSplitter::TYPE_NAME ) == 0 );
+        REQUIRE( strcmp( uut.getTypeGuid(), ByteDemux::GUID_STRING ) == 0 );
+        REQUIRE( strcmp( uut.getTypeName(), ByteDemux::TYPE_NAME ) == 0 );
 
         REQUIRE( uut.isStarted() == false );
     }
@@ -132,7 +132,7 @@ TEST_CASE( "ByteSplitter" )
         REQUIRE( err == DeserializationError::Ok );
 
         JsonVariant componentObj = doc["components"][0];
-        ByteSplitter uut( componentObj,
+        ByteDemux uut( componentObj,
                           generalAllocator,
                           statefulAllocator,
                           pointFactoryDb,
@@ -153,7 +153,7 @@ TEST_CASE( "ByteSplitter" )
         REQUIRE( err == DeserializationError::Ok );
 
         JsonVariant componentObj = doc["components"][0];
-        ByteSplitter uut( componentObj,
+        ByteDemux uut( componentObj,
                           generalAllocator,
                           statefulAllocator,
                           pointFactoryDb,

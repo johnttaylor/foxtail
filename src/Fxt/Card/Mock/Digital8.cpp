@@ -20,10 +20,10 @@
 using namespace Fxt::Card::Mock;
 
 #define MAX_INPUT_CHANNELS      1
-#define INPUT_CHANNEL_OFFSET    0
+#define INPUT_POINT_OFFSET      0
 
 #define MAX_OUTPUT_CHANNELS     1
-#define OUTPUT_CHANNEL_OFFSET   (MAX_INPUT_CHANNELS)
+#define OUTPUT_POINT_OFFSET     (MAX_INPUT_CHANNELS)
 
 #define TOTAL_MAX_CHANNELS      (MAX_INPUT_CHANNELS + MAX_OUTPUT_CHANNELS)
 
@@ -84,7 +84,7 @@ void Digital8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAll
                                        channelObj,
                                        m_error,
                                        MAX_INPUT_CHANNELS,
-                                       INPUT_CHANNEL_OFFSET,
+                                       INPUT_POINT_OFFSET,
                                        channelNum_notUsed,
                                        generalAllocator,
                                        cardStatefulDataAllocator,
@@ -108,7 +108,7 @@ void Digital8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAll
                                        channelObj,
                                        m_error,
                                        MAX_INPUT_CHANNELS,
-                                       INPUT_CHANNEL_OFFSET,
+                                       INPUT_POINT_OFFSET,
                                        channelNum_notUsed,
                                        generalAllocator,
                                        cardStatefulDataAllocator,
@@ -139,7 +139,7 @@ void Digital8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAll
                                        channelObj,
                                        m_error,
                                        MAX_OUTPUT_CHANNELS,
-                                       OUTPUT_CHANNEL_OFFSET,
+                                       OUTPUT_POINT_OFFSET,
                                        channelNum_notUsed,
                                        generalAllocator,
                                        haStatefulDataAllocator,     // All Output Virtual Points are part of the HA Data set
@@ -162,7 +162,7 @@ void Digital8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAll
                                        channelObj,
                                        m_error,
                                        MAX_OUTPUT_CHANNELS,
-                                       OUTPUT_CHANNEL_OFFSET,
+                                       OUTPUT_POINT_OFFSET,
                                        channelNum_notUsed,
                                        generalAllocator,
                                        cardStatefulDataAllocator,
@@ -220,27 +220,40 @@ const char* Digital8::getTypeName() const noexcept
 
 
 ///////////////////////////////////////////////////////////////////////////////
-void Digital8::setInputs( uint8_t bitMaskToOR )
+void Digital8::writeInputs( uint8_t byteTowrite )
 {
     Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
 
-    if ( m_ioRegisterPoints[INPUT_CHANNEL_OFFSET] != nullptr )
+    if ( m_ioRegisterPoints[INPUT_POINT_OFFSET] != nullptr )
     {
         // Update the IO Register
-        Fxt::Point::Uint8* pt = (Fxt::Point::Uint8*) m_ioRegisterPoints[INPUT_CHANNEL_OFFSET];
+        Fxt::Point::Uint8* pt = (Fxt::Point::Uint8*) m_ioRegisterPoints[INPUT_POINT_OFFSET];
+        pt->write( byteTowrite );
+    }
+}
+
+void Digital8::orInputs( uint8_t bitMaskToOR )
+{
+    Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
+
+    if ( m_ioRegisterPoints[INPUT_POINT_OFFSET] != nullptr )
+    {
+        // Update the IO Register
+        Fxt::Point::Uint8* pt = (Fxt::Point::Uint8*) m_ioRegisterPoints[INPUT_POINT_OFFSET];
         pt->maskOr( bitMaskToOR );
     }
 }
+
 
 
 void Digital8::clearInputs( uint8_t bitMaskToAND )
 {
     Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
 
-    if ( m_ioRegisterPoints[INPUT_CHANNEL_OFFSET] != nullptr )
+    if ( m_ioRegisterPoints[INPUT_POINT_OFFSET] != nullptr )
     {
         // Update the IO Register
-        Fxt::Point::Uint8* pt = (Fxt::Point::Uint8*) m_ioRegisterPoints[INPUT_CHANNEL_OFFSET];
+        Fxt::Point::Uint8* pt = (Fxt::Point::Uint8*) m_ioRegisterPoints[INPUT_POINT_OFFSET];
         pt->maskAnd( bitMaskToAND );
     }
 }
@@ -249,25 +262,62 @@ void Digital8::toggleInputs( uint8_t bitMaskToXOR )
 {
     Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
 
-    if ( m_ioRegisterPoints[INPUT_CHANNEL_OFFSET] != nullptr )
+    if ( m_ioRegisterPoints[INPUT_POINT_OFFSET] != nullptr )
     {
         // Update the IO Register
-        Fxt::Point::Uint8* pt = (Fxt::Point::Uint8*) m_ioRegisterPoints[INPUT_CHANNEL_OFFSET];
+        Fxt::Point::Uint8* pt = (Fxt::Point::Uint8*) m_ioRegisterPoints[INPUT_POINT_OFFSET];
         pt->maskXor( bitMaskToXOR );
     }
 }
 
-bool Digital8::getOutputs( uint8_t& valueMask )
+bool Digital8::getOutputs( uint8_t& dstOutputVal )
 {
     Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
 
-    if ( m_ioRegisterPoints[INPUT_CHANNEL_OFFSET] != nullptr )
+    if ( m_ioRegisterPoints[OUTPUT_POINT_OFFSET] != nullptr )
     {
         // Read the IO Register
-        Fxt::Point::Uint8* pt = (Fxt::Point::Uint8*) m_ioRegisterPoints[INPUT_CHANNEL_OFFSET];
-        return pt->read( valueMask );
+        Fxt::Point::Uint8* pt = (Fxt::Point::Uint8*) m_ioRegisterPoints[OUTPUT_POINT_OFFSET];
+        return pt->read( dstOutputVal );
     }
 
     return false;
 }
 
+bool Digital8::getInputs( uint8_t& dstInputVal )
+{
+    Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
+
+    if ( m_ioRegisterPoints[INPUT_POINT_OFFSET] != nullptr )
+    {
+        // Read the IO Register
+        Fxt::Point::Uint8* pt = (Fxt::Point::Uint8*) m_ioRegisterPoints[INPUT_POINT_OFFSET];
+        return pt->read( dstInputVal );
+    }
+
+    return false;
+}
+
+void Digital8::setInputsInvalid()
+{
+    Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
+
+    if ( m_ioRegisterPoints[INPUT_POINT_OFFSET] != nullptr )
+    {
+        // Invalidate the IO Register
+        Fxt::Point::Uint8* pt = (Fxt::Point::Uint8*) m_ioRegisterPoints[INPUT_POINT_OFFSET];
+        return pt->setInvalid();
+    }
+}
+
+void Digital8::setOutputsInvalid()
+{
+    Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
+
+    if ( m_ioRegisterPoints[OUTPUT_POINT_OFFSET] != nullptr )
+    {
+        // Invalidate the IO Register
+        Fxt::Point::Uint8* pt = (Fxt::Point::Uint8*) m_ioRegisterPoints[OUTPUT_POINT_OFFSET];
+        return pt->setInvalid();
+    }
+}

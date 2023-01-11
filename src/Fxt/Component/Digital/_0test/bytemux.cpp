@@ -11,7 +11,7 @@
 
 #include "Catch/catch.hpp"
 #include "Cpl/System/_testsupport/Shutdown_TS.h"
-#include "Fxt/Component/Digital/And16Gate.h"
+#include "Fxt/Component/Digital/ByteMux.h"
 #include "Fxt/Component/Digital/Error.h"
 #include "Fxt/Point/Database.h"
 #include "Fxt/Point/FactoryDatabase.h"
@@ -26,79 +26,76 @@ using namespace Fxt::Component::Digital;
 
 #define COMP_DEFINTION     "{\"components\":[" \
                            "{" \
-                           "  \"name\": \"AND Gate#1\"," \
-                           "  \"type\": \"e62e395c-d27a-4821-bba9-aa1e6de42a05\"," \
-                           "  \"typeName\": \"Fxt::Component::Digital::And16Gate\"," \
+                           "  \"name\": \"ByteMux #1\"," \
+                           "  \"type\": \"d60f2daf-9709-42d6-ba92-b76f641eb930\"," \
+                           "  \"typeName\": \"Fxt::Component::Digital::ByteMux\"," \
                            "  \"inputs\": [" \
                            "      {" \
-                           "          \"name\": \"Signal#1\"," \
+                           "          \"bit\": 4," \
+                           "          \"name\": \"bit4\"," \
                            "          \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
                            "          \"typeName\": \"Fxt::Point::Bool\"," \
-                           "          \"idRef\": 2" \
+                           "          \"idRef\": 0," \
+                           "          \"negate\": false" \
                            "      }," \
                            "      {" \
-                           "          \"name\": \"Signal#2\"," \
-                           "          \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
-                           "          \"typeName\": \"Fxt::Point::Bool\"," \
-                           "          \"idRef\": 0" \
-                           "      }," \
-                           "      {" \
-                           "          \"name\": \"Signal#3\"," \
-                           "          \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
-                           "          \"typeName\": \"Fxt::Point::Bool\"," \
-                           "          \"idRef\": 4" \
-                           "      }" \
-                           "    ]," \
-                           "  \"outputs\": [" \
-                           "      {" \
-                           "          \"name\": \"out\"," \
-                           "          \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
-                           "          \"typeName\": \"Fxt::Point::Bool\"," \
-                           "          \"idRef\": 3" \
-                           "      }," \
-                           "      {" \
-                           "          \"name\": \"/out\"," \
+                           "          \"bit\": 0," \
+                           "          \"name\": \"/bit1\"," \
                            "          \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
                            "          \"typeName\": \"Fxt::Point::Bool\"," \
                            "          \"idRef\": 1," \
                            "          \"negate\": true" \
+                           "      }," \
+                           "      {" \
+                           "          \"bit\": 1," \
+                           "          \"name\": \"bit1\"," \
+                           "          \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
+                           "          \"typeName\": \"Fxt::Point::Bool\"," \
+                           "          \"idRef\": 2" \
                            "      }" \
-                           "    ]" \
+                           "    ]," \
+                           "  \"outputs\": [" \
+                           "      {" \
+                           "          \"name\": \"input byte\"," \
+                           "          \"type\": \"918cff9e-8007-4666-99ac-384b9624329c\"," \
+                           "          \"typeName\": \"Fxt::Point::Uint8\"," \
+                           "          \"idRef\": 3" \
+                           "      }" \
+                          "    ]" \
                            "  }" \
                            "]}"
 
 static size_t generalHeap_[10000];
 static size_t statefulHeap_[10000];
 
-#define MAX_POINTS      5
+#define MAX_POINTS              4
 
-#define POINT_ID__IN_SIGNAL_1   2
-#define POINT_ID__IN_SIGNAL_2   0
-#define POINT_ID__IN_SIGNAL_3   4
+#define POINT_ID__OUT_SIGNAL    3
 
-#define POINT_ID__OUT           3
-#define POINT_ID__OUT_NEGATED   1
+#define POINT_ID__BIT4_IN       0
+#define POINT_ID__BIT0_IN       1
+#define POINT_ID__BIT1_IN       2
 
 
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE( "And16Gate" )
+TEST_CASE( "ByteMux" )
 {
     Cpl::System::Shutdown_TS::clearAndUseCounter();
-    Cpl::Memory::LeanHeap generalAllocator(            generalHeap_, sizeof( generalHeap_ ) );
-    Cpl::Memory::LeanHeap statefulAllocator(           statefulHeap_, sizeof( statefulHeap_ ) );
-    Fxt::Point::Database<MAX_POINTS>                   pointDb;
-    Fxt::Point::FactoryDatabase                        pointFactoryDb;
-    Cpl::Text::FString<Fxt::Type::Error::MAX_TEXT_LEN> buf;
+    Cpl::Memory::LeanHeap generalAllocator( generalHeap_, sizeof( generalHeap_ ) );
+    Cpl::Memory::LeanHeap statefulAllocator( statefulHeap_, sizeof( statefulHeap_ ) );
+    Fxt::Point::FactoryDatabase      pointFactoryDb;
+    Fxt::Point::Database<MAX_POINTS> pointDb;
 
     SECTION( "create component" )
     {
         StaticJsonDocument<10240> doc;
         DeserializationError err = deserializeJson( doc, COMP_DEFINTION );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("json error=%s", err.c_str()) );
         REQUIRE( err == DeserializationError::Ok );
 
         JsonVariant componentObj = doc["components"][0];
-        And16Gate uut( componentObj,
+        ByteMux uut( componentObj,
                        generalAllocator,
                        statefulAllocator,
                        pointFactoryDb,
@@ -106,8 +103,8 @@ TEST_CASE( "And16Gate" )
 
         REQUIRE( uut.getErrorCode() == Fxt::Type::Error::SUCCESS() );
 
-        REQUIRE( strcmp( uut.getTypeGuid(), And16Gate::GUID_STRING ) == 0 );
-        REQUIRE( strcmp( uut.getTypeName(), And16Gate::TYPE_NAME ) == 0 );
+        REQUIRE( strcmp( uut.getTypeGuid(), ByteMux::GUID_STRING ) == 0 );
+        REQUIRE( strcmp( uut.getTypeName(), ByteMux::TYPE_NAME ) == 0 );
 
         REQUIRE( uut.isStarted() == false );
     }
@@ -119,7 +116,7 @@ TEST_CASE( "And16Gate" )
         REQUIRE( err == DeserializationError::Ok );
 
         JsonVariant componentObj = doc["components"][0];
-        And16Gate uut( componentObj,
+        ByteMux uut( componentObj,
                        generalAllocator,
                        statefulAllocator,
                        pointFactoryDb,
@@ -140,7 +137,7 @@ TEST_CASE( "And16Gate" )
         REQUIRE( err == DeserializationError::Ok );
 
         JsonVariant componentObj = doc["components"][0];
-        And16Gate uut( componentObj,
+        ByteMux uut( componentObj,
                        generalAllocator,
                        statefulAllocator,
                        pointFactoryDb,
@@ -148,55 +145,40 @@ TEST_CASE( "And16Gate" )
 
         REQUIRE( uut.getErrorCode() == Fxt::Type::Error::SUCCESS() );
 
-        Fxt::Point::Bool* ptIn1  = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_1, statefulAllocator );
-        Fxt::Point::Bool* ptIn2  = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_2, statefulAllocator );
-        Fxt::Point::Bool* ptIn3  = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_3, statefulAllocator );
-        Fxt::Point::Bool* ptOut1 = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__OUT, statefulAllocator );
-        Fxt::Point::Bool* ptOut2 = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__OUT_NEGATED, statefulAllocator );
-        
+        Fxt::Point::Uint8* ptOut    = new(std::nothrow) Fxt::Point::Uint8( pointDb, POINT_ID__OUT_SIGNAL, statefulAllocator );
+        Fxt::Point::Bool*  ptInBit0 = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT0_IN, statefulAllocator );
+        Fxt::Point::Bool*  ptInBit1 = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT1_IN, statefulAllocator );
+        Fxt::Point::Bool*  ptInBit4 = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT4_IN, statefulAllocator );
+
         Fxt::Type::Error errCode = uut.resolveReferences( pointDb );
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", Fxt::Type::Error::toText( errCode, buf )) );
         REQUIRE( errCode == Fxt::Type::Error::SUCCESS() );
-        
+
         uint64_t nowUsec = Cpl::System::ElapsedTime::milliseconds() * 1000;
         REQUIRE( uut.start( nowUsec ) == Fxt::Type::Error::SUCCESS() );
         REQUIRE( uut.isStarted() == true );
 
         REQUIRE( uut.execute( nowUsec ) == Fxt::Type::Error::SUCCESS() );
-        REQUIRE( ptOut1->isNotValid() );
-        REQUIRE( ptOut2->isNotValid() );
+        REQUIRE( ptOut->isNotValid() );
 
-        ptIn1->write( true );
+        ptInBit0->write( true );
+        ptInBit1->write( true );
         REQUIRE( uut.execute( nowUsec ) == Fxt::Type::Error::SUCCESS() );
-        REQUIRE( ptOut1->isNotValid() );
-        REQUIRE( ptOut2->isNotValid() );
+        REQUIRE( ptOut->isNotValid() );
+        
+        ptInBit4->write( true );
+        REQUIRE( uut.execute( nowUsec ) == Fxt::Type::Error::SUCCESS() );
+        uint8_t val;
+        REQUIRE( ptOut->read( val ) );
+        REQUIRE( val == 0b10010 );
 
-        ptIn2->write( false );
+        ptInBit0->write( false );
         REQUIRE( uut.execute( nowUsec ) == Fxt::Type::Error::SUCCESS() );
-        REQUIRE( ptOut1->isNotValid() );
-        REQUIRE( ptOut2->isNotValid() );
+        REQUIRE( ptOut->read( val ) );
+        REQUIRE( val == 0b10011 );
 
-        ptIn3->write( false );
+        ptInBit1->setInvalid();
         REQUIRE( uut.execute( nowUsec ) == Fxt::Type::Error::SUCCESS() );
-        bool val;
-        REQUIRE( ptOut1->read( val ) );
-        REQUIRE( val == false );
-        REQUIRE( ptOut2->read( val ) );
-        REQUIRE( val == true );
-
-        ptIn3->write( true );
-        REQUIRE( uut.execute( nowUsec ) == Fxt::Type::Error::SUCCESS() );
-        REQUIRE( ptOut1->read( val ) );
-        REQUIRE( val == false );
-        REQUIRE( ptOut2->read( val ) );
-        REQUIRE( val == true );
-
-        ptIn2->write( true );
-        REQUIRE( uut.execute( nowUsec ) == Fxt::Type::Error::SUCCESS() );
-        REQUIRE( ptOut1->read( val ) );
-        REQUIRE( val == true );
-        REQUIRE( ptOut2->read( val ) );
-        REQUIRE( val == false );
+        REQUIRE( ptOut->isNotValid() );
     }
 
     REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );

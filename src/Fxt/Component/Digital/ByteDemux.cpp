@@ -11,21 +11,22 @@
 /** @file */
 
 
-#include "And16Gate.h"
+#include "ByteDemux.h"
+#include "Error.h"
 #include "Cpl/System/Assert.h"
-#include "Fxt/Point/Bool.h"
 #include <stdint.h>
 
 ///
 using namespace Fxt::Component::Digital;
 
+#define MAX_BIT_OFFSET      7
 
 ///////////////////////////////////////////////////////////////////////////////
-And16Gate::And16Gate( JsonVariant&                       componentObject,
-                      Cpl::Memory::ContiguousAllocator&  generalAllocator,
-                      Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
-                      Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
-                      Fxt::Point::DatabaseApi&           dbForPoints )
+ByteDemux::ByteDemux( JsonVariant&                       componentObject,
+                            Cpl::Memory::ContiguousAllocator&  generalAllocator,
+                            Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
+                            Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
+                            Fxt::Point::DatabaseApi&           dbForPoints )
     : m_numInputs( 0 )
     , m_numOutputs( 0 )
 {
@@ -36,23 +37,52 @@ And16Gate::And16Gate( JsonVariant&                       componentObject,
     parseConfiguration( componentObject );
 }
 
-And16Gate::~And16Gate()
+ByteDemux::~ByteDemux()
 {
     // Nothing required
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-const char* And16Gate::getTypeGuid() const noexcept
+Fxt::Type::Error ByteDemux::execute( int64_t currentTickUsec ) noexcept
+{
+    // NOTE: The method NEVER fails
+
+    // Get my input
+    uint8_t inValue;
+    if ( !m_inputRefs[0]->read( inValue ) )
+    {
+        // Set the outputs to invalid if at least one input is invalid
+        for ( int i=0; i < m_numOutputs; i++ )
+        {
+            m_outputRefs[i]->setInvalid();
+        }
+        return Fxt::Type::Error::SUCCESS();
+    }
+
+    // Derive my outputs
+    for ( int i=0; i < m_numOutputs; i++ )
+    {
+        uint8_t bitMask   = 1 << m_bitOffsets[i];
+        bool    outputVal = bitMask & inValue;
+        bool    finalOut  = m_outputNegated[i] ? !outputVal : outputVal;
+        m_outputRefs[i]->write( finalOut );
+    }
+
+    return Fxt::Type::Error::SUCCESS();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+const char* ByteDemux::getTypeGuid() const noexcept
 {
     return GUID_STRING;
 }
 
-const char* And16Gate::getTypeName() const noexcept
+const char* ByteDemux::getTypeName() const noexcept
 {
     return TYPE_NAME;
 }
 
-bool And16Gate::parseConfiguration( JsonVariant & obj ) noexcept
+bool ByteDemux::parseConfiguration( JsonVariant & obj ) noexcept
 {
     // Parse Input Point references
     JsonArray inputs = obj["inputs"];
@@ -62,8 +92,8 @@ bool And16Gate::parseConfiguration( JsonVariant & obj ) noexcept
         if ( !parsePointReferences( (size_t*) m_inputRefs,  // Start by storing the point ID
                                     MAX_INPUTS,
                                     inputs,
-                                    fullErr( Err_T::TOO_MANY_INPUT_REFS ),
-                                    fullErr( Err_T::BAD_INPUT_REFERENCE ),
+                                    fullErr( Fxt::Component::Err_T::TOO_MANY_INPUT_REFS ),
+                                    fullErr( Fxt::Component::Err_T::BAD_INPUT_REFERENCE ),
                                     numInputsFound ) )
         {
             return false;
@@ -78,10 +108,10 @@ bool And16Gate::parseConfiguration( JsonVariant & obj ) noexcept
     {
         unsigned numOutputsFound;
         if ( !parsePointReferences( (size_t*) m_outputRefs, // Start by storing the point ID
-                                    MAX_INPUTS,
+                                    MAX_OUTPUTS,
                                     outputs,
-                                    fullErr( Err_T::TOO_MANY_INPUT_REFS ),
-                                    fullErr( Err_T::BAD_INPUT_REFERENCE ),
+                                    fullErr( Fxt::Component::Err_T::TOO_MANY_OUTPUT_REFS ),
+                                    fullErr( Fxt::Component::Err_T::BAD_OUTPUT_REFERENCE ),
                                     numOutputsFound ) )
         {
             return false;
@@ -90,24 +120,30 @@ bool And16Gate::parseConfiguration( JsonVariant & obj ) noexcept
         m_numOutputs = numOutputsFound;
     }
 
-    // Parse output negate qualifiers
+    // Parse output bit offsets and negate qualifiers
     for ( unsigned i=0; i < outputs.size(); i++ )
     {
         m_outputNegated[i] = outputs[i]["negate"] | false;
+        m_bitOffsets[i]    = outputs[i]["bit"] | (MAX_BIT_OFFSET+1);
+        if ( m_bitOffsets[i] > MAX_BIT_OFFSET )
+        {
+            m_error = fullErr( Err_T::DEMUX_INVALID_BIT_OFFSET );
+            return false;
+        }
     }
 
     return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-Fxt::Type::Error And16Gate::resolveReferences( Fxt::Point::DatabaseApi& pointDb )  noexcept
+Fxt::Type::Error ByteDemux::resolveReferences( Fxt::Point::DatabaseApi& pointDb )  noexcept
 {
     // Resolve INPUT references
     if ( !Common_::resolveReferences( pointDb,
                                       (Fxt::Point::Api **) m_inputRefs,    // Pass as array of generic Point pointers
                                       m_numInputs ) )
     {
-        m_error = fullErr( Err_T::UNRESOLVED_INPUT_REFRENCE );
+        m_error = fullErr( Fxt::Component::Err_T::UNRESOLVED_INPUT_REFRENCE );
         return m_error;
     }
 
@@ -116,57 +152,23 @@ Fxt::Type::Error And16Gate::resolveReferences( Fxt::Point::DatabaseApi& pointDb 
                                       (Fxt::Point::Api **) m_outputRefs,    // Pass as array of generic Point pointers
                                       m_numOutputs ) )
     {
-        m_error = fullErr( Err_T::UNRESOLVED_OUTPUT_REFRENCE );
+        m_error = fullErr( Fxt::Component::Err_T::UNRESOLVED_OUTPUT_REFRENCE );
         return m_error;
     }
 
     // Validate Point types
-    if ( validatePointTypes( (Fxt::Point::Api **) m_inputRefs, m_numInputs, Fxt::Point::Bool::GUID_STRING ) == false )
+    if ( validatePointTypes( (Fxt::Point::Api **) m_inputRefs, m_numInputs, Fxt::Point::Uint8::GUID_STRING) == false )
     {
-        m_error = fullErr( Err_T::INPUT_REFRENCE_BAD_TYPE );
+        m_error = fullErr( Fxt::Component::Err_T::INPUT_REFRENCE_BAD_TYPE );
         return m_error;
     }
     if ( validatePointTypes( (Fxt::Point::Api **) m_outputRefs, m_numOutputs, Fxt::Point::Bool::GUID_STRING ) == false )
     {
-        m_error = fullErr( Err_T::OUTPUT_REFRENCE_BAD_TYPE );
+        m_error = fullErr( Fxt::Component::Err_T::OUTPUT_REFRENCE_BAD_TYPE );
         return m_error;
     }
 
-    m_error = Fxt::Type::Error::SUCCESS();   // Set my state to 'ready-to-start'
+    m_error = fullErr( Err_T::SUCCESS);   // Set my state to 'ready-to-start'
     return m_error;
 }
 
-Fxt::Type::Error And16Gate::execute( int64_t currentTickUsec ) noexcept
-{
-    // NOTE: The method NEVER fails
-
-    // Read all of my inputs!
-    bool outputVal = true;
-    for ( int i=0; i < m_numInputs; i++ )
-    {
-        bool temp = true;
-
-        // Set the outputs to invalid if at least one input is invalid
-        if ( !m_inputRefs[i]->read( temp ) )
-        {
-            // Invalidate the outputs
-            for ( int i=0; i < m_numOutputs; i++ )
-            {
-                m_outputRefs[i]->setInvalid();
-            }
-            return Fxt::Type::Error::SUCCESS();
-        }
-
-        // AND the individual inputs
-        outputVal &= temp;
-    }
-
-    // If I get here all of the inputs have valid values -->generate output signals
-    for ( int i=0; i < m_numOutputs; i++ )
-    {
-        bool finalOut = m_outputNegated[i] ? !outputVal : outputVal;
-        m_outputRefs[i]->write( finalOut );
-    }
-
-    return Fxt::Type::Error::SUCCESS();
-}

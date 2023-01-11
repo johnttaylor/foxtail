@@ -1,5 +1,5 @@
-#ifndef Fxt_Component_Digital_ByteSplitter_h_
-#define Fxt_Component_Digital_ByteSplitter_h_
+#ifndef Fxt_Component_Digital_ByteDemux_h_
+#define Fxt_Component_Digital_ByteDemux_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -44,10 +44,9 @@ namespace Digital {
     JSON Definition
     --------------------
     {
-       "name": "Byte Splitter #1"                           // *Text label for the component
+       "name": "Byte Demux #1"                           // *Text label for the component
        "type": "8c55aa52-3bc8-4b8a-ad73-c434a0bbd4b4",      // Identifies the card type.  Value comes from the Supported/Available-card-list
-       "typeName": "Fxt::Component::Digital::ByteSplitter"  // *OPTIONAL: Human readable type name
-       "exeOrder": 0                                        // Execution order within the Logic Chain. Range: 0-64K
+       "typeName": "Fxt::Component::Digital::ByteDemux"  // *OPTIONAL: Human readable type name
        "inputs": [                                          // Array of Point references that supply the Component's input values.  Number of elements: 1-16
           {
             "name": "input byte",                           // human readable name for the input value
@@ -82,14 +81,14 @@ namespace Digital {
 
     \endcode
  */
-class ByteSplitter : public Fxt::Component::Common_
+class ByteDemux : public Fxt::Component::Common_
 {
 public:
     /// Type ID for the card
     static constexpr const char*    GUID_STRING = "8c55aa52-3bc8-4b8a-ad73-c434a0bbd4b4";
 
     /// Type name for the card
-    static constexpr const char*    TYPE_NAME   = "Fxt::Component::Digital::ByteSplitter";
+    static constexpr const char*    TYPE_NAME   = "Fxt::Component::Digital::ByteDemux";
 
     /// Size (in bytes) of Stateful data that will be allocated on the HA Heap
     static constexpr const size_t   HA_STATEFUL_HEAP_SIZE = 0;
@@ -103,14 +102,14 @@ public:
 
 public:
     /// Constructor
-    ByteSplitter( JsonVariant&                       componentObject,
+    ByteDemux( JsonVariant&                       componentObject,
                   Cpl::Memory::ContiguousAllocator&  generalAllocator,
                   Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
                   Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
                   Fxt::Point::DatabaseApi&           dbForPoints );
 
     /// Destructor
-    ~ByteSplitter();
+    ~ByteDemux();
 
 public:
     /// See Fxt::Component::Api
@@ -129,9 +128,6 @@ public:
 protected:
     /// Helper method to parse the card's JSON config
     bool parseConfiguration( JsonVariant& obj ) noexcept;
-
-    /// Helper method to valid point reference types
-    bool validatePointTypes( Fxt::Point::Api* arrayOfPoints[], uint8_t numPoints, const char* expectedGUID );
 
 protected:
     /// List of Input Points.  Note: Initially the point IDs are stored instead of pointers

@@ -202,8 +202,10 @@ TEST_CASE( "Digital8" )
         pointPtr = (Fxt::Point::Uint8*) pointDb.lookupById( 3 );
         pointPtr->write( 0xAA );
         uut.flushOutputs( 0LL );
-        REQUIRE( uut.getOutputs( pointValue ) );
+        REQUIRE( uut.getInputs( pointValue ) );
         REQUIRE( pointValue == 0x01 );
+        REQUIRE( uut.getOutputs( pointValue ) );
+        REQUIRE( pointValue == 0xAA );
     }
 
     REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );

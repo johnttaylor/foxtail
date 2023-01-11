@@ -36,11 +36,13 @@ namespace Digital {
     @param GlobalErrCodes                   Enum
 
     @param SUCCESS                          NO ERROR
-    @param SPLITTER_INVALID_BIT_OFFSET      An invalid/out-of-range bit offset was specified for xxxSplitter component
+    @param DEMUX_INVALID_BIT_OFFSET         An invalid/out-of-range bit offset was specified for Demux component
+    @param MUX_INVALID_BIT_OFFSET           An invalid/out-of-range bit offset was specified for Mux component
  */
 BETTER_ENUM( Err_T, uint8_t
              , SUCCESS = 0
-             , SPLITTER_INVALID_BIT_OFFSET = 1
+             , DEMUX_INVALID_BIT_OFFSET
+             , MUX_INVALID_BIT_OFFSET
 );
 
 /** This concrete class defines the Error Category for the Digital namespace.

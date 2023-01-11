@@ -63,6 +63,10 @@ protected:
                             Fxt::Point::Api*         srcIdsAndDstPointers[],
                             unsigned                 numElements );
 
+    /// Helper method to valid point reference types
+    bool validatePointTypes( Fxt::Point::Api* arrayOfPoints[], uint8_t numPoints, const char* expectedGUID );
+
+
 protected:
     /// Time marker (in microseconds) of last execution cycle
     uint64_t         m_lastExeCycleTimeUsec;

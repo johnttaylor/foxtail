@@ -168,9 +168,9 @@ static const char* NODE_DEFINITION = R"literalString(
               "components": [
                 {
                   "id": 100,
-                  "name": "ByteSplitter #1",
+                  "name": "ByteDemux #1",
                   "type": "8c55aa52-3bc8-4b8a-ad73-c434a0bbd4b4",
-                  "typeName": "Fxt::Component::Digital::ByteSplitter",
+                  "typeName": "Fxt::Component::Digital::ByteDemux",
                   "inputs": [
                     {
                       "type": "918cff9e-8007-4666-99ac-384b9624329c",

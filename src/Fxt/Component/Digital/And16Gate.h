@@ -44,7 +44,6 @@ namespace Digital {
        "name": "AND Gate#1"                                 // Text label for the component
        "type": "e62e395c-d27a-4821-bba9-aa1e6de42a05",      // Identifies the card type.  Value comes from the Supported/Available-card-list
        "typeName": "Fxt::Component::Digital::And16Gate"     // OPTIONAL: Human readable type name
-       "exeOrder": 0                                        // Execution order within the Logic Chain. Range: 0-64K
        "inputs": [                                          // Array of Point references that supply the Component's input values.  Number of elements: 1-16
           {
             "name": "Signal A",                             // human readable name for the input value
@@ -123,9 +122,6 @@ public:
 protected:
     /// Helper method to parse the card's JSON config
     bool parseConfiguration( JsonVariant& obj ) noexcept;
-
-    /// Helper method to valid point reference types
-    bool validatePointTypes( Fxt::Point::Api* arrayOfPoints[], uint8_t numPoints );
 
 protected:
     /// List of Input Points.  Note: Initially the point IDs are stored instead of pointers
