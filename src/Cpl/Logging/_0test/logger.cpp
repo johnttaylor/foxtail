@@ -10,249 +10,197 @@
 *----------------------------------------------------------------------------*/
 
 #include "Catch/catch.hpp"
-#include "Cpl/Io/Null.h"
-#include "Cpl/Io/LineWriter.h"
-#include "Cpl/Io/LineReader.h"
-#include "Cpl/Io/AtomicOutput.h"
-#include "Cpl/Io/TeeOutput.h"
 #include "Cpl/System/Trace.h"
 #include "Cpl/System/_testsupport/Shutdown_TS.h"
 #include "Cpl/Text/FString.h"
-#include "Cpl/Container/SList.h"
-
-
+#include "Cpl/Type/enum.h"
+#include "Cpl/Logging/Api.h"
+#include "Cpl/Dm/ModelDatabase.h"
 
 #define SECT_     "_0test"
 
 /// 
-using namespace Cpl::Io;
+using namespace Cpl::Logging;
 
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Use anonymous namespace to make my class local-to-the-file in scope
 namespace {
 
-class MyContext
+BETTER_ENUM( CategoryId, uint32_t
+             , CRITICAL    = 0x00000001
+             , WARNING     = 0x00000002
+             , EVENT       = 0x00000004 );
+
+BETTER_ENUM( CriticalMsg, uint16_t, OUT_OF_MEMORY, BOB_HAPPENED );
+BETTER_ENUM( WarningMsg, uint16_t, BATTERY_LOW, CONNECTION_DROPPED, LOGGING_OVERFLOW );
+BETTER_ENUM( EventMsg, uint16_t, ELVIS_HAS_LEFT_THE_BUILDING, SKY_IS_FALLING );
+
+void logf( CriticalMsg msgId, const char* msgTextFormat, ... ) noexcept
 {
-public:
-    int m_count;
+    va_list ap;
+    va_start( ap, msgTextFormat );
+    vlogf<CategoryId, CriticalMsg>( CategoryId::CRITICAL, msgId, msgTextFormat, ap );
+    va_end( ap );
+}
 
-public:
-    MyContext():m_count( 0 ) {}
+void logf( WarningMsg msgId, const char* msgTextFormat, ... ) noexcept
+{
+    va_list ap;
+    va_start( ap, msgTextFormat );
+    vlogf<CategoryId, WarningMsg>( CategoryId::WARNING, msgId, msgTextFormat, ap );
+    va_end( ap );
+}
 
-public:
-    bool testOutputs( Output& fd )
-    {
-        m_count++;
-        return fd.write( "Hello" );
-        return fd.write( " World" );
-    }
-};
-}; // end namespace
+void logf( EventMsg msgId, const char* msgTextFormat, ... ) noexcept
+{
+    va_list ap;
+    va_start( ap, msgTextFormat );
+    vlogf<CategoryId, EventMsg>( CategoryId::EVENT, msgId, msgTextFormat, ap );
+    va_end( ap );
+}
+
+} // end namespace
+
+
+// Allocate/create my Data model stuffs
+static Cpl::Dm::ModelDatabase    modelDb_( "ignoreThisParameter_usedToInvokeTheStaticConstructor" );
+static Cpl::Dm::Mp::Uint32       mp_fifoCount( modelDb_, "fifoCount" );
+
+// Create the Logging FIFO
+#define MAX_FIFO_ENTRIES    5
+static Cpl::Logging::EntryData_T fifoMemory_[MAX_FIFO_ENTRIES];
+static Cpl::Container::RingBufferMP<Cpl::Logging::EntryData_T> logFifo_( MAX_FIFO_ENTRIES, fifoMemory_, mp_fifoCount );
+
+static CplLoggingTime_T nowValue_;
+CplLoggingTime_T Cpl::Logging::now() noexcept
+{
+    return nowValue_++;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE( "null", "[null]" )
+TEST_CASE( "logger" )
 {
     CPL_SYSTEM_TRACE_FUNC( SECT_ );
     Cpl::System::Shutdown_TS::clearAndUseCounter();
+    logFifo_.clearTheBuffer();
+    mp_fifoCount.setInvalid();
 
-    //     
-    Null fd;
-    char dummyChar = 29;
-
-    REQUIRE( fd.read( dummyChar ) == false );
-    REQUIRE( dummyChar == 29 );
-
-    Cpl::Text::FString<10> buffer( "bob" );
-    REQUIRE( fd.read( buffer ) == false );
-    REQUIRE( buffer == "" );
-
-    int myBuffer[10] = { 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29 };
-    int bytesRead    = 1;
-    REQUIRE( fd.read( myBuffer, sizeof( myBuffer ), bytesRead ) == false );
-    REQUIRE( bytesRead == 0 );
-    REQUIRE( fd.available() == false );
-
-    //
-    int bytesWritten;
-    REQUIRE( fd.write( 'a' ) );
-    REQUIRE( fd.write( "bob's your uncle" ) );
-    REQUIRE( fd.write( buffer ) );
-    REQUIRE( fd.write( buffer, "Hello %s", "World" ) );
-    REQUIRE( buffer == "Hello Worl" );
-    REQUIRE( fd.write( myBuffer, sizeof( myBuffer ) ) );
-    REQUIRE( fd.write( myBuffer, sizeof( myBuffer ), bytesWritten ) );
-    REQUIRE( (size_t) bytesWritten == sizeof( myBuffer ) );
-    fd.flush();
-    fd.close();
-    REQUIRE( fd.write( buffer ) == false ); // Fails because close() was called!
-
-
-    // Ensure the diamond inheritance/Container Item stuff works
-    Null apple;
-    Null orange;
-    Null cherry;
-
-    CPL_SYSTEM_TRACE_MSG( SECT_, ("apple=%p,  inPtr=%p, outPtr=%p, inOutPtr=%p", &apple, (Input*) &apple, (Output*) &apple, (InputOutput*) &apple) );
-    CPL_SYSTEM_TRACE_MSG( SECT_, ("orange=%p, inPtr=%p, outPtr=%p, inOutPtr=%p", &orange, (Input*) &orange, (Output*) &orange, (InputOutput*) &orange) );
-    CPL_SYSTEM_TRACE_MSG( SECT_, ("cherry=%p, inPtr=%p, outPtr=%p, inOutPtr=%p", &cherry, (Input*) &cherry, (Output*) &cherry, (InputOutput*) &cherry) );
-
-    Cpl::Container::SList<Input>        inlist;
-    Cpl::Container::SList<Output>       outlist;
-    Cpl::Container::SList<InputOutput>  iolist;
-
-    inlist.put( apple );
-    outlist.put( orange );
-    iolist.put( cherry );
-
-    // Should generate fatal errors
-    inlist.put( cherry );
-    REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 1u );
-    outlist.put( apple );
-    REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 1u );
-    iolist.put( orange );
-    REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 1u );
-
-    // Empty the list
-    REQUIRE( inlist.get() != 0 );
-    REQUIRE( inlist.get() == 0 );
-    REQUIRE( outlist.get() != 0 );
-    REQUIRE( outlist.get() == 0 );
-    REQUIRE( iolist.get() != 0 );
-    REQUIRE( iolist.get() == 0 );
-
-    // Try different lists
-    iolist.put( apple );
-    inlist.put( orange );
-    outlist.put( cherry );
-
-    // Empty the list
-    REQUIRE( inlist.get() != 0 );
-    REQUIRE( inlist.get() == 0 );
-    REQUIRE( outlist.get() != 0 );
-    REQUIRE( outlist.get() == 0 );
-    REQUIRE( iolist.get() != 0 );
-    REQUIRE( iolist.get() == 0 );
-
-
-    // I don't have a useful concrete streams to test the following -->but I can at least make sure they compile & link
-    Null fd2;
-    LineWriter writer( fd2 );
-    REQUIRE( writer.println( "Hello World" ) );
-    LineReader reader( fd2 );
-    REQUIRE( reader.readln( buffer ) == false );
-
-    // I don't have a useful concrete streams to test the following -->but I can at least make sure they compile & link
-    Cpl::System::Mutex      mylock;
-    MyContext               testContext;
-    AtomicOutput<MyContext> atomicfd( fd2, mylock );
-    REQUIRE( atomicfd.write( "hello world" ) );
-    REQUIRE( atomicfd.requestOutputs( testContext, &MyContext::testOutputs ) );
-    REQUIRE( testContext.m_count == 1 );
-    REQUIRE( atomicfd.requestOutputs( testContext, &MyContext::testOutputs ) );
-    REQUIRE( testContext.m_count == 2 );
-
-    // I don't have a useful concrete streams to test the following -->but I can at least make sure they compile & link
-    TeeOutput many( apple, cherry );
-    REQUIRE( many.write( "[Hello (apple, cherry)]" ) );
-    many.add( orange );
-    REQUIRE( many.write( "[World! (apple, cherry, orange)]" ) );
-    REQUIRE( many.remove( apple ) );
-    REQUIRE( many.write( "[Goodbye! (cherry, orange)]" ) );
-    REQUIRE( many.remove( apple ) == false );
-    REQUIRE( many.remove( orange ) );
-    REQUIRE( many.remove( cherry ) );
-    REQUIRE( many.remove( fd ) == false );
-    REQUIRE( many.write( "[One more try! (none)]" ) );
-    many.close();
-    REQUIRE( many.write( "[Should fail!]" ) == false );
-
-
-    REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );
-}
-
-TEST_CASE( "close", "[close]" )
-{
-    CPL_SYSTEM_TRACE_FUNC( SECT_ );
-    Cpl::System::Shutdown_TS::clearAndUseCounter();
-
-    //     
-    Null fd;
-    char dummyChar = 29;
-
-    fd.close();
-    REQUIRE( fd.read( dummyChar ) == false );
-    REQUIRE( dummyChar == 29 );
-
-    //
-    REQUIRE( fd.write( 'a' ) == false );
-
-    // I don't have a useful concrete streams to test the following -->but I can at least make sure they compile & link
-    Null fd2;
-    fd2.close();
-    LineWriter writer( fd2 );
-    REQUIRE( writer.println( "Hello World" ) == false );
-    LineReader reader( fd2 );
-    Cpl::Text::FString<10> buffer( "bob" );
-    REQUIRE( reader.readln( buffer ) == false );
-
-    // I don't have a useful concrete streams to test the following -->but I can at least make sure they compile & link
-    Cpl::System::Mutex      mylock;
-    MyContext               testContext;
-    AtomicOutput<MyContext> atomicfd( fd2, mylock );
-    REQUIRE( atomicfd.write( "hello world" ) == false );
-    REQUIRE( atomicfd.requestOutputs( testContext, &MyContext::testOutputs ) == false );
-    REQUIRE( testContext.m_count == 1 );
-    REQUIRE( atomicfd.requestOutputs( testContext, &MyContext::testOutputs ) == false );
-    REQUIRE( testContext.m_count == 2 );
-
-    REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );
-}
-
-TEST_CASE( "TeeOutput", "[TeeOutput]" )
-{
-    CPL_SYSTEM_TRACE_FUNC( SECT_ );
-    Cpl::System::Shutdown_TS::clearAndUseCounter();
-
-    SECTION( "basic" )
+    SECTION( "happy path" )
     {
-        // I don't have a useful concrete streams to test the following -->but I can at least make sure they compile & link
-        Null apple;
-        Null cherry;
-        Null orange;
-        apple.close();
-        cherry.close();
-        TeeOutput many( apple, cherry );
-        many.add( orange );
-        REQUIRE( many.write( "[World! (apple, cherry, orange)]" ) == false );
-        REQUIRE( many.firstFailed() == &apple );
-        REQUIRE( many.nextFailed( apple ) == &cherry );
-        REQUIRE( many.remove( apple ) );
-        REQUIRE( many.write( "[Goodbye! (cherry, orange)]" ) == true );
-        REQUIRE( many.remove( cherry ) );
-        REQUIRE( many.firstFailed() == 0 );
-        REQUIRE( many.write( "[One more try! (none)]" ) == true );
-        many.close();
-        REQUIRE( many.write( "[Should fail!]" ) == false );
+        initialize( logFifo_,
+                    CategoryId::WARNING,
+                    (+CategoryId::WARNING)._to_string(),
+                    WarningMsg::LOGGING_OVERFLOW,
+                    (+WarningMsg::LOGGING_OVERFLOW)._to_string() );
+                    
+
+        logf( CriticalMsg::BOB_HAPPENED, "dang that bob!" );
+        logf( WarningMsg::CONNECTION_DROPPED, "status=%d", true );
+        logf( EventMsg::ELVIS_HAS_LEFT_THE_BUILDING, "So long and thanks for the music" );
+
+        uint32_t logCount;
+        bool     valid = mp_fifoCount.read( logCount );
+        REQUIRE( valid );
+        REQUIRE( logCount == 3 );
+
+        EntryData_T logEntry;
+        bool result = logFifo_.remove( logEntry );
+        REQUIRE( result );
+        REQUIRE( logEntry.category == CategoryId::CRITICAL );
+        REQUIRE( logEntry.msgId == CriticalMsg::BOB_HAPPENED );
+
+        result = logFifo_.remove( logEntry );
+        REQUIRE( result );
+        REQUIRE( logEntry.category == CategoryId::WARNING );
+        REQUIRE( logEntry.msgId == WarningMsg::CONNECTION_DROPPED );
+
+        result = logFifo_.remove( logEntry );
+        REQUIRE( result );
+        REQUIRE( logEntry.category == CategoryId::EVENT );
+        REQUIRE( logEntry.msgId == EventMsg::ELVIS_HAS_LEFT_THE_BUILDING );
+
+        result = logFifo_.remove( logEntry );
+        REQUIRE( result == false);
+
+        shutdown();
     }
 
-    SECTION( "basic2" )
+    SECTION( "queue overflow" )
     {
-        // I don't have a useful concrete streams to test the following -->but I can at least make sure they compile & link
-        Null apple;
-        Null cherry;
-        Null orange;
-        apple.close();
-        cherry.close();
-        TeeOutput many( apple, cherry );
-        many.add( orange );
-        REQUIRE( many.write( "[World! (apple, cherry, orange)]" ) == false );
-        many.flush();
-        REQUIRE( many.removeAndGetNextFailed(apple) == &cherry );
-        REQUIRE( many.write( "[Goodbye! (cherry, orange)]" ) == true );
-        many.close();
-        REQUIRE( many.write( "[Should fail!]" ) == false );
+        initialize( logFifo_,
+                    CategoryId::WARNING,
+                    (+CategoryId::WARNING)._to_string(),
+                    WarningMsg::LOGGING_OVERFLOW,
+                    (+WarningMsg::LOGGING_OVERFLOW)._to_string() );
+
+
+        logf( CriticalMsg::BOB_HAPPENED, "dang that bob!" );
+        logf( WarningMsg::CONNECTION_DROPPED, "status=%d", true );
+        logf( EventMsg::ELVIS_HAS_LEFT_THE_BUILDING, "So long and thanks for the music" );
+        logf( CriticalMsg::BOB_HAPPENED, "dang that bob!" );
+        logf( WarningMsg::CONNECTION_DROPPED, "status=%d", true );
+        logf( EventMsg::ELVIS_HAS_LEFT_THE_BUILDING, "So long and thanks for the music" );
+        logf( CriticalMsg::BOB_HAPPENED, "dang that bob!" );
+        logf( WarningMsg::CONNECTION_DROPPED, "status=%d", true );
+        logf( EventMsg::ELVIS_HAS_LEFT_THE_BUILDING, "So long and thanks for the music" );
+
+        uint32_t logCount;
+        bool     valid = mp_fifoCount.read( logCount );
+        REQUIRE( valid );
+        REQUIRE( logCount == MAX_FIFO_ENTRIES );
+
+        EntryData_T logEntry;
+        bool result = logFifo_.remove( logEntry );
+        REQUIRE( result );
+        REQUIRE( logEntry.category == CategoryId::CRITICAL );
+        REQUIRE( logEntry.msgId == CriticalMsg::BOB_HAPPENED );
+
+        result = logFifo_.remove( logEntry );
+        REQUIRE( result );
+        REQUIRE( logEntry.category == CategoryId::WARNING );
+        REQUIRE( logEntry.msgId == WarningMsg::CONNECTION_DROPPED );
+
+        result = logFifo_.remove( logEntry );
+        REQUIRE( result );
+        REQUIRE( logEntry.category == CategoryId::EVENT );
+        REQUIRE( logEntry.msgId == EventMsg::ELVIS_HAS_LEFT_THE_BUILDING );
+
+        result = logFifo_.remove( logEntry );
+        REQUIRE( result );
+        REQUIRE( logEntry.category == CategoryId::CRITICAL );
+        REQUIRE( logEntry.msgId == CriticalMsg::BOB_HAPPENED );
+
+        result = logFifo_.remove( logEntry );
+        REQUIRE( result );
+        REQUIRE( logEntry.category == CategoryId::WARNING );
+        REQUIRE( logEntry.msgId == WarningMsg::CONNECTION_DROPPED );
+
+        result = logFifo_.remove( logEntry );
+        REQUIRE( result == false );
+
+
+        logf( EventMsg::ELVIS_HAS_LEFT_THE_BUILDING, "So long and thanks for the music" );
+        valid = mp_fifoCount.read( logCount );
+        REQUIRE( valid );
+        REQUIRE( logCount == 2 );
+
+        result = logFifo_.remove( logEntry );
+        REQUIRE( result );
+        REQUIRE( logEntry.category == CategoryId::WARNING );
+        REQUIRE( logEntry.msgId == WarningMsg::LOGGING_OVERFLOW );
+
+        result = logFifo_.remove( logEntry );
+        REQUIRE( result );
+        REQUIRE( logEntry.category == CategoryId::EVENT );
+        REQUIRE( logEntry.msgId == EventMsg::ELVIS_HAS_LEFT_THE_BUILDING );
+
+        result = logFifo_.remove( logEntry );
+        REQUIRE( result == false );
+
+        shutdown();
     }
 
     REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );
 }
+

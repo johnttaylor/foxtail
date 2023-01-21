@@ -20,8 +20,21 @@
     The size does NOT include the space reserved for the null terminator
  */
 #ifndef OPTION_CPL_LOGGING_MAX_MSG_TEXT_LEN
-#define OPTION_CPL_LOGGING_MAX_MSG_TEXT_LEN     128
+#define OPTION_CPL_LOGGING_MAX_MSG_TEXT_LEN             (128+OPTION_CPL_LOGGING_MAX_LEN_CATEGORY_ID_TEXT+1+OPTION_CPL_LOGGING_MAX_LEN_MESSAGE_ID_TEXT+2)   // Allow space for the textified Category and Message IDs
 #endif
+
+/** Maximum number of characters in the application CategoryID's enum symbols
+ */
+#ifndef OPTION_CPL_LOGGING_MAX_LEN_CATEGORY_ID_TEXT
+#define OPTION_CPL_LOGGING_MAX_LEN_CATEGORY_ID_TEXT     16
+#endif
+
+/** Maximum number of characters in the application MessageID's enum symbols
+*/
+#ifndef OPTION_CPL_LOGGING_MAX_LEN_MESSAGE_ID_TEXT
+#define OPTION_CPL_LOGGING_MAX_LEN_MESSAGE_ID_TEXT      32
+#endif
+
 
 ///
 namespace Cpl {

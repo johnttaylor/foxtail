@@ -9,152 +9,167 @@
 * Redistributions of the source code must retain the above copyright notice.
 *----------------------------------------------------------------------------*/
 
-#include "CrcChunk.h"
+#include "Api.h"
 #include "Private_.h"
-#include "Cpl/Checksum/Crc32EthernetFast.h"
+#include "Cpl/System/Mutex.h"
 #include "Cpl/System/Assert.h"
-#include <memory.h>
+#include "Cpl/System/Trace.h"
 
-#define SECT_ "Cpl::Persistent"
+using namespace Cpl::Logging;
 
-#define FRAME_OFFSET_DATA_LEN   0
-#define FRAME_OFFSET_DATA       (sizeof(size_t))
+static bool                                       queueFull_;
+static unsigned                                   overflowCount_;
+static Cpl::Container::RingBufferMP<EntryData_T>* logEntryFIFO_;
+static Cpl::System::Mutex                         lock_;
+static uint32_t                                   categoryMask_;
+static uint32_t                                   overflowCatId_;
+static uint16_t                                   overflowMsgId_;
+static const char*                                overflowCatText_;
+static const char*                                overflowMsgText_;
 
-#define CRC_SIZE                (sizeof(uint32_t))
 
-#define FRAME_OVERHEAD          (FRAME_OFFSET_DATA+CRC_SIZE)
+////////////////////////////////////////////////////////////////////////////////
+void Cpl::Logging::initialize( Cpl::Container::RingBufferMP<EntryData_T>& logEntryFIFO,
+                               uint32_t                                   categoryIdForQueueOverflow,
+                               const char*                                categoryQueueOverflowText,
+                               uint16_t                                   messageIdForQueueOverflow,
+                               const char*                                messageQueueOverflowText ) noexcept
+{
+    CPL_SYSTEM_ASSERT( categoryQueueOverflowText );
+    CPL_SYSTEM_ASSERT( messageQueueOverflowText );
 
-///
-using namespace Cpl::Persistent;
+    logEntryFIFO_    = &logEntryFIFO;
+    categoryMask_    = 0xFFFFFFFF;
+    overflowCatId_   = categoryIdForQueueOverflow;
+    overflowCatText_ = categoryQueueOverflowText;
+    overflowMsgId_   = messageIdForQueueOverflow;
+    overflowMsgText_ = messageQueueOverflowText;
+    queueFull_ = false;
+    logEntryFIFO.clearTheBuffer();
+}
 
-/////////////////////
-CrcChunk::CrcChunk( RegionMedia& m_region )
-    : m_region( m_region )
+void Cpl::Logging::shutdown() noexcept
 {
 }
 
-void CrcChunk::start( Cpl::Dm::MailboxServer& myMbox ) noexcept
+uint32_t Cpl::Logging::enableCategory( uint32_t categoryMask ) noexcept
 {
-    m_region.start( myMbox );
-    m_dataLen = m_region.getRegionLength() - FRAME_OVERHEAD;
+    Cpl::System::Mutex::ScopeBlock criticalSection( lock_ );
+    uint32_t oldMask = categoryMask_;
+    categoryMask_   |= categoryMask;
+    return oldMask;
 }
 
-void CrcChunk::stop() noexcept
+uint32_t Cpl::Logging::disableCategory( uint32_t categoryMask ) noexcept
 {
-    m_region.stop();
+    Cpl::System::Mutex::ScopeBlock criticalSection( lock_ );
+    uint32_t oldMask = categoryMask_;
+    categoryMask_   &= ~categoryMask;
+    return oldMask;
 }
 
-bool CrcChunk::pushToRecord( Payload& dstHandler )
+uint32_t Cpl::Logging::getCategoryEnabledMask() noexcept
 {
-    return dstHandler.putData( g_workBuffer_, m_dataLen );
-}
-size_t CrcChunk::pullFromRecord( Payload& srcHandler )
-{
-    return srcHandler.getData( g_workBuffer_, m_dataLen );
+    Cpl::System::Mutex::ScopeBlock criticalSection( lock_ );
+    return categoryMask_;
 }
 
-void CrcChunk::reset()
+uint32_t Cpl::Logging::setCategoryMask( uint32_t newMask ) noexcept
 {
-    // Nothing required at this time (i.e. hook for child classes)
+    Cpl::System::Mutex::ScopeBlock criticalSection( lock_ );
+    return categoryMask_ = newMask;
 }
 
-size_t CrcChunk::getMetadataLength() const noexcept
+////////////////////////////////////////////////////////////////////////////////
+inline static void startText( Cpl::Text::String& dst,
+                              const char*        catIdText,
+                              const char*        msgIdText )
 {
-    return FRAME_OVERHEAD;
+    dst.format( "%.*s.%.*s: ", OPTION_CPL_LOGGING_MAX_LEN_CATEGORY_ID_TEXT, catIdText, OPTION_CPL_LOGGING_MAX_LEN_MESSAGE_ID_TEXT, msgIdText );
 }
 
-/////////////////////
-bool CrcChunk::loadData( Payload& dstHandler, size_t index ) noexcept
+
+static void createAndAddOverflowEntry() noexcept
 {
-    Cpl::Checksum::Crc32EthernetFast crc;
-    crc.reset();
-    size_t offset  = index;
+    // Generate entry
+    EntryData_T logEntry;
+    logEntry.category  = overflowCatId_;
+    logEntry.msgId     = overflowMsgId_;
+    logEntry.timestamp = now();
 
-    // Read the data length
-    size_t datalen;
-    if ( m_region.read( offset, &datalen, sizeof( datalen ) ) == sizeof( datalen ) )
-    {
-        // Make sure we have enough buffer space (Note: Check for rolling over the size_t bit space)
-        size_t dataRemaining = datalen + CRC_SIZE;
-        if ( dataRemaining <= sizeof( g_workBuffer_ ) && datalen < dataRemaining )
-        {
-            crc.accumulate( &datalen, sizeof( datalen ) );
-            offset += sizeof( datalen );
+    // Format text
+    Cpl::Text::FString<OPTION_CPL_LOGGING_MAX_MSG_TEXT_LEN> stringBuf;
+    startText( stringBuf, overflowCatText_, overflowMsgText_ );
+    stringBuf.formatAppend( "overflow count=%d", overflowCount_ );
 
-            // Read the data AND CRC bytes
-            uint8_t* dstPtr      = g_workBuffer_;
-            while ( dataRemaining )
-            {
-                size_t bytesRead = m_region.read( offset, dstPtr, dataRemaining );
-                if ( bytesRead == 0 )
-                {
-                    break;
-                }
-                crc.accumulate( g_workBuffer_, bytesRead );
-                offset        += bytesRead;
-                dataRemaining -= bytesRead;
-            }
-
-            // Check the CRC
-            if ( crc.isOkay() )
-            {
-                // Remember/set the datalen
-                m_dataLen = datalen;
-
-                // Pass the data to the client
-                return pushToRecord( dstHandler );
-            }
-        }
-    }
-
-    // If I get here that was an error OR a BAD CRC
-    return false;
+    // Add to the FIFO and echo to trace
+    logEntryFIFO_->add( logEntry );
+    CPL_SYSTEM_TRACE_MSG( overflowCatText_, ("%s", stringBuf.getString()) );
 }
 
-bool CrcChunk::updateData( Payload& srcHandler, size_t index, bool invalidate ) noexcept
+static bool isQueFull() noexcept
 {
-    // Get the Payload data
-    memset( g_workBuffer_, 0, sizeof( g_workBuffer_ ) );     // zero out all of the data - to ensure known values for the 'extra-space' (if there is any)
-    size_t len = pullFromRecord( srcHandler );
-    if ( len == 0 )
+    CPL_SYSTEM_ASSERT( logEntryFIFO_ );
+
+    // Return immediately if not in the overflowed state
+    if ( !queueFull_ )
     {
         return false;
     }
 
-    // Zero the data when erasing the record
-    if ( invalidate )
+    // Has space freed up?
+    unsigned available = logEntryFIFO_->getMaxItems() - logEntryFIFO_->getNumItems();
+    if ( available >= OPTION_CPL_LOGGING_MIN_QUEUE_SPACE )
     {
-        memset( g_workBuffer_, 0, sizeof( g_workBuffer_ ) );     
+        createAndAddOverflowEntry();
+        overflowCount_ = 0;
+        queueFull_     = false;
+        return false;
     }
 
-    // Set my record length based on the size of the application data
-    m_dataLen = len;
-
-    // Housekeeping
-    Cpl::Checksum::Crc32EthernetFast crc;
-    size_t                           offset  = index;
-    bool                             result = true;
-    crc.reset();
-
-    // Data Length
-    result &= m_region.write( offset, &m_dataLen, sizeof( m_dataLen ) );
-    crc.accumulate( &m_dataLen, sizeof( m_dataLen ) );
-    offset += sizeof( m_dataLen );
-
-    // Payload
-    result &= m_region.write( offset, g_workBuffer_, m_dataLen );
-    crc.accumulate( g_workBuffer_, m_dataLen );
-    offset += m_dataLen;
-
-    // CRC
-    uint8_t crcBuffer[CRC_SIZE];
-    crc.finalize( crcBuffer );
-    if ( invalidate )
-    {
-        // Corrupt the CRC when erasing the data
-        crcBuffer[0] ^= 0xA5;
-    }
-    result &= m_region.write( offset, crcBuffer, CRC_SIZE );
-
-    return result;
+    // No space - count the number of 'dropped' log entries
+    overflowCount_++;
+    return true;
 }
+
+
+////////////////////////////////////////////////////////////////////////////////
+void Cpl::Logging::createAndAddLogEntry_( uint32_t    category,
+                                          const char* catIdText,
+                                          uint16_t    msgId,
+                                          const char* msgIdText,
+                                          const char* format,
+                                          va_list     ap ) noexcept
+{
+    Cpl::System::Mutex::ScopeBlock criticalSection( lock_ );
+
+    // Check if enabled
+    if ( (category & categoryMask_) )
+    {
+        // Generate entry
+        EntryData_T logEntry;
+        logEntry.category  = category;
+        logEntry.msgId     = msgId;
+        logEntry.timestamp = now();
+
+        // Format text
+        Cpl::Text::FString<OPTION_CPL_LOGGING_MAX_MSG_TEXT_LEN> stringBuf;
+        startText( stringBuf, catIdText, msgIdText );
+        stringBuf.vformatAppend( format, ap );
+
+        // Manage the queue overflow state
+        if ( !isQueFull() )
+        {
+            // Space available in the queue -->add the new entry
+            logEntryFIFO_->add( logEntry ); 
+            if ( logEntryFIFO_->isFull() )
+            {
+                queueFull_ = true;
+            }
+        }
+
+        // Echo to the Trace engine (always echoed even when not added to the FIFO)
+        CPL_SYSTEM_TRACE_MSG( catIdText, ("%s", stringBuf.getString()) );
+    }
+}
+
