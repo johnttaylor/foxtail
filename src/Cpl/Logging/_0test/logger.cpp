@@ -201,6 +201,65 @@ TEST_CASE( "logger" )
         shutdown();
     }
 
+    SECTION( "mask" )
+    {
+        initialize( logFifo_,
+                    CategoryId::WARNING,
+                    (+CategoryId::WARNING)._to_string(),
+                    WarningMsg::LOGGING_OVERFLOW,
+                    (+WarningMsg::LOGGING_OVERFLOW)._to_string() );
+
+
+        setCategoryMask( CategoryId::EVENT );
+
+        logf( CriticalMsg::BOB_HAPPENED, "dang that bob!" );
+        logf( WarningMsg::CONNECTION_DROPPED, "status=%d", true );
+        logf( EventMsg::ELVIS_HAS_LEFT_THE_BUILDING, "So long and thanks for the music" );
+
+        uint32_t logCount;
+        bool     valid = mp_fifoCount.read( logCount );
+        REQUIRE( valid );
+        REQUIRE( logCount == 1 );
+
+        EntryData_T logEntry;
+        bool result = logFifo_.remove( logEntry );
+        REQUIRE( result );
+        REQUIRE( logEntry.category == CategoryId::EVENT );
+        REQUIRE( logEntry.msgId == EventMsg::ELVIS_HAS_LEFT_THE_BUILDING );
+
+        result = logFifo_.remove( logEntry );
+        REQUIRE( result == false );
+
+        enableCategory( CategoryId::WARNING );
+        uint32_t mask = getCategoryEnabledMask();
+        REQUIRE( mask == (CategoryId::WARNING | CategoryId::EVENT ) );
+
+        logf( CriticalMsg::BOB_HAPPENED, "dang that bob!" );
+        logf( WarningMsg::CONNECTION_DROPPED, "status=%d", true );
+
+        result = logFifo_.remove( logEntry );
+        REQUIRE( result );
+        REQUIRE( logEntry.category == CategoryId::WARNING );
+        REQUIRE( logEntry.msgId == WarningMsg::CONNECTION_DROPPED );
+
+        result = logFifo_.remove( logEntry );
+        REQUIRE( result == false );
+
+        disableCategory( CategoryId::EVENT );
+        logf( CriticalMsg::BOB_HAPPENED, "dang that bob!" );
+        logf( EventMsg::ELVIS_HAS_LEFT_THE_BUILDING, "So long and thanks for the music" );
+        logf( WarningMsg::CONNECTION_DROPPED, "status=%d", true );
+
+        result = logFifo_.remove( logEntry );
+        REQUIRE( result );
+        REQUIRE( logEntry.category == CategoryId::WARNING );
+        REQUIRE( logEntry.msgId == WarningMsg::CONNECTION_DROPPED );
+
+        result = logFifo_.remove( logEntry );
+        REQUIRE( result == false );
+
+        shutdown();
+    }
     REQUIRE( Cpl::System::Shutdown_TS::getAndClearCounter() == 0u );
 }
 
