@@ -11,7 +11,7 @@
 #define USE_CPL_TYPE_BETTERENUM_MIN_FOOTPRINT
 #define USE_CPL_TYPE_BETTERENUM_EXTEND_128_32
 
-// Large TShell input
-#define OPTION_CPL_TSHELL_PROCESSOR_INPUT_SIZE      (8*1024)
+// Increase shell input buffer (need just enough keep up with copying into the JSON buffer)
+#define OPTION_CPL_TSHELL_PROCESSOR_INPUT_SIZE      (1024)
 
 #endif

@@ -45,6 +45,11 @@
 #define OPTION_FXT_NODE_TSHELL_NODE_MAX_JSON_FILE_SIZE      (8*1024)
 #endif
 
+/// Size, in bytes, of the Binary JSON document
+#ifndef OPTION_FXT_NODE_TSHELL_NODE_MAX_JSON_DOC_SIZE
+#define OPTION_FXT_NODE_TSHELL_NODE_MAX_JSON_DOC_SIZE       (8*1024)
+#endif
+
 ///
 namespace Fxt {
 ///
@@ -85,7 +90,7 @@ protected:
     Fxt::Point::DatabaseApi&    m_pointDb;
 
     /// Memory to hold binary JSON definition
-    StaticJsonDocument<10240>   m_jsonDoc;
+    StaticJsonDocument<OPTION_FXT_NODE_TSHELL_NODE_MAX_JSON_DOC_SIZE> m_jsonDoc;
 
     /// JSON file buffer
     uint8_t m_jsonBuffer[OPTION_FXT_NODE_TSHELL_NODE_MAX_JSON_FILE_SIZE+1];
