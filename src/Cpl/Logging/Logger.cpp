@@ -74,10 +74,10 @@ uint32_t Cpl::Logging::getCategoryEnabledMask() noexcept
     return categoryMask_;
 }
 
-uint32_t Cpl::Logging::setCategoryMask( uint32_t newMask ) noexcept
+void Cpl::Logging::setCategoryMask( uint32_t newMask ) noexcept
 {
     Cpl::System::Mutex::ScopeBlock criticalSection( lock_ );
-    return categoryMask_ = newMask;
+    categoryMask_ = newMask;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

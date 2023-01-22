@@ -15,6 +15,7 @@
 #include "Cpl/System/Assert.h"
 #include "Cpl/System/Trace.h"
 #include "Fxt/Point/Api.h"
+#include "Fxt/Logging/Api.h"
 #include <new>
 
 #define SECT_   "Fxt::Card"
@@ -40,6 +41,7 @@ Common_::Common_( uint16_t                           totalNumChannels,
         if ( cardObject["slot"].is<uint8_t>() == false )
         {
             m_error = fullErr( Err_T::MISSING_SLOT );
+            m_error.logIt();
         }
         else
         {
@@ -49,6 +51,7 @@ Common_::Common_( uint16_t                           totalNumChannels,
     else
     {
         m_error = fullErr( Err_T::MEMORY_CARD );
+        m_error.logIt();
     }
 }
 
@@ -122,6 +125,7 @@ Fxt::Point::Api* Common_::createPointForChannel( Fxt::Point::FactoryDatabaseApi&
     if ( channelObject.isNull() )
     {
         cardErrorCode = fullErr( Err_T::BAD_JSON );
+        cardErrorCode.logIt();
         return nullptr;
     }
 
@@ -131,6 +135,7 @@ Fxt::Point::Api* Common_::createPointForChannel( Fxt::Point::FactoryDatabaseApi&
     if ( id == Point::Api::INVALID_ID )
     {
         cardErrorCode = fullErr( Err_T::POINT_MISSING_ID );
+        cardErrorCode.logIt();
         return nullptr;
     }
 
@@ -140,6 +145,7 @@ Fxt::Point::Api* Common_::createPointForChannel( Fxt::Point::FactoryDatabaseApi&
     if ( channelNum == 0 || channelNum > maxChannels || m_ioRegisterPoints[channelIdx] != nullptr )
     {
         m_error = fullErr( Err_T::BAD_CHANNEL_ASSIGNMENTS );
+        m_error.logIt();
         return nullptr;
     }
 
@@ -156,11 +162,13 @@ Fxt::Point::Api* Common_::createPointForChannel( Fxt::Point::FactoryDatabaseApi&
     if ( !result )
     {
         m_error = fullErr( Err_T::FAILED_POINT_CREATED );
+        m_error.logIt();
         return nullptr;
     }
     if ( pointErr != Fxt::Type::Error::SUCCESS() )
     {
         m_error = fullErr( Err_T::POINT_CREATE_ERROR );
+        m_error.logIt();
         return nullptr;
     }
 

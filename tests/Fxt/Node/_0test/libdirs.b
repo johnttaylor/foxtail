@@ -5,6 +5,9 @@ src/Fxt/Node/Mock/Kestrel
 # tests
 src/Fxt/Node/_0test 
 
+src/Cpl/Logging/_mock4test
+src/Fxt/Logging < Api.cpp
+
 src/Fxt/System
 src/Fxt/System/_cpl
 src/Fxt/Type

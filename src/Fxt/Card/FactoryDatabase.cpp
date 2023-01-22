@@ -43,6 +43,7 @@ Api* FactoryDatabase::createCardfromJSON( JsonVariant                        car
     if ( typeGuid == nullptr )
     {
         cardErrorCode = fullErr( Err_T::UNKNOWN_GUID );
+        cardErrorCode.logIt();
         return nullptr;
     }
 
@@ -50,6 +51,7 @@ Api* FactoryDatabase::createCardfromJSON( JsonVariant                        car
     if ( factory == nullptr )
     {
         cardErrorCode = fullErr( Err_T::UNKNOWN_GUID );
+        cardErrorCode.logIt();
         return nullptr;
     }
 

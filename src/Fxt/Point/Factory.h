@@ -63,6 +63,7 @@ public:
         if ( pointObject[pointIdKeyName].is<unsigned long>() == false )
         {
             pointErrorCode = fullErr( Err_T::MISSING_ID );
+            pointErrorCode.logIt();
             return nullptr;
         }
         uint32_t pointId = pointObject[pointIdKeyName].as<unsigned long>();
@@ -79,6 +80,7 @@ public:
                 return newPoint;
             }
             pointErrorCode = fullErr( Err_T::FAILED_DB_INSERT );
+            pointErrorCode.logIt();
         }
         return nullptr;
     }
@@ -137,6 +139,7 @@ public:
         if ( pointObject[pointIdKeyName].is<unsigned long>() == false )
         {
             pointErrorCode = fullErr( Err_T::MISSING_ID );
+            pointErrorCode.logIt();
             return nullptr;
         }
         uint32_t pointId = pointObject[pointIdKeyName].as<unsigned long>();
@@ -146,6 +149,7 @@ public:
              typeConfigObject["numElems"].is<unsigned long>() == false )
         {
             pointErrorCode = fullErr( Err_T::MISSING_TYPE_CFG );
+            pointErrorCode.logIt();
             return nullptr;
         }
         size_t numElems = typeConfigObject["numElems"];
@@ -162,6 +166,7 @@ public:
                 return newPoint;
             }
             pointErrorCode = fullErr( Err_T::FAILED_DB_INSERT );
+            pointErrorCode.logIt();
         }
         return nullptr;
     }

@@ -59,11 +59,13 @@ Api* FactoryCommon_::createFromJSON( JsonVariant              nodeJsonObject,
     if ( numChassis == 0 )
     {
         nodeErrorCode = fullErr( Err_T::PARSE_CHASSIS_ARRAY );
+        nodeErrorCode.logIt();
         return nullptr;
     }
     if ( numChassis > getMaxAllowedChassis() )
     {
         nodeErrorCode = fullErr( Err_T::MAX_CHASSIS_EXCEEDED );
+        nodeErrorCode.logIt();
         return nullptr;
     }
 
@@ -72,6 +74,7 @@ Api* FactoryCommon_::createFromJSON( JsonVariant              nodeJsonObject,
     if ( typeGuid == nullptr || strcmp( typeGuid, getGuid() ) != 0 )
     {
         nodeErrorCode = fullErr( Err_T::NOT_ME );
+        nodeErrorCode.logIt();
         return nullptr;
     }
 
@@ -80,11 +83,13 @@ Api* FactoryCommon_::createFromJSON( JsonVariant              nodeJsonObject,
     if ( node == nullptr )
     {
         nodeErrorCode = fullErr( Err_T::NO_MEMORY_NODE );
+        nodeErrorCode.logIt();
         return nullptr;
     }
     if ( node->getErrorCode() != Fxt::Type::Error::SUCCESS() )
     {
         nodeErrorCode = fullErr( Err_T::NODE_CREATE_ERROR );
+        nodeErrorCode.logIt();
         destroy( *node );
         return nullptr;
     }
@@ -100,6 +105,7 @@ Api* FactoryCommon_::createFromJSON( JsonVariant              nodeJsonObject,
         if ( chassisThread == nullptr || serverApi == nullptr )
         {
             nodeErrorCode = fullErr( Err_T::FAILED_CREATE_CHASSIS_SERVER );
+            nodeErrorCode.logIt();
             destroy( *node );
             return nullptr;
         }
@@ -119,12 +125,14 @@ Api* FactoryCommon_::createFromJSON( JsonVariant              nodeJsonObject,
         if ( chassisPtr == nullptr )
         {
             nodeErrorCode = fullErr( Err_T::FAILED_CREATE_CHASSIS );
+            nodeErrorCode.logIt();
             destroy( *node );
             return nullptr;
         }
         if ( errorCode != Fxt::Type::Error::SUCCESS() )
         {
             nodeErrorCode = fullErr( Err_T::CHASSIS_CREATE_ERROR );
+            nodeErrorCode.logIt();
             destroy( *node );
             return nullptr;
         }

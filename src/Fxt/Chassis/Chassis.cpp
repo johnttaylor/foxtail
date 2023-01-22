@@ -51,6 +51,7 @@ Chassis::Chassis( ServerApi&                         chassisServer,
     {
         m_numScanners = 0;
         m_error       = fullErr( Err_T::NO_MEMORY_SCANNER_LIST );
+        m_error.logIt();
     }
     else
     {
@@ -64,6 +65,7 @@ Chassis::Chassis( ServerApi&                         chassisServer,
     {
         m_numExecutionSets = 0;
         m_error            = fullErr( Err_T::NO_MEMORY_EXESET_LIST );
+        m_error.logIt();
     }
     else
     {
@@ -77,6 +79,7 @@ Chassis::Chassis( ServerApi&                         chassisServer,
     {
         m_numSharedPts = 0;
         m_error        = fullErr( Err_T::NO_MEMORY_SHARED_PTS_LIST );
+        m_error.logIt();
     }
     else
     {
@@ -89,6 +92,7 @@ Chassis::Chassis( ServerApi&                         chassisServer,
     if ( m_inputPeriods == nullptr )
     {
         m_error = fullErr( Err_T::NO_MEMORY_PERIOD_LISTS );
+        m_error.logIt();
     }
     else
     {
@@ -99,6 +103,7 @@ Chassis::Chassis( ServerApi&                         chassisServer,
     if ( m_outputPeriods == nullptr )
     {
         m_error = fullErr( Err_T::NO_MEMORY_PERIOD_LISTS );
+        m_error.logIt();
     }
     else
     {
@@ -109,6 +114,7 @@ Chassis::Chassis( ServerApi&                         chassisServer,
     if ( m_executionPeriods == nullptr )
     {
         m_error = fullErr( Err_T::NO_MEMORY_PERIOD_LISTS );
+        m_error.logIt();
     }
     else
     {
@@ -151,11 +157,13 @@ Fxt::Type::Error Chassis::resolveReferences( Fxt::Point::DatabaseApi & pointDb )
             if ( m_executionSets[i] == nullptr )
             {
                 m_error = fullErr( Err_T::MISSING_EXECUTION_SETS );
+                m_error.logIt();
                 break;
             }
             if ( m_executionSets[i]->resolveReferences( pointDb ) != Fxt::Type::Error::SUCCESS() )
             {
                 m_error = fullErr( Err_T::FAILED_POINT_RESOLVE );
+                m_error.logIt();
                 break;
             }
         }
@@ -176,12 +184,14 @@ bool Chassis::start( uint64_t currentElapsedTimeUsec ) noexcept
             if ( m_scanners[i] == nullptr )
             {
                 m_error = fullErr( Err_T::MISSING_SCANNERS );
+                m_error.logIt();
                 return false;
             }
 
             if ( m_scanners[i]->start( currentElapsedTimeUsec ) == false )
             {
                 m_error = fullErr( Err_T::SCANNER_FAILED_START );
+                m_error.logIt();
                 return false;
             }
         }
@@ -193,6 +203,7 @@ bool Chassis::start( uint64_t currentElapsedTimeUsec ) noexcept
             if ( m_executionSets[i]->start( currentElapsedTimeUsec ) != Fxt::Type::Error::SUCCESS() )
             {
                 m_error = fullErr( Err_T::EXECUTION_SET_FAILED_START );
+                m_error.logIt();
                 return false;
             }
         }
@@ -204,6 +215,7 @@ bool Chassis::start( uint64_t currentElapsedTimeUsec ) noexcept
             if ( m_sharedPts[i] == nullptr )
             {
                 m_error = fullErr( Err_T::MISSING_SHARED_PTS );
+                m_error.logIt();
                 return false;
             }
 
@@ -331,6 +343,7 @@ Fxt::Type::Error Chassis::add( ScannerApi& scannerToAdd ) noexcept
         if ( m_nextScannerIdx >= m_numScanners )
         {
             m_error = fullErr( Err_T::TOO_MANY_SCANNERS );
+            m_error.logIt();
         }
         else
         {
@@ -349,6 +362,7 @@ Fxt::Type::Error Chassis::add( ExecutionSetApi& exeSetToAdd ) noexcept
         if ( m_nextExecutionSetIdx >= m_numExecutionSets )
         {
             m_error = fullErr( Err_T::TOO_MANY_SCANNERS );
+            m_error.logIt();
         }
         else
         {
@@ -367,6 +381,7 @@ Fxt::Type::Error Chassis::add( Fxt::Point::Api& sharedPtToAdd ) noexcept
         if ( m_nextSharedPtIdx >= m_numSharedPts )
         {
             m_error = fullErr( Err_T::TOO_MANY_SHARED_PTS );
+            m_error.logIt();
         }
         else
         {
@@ -387,7 +402,9 @@ Fxt::Type::Error Chassis::buildSchedule() noexcept
         ScannerApi* elemToAdd = m_scanners[i];
         if ( elemToAdd == nullptr )
         {
-            return fullErr( Err_T::FAILED_SCANNER_SCHEDULE_BUILD );
+            Fxt::Type::Error errcode = fullErr( Err_T::FAILED_SCANNER_SCHEDULE_BUILD );
+            errcode.logIt();
+            return errcode;
         }
 
         // Insert into the list by lowest SRM order
@@ -419,7 +436,9 @@ Fxt::Type::Error Chassis::buildSchedule() noexcept
     {
         if ( curScannerElem == nullptr )
         {
-            return fullErr( Err_T::FAILED_SCANNER_SCHEDULE_BUILD );
+            Fxt::Type::Error errcode = fullErr( Err_T::FAILED_SCANNER_SCHEDULE_BUILD );
+            errcode.logIt();
+            return errcode;
         }
 
         m_inputPeriods[i]              = &(curScannerElem->getInputPeriod());
@@ -436,7 +455,9 @@ Fxt::Type::Error Chassis::buildSchedule() noexcept
         ExecutionSetApi* elemToAdd = m_executionSets[i];
         if ( elemToAdd == nullptr )
         {
-            return fullErr( Err_T::FAILED_EXESET_SCHEDULE_BUILD );
+            Fxt::Type::Error errcode = fullErr( Err_T::FAILED_EXESET_SCHEDULE_BUILD );
+            errcode.logIt();
+            return errcode;
         }
 
         // Insert into the list by lowest ERM order
@@ -468,7 +489,9 @@ Fxt::Type::Error Chassis::buildSchedule() noexcept
     {
         if ( curExeSetElem == nullptr )
         {
-            return fullErr( Err_T::FAILED_EXESET_SCHEDULE_BUILD );
+            Fxt::Type::Error errcode = fullErr( Err_T::FAILED_EXESET_SCHEDULE_BUILD );
+            errcode.logIt();
+            return errcode;
         }
 
         m_executionPeriods[i]             = curExeSetElem;
@@ -495,11 +518,13 @@ Api* Api::createChassisfromJSON( JsonVariant                         chassisJson
     if ( chassisJsonObject["scanners"].is<JsonArray>() == false )
     {
         chassisErrorode = fullErr( Err_T::PARSE_SCANNER_ARRAY );
+        chassisErrorode.logIt();
         return nullptr;
     }
     if ( chassisJsonObject["executionSets"].is<JsonArray>() == false )
     {
         chassisErrorode = fullErr( Err_T::PARSE_EXECUTION_SET_ARRAY );
+        chassisErrorode.logIt();
         return nullptr;
     }
 
@@ -509,6 +534,7 @@ Api* Api::createChassisfromJSON( JsonVariant                         chassisJson
     if ( numScanners == 0 )
     {
         chassisErrorode = fullErr( Err_T::PARSE_SCANNER_ARRAY );
+        chassisErrorode.logIt();
         return nullptr;
     }
 
@@ -518,6 +544,7 @@ Api* Api::createChassisfromJSON( JsonVariant                         chassisJson
     if ( numExecutionSets == 0 )
     {
         chassisErrorode = fullErr( Err_T::PARSE_EXECUTION_SET_ARRAY );
+        chassisErrorode.logIt();
         return nullptr;
     }
 
@@ -531,6 +558,7 @@ Api* Api::createChassisfromJSON( JsonVariant                         chassisJson
     if ( fer == ((size_t) (-1)) )
     {
         chassisErrorode = fullErr( Err_T::SCANNER_MISSING_SRM );
+        chassisErrorode.logIt();
         return nullptr;
     }
 
@@ -539,6 +567,7 @@ Api* Api::createChassisfromJSON( JsonVariant                         chassisJson
     if ( memChassis == nullptr )
     {
         chassisErrorode = fullErr( Err_T::NO_MEMORY_CHASSIS );
+        chassisErrorode.logIt();
         return nullptr;
     }
     Api* chassis = new(memChassis) Chassis( chassisServer, generalAllocator, fer, (uint16_t) numScanners, (uint16_t) numExecutionSets, (uint16_t) numSharedPts );
@@ -559,12 +588,14 @@ Api* Api::createChassisfromJSON( JsonVariant                         chassisJson
         if ( scanner == nullptr )
         {
             chassisErrorode = fullErr( Err_T::FAILED_CREATE_SCANNER );
+            chassisErrorode.logIt();
             chassis->~Api();
             return nullptr;
         }
         if ( errorCode != Fxt::Type::Error::SUCCESS() )
         {
             chassisErrorode = fullErr( Err_T::SCANNER_CREATE_ERROR );
+            chassisErrorode.logIt();
             chassis->~Api();
             return nullptr;
         }
@@ -591,12 +622,14 @@ Api* Api::createChassisfromJSON( JsonVariant                         chassisJson
         if ( exeSet == nullptr )
         {
             chassisErrorode = fullErr( Err_T::FAILED_CREATE_EXESET );
+            chassisErrorode.logIt();
             chassis->~Api();
             return nullptr;
         }
         if ( errorCode != Fxt::Type::Error::SUCCESS() )
         {
             chassisErrorode = fullErr( Err_T::EXESET_CREATE_ERROR );
+            chassisErrorode.logIt();
             chassis->~Api();
             return nullptr;
         }
@@ -623,6 +656,7 @@ Api* Api::createChassisfromJSON( JsonVariant                         chassisJson
         if ( pt == nullptr )
         {
             chassisErrorode = fullErr( Err_T::FAILED_CREATE_SHARED_POINTS );
+            chassisErrorode.logIt();
             chassis->~Api();
             return nullptr;
         }

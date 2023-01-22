@@ -74,7 +74,7 @@ uint32_t disableCategory( uint32_t categoryMask ) noexcept;
 
     The method is thread safe
  */
-uint32_t setCategoryMask( uint32_t newMask ) noexcept;
+void setCategoryMask( uint32_t newMask ) noexcept;
 
 /** This method returns the current enabled/disabled Category mask
 

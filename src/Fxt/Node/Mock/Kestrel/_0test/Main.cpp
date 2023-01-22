@@ -71,7 +71,7 @@ int runTheApplication( Cpl::Io::Input& infd, Cpl::Io::Output& outfd )
 {
     // Enable Trace 
     CPL_SYSTEM_TRACE_ENABLE();
-    // CPL_SYSTEM_TRACE_ENABLE_SECTION( "Algorithm" );
+    CPL_SYSTEM_TRACE_ENABLE_SECTION( "ERRCODE" );
 
 
     // Start the application

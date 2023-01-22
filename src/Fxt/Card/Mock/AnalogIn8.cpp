@@ -58,6 +58,7 @@ void AnalogIn8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAl
             if ( numInputs > MAX_CHANNELS )
             {
                 m_error = fullErr( Err_T::TOO_MANY_INPUT_POINTS );
+                m_error.logIt();
                 return;
             }
 

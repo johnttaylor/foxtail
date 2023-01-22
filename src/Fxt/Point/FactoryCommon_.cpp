@@ -75,6 +75,7 @@ Api* FactoryCommon_::create( JsonObject&                        pointObject,
             {
                 CPL_SYSTEM_TRACE_MSG( SECT_, ("Failed to parse 'val' object for the Setter point.id=%lu err=%s", setter->getId(), errMsg.getString()) );
                 pointErrorCode = fullErr( Err_T::BAD_SETTER_VALUE );
+                pointErrorCode.logIt();
                 return nullptr;
             }
         }

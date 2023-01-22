@@ -59,6 +59,7 @@ Common_::Common_( uint8_t                  numChassis,
          m_haStatefulAllocator.getMemoryStart( dummy ) == nullptr )
     {
         m_error      = fullErr( Err_T::FAILED_HEAP_ALLOCATIONS );
+        m_error.logIt();
         m_numChassis = 0;
     }
 
@@ -71,6 +72,7 @@ Common_::Common_( uint8_t                  numChassis,
         {
             m_numChassis = 0;
             m_error      = fullErr( Err_T::NO_MEMORY_CHASSIS_LIST );
+            m_error.logIt();
         }
         else
         {
@@ -141,6 +143,7 @@ bool Common_::start( uint64_t currentElapsedTimeUsec ) noexcept
                 if ( m_chassis[i].chassis == nullptr )
                 {
                     m_error = fullErr( Err_T::MISSING_CHASSIS );
+                    m_error.logIt();
                     return false;
                 }
 
@@ -160,6 +163,7 @@ bool Common_::start( uint64_t currentElapsedTimeUsec ) noexcept
             if ( m_chassis[i].chassis->start( currentElapsedTimeUsec ) == false )
             {
                 m_error = fullErr( Err_T::CHASSIS_FAILED_START );
+                m_error.logIt();
                 return false;
             }
         }
@@ -244,6 +248,7 @@ Fxt::Type::Error Common_::add( Fxt::Chassis::Api&       chassisToAdd,
         if ( m_nextChassisIdx >= m_numChassis )
         {
             m_error = fullErr( Err_T::TOO_MANY_CHASSIS );
+            m_error.logIt();
         }
         else
         {

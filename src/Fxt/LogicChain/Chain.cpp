@@ -38,6 +38,7 @@ Chain::Chain( Cpl::Memory::ContiguousAllocator&   generalAllocator,
     {
         m_numComponents = 0;
         m_error         = fullErr( Err_T::NO_MEMORY_COMPONENT_LIST );
+        m_error.logIt();
     }
     else
     {
@@ -51,6 +52,7 @@ Chain::Chain( Cpl::Memory::ContiguousAllocator&   generalAllocator,
     {
         m_numAutoPoints = 0;
         m_error         = fullErr( Err_T::NO_MEMORY_AUTO_POINT_LIST );
+        m_error.logIt();
     }
     else
     {
@@ -84,11 +86,13 @@ Fxt::Type::Error Chain::resolveReferences( Fxt::Point::DatabaseApi & pointDb )  
             if ( m_components[i] == nullptr )
             {
                 m_error = fullErr( Err_T::MISSING_COMPONENTS );
+                m_error.logIt();
                 break;
             }
             if ( m_components[i]->resolveReferences( pointDb ) != Fxt::Type::Error::SUCCESS() )
             {
                 m_error = fullErr( Err_T::FAILED_POINT_RESOLVE );
+                m_error.logIt();
                 break;
             }
         }
@@ -110,6 +114,7 @@ Fxt::Type::Error Chain::start( uint64_t currentElapsedTimeUsec ) noexcept
             if ( m_components[i]->start( currentElapsedTimeUsec ) != Fxt::Type::Error::SUCCESS() )
             {
                 m_error = fullErr( Err_T::FAILED_START );
+                m_error.logIt();
                 return m_error;
             }
         }
@@ -120,6 +125,7 @@ Fxt::Type::Error Chain::start( uint64_t currentElapsedTimeUsec ) noexcept
             if ( m_autoPoints[i] == nullptr )
             {
                 m_error = fullErr( Err_T::MISSING_AUTO_POINTS );
+                m_error.logIt();
                 return m_error;
             }
         }
@@ -189,6 +195,7 @@ Fxt::Type::Error Chain::execute( int64_t currentTickUsec ) noexcept
             if ( m_components[i]->execute( currentTickUsec ) != Fxt::Type::Error::SUCCESS() )
             {
                 m_error = fullErr( Err_T::COMPONENT_FAILURE );
+                m_error.logIt();
                 break;
             }
         }
@@ -206,6 +213,7 @@ Fxt::Type::Error Chain::add( Fxt::Component::Api& componentToAdd ) noexcept
         if ( m_nextComponentIdx >= m_numComponents )
         {
             m_error = fullErr( Err_T::TOO_MANY_COMPONENTS );
+            m_error.logIt();
         }
         else
         {
@@ -224,6 +232,7 @@ Fxt::Type::Error Chain::add( Fxt::Point::Api& autoPointToAdd ) noexcept
         if ( m_nextAutoPtsIdx >= m_numAutoPoints )
         {
             m_error = fullErr( Err_T::TOO_MANY_AUTO_POINTS );
+            m_error.logIt();
         }
         else
         {
@@ -248,6 +257,7 @@ Api* Api::createLogicChainfromJSON( JsonVariant                         logicCha
     if ( logicChainObject["components"].is<JsonArray>() == false )
     {
         logicChainErrorode = fullErr( Err_T::PARSE_COMPONENT_ARRAY );
+        logicChainErrorode.logIt();
         return nullptr;
     }
 
@@ -256,6 +266,7 @@ Api* Api::createLogicChainfromJSON( JsonVariant                         logicCha
     if ( numComponents == 0 )
     {
         logicChainErrorode = fullErr( Err_T::NO_COMPONENTS );
+        logicChainErrorode.logIt();
         return nullptr;
     }
 
@@ -273,6 +284,7 @@ Api* Api::createLogicChainfromJSON( JsonVariant                         logicCha
     if ( memLogicChain == nullptr )
     {
         logicChainErrorode = fullErr( Err_T::NO_MEMORY_LOGIC_CHAIN );
+        logicChainErrorode.logIt();
         return nullptr;
     }
     Api* logicChain = new(memLogicChain) Chain( generalAllocator, (uint16_t) numComponents, (uint16_t) numAutoPts );
@@ -291,12 +303,14 @@ Api* Api::createLogicChainfromJSON( JsonVariant                         logicCha
         if ( component == nullptr )
         {
             logicChainErrorode = fullErr( Err_T::FAILED_CREATE_COMPONENT );
+            logicChainErrorode.logIt();
             logicChain->~Api();
             return nullptr;
         }
         if ( errorCode != Fxt::Type::Error::SUCCESS() )
         {
             logicChainErrorode = fullErr( Err_T::COMPONENT_CREATE_ERROR );
+            logicChainErrorode.logIt();
             logicChain->~Api();
             return nullptr;
         }
@@ -327,12 +341,14 @@ Api* Api::createLogicChainfromJSON( JsonVariant                         logicCha
             if ( pt == nullptr )
             {
                 logicChainErrorode = fullErr( Err_T::FAILED_CREATE_POINTS );
+                logicChainErrorode.logIt();
                 logicChain->~Api();
                 return nullptr;
             }
             if ( pointError != Fxt::Type::Error::SUCCESS() )
             {
                 logicChainErrorode = fullErr( Err_T::POINT_CREATE_ERROR );
+                logicChainErrorode.logIt();
                 logicChain->~Api();
                 return nullptr;
             }
@@ -356,18 +372,21 @@ Api* Api::createLogicChainfromJSON( JsonVariant                         logicCha
             if ( pt == nullptr )
             {
                 logicChainErrorode = fullErr( Err_T::FAILED_CREATE_AUTO_POINTS );
+                logicChainErrorode.logIt();
                 logicChain->~Api();
                 return nullptr;
             }
             if ( pointError != Fxt::Type::Error::SUCCESS() )
             {
                 logicChainErrorode = fullErr( Err_T::AUTO_POINT_CREATE_ERROR );
+                logicChainErrorode.logIt();
                 logicChain->~Api();
                 return nullptr;
             }
             if ( pt->hasSetter() == false )
             {
                 logicChainErrorode = fullErr( Err_T::NO_INITIAL_VAL_AUTO_POINT );
+                logicChainErrorode.logIt();
                 logicChain->~Api();
                 return nullptr;
             }

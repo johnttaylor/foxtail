@@ -39,6 +39,7 @@ Scanner::Scanner( Cpl::Memory::ContiguousAllocator&   generalAllocator,
     {
         m_numCards = 0;
         m_error    = fullErr( Err_T::NO_MEMORY_CARD_LIST );
+        m_error.logIt();
     }
     else
     {
@@ -75,12 +76,14 @@ bool Scanner::start( uint64_t currentElapsedTimeUsec ) noexcept
             if ( m_cards[i] == nullptr )
             {
                 m_error = fullErr( Err_T::MISSING_CARDS );
+                m_error.logIt();
                 return false;
             }
 
             if ( m_cards[i]->start( currentElapsedTimeUsec ) == false )
             {
                 m_error = fullErr( Err_T::CARD_FAILED_START );
+                m_error.logIt();
                 return false;
             }
         }
@@ -160,6 +163,7 @@ bool Scanner::scanInputs( uint64_t currentElapsedTimeUsec ) noexcept
             if ( m_cards[i]->scanInputs( currentElapsedTimeUsec ) == false )
             {
                 m_error = fullErr( Err_T::CARD_SCAN_FAILURE );
+                m_error.logIt();
                 return false;
             }
         }
@@ -179,6 +183,7 @@ bool Scanner::flushOutputs( uint64_t currentElapsedTimeUsec ) noexcept
             if ( m_cards[i]->flushOutputs( currentElapsedTimeUsec ) == false )
             {
                 m_error = fullErr( Err_T::CARD_FLUSH_FAILURE );
+                m_error.logIt();
                 return false;
             }
         }
@@ -196,6 +201,7 @@ Fxt::Type::Error Scanner::add( Fxt::Card::Api& cardToAdd ) noexcept
         if ( m_nextCardIdx >= m_numCards )
         {
             m_error = fullErr( Err_T::TOO_MANY_CARDS );
+            m_error.logIt();
         }
         else
         {
@@ -222,6 +228,7 @@ ScannerApi* ScannerApi::createScannerfromJSON( JsonVariant                      
     if ( scannerJsonObject["cards"].is<JsonArray>() == false )
     {
         scannerErrorode = fullErr( Err_T::PARSE_CARDS_ARRAY );
+        scannerErrorode.logIt();
         return nullptr;
     }
 
@@ -230,6 +237,7 @@ ScannerApi* ScannerApi::createScannerfromJSON( JsonVariant                      
     if ( numCards == 0 )
     {
         scannerErrorode = fullErr( Err_T::NO_CARDS );
+        scannerErrorode.logIt();
         return nullptr;
     }
 
@@ -238,6 +246,7 @@ ScannerApi* ScannerApi::createScannerfromJSON( JsonVariant                      
     if ( srm == ((size_t) (-1)) )
     {
         scannerErrorode = fullErr( Err_T::SCANNER_MISSING_SRM );
+        scannerErrorode.logIt();
         return nullptr;
     }
 
@@ -246,6 +255,7 @@ ScannerApi* ScannerApi::createScannerfromJSON( JsonVariant                      
     if ( memScanner == nullptr )
     {
         scannerErrorode = fullErr( Err_T::NO_MEMORY_SCANNER );
+        scannerErrorode.logIt();
         return nullptr;
     }
     ScannerApi* scanner = new(memScanner) Scanner( generalAllocator, (uint16_t) numCards, srm );
@@ -265,12 +275,14 @@ ScannerApi* ScannerApi::createScannerfromJSON( JsonVariant                      
         if ( card == nullptr )
         {
             scannerErrorode = fullErr( Err_T::FAILED_CREATE_CARD );
+            scannerErrorode.logIt();
             scanner->~ScannerApi();
             return nullptr;
         }
         if ( errorCode != Fxt::Type::Error::SUCCESS() )
         {
             scannerErrorode = fullErr( Err_T::CARD_CREATE_ERROR );
+            scannerErrorode.logIt();
             scanner->~ScannerApi();
             return nullptr;
         }

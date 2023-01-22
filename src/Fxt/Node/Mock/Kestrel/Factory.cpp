@@ -57,6 +57,7 @@ Fxt::Node::Api* Factory::createNode( uint8_t                    numChassis,
     if ( node == nullptr )
     {
         nodeErrorCode = Fxt::Node::fullErr( Fxt::Node::Err_T::NO_MEMORY_NODE );
+        nodeErrorCode.logIt();
     }
 
     return node;

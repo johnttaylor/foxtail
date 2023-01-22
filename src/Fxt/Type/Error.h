@@ -138,6 +138,9 @@ public:
         return Fxt::Type::Error::toText( *this, buf );
     }
 
+    /// Logs the error
+    void logIt() const noexcept;
+
 public:
     /** Maximum string size when converting a error code to text (NOT including
         the null terminator
@@ -177,6 +180,7 @@ public:
     uint32_t errVal;        //!< Error value
 };
 
+/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /** Base class for Error class

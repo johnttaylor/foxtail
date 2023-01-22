@@ -44,6 +44,7 @@ Fxt::Type::Error Common_::start( uint64_t currentElapsedTimeUsec ) noexcept
         return Fxt::Type::Error::SUCCESS();
     }
     m_error = fullErr( Err_T::FAILED_START );
+    m_error.logIt();
     return m_error;
 }
 
@@ -78,6 +79,7 @@ bool Common_::parsePointReferences( size_t              dstReferences[],
     if ( numRefsFound > maxNumReferences )
     {
         m_error      = errTooMany;
+        m_error.logIt();
         numRefsFound = 0;
         return false;
     }
@@ -89,6 +91,7 @@ bool Common_::parsePointReferences( size_t              dstReferences[],
         if ( pointRef == Fxt::Point::Api::INVALID_ID )
         {
             m_error = errBadRef;
+            m_error.logIt();
             return false;
         }
         dstReferences[i] = pointRef;

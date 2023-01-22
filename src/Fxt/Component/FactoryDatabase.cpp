@@ -42,6 +42,7 @@ Api* FactoryDatabase::createComponentfromJSON( JsonVariant&                     
     if ( typeGuid == nullptr )
     {
         componentErrorCode = fullErr( Err_T::UNKNOWN_GUID );
+        componentErrorCode.logIt();
         return nullptr;
     }
     
@@ -49,6 +50,7 @@ Api* FactoryDatabase::createComponentfromJSON( JsonVariant&                     
     if ( factory == nullptr )
     {
         componentErrorCode = fullErr( Err_T::UNKNOWN_GUID );
+        componentErrorCode.logIt();
         return nullptr;
     }
 

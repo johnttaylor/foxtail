@@ -64,6 +64,7 @@ void Digital8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAll
             if ( numInputs > MAX_INPUT_CHANNELS )
             {
                 m_error = fullErr( Err_T::TOO_MANY_INPUT_POINTS );
+                m_error.logIt();
                 return;
             }
 
@@ -125,6 +126,7 @@ void Digital8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAll
             if ( numOutputs > MAX_OUTPUT_CHANNELS )
             {
                 m_error = fullErr( Err_T::TOO_MANY_OUTPUT_POINTS );
+                m_error.logIt();
                 return;
             }
 

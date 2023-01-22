@@ -5,6 +5,8 @@ src/Fxt/Card/Mock/TShell
 
 # tests
 src/Fxt/Node/Mock/Kestrel/_0test
+src/Cpl/Logging/_mock4test
+src/Fxt/Logging < Api.cpp
 
 # Foxtail
 src/Fxt/Node

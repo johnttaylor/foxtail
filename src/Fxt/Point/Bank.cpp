@@ -45,6 +45,7 @@ bool Bank::createPoint( FactoryDatabaseApi&                pointFactoryDb,
     if ( m_error )
     {
         pointErrorCode = fullErr( Err_T::BANK_CONT_ERROR );
+        pointErrorCode.logIt();
         return false;
     }
 

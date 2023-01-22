@@ -36,6 +36,7 @@ ExecutionSet::ExecutionSet( Cpl::Memory::ContiguousAllocator&   generalAllocator
     {
         m_numLogicChains = 0;
         m_error         = fullErr( Err_T::NO_MEMORY_LOGIC_CHAIN_LIST );
+        m_error.logIt();
     }
     else
     {
@@ -69,11 +70,13 @@ Fxt::Type::Error ExecutionSet::resolveReferences( Fxt::Point::DatabaseApi & poin
             if ( m_logicChains[i] == nullptr )
             {
                 m_error = fullErr( Err_T::MISSING_LOGIC_CHAINS );
+                m_error.logIt();
                 break;
             }
             if ( m_logicChains[i]->resolveReferences( pointDb ) != Fxt::Type::Error::SUCCESS() )
             {
                 m_error = fullErr( Err_T::FAILED_POINT_RESOLVE );
+                m_error.logIt();
                 break;
             }
         }
@@ -95,6 +98,7 @@ Fxt::Type::Error ExecutionSet::start( uint64_t currentElapsedTimeUsec ) noexcept
             if ( m_logicChains[i]->start( currentElapsedTimeUsec ) != Fxt::Type::Error::SUCCESS() )
             {
                 m_error = fullErr( Err_T::LOGIC_CHAIN_FAILED_START );
+                m_error.logIt();
                 return m_error;
             }
         }
@@ -163,6 +167,7 @@ bool ExecutionSet::execute( uint64_t currentTick, uint64_t currentInterval ) noe
             if ( m_logicChains[i]->execute( currentInterval ) != Fxt::Type::Error::SUCCESS() )
             {
                 m_error = fullErr( Err_T::LOGIC_CHAIN_FAILURE );
+                m_error.logIt();
                 return false;
             }
         }
@@ -181,6 +186,7 @@ Fxt::Type::Error ExecutionSet::add( Fxt::LogicChain::Api& logicChainToAdd ) noex
         if ( m_nextLogicChainIdx >= m_numLogicChains )
         {
             m_error = fullErr( Err_T::TOO_MANY_LOGIC_CHAINS );
+            m_error.logIt();
         }
         else
         {
@@ -206,6 +212,7 @@ ExecutionSetApi* ExecutionSetApi::createExecutionSetfromJSON( JsonVariant       
     if ( executionSetObject["logicChains"].is<JsonArray>() == false )
     {
         executionSetErrorode = fullErr( Err_T::PARSE_LOGIC_CHAIN_ARRAY );
+        executionSetErrorode.logIt();
         return nullptr;
     }
 
@@ -214,6 +221,7 @@ ExecutionSetApi* ExecutionSetApi::createExecutionSetfromJSON( JsonVariant       
     if ( numLogicChains == 0 )
     {
         executionSetErrorode = fullErr( Err_T::NO_LOGIC_CHAINS );
+        executionSetErrorode.logIt();
         return nullptr;
     }
 
@@ -222,6 +230,7 @@ ExecutionSetApi* ExecutionSetApi::createExecutionSetfromJSON( JsonVariant       
     if ( erm == ((size_t) (-1)) )
     {
         executionSetErrorode = fullErr( Err_T::EXECUTION_SET_MISSING_ERM );
+        executionSetErrorode.logIt();
         return nullptr;
     }
 
@@ -230,6 +239,7 @@ ExecutionSetApi* ExecutionSetApi::createExecutionSetfromJSON( JsonVariant       
     if ( memExecutionSet == nullptr )
     {
         executionSetErrorode = fullErr( Err_T::NO_MEMORY_EXECUTION_SET );
+        executionSetErrorode.logIt();
         return nullptr;
     }
     ExecutionSetApi* executionSet = new(memExecutionSet) ExecutionSet( generalAllocator, (uint16_t) numLogicChains, erm );
@@ -249,12 +259,14 @@ ExecutionSetApi* ExecutionSetApi::createExecutionSetfromJSON( JsonVariant       
         if ( logicChain == nullptr )
         {
             executionSetErrorode = fullErr( Err_T::FAILED_CREATE_LOGIC_CHAIN );
+            executionSetErrorode.logIt();
             executionSet->~ExecutionSetApi();
             return nullptr;
         }
         if ( errorCode != Fxt::Type::Error::SUCCESS() )
         {
             executionSetErrorode = fullErr( Err_T::LOGIC_CHAIN_CREATE_ERROR );
+            executionSetErrorode.logIt();
             return nullptr;
         }
         executionSetErrorode = executionSet->add( *logicChain );

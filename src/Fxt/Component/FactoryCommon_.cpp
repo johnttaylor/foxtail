@@ -44,7 +44,9 @@ Fxt::Type::Error FactoryCommon_::allocateAndParse( JsonVariant&                 
     memoryForComponent = generalAllocator.allocate( compenentSizeInBytes );
     if ( memoryForComponent == nullptr )
     {
-        return fullErr(Err_T::OUT_OF_MEMORY );
+        Fxt::Type::Error errcode = fullErr(Err_T::OUT_OF_MEMORY );
+        errcode.logIt();
+        return errcode;
     }
 
     return Fxt::Type::Error::SUCCESS();

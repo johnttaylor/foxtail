@@ -4,6 +4,9 @@ src/Fxt/Card/Mock
 # tests
 src/Fxt/Card/Mock/_0test  
 
+src/Cpl/Logging/_mock4test
+src/Fxt/Logging < Api.cpp
+
 src/Fxt/Card
 src/Fxt/Point
 src/Fxt/Type

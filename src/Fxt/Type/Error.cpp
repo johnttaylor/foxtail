@@ -12,10 +12,8 @@
 
 
 #include "Error.h"
-#include "Fxt/Point/Error.h"
-#include "Fxt/Card/Error.h"
-#include "Fxt/Component/Error.h"
 #include "Cpl/System/Assert.h"
+#include "Fxt/Logging/Api.h"
 
 ///
 using namespace Fxt::Type;
@@ -111,6 +109,11 @@ const char* Error::toText( Error errCode, Cpl::Text::String& buffer ) noexcept
     return buffer.getString();
 }
 
+void Error::logIt() const noexcept
+{
+    Cpl::Text::FString<MAX_TEXT_LEN + 2 + 8 + 1> buf;
+    Fxt::Logging::logf( Fxt::Logging::ErrCodeMsg::ERRVALUE, "%s (%08lX)", toText(buf), errVal );
+}
 
 ///////////////////////////////////////////
 ErrorBase::ErrorBase( ErrorBase&   parentCategory,
