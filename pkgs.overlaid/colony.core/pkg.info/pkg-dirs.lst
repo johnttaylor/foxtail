@@ -48,6 +48,9 @@ src/Cpl/Itc/_0test
 src/Cpl/Itc/_0test/_hw_mvc
 src/Cpl/Json
 src/Cpl/Json/_0test
+src/Cpl/Logging
+src/Cpl/Logging/_0test
+src/Cpl/Logging/_mock4test
 src/Cpl/Math
 src/Cpl/Memory
 src/Cpl/Memory/_0test
@@ -252,6 +255,12 @@ tests/Cpl/Json/Arduino/linux/gcc
 tests/Cpl/Json/Arduino/windows
 tests/Cpl/Json/Arduino/windows/mingw_w64
 tests/Cpl/Json/Arduino/windows/vc12
+tests/Cpl/Logging/_0test
+tests/Cpl/Logging/_0test/linux
+tests/Cpl/Logging/_0test/linux/gcc
+tests/Cpl/Logging/_0test/windows
+tests/Cpl/Logging/_0test/windows/mingw_w64
+tests/Cpl/Logging/_0test/windows/vc12
 tests/Cpl/Memory/_0test
 tests/Cpl/Memory/_0test/linux
 tests/Cpl/Memory/_0test/linux/gcc
