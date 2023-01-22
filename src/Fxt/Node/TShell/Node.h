@@ -42,7 +42,7 @@
 
 /// Size, in bytes, of buffer to capture the Node JSON file
 #ifndef OPTION_FXT_NODE_TSHELL_NODE_MAX_JSON_FILE_SIZE
-#define OPTION_FXT_NODE_TSHELL_NODE_MAX_JSON_FILE_SIZE      (128*1024)
+#define OPTION_FXT_NODE_TSHELL_NODE_MAX_JSON_FILE_SIZE      (8*1024)
 #endif
 
 ///

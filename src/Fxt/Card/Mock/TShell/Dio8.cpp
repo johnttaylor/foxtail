@@ -170,8 +170,8 @@ Cpl::TShell::Command::Result_T Dio8::execute( Cpl::TShell::Context_& context, ch
             m_curCard->clearInputBit( bitOffset );
         }
 
-        uint8_t newValue;
-        bool  valid = m_curCard->getInputs( newValue );
+        uint8_t newValue = 0;
+        m_curCard->getInputs( newValue );
         Cpl::Text::bufferToAsciiBinary( &newValue, sizeof( newValue ), smallBuf );
         outtext.format( "Inputs updated to: %s", smallBuf.getString() );
         io &= context.writeFrame( outtext );
