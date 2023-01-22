@@ -32,6 +32,22 @@
           "type": "git",
           "origin": "https://github.com/johnttaylor"
         }
+      },
+      {
+        "pkgname": "colony.pico",
+        "pkgtype": "overlay",
+        "adoptedDate": "Sun Jan 22 17:41:59 2023",
+        "parentDir": null,
+        "version": {
+          "semanticVersion": "0.1.0",
+          "branch": null,
+          "tag": "OUTCAST2-main-0.1.0"
+        },
+        "repo": {
+          "name": "colony.pico",
+          "type": "git",
+          "origin": "https://github.com/johnttaylor"
+        }
       }
     ],
     "weak": [
