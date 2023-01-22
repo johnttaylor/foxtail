@@ -5,10 +5,9 @@ src/Fxt/Card/Mock/TShell
 
 # tests
 src/Fxt/Node/Mock/Kestrel/_0test
-src/Cpl/Logging/_mock4test
-src/Fxt/Logging < Api.cpp
 
 # Foxtail
+src/Fxt/Logging
 src/Fxt/Node
 src/Fxt/Node/TShell
 src/Fxt/System
@@ -25,6 +24,9 @@ src/Fxt/Component/Digital
 
 
 # Colony Core infrastructure
+src/Cpl/Logging
+src/Cpl/Dm
+src/Cpl/Dm/Mp
 src/Cpl/Text/Frame
 src/Cpl/Text/Tokenizer
 src/Cpl/Memory

@@ -177,7 +177,7 @@ Cpl::TShell::Command::Result_T Node::execute( Cpl::TShell::Context_& context, ch
                                 Fxt::Card::Api* card = scanner->getCard( cardIdx );
                                 if ( card != nullptr )
                                 {
-                                    outtext.format( "          Card Index: %u", scannerIdx );
+                                    outtext.format( "          Card Index: %u", cardIdx );
                                     io &= context.writeFrame( outtext );
                                     outtext.format( "            State: %s", card->getErrorCode().toText( smallBuf ) );
                                     io &= context.writeFrame( outtext );

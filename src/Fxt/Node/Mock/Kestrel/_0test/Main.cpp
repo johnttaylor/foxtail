@@ -11,6 +11,7 @@
 
 #include "colony_config.h"
 #include "Main.h"
+#include "ModelPoints.h"
 #include "Cpl/System/Shutdown.h"
 #include "Cpl/TShell/Cmd/Help.h"
 #include "Cpl/TShell/Cmd/Bye.h"
@@ -20,6 +21,7 @@
 #include "Cpl/Dm/MailboxServer.h"
 #include "Cpl/System/Thread.h"
 #include "Cpl/TShell/Stdio.h"
+#include "Fxt/Logging/Api.h"
 #include "Cpl/System/EventLoop.h"
 #include "Cpl/System/Semaphore.h"
 #include "Fxt/Card/Mock/TShell/Ain8.h"
@@ -66,12 +68,23 @@ static Fxt::Card::Mock::TShell::Dio8                dio8Cmd_( g_cmdlist );
 static Cpl::System::Semaphore       waitForShutdown_;
 static volatile int                 exitCode_;
 
+// Create the Logging FIFO (current size does not matter since we never drain the Log queue)
+#define MAX_FIFO_ENTRIES    5
+static Cpl::Logging::EntryData_T fifoMemory_[MAX_FIFO_ENTRIES];
+static Cpl::Container::RingBufferMP<Cpl::Logging::EntryData_T> logFifo_( MAX_FIFO_ENTRIES, fifoMemory_, mp::logEntryCount );
 
 int runTheApplication( Cpl::Io::Input& infd, Cpl::Io::Output& outfd )
 {
     // Enable Trace 
     CPL_SYSTEM_TRACE_ENABLE();
     CPL_SYSTEM_TRACE_ENABLE_SECTION( "ERRCODE" );
+
+    // Enable logging
+    Cpl::Logging::initialize( logFifo_,
+                              Fxt::Logging::CategoryId::WARNING,
+                              (+Fxt::Logging::CategoryId::WARNING)._to_string(),
+                              Fxt::Logging::WarningMsg::LOGGING_OVERFLOW,
+                              (+Fxt::Logging::WarningMsg::LOGGING_OVERFLOW)._to_string() );
 
 
     // Start the application
@@ -90,6 +103,9 @@ int runTheApplication( Cpl::Io::Input& infd, Cpl::Io::Output& outfd )
     //inDriver_.close();
     //outDriver_.close();
     //persistentRunnable_.close();
+    
+    // Shutdown logging
+    Cpl::Logging::shutdown();
 
     // Shutdown the Application threads
     //appMbox_.pleaseStop();

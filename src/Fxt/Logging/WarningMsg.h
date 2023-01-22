@@ -26,9 +26,11 @@ namespace Logging {
 
     @param WarningMsg                       Enum
 
+    @param LOGGING_OVERFLOW                 The Logging Queue overflowed (and has not recovered)
     @param PLACE_HOLDER                     Place holder till I have a warning log entry
  */
 BETTER_ENUM( WarningMsg, uint16_t
+             , LOGGING_OVERFLOW
              , PLACE_HOLDER
 );
 
