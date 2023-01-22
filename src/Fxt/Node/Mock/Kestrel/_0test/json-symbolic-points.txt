@@ -1,11 +1,9 @@
 {
   "name": "My Kestrel Node",
-  "id": 1,
   "type": "d65ee614-dce4-43f0-af2c-830e3664ecaf",
   "chassis": [
     {
       "name": "My Chassis",
-      "id": 1,
       "fer": 1000,
       "sharedPts": [
         {
@@ -30,7 +28,6 @@
       "scanners": [
         {
           "name": "My Scanner",
-          "id": 1,
           "scanRateMultiplier": 1,
           "cards": [
             {
@@ -111,7 +108,6 @@
       "executionSets": [
         {
           "name": "My Execution Set",
-          "id": 1,
           "exeRateMultiplier": 1,
           "logicChains": [
             {
@@ -119,7 +115,6 @@
               "id": 1,
               "components": [
                 {
-                  "id": 100,
                   "name": "Byte Demux #1",
                   "type": "8c55aa52-3bc8-4b8a-ad73-c434a0bbd4b4",
                   "typeName": "Fxt::Component::Digital::ByteDemux",
@@ -140,7 +135,6 @@
                   ]
                 },
                 {
-                  "id": 101,
                   "name": "AND Gate#1",
                   "type": "e62e395c-d27a-4821-bba9-aa1e6de42a05",
                   "typeName": "Fxt::Component::Digital::And16Gate",
@@ -168,7 +162,6 @@
                   ]
                 },
                 {
-                  "id": 102,
                   "name": "Byte Mux #1",
                   "type": "d60f2daf-9709-42d6-ba92-b76f641eb930",
                   "typeName": "Fxt::Component::Digital::ByteMux",
@@ -207,7 +200,7 @@
                   "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0",
                   "typeName": "Fxt::Point::Bool",
                   "initial": {
-                    "val": false
+                    "val": true
                   }
                 }
               ]
