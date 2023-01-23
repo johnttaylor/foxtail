@@ -41,6 +41,7 @@ namespace Card {
     @param BAD_JSON                         Invalid JSON object syntax for a Channel Object
     @param MISSING_SLOT                     Configuration does NOT contain a slot number
     @param POINT_CREATE_ERROR               One or more points were not successfully created
+    @param POINT_WRONG_TYPE                 One or more points where the wrong type (as specified in the JSON object)
  */
 BETTER_ENUM( Err_T, uint8_t
              , SUCCESS = 0
@@ -54,6 +55,7 @@ BETTER_ENUM( Err_T, uint8_t
              , BAD_JSON
              , MISSING_SLOT
              , POINT_CREATE_ERROR
+             , POINT_WRONG_TYPE
 );
 
 /** This concrete class defines the Error Category for the Card namespace.

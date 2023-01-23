@@ -85,7 +85,7 @@ inline static void startText( Cpl::Text::String& dst,
                               const char*        catIdText,
                               const char*        msgIdText )
 {
-    dst.format( "%.*s.%.*s: ", OPTION_CPL_LOGGING_MAX_LEN_CATEGORY_ID_TEXT, catIdText, OPTION_CPL_LOGGING_MAX_LEN_MESSAGE_ID_TEXT, msgIdText );
+    dst.format( "%.*s:%.*s. ", OPTION_CPL_LOGGING_MAX_LEN_CATEGORY_ID_TEXT, catIdText, OPTION_CPL_LOGGING_MAX_LEN_MESSAGE_ID_TEXT, msgIdText );
 }
 
 

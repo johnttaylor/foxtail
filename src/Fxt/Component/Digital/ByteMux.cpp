@@ -160,13 +160,13 @@ Fxt::Type::Error ByteMux::resolveReferences( Fxt::Point::DatabaseApi& pointDb ) 
     }
 
     // Validate Point types
-    if ( validatePointTypes( (Fxt::Point::Api **) m_inputRefs, m_numInputs, Fxt::Point::Bool::GUID_STRING ) == false )
+    if ( Fxt::Point::Api::validatePointTypes( (Fxt::Point::Api **) m_inputRefs, m_numInputs, Fxt::Point::Bool::GUID_STRING ) == false )
     {
         m_error = fullErr( Fxt::Component::Err_T::INPUT_REFRENCE_BAD_TYPE );
         m_error.logIt();
         return m_error;
     }
-    if ( validatePointTypes( (Fxt::Point::Api **) m_outputRefs, m_numOutputs, Fxt::Point::Uint8::GUID_STRING ) == false )
+    if ( Fxt::Point::Api::validatePointTypes( (Fxt::Point::Api **) m_outputRefs, m_numOutputs, Fxt::Point::Uint8::GUID_STRING ) == false )
     {
         m_error = fullErr( Fxt::Component::Err_T::OUTPUT_REFRENCE_BAD_TYPE );
         m_error.logIt();

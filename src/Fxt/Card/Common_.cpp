@@ -111,6 +111,7 @@ bool Common_::flushOutputs( uint64_t currentElapsedTimeUsec ) noexcept
 
 Fxt::Point::Api* Common_::createPointForChannel( Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
                                                  Fxt::Point::Bank&                  pointBank,
+                                                 const char*                        expectedGUID,
                                                  bool                               isIoRegPt,
                                                  JsonObject&                        channelObject,
                                                  Fxt::Type::Error&                  cardErrorCode,
@@ -172,10 +173,19 @@ Fxt::Point::Api* Common_::createPointForChannel( Fxt::Point::FactoryDatabaseApi&
         return nullptr;
     }
 
+    // Validate the point type
+    Fxt::Point::Api* ptPtr = dbForPoints.lookupById( id );
+    if ( !Fxt::Point::Api::validatePointTypes( &ptPtr, 1, expectedGUID ) )
+    {
+        m_error = fullErr( Err_T::POINT_WRONG_TYPE );
+        m_error.logIt();
+        return nullptr;
+    }
+
     // Cache the point for the IO Point register
     if ( isIoRegPt )
     {
-        m_ioRegisterPoints[channelIdx] = dbForPoints.lookupById( id );
+        m_ioRegisterPoints[channelIdx] = ptPtr;
     }
 
     return m_ioRegisterPoints[channelIdx];

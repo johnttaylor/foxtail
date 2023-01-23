@@ -201,3 +201,20 @@ bool PointCommon_::testAndUpdateLock( LockRequest_T lockRequest ) noexcept
 
     return result;
 }
+
+/////////////////
+bool Api::validatePointTypes( Fxt::Point::Api* arrayOfPoints[], uint16_t numPoints, const char* expectedGUID )
+{
+    for ( uint16_t i=0; i < numPoints; i++ )
+    {
+        if ( arrayOfPoints[i] != nullptr )
+        {
+            if ( strcmp( arrayOfPoints[i]->getTypeGuid(), expectedGUID ) != 0 )
+            {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}

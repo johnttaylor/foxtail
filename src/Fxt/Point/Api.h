@@ -132,6 +132,9 @@ public:
     /// Short hand for putting the Point into the locked state
     inline void applyLock() noexcept { setLockState( eLOCK ); }
 
+public:
+    /// Helper method to valid point reference types
+    static bool validatePointTypes( Fxt::Point::Api* arrayOfPoints[], uint16_t numPoints, const char* expectedGUID );
 
 protected:
     /** This method copies the Point's content to the caller's memory buffer.

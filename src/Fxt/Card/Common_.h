@@ -69,6 +69,7 @@ protected:
      */
     Fxt::Point::Api* createPointForChannel( Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
                                             Fxt::Point::Bank&                  pointBank,
+                                            const char*                        expectedGUID,
                                             bool                               isIoRegPt,
                                             JsonObject&                        channelObject,
                                             Fxt::Type::Error&                  cardErrorCode,

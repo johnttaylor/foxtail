@@ -69,6 +69,7 @@ void AnalogIn8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAl
                 JsonObject channelObj = inputs[idx].as<JsonObject>();
                 createPointForChannel( pointFactoryDb,
                                        m_virtualInputs,
+                                       Fxt::Point::Float::GUID_STRING,
                                        false,
                                        channelObj,
                                        m_error,
@@ -93,6 +94,7 @@ void AnalogIn8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAl
                 JsonObject channelObj = inputs[idx].as<JsonObject>();
                 createPointForChannel( pointFactoryDb,
                                        m_ioRegisterInputs,
+                                       Fxt::Point::Float::GUID_STRING,
                                        true,
                                        channelObj,
                                        m_error,

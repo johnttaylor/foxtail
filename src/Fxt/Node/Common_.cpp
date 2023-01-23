@@ -52,6 +52,9 @@ Common_::Common_( uint8_t                  numChassis,
     , m_started( false )
     , m_pointReferencesResolved( false )
 {
+    // Clear the Point database
+    m_pointDb.clearPoints();
+
     // Check if heap allocations worked
     size_t dummy;
     if ( m_generalAllocator.getMemoryStart( dummy ) == nullptr ||

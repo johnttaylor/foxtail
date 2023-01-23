@@ -11,29 +11,30 @@
 /** @file */
 
 
-#include "Digital8.h"
+#include "Dio30.h"
 #include "Cpl/System/Assert.h"
-#include <stdint.h>
-#include <new>
+#include "pico/stdlib.h"
+#include "hardware/gpio.h"
 
 ///
-using namespace Fxt::Card::Mock;
+using namespace Fxt::Node::SBC::PiPicoDemo;
 
-#define MAX_INPUT_CHANNELS      1
+#define MAX_INPUT_CHANNELS      30
 #define INPUT_POINT_OFFSET      0
 
-#define MAX_OUTPUT_CHANNELS     1
+#define MAX_OUTPUT_CHANNELS     30
 #define OUTPUT_POINT_OFFSET     (MAX_INPUT_CHANNELS)
 
 #define TOTAL_MAX_CHANNELS      (MAX_INPUT_CHANNELS + MAX_OUTPUT_CHANNELS)
 
+
 ///////////////////////////////////////////////////////////////////////////////
-Digital8::Digital8( Cpl::Memory::ContiguousAllocator&  generalAllocator,
-                    Cpl::Memory::ContiguousAllocator&  cardStatefulDataAllocator,
-                    Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
-                    Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
-                    Fxt::Point::DatabaseApi&           dbForPoints,
-                    JsonVariant&                       cardObject )
+Dio30::Dio30( Cpl::Memory::ContiguousAllocator&  generalAllocator,
+              Cpl::Memory::ContiguousAllocator&  cardStatefulDataAllocator,
+              Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
+              Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
+              Fxt::Point::DatabaseApi&           dbForPoints,
+              JsonVariant&                       cardObject )
     : Fxt::Card::Common_( TOTAL_MAX_CHANNELS, generalAllocator, cardObject )
 {
     if ( m_error == Fxt::Type::Error::SUCCESS() )
@@ -45,12 +46,12 @@ Digital8::Digital8( Cpl::Memory::ContiguousAllocator&  generalAllocator,
 
 
 ///////////////////////////////////////////////////////////////////////////////
-void Digital8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAllocator,
-                                   Cpl::Memory::ContiguousAllocator&  cardStatefulDataAllocator,
-                                   Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
-                                   Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
-                                   Fxt::Point::DatabaseApi&           dbForPoints,
-                                   JsonVariant&                       cardObject ) noexcept
+void Dio30::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAllocator,
+                                Cpl::Memory::ContiguousAllocator&  cardStatefulDataAllocator,
+                                Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
+                                Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
+                                Fxt::Point::DatabaseApi&           dbForPoints,
+                                JsonVariant&                       cardObject ) noexcept
 {
     // Parse channels
     if ( !cardObject["points"].isNull() )
@@ -63,7 +64,7 @@ void Digital8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAll
             size_t numInputs = inputs.size();
             if ( numInputs > MAX_INPUT_CHANNELS )
             {
-                m_error = fullErr( Err_T::TOO_MANY_INPUT_POINTS );
+                m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::TOO_MANY_INPUT_POINTS );
                 m_error.logIt();
                 return;
             }
@@ -76,12 +77,12 @@ void Digital8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAll
                 {
                     return;
                 }
-                
+
                 uint16_t   channelNum_notUsed;
                 JsonObject channelObj = inputs[idx].as<JsonObject>();
                 createPointForChannel( pointFactoryDb,
                                        m_virtualInputs,
-                                       Fxt::Point::Uint8::GUID_STRING,
+                                       Fxt::Point::Bool::GUID_STRING,
                                        false,
                                        channelObj,
                                        m_error,
@@ -106,7 +107,7 @@ void Digital8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAll
                 JsonObject channelObj = inputs[idx].as<JsonObject>();
                 createPointForChannel( pointFactoryDb,
                                        m_ioRegisterInputs,
-                                       Fxt::Point::Uint8::GUID_STRING,
+                                       Fxt::Point::Bool::GUID_STRING,
                                        true,
                                        channelObj,
                                        m_error,
@@ -127,19 +128,19 @@ void Digital8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAll
             size_t numOutputs = outputs.size();
             if ( numOutputs > MAX_OUTPUT_CHANNELS )
             {
-                m_error = fullErr( Err_T::TOO_MANY_OUTPUT_POINTS );
+                m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::TOO_MANY_OUTPUT_POINTS );
                 m_error.logIt();
                 return;
             }
 
             // Create Virtual Points
-            for ( size_t idx=0; idx < numOutputs ; idx++ )
+            for ( size_t idx=0; idx < numOutputs; idx++ )
             {
                 uint16_t   channelNum_notUsed;
                 JsonObject channelObj = outputs[idx].as<JsonObject>();
                 createPointForChannel( pointFactoryDb,
                                        m_virtualOutputs,
-                                       Fxt::Point::Uint8::GUID_STRING,
+                                       Fxt::Point::Bool::GUID_STRING,
                                        false,
                                        channelObj,
                                        m_error,
@@ -163,7 +164,7 @@ void Digital8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAll
                 JsonObject channelObj = outputs[idx].as<JsonObject>();
                 createPointForChannel( pointFactoryDb,
                                        m_ioRegisterOutputs,
-                                       Fxt::Point::Uint8::GUID_STRING,
+                                       Fxt::Point::Bool::GUID_STRING,
                                        true,
                                        channelObj,
                                        m_error,
@@ -180,24 +181,57 @@ void Digital8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAll
                 }
             }
         }
+
+        // Make sure that no IO pin has been 'doubled-up'
+        for ( int idx = 0; idx < MAX_INPUT_CHANNELS; idx++ )
+        {
+            if ( m_ioRegisterPoints[idx + INPUT_POINT_OFFSET] != nullptr &&
+                 m_ioRegisterPoints[idx + OUTPUT_POINT_OFFSET] != nullptr )
+            {
+                m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::BAD_CHANNEL_ASSIGNMENTS );
+                m_error.logIt();
+                return;
+            }
+        }
     }
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
-bool Digital8::start( uint64_t currentElapsedTimeUsec ) noexcept
+bool Dio30::start( uint64_t currentElapsedTimeUsec ) noexcept
 {
     // Call the parent's start-up actions
     if ( Common_::start( currentElapsedTimeUsec ) )
     {
-        // Set the initial IO Register values (both inputs and outputs)
-        for ( unsigned i=0; i < TOTAL_MAX_CHANNELS; i++ )
+        // Initialize inputs 
+        for ( unsigned i=0; i < MAX_INPUT_CHANNELS; i++ )
         {
-            if ( m_ioRegisterPoints[i] != nullptr )
+            if ( m_ioRegisterPoints[i+ INPUT_POINT_OFFSET] != nullptr )
             {
-                m_ioRegisterPoints[i]->updateFromSetter();
+                // Configure Inputs
+                gpio_init( i );
+                gpio_set_dir( i, GPIO_IN );
+                gpio_pull_up( i );
+
+                // Set the initial IO Register values
+                m_ioRegisterPoints[i+ INPUT_POINT_OFFSET]->updateFromSetter();
             }
         }
+
+        // Initialize Outputs 
+        for ( unsigned i=0; i < MAX_OUTPUT_CHANNELS; i++ )
+        {
+            if ( m_ioRegisterPoints[i+ OUTPUT_POINT_OFFSET] != nullptr )
+            {
+                // Configure Outputs
+                gpio_init( i );
+                gpio_set_dir( i, GPIO_OUT );
+
+                // Set the initial IO Register values
+                m_ioRegisterPoints[i + OUTPUT_POINT_OFFSET]->updateFromSetter();
+            }
+        }
+
 
         // If I get here -->everything worked            
         return true;
@@ -209,121 +243,82 @@ bool Digital8::start( uint64_t currentElapsedTimeUsec ) noexcept
 
 
 
-void Digital8::stop() noexcept
+void Dio30::stop() noexcept
 {
+    // Release Input pins
+    for ( unsigned i=0; i < MAX_INPUT_CHANNELS; i++ )
+    {
+        if ( m_ioRegisterPoints[i+ INPUT_POINT_OFFSET] != nullptr )
+        {
+            gpio_deinit( i );
+            gpio_disable_pulls( i );
+        }
+    }
+
+    // Release Output pins
+    for ( unsigned i=0; i < MAX_OUTPUT_CHANNELS; i++ )
+    {
+        if ( m_ioRegisterPoints[i+ OUTPUT_POINT_OFFSET] != nullptr )
+        {
+            gpio_deinit( i );
+        }
+    }
+
+    // Call my parent's stop
     Common_::stop();
 }
 
-const char* Digital8::getTypeGuid() const noexcept
+const char* Dio30::getTypeGuid() const noexcept
 {
     return GUID_STRING;
 }
 
-const char* Digital8::getTypeName() const noexcept
+const char* Dio30::getTypeName() const noexcept
 {
     return TYPE_NAME;
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
-void Digital8::writeInputs( uint8_t byteTowrite )
+bool Dio30::scanInputs( uint64_t currentElapsedTimeUsec ) noexcept
 {
-    Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
-
-    if ( m_ioRegisterPoints[INPUT_POINT_OFFSET] != nullptr )
+    // Sample Inputs
+    for ( unsigned i=0; i < MAX_INPUT_CHANNELS; i++ )
     {
-        // Update the IO Register
-        Fxt::Point::Uint8* pt = (Fxt::Point::Uint8*) m_ioRegisterPoints[INPUT_POINT_OFFSET];
-        pt->write( byteTowrite );
+        if ( m_ioRegisterPoints[i + INPUT_POINT_OFFSET] != nullptr )
+        {
+            Fxt::Point::Bool* pt = (Fxt::Point::Bool*) m_ioRegisterPoints[i + INPUT_POINT_OFFSET];
+            pt->write( gpio_get( i ) );
+        }
     }
-}
 
-void Digital8::orInputs( uint8_t bitMaskToOR )
-{
-    Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
-
-    if ( m_ioRegisterPoints[INPUT_POINT_OFFSET] != nullptr )
-    {
-        // Update the IO Register
-        Fxt::Point::Uint8* pt = (Fxt::Point::Uint8*) m_ioRegisterPoints[INPUT_POINT_OFFSET];
-        pt->maskOr( bitMaskToOR );
-    }
+    // Call parent class to manage the transfer between IO Registers and Virtual Points
+    return Common_::scanInputs( currentElapsedTimeUsec );
 }
 
 
-
-void Digital8::clearInputs( uint8_t bitMaskToAND )
+bool Dio30::flushOutputs( uint64_t currentElapsedTimeUsec ) noexcept
 {
-    Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
+    // Call parent class to manage the transfer between IO Registers and Virtual Points
+    bool result = Common_::flushOutputs( currentElapsedTimeUsec );
 
-    if ( m_ioRegisterPoints[INPUT_POINT_OFFSET] != nullptr )
+    // Update outputs
+    if ( result )
     {
-        // Update the IO Register
-        Fxt::Point::Uint8* pt = (Fxt::Point::Uint8*) m_ioRegisterPoints[INPUT_POINT_OFFSET];
-        pt->maskAnd( bitMaskToAND );
-    }
-}
-
-void Digital8::toggleInputs( uint8_t bitMaskToXOR )
-{
-    Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
-
-    if ( m_ioRegisterPoints[INPUT_POINT_OFFSET] != nullptr )
-    {
-        // Update the IO Register
-        Fxt::Point::Uint8* pt = (Fxt::Point::Uint8*) m_ioRegisterPoints[INPUT_POINT_OFFSET];
-        pt->maskXor( bitMaskToXOR );
-    }
-}
-
-bool Digital8::getOutputs( uint8_t& dstOutputVal )
-{
-    Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
-
-    if ( m_ioRegisterPoints[OUTPUT_POINT_OFFSET] != nullptr )
-    {
-        // Read the IO Register
-        Fxt::Point::Uint8* pt = (Fxt::Point::Uint8*) m_ioRegisterPoints[OUTPUT_POINT_OFFSET];
-        return pt->read( dstOutputVal );
+        for ( unsigned i=0; i < MAX_OUTPUT_CHANNELS; i++ )
+        {
+            if ( m_ioRegisterPoints[i + OUTPUT_POINT_OFFSET] != nullptr )
+            {
+                Fxt::Point::Bool* pt = (Fxt::Point::Bool*) m_ioRegisterPoints[i + OUTPUT_POINT_OFFSET];
+                bool val;
+                if ( pt->read( val ) )
+                {
+                    gpio_put( i, val );
+                }
+            }
+        }
     }
 
-    return false;
+    return result;
 }
 
-bool Digital8::getInputs( uint8_t& dstInputVal )
-{
-    Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
-
-    if ( m_ioRegisterPoints[INPUT_POINT_OFFSET] != nullptr )
-    {
-        // Read the IO Register
-        Fxt::Point::Uint8* pt = (Fxt::Point::Uint8*) m_ioRegisterPoints[INPUT_POINT_OFFSET];
-        return pt->read( dstInputVal );
-    }
-
-    return false;
-}
-
-void Digital8::setInputsInvalid()
-{
-    Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
-
-    if ( m_ioRegisterPoints[INPUT_POINT_OFFSET] != nullptr )
-    {
-        // Invalidate the IO Register
-        Fxt::Point::Uint8* pt = (Fxt::Point::Uint8*) m_ioRegisterPoints[INPUT_POINT_OFFSET];
-        return pt->setInvalid();
-    }
-}
-
-void Digital8::setOutputsInvalid()
-{
-    Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
-
-    if ( m_ioRegisterPoints[OUTPUT_POINT_OFFSET] != nullptr )
-    {
-        // Invalidate the IO Register
-        Fxt::Point::Uint8* pt = (Fxt::Point::Uint8*) m_ioRegisterPoints[OUTPUT_POINT_OFFSET];
-        return pt->setInvalid();
-    }
-}
