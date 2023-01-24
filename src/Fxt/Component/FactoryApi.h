@@ -47,6 +47,8 @@ namespace Component {
                  "type":        "*<Points's Type GUID: 8-4-4-4-12 format>",
                  "typeName":    "*<OPTIONAL: human readable point type>",
                  "idRef":       <Reference to a Point ID, i.e. where to read the input value from>,
+                 "idRefName":   "*OPTIONAL: human readable point label"
+
                },
                ...
             ],
@@ -56,6 +58,7 @@ namespace Component {
                  "type":        "*<Points's Type GUID: 8-4-4-4-12 format>",
                  "typeName":    "*<OPTIONAL: human readable point type>",
                  "idRef":       <Reference to a Point ID, i.e. where to read the input value from>,
+                 "idRefName":   "*OPTIONAL: human readable point label"
                },
                ...
             ],

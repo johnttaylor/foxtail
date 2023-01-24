@@ -88,10 +88,15 @@ def load_node_file( filename ):
     except Exception as e:
         return None
 
-def write_node_file( json_dict, filename, pretty=False ):
+def write_node_file( json_dict, filename, pretty=False, echo_stdio=False ):
 
     with open( filename, "w+" ) as file:
+        output = ""
         if ( pretty ):
-            file.write( json.dumps( json_dict, indent=2 ) )
+            output = json.dumps( json_dict, indent=2 )
         else:
-            file.write( json.dumps( json_dict ) )
+            output =  json.dumps( json_dict, separators=(',', ':') )
+
+        file.write( output )
+        if ( echo_stdio ):
+            print( output )

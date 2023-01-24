@@ -10,7 +10,9 @@ Arguments:
     <outfile>      Output file. Defaults to <infile>.id
                          
 Options:
+    -e             Echo's output to STDOUT (still writes to <outfile>)
     -p, --pretty   Output is formatted to be human readable
+    -s             Strip unused (by the firmware) KVPs
     -c FILE        Generates a file containing #define symbols for each named
                    Point.
     -v             Be verbose 
@@ -229,6 +231,117 @@ def resolvePointReferences( json_dict ):
             resolveExecutionSet( exeset )
 
 #------------------------------------------------------------------------------
+def strip_unused_kvp_point( pt_obj ):
+    if ( "typeName" in pt_obj ):
+        del pt_obj["typeName"]
+    if ( "name" in pt_obj ):
+        del pt_obj["name"]
+    if ( "idRefName" in pt_obj ):
+        del pt_obj["idRefName"]
+
+def strip_unused_kvp( json_dict ):
+    # Strip top level Node KVPs
+    if ( "name" in json_dict ):
+        del json_dict["name"]
+
+    chassis_list = json_dict["chassis"]
+    for ch in chassis_list:
+        # Strip top level chassis KVPs
+        if ( "id" in ch ):
+            del ch["id"]
+        if ( "name" in ch ):
+            del ch["name"]
+
+        # Process shared points - if there are any  
+        if ( "sharedPts" in ch ):
+            shared_pts_list = ch["sharedPts"]
+            for pt in shared_pts_list:
+                strip_unused_kvp_point( pt )
+
+        # Process scanners
+        scanner_list = ch["scanners"]
+        for s in scanner_list:
+            # Strip top level scanner KVPs
+            if ( "id" in s ):
+                del s["id"]
+            if ( "name" in s ):
+                del s["name"]
+
+            card_list = s["cards"]
+            for c in card_list:
+                # Strip top level cards KVPs
+                if ( "id" in c ):
+                    del c["id"]
+                if ( "name" in c ):
+                    del c["name"]
+                if ( "typeName" in c ):
+                    del c["typeName"]
+
+                points_obj = c["points"]
+                
+                # Input points
+                if ( "inputs" in points_obj ):
+                    inputs_list = points_obj["inputs"]
+                    for channel in inputs_list:
+                        strip_unused_kvp_point( channel )
+
+                # Output points
+                if ( "outputs" in points_obj ):
+                    outputs_list = points_obj["outputs"]
+                    for channel in outputs_list:
+                        strip_unused_kvp_point( channel )
+
+
+
+        # Process Execution Sets
+        executionSets_list = ch["executionSets"]
+        for exeset in executionSets_list:
+            # Strip top level exeset KVPs
+            if ( "id" in exeset ):
+                del exeset["id"]
+            if ( "name" in exeset ):
+                del exeset["name"]
+
+            logicChains_list = exeset["logicChains"]
+            for lc in logicChains_list:
+                # Strip top level LogicChain KVPs
+                if ( "id" in lc ):
+                    del lc["id"]
+                if ( "name" in lc ):
+                    del lc["name"]
+
+                components_list = lc["components"]
+                for comp in components_list:
+                    # Strip top level LogicChain KVPs
+                    if ( "name" in comp ):
+                        del comp["name"]
+                    if ( "typeName" in comp ):
+                        del comp["typeName"]
+
+                    # Inputs Points
+                    inputs_list = comp["inputs"]
+                    for pt in inputs_list:
+                        strip_unused_kvp_point( pt )
+
+                    # Output Points
+                    inputs_list = comp["outputs"]
+                    for pt in inputs_list:
+                        strip_unused_kvp_point( pt )
+
+                # Connector Points
+                if ( "connectionPts" in lc ):
+                    conPts_list = lc["connectionPts"]
+                    for pt in conPts_list:
+                        strip_unused_kvp_point( pt )
+
+                # Auto Points
+                if ( "autoPts" in lc ):
+                    autoPts_list = lc["autoPts"]
+                    for pt in autoPts_list:
+                        strip_unused_kvp_point( pt )
+
+
+#------------------------------------------------------------------------------
 # BEGIN
 if __name__ == '__main__':
 
@@ -255,7 +368,11 @@ if __name__ == '__main__':
     scanPoints( json_dict )
     resolvePointReferences( json_dict )
     
-    utils.write_node_file( json_dict, outfile, args['--pretty'] )
+    # Compact the json output by removing KVP not used by the firmware
+    if ( args['-s'] ):
+        strip_unused_kvp( json_dict )
+
+    utils.write_node_file( json_dict, outfile, args['--pretty'], args['-e'] )
     if ( args['-c'] != None ):
         generate_define_list( args['-c'] )
     
