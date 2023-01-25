@@ -98,6 +98,23 @@
           "type": "git",
           "origin": "https://github.com/johnttaylor"
         }
+      },
+      {
+        "pkgname": "colony.apps",
+        "pkgtype": "overlay",
+        "virtualAdoption": true,
+        "adoptedDate": "Wed Jan 25 02:45:12 2023",
+        "parentDir": null,
+        "version": {
+          "semanticVersion": "2.1.0",
+          "branch": null,
+          "tag": "OUTCAST2-main-2.1.0"
+        },
+        "repo": {
+          "name": "colony.apps",
+          "type": "git",
+          "origin": "https://github.com/johnttaylor"
+        }
       }
     ],
     "weak": [
