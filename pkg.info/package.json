@@ -66,22 +66,6 @@
         }
       },
       {
-        "pkgname": "colony.arduino",
-        "pkgtype": "overlay",
-        "adoptedDate": "Sun Jan 22 18:00:04 2023",
-        "parentDir": null,
-        "version": {
-          "semanticVersion": "1.0.5",
-          "branch": null,
-          "tag": "OUTCAST2-main-1.0.5"
-        },
-        "repo": {
-          "name": "colony.arduino",
-          "type": "git",
-          "origin": "https://github.com/johnttaylor"
-        }
-      },
-      {
         "pkgname": "pimoroni-pico",
         "pkgtype": "readonly",
         "virtualAdoption": true,
