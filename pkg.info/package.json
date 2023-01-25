@@ -86,7 +86,7 @@
         "pkgname": "colony.arduino",
         "pkgtype": "overlay",
         "virtualAdoption": true,
-        "adoptedDate": "Wed Jan 25 02:40:56 2023",
+        "adoptedDate": "Wed Jan 25 02:43:51 2023",
         "parentDir": null,
         "version": {
           "semanticVersion": "1.0.5",
