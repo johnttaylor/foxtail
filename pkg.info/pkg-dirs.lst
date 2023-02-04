@@ -106,5 +106,4 @@ tests/Fxt/Type/_0test/windows/vc12
 projects/examples/PiPico-FxtDemo
 projects/examples/PiPico-FxtDemo/pico-uart
 projects/examples/PiPico-FxtDemo/pico-uart/windows/gcc
-projects/examples/PiPico-FxtDemo/pico-uart/windows/gcc/_pico
 projects/examples/PiPico-FxtDemo/rp2040
