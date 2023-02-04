@@ -57,6 +57,7 @@ Processor::Processor( Cpl::Container::Map<Command>&commands,
     , m_deframer( deframer )
     , m_framer( framer )
     , m_outLock( outputLock )
+    , m_initialPermLevel( initialPermissionLevel )
     , m_userPermLevel( initialPermissionLevel )
     , m_comment( commentChar )
     , m_esc( argEscape )
@@ -141,7 +142,8 @@ int Processor::getAndProcessFrame( Cpl::Io::Output & outfd ) noexcept
 bool Processor::start( Cpl::Io::Input & infd, Cpl::Io::Output & outfd, bool blocking ) noexcept
 {
     // Housekeeping
-    m_running = true;
+    m_running       = true;
+    m_userPermLevel = m_initialPermLevel;
     m_outputBuffer.clear();
     m_framer.setOutput( outfd );
 

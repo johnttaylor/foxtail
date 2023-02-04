@@ -232,6 +232,9 @@ protected:
 	/// Output lock
 	Cpl::System::Mutex&                 m_outLock;
 
+	/// Initial shell permission level
+	Security::Permission_T				m_initialPermLevel;
+
 	/// User's permission level	
 	Security::Permission_T				m_userPermLevel;
 

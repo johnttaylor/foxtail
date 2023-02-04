@@ -64,20 +64,37 @@
           "type": "git",
           "origin": "https://github.com/johnttaylor"
         }
-      },
+      }
+    ],
+    "weak": [
       {
-        "pkgname": "pimoroni-pico",
-        "pkgtype": "readonly",
-        "virtualAdoption": true,
-        "adoptedDate": "Wed Jan 25 02:17:37 2023",
-        "parentDir": "xsrc",
+        "pkgname": "catch",
+        "pkgtype": "overlay",
+        "adoptedDate": "Mon May 30 18:22:09 2022",
+        "parentDir": null,
         "version": {
-          "semanticVersion": null,
+          "semanticVersion": "2.13.7b",
           "branch": null,
-          "tag": "OUTCAST2-main-1.19.7"
+          "tag": "OUTCAST2-main-2.13.7b"
         },
         "repo": {
-          "name": "pimoroni-pico",
+          "name": "catch",
+          "type": "git",
+          "origin": "https://github.com/johnttaylor"
+        }
+      },
+      {
+        "pkgname": "nqbp",
+        "pkgtype": "foreign",
+        "adoptedDate": "Sun Nov  6 23:28:22 2022",
+        "parentDir": "xsrc",
+        "version": {
+          "semanticVersion": "3.0.1",
+          "branch": null,
+          "tag": "OUTCAST2-main-3.0.1"
+        },
+        "repo": {
+          "name": "nqbp",
           "type": "git",
           "origin": "https://github.com/johnttaylor"
         }
@@ -100,36 +117,18 @@
         }
       },
       {
-        "pkgname": "colony.apps",
-        "pkgtype": "overlay",
+        "pkgname": "pimoroni-pico",
+        "pkgtype": "readonly",
         "virtualAdoption": true,
-        "adoptedDate": "Wed Jan 25 02:45:12 2023",
-        "parentDir": null,
+        "adoptedDate": "Wed Jan 25 02:17:37 2023",
+        "parentDir": "xsrc",
         "version": {
-          "semanticVersion": "2.1.0",
+          "semanticVersion": null,
           "branch": null,
-          "tag": "OUTCAST2-main-2.1.0"
+          "tag": "OUTCAST2-main-1.19.7"
         },
         "repo": {
-          "name": "colony.apps",
-          "type": "git",
-          "origin": "https://github.com/johnttaylor"
-        }
-      }
-    ],
-    "weak": [
-      {
-        "pkgname": "catch",
-        "pkgtype": "overlay",
-        "adoptedDate": "Mon May 30 18:22:09 2022",
-        "parentDir": null,
-        "version": {
-          "semanticVersion": "2.13.7b",
-          "branch": null,
-          "tag": "OUTCAST2-main-2.13.7b"
-        },
-        "repo": {
-          "name": "catch",
+          "name": "pimoroni-pico",
           "type": "git",
           "origin": "https://github.com/johnttaylor"
         }
@@ -151,17 +150,18 @@
         }
       },
       {
-        "pkgname": "nqbp",
-        "pkgtype": "foreign",
-        "adoptedDate": "Sun Nov  6 23:28:22 2022",
-        "parentDir": "xsrc",
+        "pkgname": "colony.apps",
+        "pkgtype": "overlay",
+        "virtualAdoption": true,
+        "adoptedDate": "Wed Jan 25 02:45:12 2023",
+        "parentDir": null,
         "version": {
-          "semanticVersion": "3.0.1",
+          "semanticVersion": "2.1.0",
           "branch": null,
-          "tag": "OUTCAST2-main-3.0.1"
+          "tag": "OUTCAST2-main-2.1.0"
         },
         "repo": {
-          "name": "nqbp",
+          "name": "colony.apps",
           "type": "git",
           "origin": "https://github.com/johnttaylor"
         }
@@ -175,7 +175,6 @@
       "projects"
     ],
     "adoptedExtras": [
-      "docs",
       "top"
     ]
   },
@@ -192,7 +191,13 @@
     }
   },
   "publish": {
-    "current": null,
+    "current": {
+      "comment": "test publish ONLY",
+      "version": "0.0.0",
+      "date": "Sat Feb  4 21:07:40 2023",
+      "timestamp": 1675544860,
+      "changes": null
+    },
     "history": []
   }
 }
