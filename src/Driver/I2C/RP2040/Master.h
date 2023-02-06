@@ -47,8 +47,10 @@ public:
             size_t      timeoutMs = 1000 );       // 1 second
 
 public:
-    /** Helper method to configure the I2C Pins.  See the constructor
-        comments for additional details.
+    /** Helper method to configure the I2C Pins.  This method should only be 
+        called BEFORE start() has been called on the driver (i.e. when the driver
+        is in the not-started/stopped state). See the constructor comments for 
+        additional details.
      */
     inline static void configureI2CPins( unsigned sdaPin = PICO_DEFAULT_I2C_SDA_PIN,
                                          unsigned sclPin = PICO_DEFAULT_I2C_SCL_PIN )
@@ -57,6 +59,19 @@ public:
         gpio_set_function( sclPin, GPIO_FUNC_I2C );
         gpio_pull_up( sdaPin );
         gpio_pull_up( sclPin );
+    }
+
+    /** Helper method to de-configure/release the I2C Pins.  This method should
+        only be called AFTER stop() has been called on the driver (or the driver
+        instance deleted). See the constructor comments for additional details.
+     */
+    inline static void releaseI2CPins( unsigned sdaPin = PICO_DEFAULT_I2C_SDA_PIN,
+                                       unsigned sclPin = PICO_DEFAULT_I2C_SCL_PIN )
+    {
+        gpio_set_function( sdaPin, GPIO_FUNC_NULL );
+        gpio_set_function( sclPin, GPIO_FUNC_NULL );
+        gpio_disable_pulls( sdaPin );
+        gpio_disable_pulls( sclPin );
     }
 
 public:
