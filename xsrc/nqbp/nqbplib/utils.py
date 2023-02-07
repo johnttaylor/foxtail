@@ -79,6 +79,29 @@ def walk_file_list( pattern, pkgpath, skipdir=None ):
             
     return list  
 
+def _filter_list( master_list, start_filter, end_filter ):
+    """ Filters the list starting with 'start_filter' and ending with 'end_filter'.
+        The filtered list contains both (if specified) 'start_filter' and 'end_filter'
+    """
+
+    if ( start_filter != None ):
+        filtered_prj = []
+        skip         = True
+        for p in master_list:
+            if ( not skip or start_filter in p ):
+                skip = False
+                filtered_prj.append( p )
+        master_list = filtered_prj
+
+    if ( end_filter != None ):
+        filtered_prj = []
+        for p in master_list:
+            filtered_prj.append( p )
+            if ( end_filter in p ):
+                master_list = filtered_prj
+                break
+
+    return master_list
 #-----------------------------------------------------------------------------
 def run_shell( printer, cmd, capture_output=True ):
     p = subprocess.Popen( cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE ) if capture_output else subprocess.Popen( cmd, shell=True ) 

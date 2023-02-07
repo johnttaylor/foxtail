@@ -38,6 +38,10 @@ Options:
     --config SCRIPT      Same as the '--xconfig' option, but the name and path 
                          are relative to the package root directory
     -x SCRIPT            Build using SCRIPT [Default: nqbp.py]
+    -s FILTER            Skip directories UNTIL 'FILTER' is found, then build 
+                         starting with the matched directory
+    -e FILTER            Stop processing directories once 'FILTER' is found. 
+                         Note: the matched directory IS processed.
     -2                   Run two builds at the same time
     -4                   Run four builds at the same time
     -v                   Be verbose 
@@ -139,7 +143,10 @@ if __name__ == '__main__':
     pkgroot = NQBP_PKG_ROOT()
     all_prjs = utils.walk_file_list( build_script, ppath )
 
-    # Get project list from a file
+    # Skip directories
+    all_prjs = utils._filter_list( all_prjs, args['-s'], args['-e'] )
+
+   # Get project list from a file
     if ( args['--file'] ):
         try:
             inf = open( args['--file'], 'r' )

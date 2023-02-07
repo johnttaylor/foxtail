@@ -36,6 +36,10 @@ Options:
     --d2 DIR             A second directory condition that will be AND'd with 
                          with the --dir option when restricting the directory
                          search.                    
+    -s FILTER            Skip directories UNTIL 'FILTER' is found, then build 
+                         starting with the matched directory
+    -e FILTER            Stop processing directories once 'FILTER' is found. 
+                         Note: the matched directory IS processed.
     --loop N             Repeat the test 'N' times.  [default: 1] 
     -t,--turbo           Runs the tests in parallel
     -v                   Be verbose 
@@ -150,6 +154,9 @@ if __name__ == '__main__':
             if ( len(filtered) > 0 and d2 ):
                 tests.append(d)
     
+        # Skip directories
+        tests = utils._filter_list( tests, args['-s'], args['-e'] )
+
         # Build arg string
         arg_string = ' '.join( args['<testargs>'] )
         
