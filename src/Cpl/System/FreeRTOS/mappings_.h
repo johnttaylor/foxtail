@@ -72,6 +72,11 @@
 //#define CPL_IO_FILE_MAX_NAME_MAP                PATH_MAX
 
 
+/// Mapping
+inline unsigned long CplSystemElapsedTime_getTimeInMilliseconds_MAP()
+{
+    return xTaskGetTickCount() / portTICK_PERIOD_MS;
+}
 
 
 //

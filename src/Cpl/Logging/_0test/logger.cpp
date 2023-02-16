@@ -68,7 +68,7 @@ static Cpl::Dm::ModelDatabase    modelDb_( "ignoreThisParameter_usedToInvokeTheS
 static Cpl::Dm::Mp::Uint32       mp_fifoCount( modelDb_, "fifoCount" );
 
 // Create the Logging FIFO
-#define MAX_FIFO_ENTRIES    5
+#define MAX_FIFO_ENTRIES    (5+1)
 static Cpl::Logging::EntryData_T fifoMemory_[MAX_FIFO_ENTRIES];
 static Cpl::Container::RingBufferMP<Cpl::Logging::EntryData_T> logFifo_( MAX_FIFO_ENTRIES, fifoMemory_, mp_fifoCount );
 
@@ -148,7 +148,7 @@ TEST_CASE( "logger" )
         uint32_t logCount;
         bool     valid = mp_fifoCount.read( logCount );
         REQUIRE( valid );
-        REQUIRE( logCount == MAX_FIFO_ENTRIES );
+        REQUIRE( logCount == MAX_FIFO_ENTRIES-1 );
 
         EntryData_T logEntry;
         bool result = logFifo_.remove( logEntry );
