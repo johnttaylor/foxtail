@@ -61,7 +61,6 @@ debug_cpp11    = BuildValues()
 
 # Set 'base' options
 base_cpp11.cflags     = '/W3 /WX /EHsc'  # /EHsc enables exceptions
-base_cpp11.linklibs = 'ws2_32.lib' 
 
 # Set 'Optimized' options
 optimzed_cpp11.cflags = '/O2'

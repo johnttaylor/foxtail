@@ -96,6 +96,7 @@ protected:  // CounterCallback_ API
     Template args:
         CONTEXT   Type of the Class that implements the context for the timer
   */
+
 template <class CONTEXT>
 class TimerComposer : public Timer
 {

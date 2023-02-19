@@ -29,12 +29,18 @@ from nqbplib.base import BuildValues
 #---------------------------------------------------
 
 # Set the name for the final output item
-FINAL_OUTPUT_NAME = 'b.exe'
+FINAL_OUTPUT_NAME = 'b.out'
+
+#
+# For build config/variant: "Release" (aka posix build variant)
+#
 
 # Set project specific 'base' (i.e always used) options
 base_release = BuildValues()        # Do NOT comment out this line
-base_release.cflags    = '-m32 -std=c++11 -Wall -Werror -x c++ '
-base_release.linkflags = '-m32'
+base_release.cflags    = '-m32 -std=c++11 -Wall -Werror -x c++ -fprofile-arcs -ftest-coverage'
+base_release.linkflags = '-m32 -fprofile-arcs'
+base_release.linklibs  = '-lgcov -lpthread -lm'
+
 
 # Set project specific 'optimized' options
 optimzed_release = BuildValues()    # Do NOT comment out this line
@@ -43,7 +49,6 @@ optimzed_release.cflags = '-O3'
 # Set project specific 'debug' options
 debug_release = BuildValues()       # Do NOT comment out this line
 #debug_release.cflags = '-D_MY_APP_DEBUG_SWITCH_'
-
 
 
 # 
@@ -58,30 +63,36 @@ optimzed_cpp11 = BuildValues()
 debug_cpp11    = BuildValues()
 
 # Set 'base' options
-base_cpp11.cflags     = '-m64 -std=c++11 -Wall -Werror -x c++ '
-base_cpp11.linkflags  = '-m64'
+base_cpp11.cflags     = '-m64 -std=c++11 -Wall -Werror -x c++ -fprofile-arcs -ftest-coverage'
+base_cpp11.linkflags  = '-m64 -fprofile-arcs -std=c++11'
+base_cpp11.linklibs   = '-lgcov -lpthread -lm'
 
 # Set 'Optimized' options
 optimzed_cpp11.cflags = '-O3'
 
 
-#
-# For build config/variant: "win64"
-# (note: uses same internal toolchain options as the 'Release' variant,
+
+# 
+# For build config/variant: "posix64" (same as release, except 64bit target)
+# (note: uses same internal toolchain options as the 'Release' variant, 
 #        only the 'User' options will/are different)
 #
 
 # Construct option structs
-base_win64     = BuildValues()
-optimzed_win64 = BuildValues()
-debug_win64    = BuildValues()
+base_posix64     = BuildValues()
+optimzed_posix64 = BuildValues()
+debug_posix64    = BuildValues()
 
-# Set 'base' options
-base_win64.cflags     = '-m64 -std=c++11 -Wall -Werror -x c++'
-base_win64.linkflags  = '-m64'
+# Set project specific 'base' (i.e always used) options
+base_posix64.cflags    = '-m64 -std=c++11 -Wall -Werror -x c++ -fprofile-arcs -ftest-coverage'
+base_posix64.linkflags = '-fprofile-arcs'
+base_posix64.linklibs  = '-lgcov -lpthread -lm'
 
-# Set 'Optimized' options
-optimzed_cpp11.cflags = '-O3'
+# Set project specific 'optimized' options
+optimzed_posix64.cflags = '-O3'
+
+# Set project specific 'debug' options
+
 
 #-------------------------------------------------
 # ONLY edit this section if you are ADDING options
@@ -94,26 +105,25 @@ release_opts = { 'user_base':base_release,
                  'user_debug':debug_release
                }
                
+               
 # Add new dictionary of for new build configuration options
 cpp11_opts = { 'user_base':base_cpp11, 
                'user_optimized':optimzed_cpp11, 
                'user_debug':debug_cpp11
              }
   
-# Add new dictionary of for new build configuration options
-win64_opts = { 'user_base':base_win64,
-               'user_optimized':optimzed_win64,
-               'user_debug':debug_win64
-             }
-               
+posix64_opts = { 'user_base':base_posix64, 
+                 'user_optimized':optimzed_posix64, 
+                 'user_debug':debug_posix64
+               }
+  
         
 # Add new variant option dictionary to # dictionary of 
-# build variants
-build_variants = { 'win32':release_opts,
-                   'win64':win64_opts,
+# build varaints
+build_variants = { 'posix':release_opts,
+                   'posix64':posix64_opts,
                    'cpp11':cpp11_opts,
                  }    
-
 
 #---------------------------------------------------
 # END EDITS/CUSTOMIZATIONS
@@ -127,11 +137,10 @@ prjdir = os.path.dirname(os.path.abspath(__file__))
 
 
 # Select Module that contains the desired toolchain
-from nqbplib.toolchains.windows.mingw_w64.console_exe import ToolChain
+from nqbplib.toolchains.linux.gcc.console_exe import ToolChain
 
 
 # Function that instantiates an instance of the toolchain
 def create():
-    tc = ToolChain( FINAL_OUTPUT_NAME, prjdir, build_variants, "win32" )
+    tc = ToolChain( FINAL_OUTPUT_NAME, prjdir, build_variants, "posix64" )
     return tc 
-

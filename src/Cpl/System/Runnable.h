@@ -68,6 +68,7 @@ public:
      */
     virtual bool isRunning() noexcept;
 
+
 protected:
     /// Constructor
     Runnable();
