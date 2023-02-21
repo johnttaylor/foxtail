@@ -8,16 +8,6 @@
 
 set _HERE=%~dp0
 
-:: Set helper macros
-doskey top=cd %_HERE%
-doskey t=cd %_HERE%
-doskey bob=%_HERE%xsrc\nqbp\other\bob.py $*
-doskey chuck=%_HERE%xsrc\nqbp\other\chuck.py $*
-doskey whatcc=echo:%PIM_ENV_COMPILER%
-doskey killpy=taskkill /F /IM python.exe
-doskey ports=reg query HKLM\HARDWARE\DEVICEMAP\SERIALCOMM
-
-
 :: Add the scripts directory to the command path
 set PATH=%PATH%;%_HERE%scripts\foxtail
 set PATH=%PATH%;%_HERE%scripts\pico
@@ -29,7 +19,18 @@ call outcast.bat
 set NQBP_PKG_ROOT=%_HERE%
 set NQBP_WORK_ROOT=%_HERE%..\
 set NQBP_XPKGS_ROOT=%_HERE%xsrc
-set NQBP_BIN=%NQBP_XPKGS_ROOT%\nqbp
+set NQBP_BIN=%NQBP_XPKGS_ROOT%\nqbp2
+
+:: Set helper macros
+doskey top=cd %_HERE%
+doskey t=cd %_HERE%
+doskey bob=%NQBP_BIN%other\bob.py $*
+doskey chuck=%NQBP_BIN%other\chuck.py $*
+doskey whatcc=echo:%PIM_ENV_COMPILER%
+doskey killpy=taskkill /F /IM python.exe
+doskey ports=reg query HKLM\HARDWARE\DEVICEMAP\SERIALCOMM
+
+
 
 :: No compiler option selected
 IF "/%1"=="/" GOTO :displaycc

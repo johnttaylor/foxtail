@@ -1,5 +1,7 @@
 # Misc
 *.gcov
+_posix64/
+_win32/
 
 # visual studio
 *.exe
