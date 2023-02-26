@@ -251,7 +251,7 @@ float Driver::Automation2040::Api::getAnalogValue( AInputId_T adc )
     }
     else if ( adc == Driver::Automation2040::Api::eAINPUT_2 )
     {
-        mp::sim2040_ainput1.read( value );
+        mp::sim2040_ainput2.read( value );
         if ( adc2LedEnabled_ )
         {
             mp::sim2040_adc2LedBrightness.write( (value / MAX_ADC_LED_VOLTAGE) * ON_PWM );
@@ -259,7 +259,7 @@ float Driver::Automation2040::Api::getAnalogValue( AInputId_T adc )
     }
     else
     {
-        mp::sim2040_ainput1.read( value );
+        mp::sim2040_ainput3.read( value );
         if ( adc3LedEnabled_ )
         {
             mp::sim2040_adc3LedBrightness.write( (value / MAX_ADC_LED_VOLTAGE) * ON_PWM );

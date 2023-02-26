@@ -132,7 +132,7 @@ Cpl::TShell::Command::Result_T TShellCmd::execute( Cpl::TShell::Context_& contex
             return Command::eERROR_INVALID_ARGS;
         }
         Driver::Automation2040::Api::ButtonId_T buttonChannel = Driver::Automation2040::Api::eBOARD_BUTTON_A;
-        if ( *(tokens.getParameter( 2 )) != 'b' )
+        if ( *(tokens.getParameter( 2 )) == 'b' )
         {
             buttonChannel = Driver::Automation2040::Api::eBOARD_BUTTON_B;
         }
@@ -209,7 +209,7 @@ Cpl::TShell::Command::Result_T TShellCmd::execute( Cpl::TShell::Context_& contex
         }
 
         Driver::Automation2040::Api::setRelayState( RELAY_CHANNEL_TO_RELAY_ENUM( relayChannel ), outstate );
-        outtext.format( "Relay %s set to %s, c=%d, p=%d, outstate=%d", tokens.getParameter( 2 ), tokens.getParameter( 3 ), relayChannel, RELAY_CHANNEL_TO_RELAY_ENUM( relayChannel ), outstate );
+        outtext.format( "Relay %s set to %s", tokens.getParameter( 2 ), tokens.getParameter( 3 ) );
         context.writeFrame( outtext.getString() );
         return Command::eSUCCESS;
     }

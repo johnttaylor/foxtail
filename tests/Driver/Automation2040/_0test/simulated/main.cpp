@@ -13,7 +13,7 @@ extern void test( Cpl::Io::Input& infd, Cpl::Io::Output& outfd );
 Cpl::Container::Map<Cpl::TShell::Command>   cmdlist( "ignore_this_parameter-used to invoke the static constructor" );
 static Cpl::TShell::Cmd::Threads            threadsCmd_( cmdlist );
 
-Cpl::Dm::ModelDatabase                      g_modelDatabase( "ignore_this_parameter-used to invoke the static constructor" );
+Cpl::Dm::ModelDatabase                      mp::g_modelDatabase( "ignore_this_parameter-used to invoke the static constructor" );
 static Cpl::Dm::TShell::Dm                  dmCmd_( cmdlist, mp::g_modelDatabase );
 
 static Cpl::Io::Stdio::StdIn                infd_;

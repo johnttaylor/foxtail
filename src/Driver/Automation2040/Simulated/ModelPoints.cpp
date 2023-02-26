@@ -30,8 +30,8 @@ ALLOC_INVALID( sim2040_dinput2, Cpl::Dm::Mp::Bool )
 ALLOC_INVALID( sim2040_dinput3, Cpl::Dm::Mp::Bool )
 ALLOC_INVALID( sim2040_dinput4, Cpl::Dm::Mp::Bool )
 
-ALLOC_INVALID( sim2040_buttonA, Cpl::Dm::Mp::Bool )
-ALLOC_INVALID( sim2040_buttonB, Cpl::Dm::Mp::Bool )
+ALLOC_INVALID( sim2040_buttonAPressed, Cpl::Dm::Mp::Bool )
+ALLOC_INVALID( sim2040_buttonBPressed, Cpl::Dm::Mp::Bool )
 ALLOC_INVALID( sim2040_buttonALedBrightness, Cpl::Dm::Mp::Float )
 ALLOC_INVALID( sim2040_buttonBLedBrightness, Cpl::Dm::Mp::Float )
 

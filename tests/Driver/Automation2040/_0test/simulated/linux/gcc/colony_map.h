@@ -1,9 +1,8 @@
 #ifndef COLONY_MAP_H_
 #define COLONY_MAP_H_
 
-/// Button Unit Test mappings
-#include "Driver/Button/_0test/mappings_.h"
-
+/// Null BSP
+#include "Bsp/UserSpace/Api.h"
 
 // Cpl::System mappings
 #if defined(BUILD_VARIANT_POSIX) || defined(BUILD_VARIANT_POSIX64)
