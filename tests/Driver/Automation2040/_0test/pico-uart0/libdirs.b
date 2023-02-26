@@ -1,39 +1,16 @@
-# Code under test
-src/Driver/Automation2040/RP2040
-
-
-# UART
+# Platform
 src/Cpl/Io/Serial/RP2040/Uart
-xsrc/pico-sdk/src/rp2_common/pico_stdio_uart
-
-# OSAL support
-src/Cpl/System/RP2040/_console
-
-# OSAL 
-src/Cpl/System
-src/Cpl/System/_trace
-
-# OSAL - Platform specific
-src/Cpl/System/RP2040
-src/Cpl/System/RP2040/_shutdown
-src/Cpl/System/RP2040/_fatalerror
-
-# infrastructure
-src/Cpl/Container
-src/Cpl/Text
-src/Cpl/Text/Frame
-src/Cpl/Text/Tokenizer
-src/Cpl/Memory
-src/Cpl/Itc
-src/Cpl/TShell
-src/Cpl/TShell/Cmd
-src/Cpl/Dm
-src/Cpl/Dm/Mp
-src/Cpl/Dm/TShell
 src/Cpl/Io < Input.cpp Output.cpp
 
+# OSAL
+src/Cpl/System/RP2040
+src/Cpl/System/RP2040/_fatalError
+src/Cpl/System/RP2040/_shutdown
+src/Cpl/System/RP2040/_console
+src/Cpl/System/_trace
+
 # BSP
-src/Bsp/RP2040/Pico/gcc
+src/Bsp/RP2040/Automation2040W/gcc
 
 # SDK-Multicore
 xsrc/pico-sdk/src/rp2_common/pico_multicore
@@ -51,7 +28,8 @@ xsrc/pico-sdk/src/rp2_common/hardware_sync
 xsrc/pico-sdk/src/rp2_common/hardware_irq
 xsrc/pico-sdk/src/rp2_common/hardware_timer
 xsrc/pico-sdk/src/rp2_common/hardware_uart
-xsrc/pico-sdk/src/rp2_common/hardware_i2c
+xsrc/pico-sdk/src/rp2_common/hardware_pwm
+xsrc/pico-sdk/src/rp2_common/hardware_adc
 xsrc/pico-sdk/src/rp2_common/hardware_divider
 xsrc/pico-sdk/src/rp2_common/pico_runtime
 xsrc/pico-sdk/src/rp2_common/hardware_clocks

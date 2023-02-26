@@ -67,26 +67,38 @@ public:
     /// Available Analog Input signals (up to 40V)
     enum AInputId_T
     {
-        eAINPUT_1 = 0,          //!< The on-board ADC signal labeled with '1'
-        eAINPUT_2 = 1,          //!< The on-board ADC signal labeled with '2'
-        eAINPUT_3 = 2,          //!< The on-board ADC signal labeled with '3'
+        eAINPUT_1 = 26,          //!< The on-board ADC signal labeled with '1'
+        eAINPUT_2 = 27,          //!< The on-board ADC signal labeled with '2'
+        eAINPUT_3 = 28,          //!< The on-board ADC signal labeled with '3'
     };
 
 public:
     /** This method initializes the driver.  It must be called only ONCE and
-        BEFORE any of the other methods are called
+        BEFORE any of the other methods are called.  The output signals are
+        in their 'safe' state once this method completes.
      */
     static void initialize();
 
-    /** This method puts the driver into a known safe state, i.e. deactivates 
-        all outputs, releases all relays, and turns off all user-controllable 
+
+    /// Starts the driver actively sampling and outputting signals
+    static void start();
+
+    /** Stops the driver from sampling inputs, and places all of the output
+        into their 'safe' state
+     */
+    static void stop();
+    
+
+public:
+    /** This method puts the driver into a known safe state, i.e. deactivates
+        all outputs, releases all relays, and turns off all user-controllable
         LEDs.
      */
     static void setSafe();
 
 public:
     /** This method controls the on/off state of the 'connected' LED (upper right
-        corner of the board). When set to the true, the LED is on at full 
+        corner of the board). When set to the true, the LED is on at full
         brightness level; when set to false the LED is off
      */
     static void setConnectedLED( bool on );
@@ -101,10 +113,10 @@ public:
     /** Returns true if the button is currently pressed.  This is raw sampling
         of the button signal state, i.e. no SW debouncing of the signal
      */
-    static bool userButtonPressed( ButtonId_T button);
+    static bool userButtonPressed( ButtonId_T button );
 
     /** This method controls the on/off state of the LED associated with a
-        button.  When set to the true, the LED is on at full brightness level; 
+        button.  When set to the true, the LED is on at full brightness level;
         when set to false the LED is off
      */
     static void setButtonLED( ButtonId_T button, bool on );
@@ -126,7 +138,7 @@ public:
     {
         setRelayState( relay, true );
     }
-    
+
     /// Convenience method
     static inline void releaseRelay( RelayId_T relay )
     {
@@ -134,7 +146,7 @@ public:
     }
 
 public:
-    /** Returns true if the current commanded state of the specified DO signal 
+    /** Returns true if the current commanded state of the specified DO signal
         is in the asserted state (i.e. physically high)
      */
     static bool getOutputState( DOutputId_T output );
@@ -159,27 +171,40 @@ public:
     static bool getInputState( DInputId_T input );
 
 public:
-    /// Returns the voltage (in volts) 
+    /** Returns the voltage (in volts).  The ADC sample time is ~2us, i.e. this 
+        method will take at least ~2us to complete/return.
+     */
     static float getAnalogValue( AInputId_T adc );
 
-    /** This method enables/disables setting the brightness of the ADC LEDs to 
+    /** This method enables/disables setting the brightness of the ADC LEDs to
         proportional to the last ADC value read.  The default is that the LED
         are off.  For maximum sampling rate - disable the LEDs
      */
-    static void setAdcLEDBehavior( bool reflectADCValue );
+    static void setAdcLEDBehavior( AInputId_T adc, bool reflectADCValue );
 
     /// Convenience method
-    static inline void disableAdcLEDs()
+    static inline void disableAdcLED( AInputId_T adc )
     {
-        setAdcLEDBehavior( false );
+        setAdcLEDBehavior( adc, false );
     }
 
     /// Convenience method
-    static inline void enableAdcLEDs()
+    static inline void enableAdcLED( AInputId_T adc )
     {
-        setAdcLEDBehavior( true );
+        setAdcLEDBehavior( adc, true );
     }
 
+public:
+    /** Returns the on board temperature sensor value in degrees Centigrade.
+
+        Note: See getAnalogValue() method for details on sampling/execution
+              times for this method.
+
+        Note: Paraphrasing from the datasheet - the temperature ADC value
+              is very sensitive to errors in the voltage reference.  Read
+              as the temperature reading is not very accurate.
+     */              
+    static float getBoardTemperature();
 };
 
 } // End namespace(s)

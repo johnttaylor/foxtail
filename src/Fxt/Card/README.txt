@@ -54,7 +54,7 @@ FUTURE:
           physical signals is up to the card implementation.  One option is that
           it can be done directly in the flushOutputs() method ASSUMING there
           are no dependency on code running in the card's thread (in which case
-          not critical section is needed). 
+          no critical section is needed). 
        
 */ 
 

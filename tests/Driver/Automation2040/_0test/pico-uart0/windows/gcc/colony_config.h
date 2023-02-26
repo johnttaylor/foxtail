@@ -4,6 +4,7 @@
 // Turn off STDIO - using a Cpl::Io UART stream in place of
 #define USE_BSP_NO_STDIO
 
+
 // Enable Trace
 #define USE_CPL_SYSTEM_TRACE
 

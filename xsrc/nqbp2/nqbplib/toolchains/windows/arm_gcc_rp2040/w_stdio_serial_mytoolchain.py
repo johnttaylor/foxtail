@@ -33,20 +33,22 @@ from nqbplib.my_globals import NQBP_PKG_ROOT
 #---------------------------------------------------
 
 # Set the name for the final output item (with NO file extension)
-FINAL_OUTPUT_NAME = 'test-system'
+FINAL_OUTPUT_NAME = 'blink'
 
 
 #
 # For build config/variant: "Release"
 #
  
+
 # Set project specific 'base' (i.e always used) options
 base_release = BuildValues()        # Do NOT comment out this line
-common_flags           = ' -DPICO_STACK_SIZE=2048 -DPICO_CORE1_STACK_SIZE=2048 -DPICO_COPY_TO_RAM=0 -DPICO_CXX_ENABLE_EXCEPTIONS=0 -DPICO_NO_FLASH=0 -DPICO_NO_HARDWARE=0 -DPICO_ON_DEVICE=1 -DPICO_USE_BLOCKED_RAM=0 '
-base_release.cflags    = f' -Wall -Wno-array-bounds -Wno-stringop-overflow {common_flags}'
-base_release.cppflags  = ' -std=gnu++11'
-base_release.asmflags  = f' {common_flags}'
-
+wifi_firmware            = '43439A0-7.95.49.00.combined'
+wifi_flags               = '-DCYW43_LWIP=0 -DLIB_PICO_CYW43_ARCH=1 -DPICO_CYW43_ARCH_THREADSAFE_BACKGROUND=1'
+common_flags             = f' {wifi_flags} -DPICO_STACK_SIZE=2048 -DPICO_COPY_TO_RAM=0 -DPICO_CXX_ENABLE_EXCEPTIONS=0 -DPICO_NO_FLASH=0 -DPICO_NO_HARDWARE=0 -DPICO_ON_DEVICE=1 -DPICO_USE_BLOCKED_RAM=0 '
+base_release.cflags      = f' -Wall {common_flags}'
+base_release.cppflags    = ' -std=gnu++11'
+base_release.asmflags    = f' {common_flags}'
 
 # Set project specific 'optimized' options
 optimzed_release = BuildValues()    # Do NOT comment out this line
@@ -95,10 +97,10 @@ prjdir = os.path.dirname(os.path.abspath(__file__))
 
 
 # Select Module that contains the desired toolchain
-from nqbplib.toolchains.windows.arm_gcc_rp2040.stdio_serial import ToolChain
+from nqbplib.toolchains.windows.arm_gcc_rp2040.w_stdio_serial import ToolChain
 
 
 # Function that instantiates an instance of the toolchain
 def create():
-    tc = ToolChain( FINAL_OUTPUT_NAME, prjdir, build_variants, "pico", NQBP_PKG_ROOT(), "pico"  )
+    tc = ToolChain( FINAL_OUTPUT_NAME, prjdir, build_variants, "pico_w", NQBP_PKG_ROOT(), "pico", wifi_firmware  )
     return tc 
