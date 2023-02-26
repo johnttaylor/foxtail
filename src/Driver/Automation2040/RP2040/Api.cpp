@@ -119,11 +119,6 @@ void Driver::Automation2040::Api::setSafe()
     setOutputOff( eDOUTPUT_2 );
     setOutputOff( eDOUTPUT_3 );
 
-    // Reset the ADC LEDs
-    pwm_set_gpio_level( ADC_PIN_TO_LED_PIN( eAINPUT_1 ), 0 );
-    pwm_set_gpio_level( ADC_PIN_TO_LED_PIN( eAINPUT_2 ), 0 );
-    pwm_set_gpio_level( ADC_PIN_TO_LED_PIN( eAINPUT_3 ), 0 );
-
     // Reset the switch LEDs
     pwm_set_gpio_level( BUTTON_PIN_TO_LED_PIN( eBOARD_BUTTON_A ), 0 );
     pwm_set_gpio_level( BUTTON_PIN_TO_LED_PIN( eBOARD_BUTTON_B ), 0 );

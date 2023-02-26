@@ -18,7 +18,7 @@
 #include "Cpl/TShell/Cmd/TPrint.h"
 #include "Cpl/System/ElapsedTime.h"
 #include "Cpl/System/PeriodicScheduler.h"
-#include "Cpl/Itc/PeriodicScheduler.h"
+#include "Cpl/Dm/PeriodicScheduler.h"
 #include "Driver/Automation2040/Api.h"
 #include "Driver/Automation2040/_tshell/Cmd.h"
 
@@ -53,7 +53,7 @@ static void initTShellThread( Cpl::System::ElapsedTime::Precision_T currentTick 
     polledCmdProcessor_.getCommandProcessor().start( *infd_, *outfd_ ); 
 }
 
-static Cpl::Itc::PeriodicScheduler scheduler_( intervals_, initTShellThread, nullptr, nullptr, Cpl::System::ElapsedTime::precision, tshellScan_ );
+static Cpl::Dm::PeriodicScheduler scheduler_( intervals_, initTShellThread, nullptr, nullptr, Cpl::System::ElapsedTime::precision, tshellScan_ );
 
 
 ////////////////////////////////////////////////////////////////////////////////
