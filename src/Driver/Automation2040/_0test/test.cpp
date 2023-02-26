@@ -51,7 +51,6 @@ static Cpl::Io::Output* outfd_;
 static void initTShellThread( Cpl::System::ElapsedTime::Precision_T currentTick )
 {
     polledCmdProcessor_.getCommandProcessor().start( *infd_, *outfd_ ); 
-    CPL_SYSTEM_TRACE_MSG( SECT_, ("Init TShell") );
 }
 
 static Cpl::Itc::PeriodicScheduler scheduler_( intervals_, initTShellThread, nullptr, nullptr, Cpl::System::ElapsedTime::precision, tshellScan_ );

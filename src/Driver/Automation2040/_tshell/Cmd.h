@@ -35,11 +35,10 @@ public:
     static constexpr const char* usage = "2040\n"
                                          "2040 start|stop\n"
                                          "2040 setsafe\n"
-                                         "2040 out|relay <N>\n"
+                                         "2040 out|relay <N> 0|1\n"
                                          "2040 adcled <N> enable|disable>\n"
                                          "2040 buttonled <N> <percent>\n"
-                                         "2040 connled <percent>\n"
-                                         "2040 temperature";
+                                         "2040 connled <percent>";
 
 
     /** The command detailed help string (recommended that lines do not exceed 80 chars)

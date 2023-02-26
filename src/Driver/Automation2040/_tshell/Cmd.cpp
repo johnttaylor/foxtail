@@ -20,7 +20,9 @@
 using namespace Driver::Automation2040;
 
 
-#define ADC_CHANNEL_TO_ADC_ENUM(c)  ((Driver::Automation2040::Api::AInputId_T)((c)+25))
+#define ADC_CHANNEL_TO_ADC_ENUM(c)      ((Driver::Automation2040::Api::AInputId_T)((c)+Driver::Automation2040::Api::eAINPUT_1-1))
+#define OD_CHANNEL_TO_OD_ENUM(c)        ((Driver::Automation2040::Api::DOutputId_T)((c)+Driver::Automation2040::Api::eDOUTPUT_1-1))    
+#define RELAY_CHANNEL_TO_RELAY_ENUM(c)  ((Driver::Automation2040::Api::RelayId_T)((c)+Driver::Automation2040::Api::eRELAY_1-1))    
 
 ///////////////////////////
 TShellCmd::TShellCmd( Cpl::Container::Map<Cpl::TShell::Command>& commandList,
@@ -59,7 +61,7 @@ Cpl::TShell::Command::Result_T TShellCmd::execute( Cpl::TShell::Context_& contex
     // Stop
     if ( tokens.numParameters() == 2 && strcmp( tokens.getParameter( 1 ), "stop" ) == 0 )
     {
-        Driver::Automation2040::Api::start();
+        Driver::Automation2040::Api::stop();
         io = context.writeFrame( "Driver stopped" );
         return io ? Command::eSUCCESS : Command::eERROR_IO;
     }
@@ -150,6 +152,85 @@ Cpl::TShell::Command::Result_T TShellCmd::execute( Cpl::TShell::Context_& contex
         return Command::eSUCCESS;
     }
 
+    // Digital Output
+    if ( tokens.numParameters() == 4 && *(tokens.getParameter( 1 )) == 'o' )
+    {
+        // Output ID
+        int doChannel;
+        if ( Cpl::Text::a2i( doChannel, tokens.getParameter( 2 ) ) == false || doChannel > 3 || doChannel <= 0 )
+        {
+            outtext.format( "Invalid Digital Output Channel (%s). Range is: 1-3", tokens.getParameter( 2 ) );
+            context.writeFrame( outtext.getString() );
+            return Command::eERROR_INVALID_ARGS;
+        }
+
+        // On/off
+        if ( *(tokens.getParameter( 3 )) != '1' && *(tokens.getParameter( 3 )) != '0' )
+        {
+            outtext.format( "Invalid Digital Output state (%s). Must be: '0' or '1'", tokens.getParameter( 3 ) );
+            context.writeFrame( outtext.getString() );
+            return Command::eERROR_INVALID_ARGS;
+        }
+        bool outstate = true;
+        if ( *(tokens.getParameter( 3 )) == '0' )
+        {
+            outstate = false;
+        }
+
+        Driver::Automation2040::Api::setOutputState( OD_CHANNEL_TO_OD_ENUM(doChannel), outstate );
+        outtext.format( "Digital output %s set to %s", tokens.getParameter( 2 ), tokens.getParameter( 3 ) );
+        context.writeFrame( outtext.getString() );
+        return Command::eSUCCESS;
+    }
+
+    // Relay Output
+    if ( tokens.numParameters() == 4 && *(tokens.getParameter( 1 )) == 'r' )
+    {
+        // Relay ID
+        int relayChannel;
+        if ( Cpl::Text::a2i( relayChannel, tokens.getParameter( 2 ) ) == false || relayChannel > 3 || relayChannel <= 0 )
+        {
+            outtext.format( "Invalid DI Channel (%s). Range is: 1-3", tokens.getParameter( 2 ) );
+            context.writeFrame( outtext.getString() );
+            return Command::eERROR_INVALID_ARGS;
+        }
+
+        // On/off
+        if ( *(tokens.getParameter( 3 )) != '1' && *(tokens.getParameter( 3 )) != '0' )
+        {
+            outtext.format( "Invalid Relay state (%s). Must be: '0' or '1'", tokens.getParameter( 3 ) );
+            context.writeFrame( outtext.getString() );
+            return Command::eERROR_INVALID_ARGS;
+        }
+        bool outstate = true;
+        if ( *(tokens.getParameter( 3 )) == '0' )
+        {
+            outstate = false;
+        }
+
+        Driver::Automation2040::Api::setRelayState( RELAY_CHANNEL_TO_RELAY_ENUM( relayChannel ), outstate );
+        outtext.format( "Relay %s set to %s, c=%d, p=%d, outstate=%d", tokens.getParameter( 2 ), tokens.getParameter( 3 ), relayChannel, RELAY_CHANNEL_TO_RELAY_ENUM( relayChannel ), outstate );
+        context.writeFrame( outtext.getString() );
+        return Command::eSUCCESS;
+    }
+
+    // Copnection LED
+    if ( tokens.numParameters() == 3 && *(tokens.getParameter( 1 )) == 'c' )
+    {
+        // Percent on
+        unsigned percentOn;
+        if ( Cpl::Text::a2ui( percentOn, tokens.getParameter( 2 ) ) == false || percentOn > 100 )
+        {
+            outtext.format( "Invalid <percent> argument (%s). Range is: 0-100", tokens.getParameter( 2 ) );
+            context.writeFrame( outtext.getString() );
+            return Command::eERROR_INVALID_ARGS;
+        }
+
+        Driver::Automation2040::Api::setConnectedLED( (float) percentOn );
+        outtext.format( "Connection LED set to %s percent on", tokens.getParameter( 2 ) );
+        context.writeFrame( outtext.getString() );
+        return Command::eSUCCESS;
+    }
 
     // If I get here -->the argument(s) where bad
     return Cpl::TShell::Command::eERROR_INVALID_ARGS;
