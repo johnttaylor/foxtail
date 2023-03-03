@@ -86,10 +86,10 @@ public:
 
 public:
     /// Convenience method for common I2C operation
-    inline Result_T registerWriteByte( uint8_t device7BitAddress, uint8_t reg, uint8_t value )
+    inline Result_T registerWriteByte( uint8_t device7BitAddress, uint8_t reg, uint8_t value, bool noStop = false )
     {
         uint8_t buffer[2] ={ reg, value };
-        return writeToDevice( device7BitAddress, sizeof( buffer ), buffer );
+        return writeToDevice( device7BitAddress, sizeof( buffer ), buffer, noStop );
     }
     
     /// Convenience method for common I2C operation
