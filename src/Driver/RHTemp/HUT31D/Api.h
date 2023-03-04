@@ -50,21 +50,41 @@ public:
 
 public:
     /// See Driver::RHTemp::Api
-    bool sampleRHAndTemperature( float& rhOut, float& tempCOut, Accuracy_T requestedAccuracy = eLOWEST ) noexcept;
-
-    /// See Driver::RHTemp::Api
-    bool sampleRH( float& rhOut, Accuracy_T requestedAccuracy = eLOWEST ) noexcept;
-
-    /// See Driver::RHTemp::Api
-    bool sampleTemperature( float& rhOut, Accuracy_T requestedAccuracy = eLOWEST ) noexcept;
+    bool sample( float& rhOut, float& tempCOut ) noexcept;
 
 public:
     /// See Driver::RHTemp::Api
     bool setHeaderState( bool enabled ) noexcept;
 
+public:
+    /// See Driver::RHTemp::Api
+    SamplingState_T startSample() noexcept;
+    
+    /// See Driver::RHTemp::Api
+    SamplingState_T getSamplingState() noexcept;
+    
+    /// See Driver::RHTemp::Api
+    SamplingState_T getSample( float& rhOut, float& tempCOut ) noexcept;
+
+protected:
+    /// Helper: Starts non-blocking sampling
+    Driver::I2C::Master::Result_T startConversion();
+
+    /// Helper: Reads the conversion results
+    Driver::I2C::Master::Result_T readConversionResult( float& rhOut, float& tempCOut );
+
+    /// Helper: Reads the conversion results
+    SamplingState_T checkSamplingTime();
+
 protected:
     /// I2C driver
     Driver::I2C::Master&    m_i2cDriver;
+
+    /// Timestamp of start-sampling-request
+    uint32_t                m_timeMarker;
+
+    /// Current Sampling state
+    SamplingState_T         m_sampleState;
 
     /// Device address of the sensor
     uint8_t                 m_devAddress;

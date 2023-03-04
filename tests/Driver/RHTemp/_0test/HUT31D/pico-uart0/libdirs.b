@@ -1,10 +1,10 @@
 # UUT
-src/Driver/Automation2040/RP2040
+src/Driver/RHTemp/HUT31D
 
 # Platform
 src/Cpl/Io/Serial/RP2040/Uart
 src/Cpl/Io < Input.cpp Output.cpp
-
+src/Driver/I2C/RP2040
 # OSAL
 src/Cpl/System/RP2040
 src/Cpl/System/RP2040/_fatalError
@@ -31,6 +31,7 @@ xsrc/pico-sdk/src/rp2_common/hardware_sync
 xsrc/pico-sdk/src/rp2_common/hardware_irq
 xsrc/pico-sdk/src/rp2_common/hardware_timer
 xsrc/pico-sdk/src/rp2_common/hardware_uart
+xsrc/pico-sdk/src/rp2_common/hardware_i2c
 xsrc/pico-sdk/src/rp2_common/hardware_pwm
 xsrc/pico-sdk/src/rp2_common/hardware_adc
 xsrc/pico-sdk/src/rp2_common/hardware_divider

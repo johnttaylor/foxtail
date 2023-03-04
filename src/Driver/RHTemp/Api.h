@@ -32,17 +32,15 @@ namespace RHTemp {
 class Api
 {
 public:
-    /** Requested Accuracy.  Typically the higher the accuracy, the longer
-        sensor/measurement time.
+    /** State of the non-blocking sampling 
      */
-    enum Accuracy_T
+    enum SamplingState_T
     {
-        eLOWEST  = 0,   //!< Lowest possible accuracy
-        eGOOD    = 1,   //!< More accurate than eLOWEST
-        eBETTER  = 2,   //!< More accurate than eGOOD
-        eHIGHEST = 3    //!< Highest possible accuracy
+        eNOT_STARTED,   //!< No sample sequence has been started
+        eSAMPLING,      //!< Sampling is in progress
+        eSAMPLE_READY,  //!< A sample has been successfully acquired
+        eERROR          //!< An error occurred.  Triggering a new sample request will clear this state.
     };
-
 
 public:
     /** This method initializes the driver.  It must be called only ONCE and
@@ -66,27 +64,42 @@ public:
     
 public:
     /** This method is used to read/sample both RH (percentage 0 to 100) and 
-        Temperature (in degrees Centigrade).  This method blocks/busy-waits 
-        until the both RH and Temperature has been captured.
+        Temperature (in degrees Centigrade).  
+        
+        This method blocks/busy-waits until the both RH and Temperature has 
+        been captured.  The block/busy-wait time can be relatively long 
+        (e.g. >15ms)
 
         The method returns true when it is successful is reading RH and
         Temperature; else false is returned (e.g. a communication error occurred).
+
+        Note: This method will fail if a non-blocking sample is in progress
 
         Note: The 'requestedAccuracy' argument is a suggestion, i.e. the
               concrete implementation may or may not support the accuracy
               request.
      */
-    virtual bool sampleRHAndTemperature( float& rhOut, float& tempCOut, Accuracy_T requestedAccuracy = eLOWEST ) noexcept = 0;
+    virtual bool sample( float& rhOut, float& tempCOut ) noexcept = 0;
 
-    /** This method is similar to sampleRHAndTemperature(), except on RH is
-        sampled.
+public:
+    /** This method is used to start a non-blocking sampling sequence.  The
+        application then 'polls' state of the sampling by calling getSamplingState()
+        
+        The method returns eSAMPLING when if successfully starts a sampling 
+        sequence; else eERROR is returned (e.g. a sample sequence is already in 
+        progress).
      */
-    virtual bool sampleRH( float& rhOut, Accuracy_T requestedAccuracy = eLOWEST ) noexcept = 0;
+    virtual SamplingState_T startSample() noexcept = 0;
 
-    /** This method is similar to sampleRHAndTemperature(), except on Temperature is
-        sampled.
+    /** This method returns the current state of the non-blocking sampling
      */
-    virtual bool sampleTemperature( float& rhOut, Accuracy_T requestedAccuracy = eLOWEST ) noexcept = 0;
+    virtual SamplingState_T getSamplingState() noexcept = 0;
+
+    /** Used to retrieve the sample result. Returns the current sample.  If the 
+        returned state value does NOT equal eSAMPLE_READY, then 'rhOut' and 
+        'tempCOut' arguments are invalid.
+     */
+    virtual SamplingState_T getSample( float& rhOut, float& tempCOut ) noexcept = 0;
 
 public:
     /** This method is used to enable/disable a 'on-board heater' that is used to 
@@ -96,13 +109,14 @@ public:
               method, i.e. it is Application RESPONSIBILITY for ensuring it
               business logic that relies on this functionality - that it has
               create the appropriate concrete driver.
-        When the heater is on, the Temperature reading are not guaranteed to 
+
+        When the heater is on, the Temperature readings are not guaranteed to 
         be accurate.
 
         The method returns true when it is successful; else false is returned
         (e.g. a communication error occurred).
      */
-    virtual bool setHeaderState( bool enabled ) noexcept { return true };
+    virtual bool setHeaderState( bool enabled ) noexcept  { return true; }
 
 public:
     /// Virtual destructor

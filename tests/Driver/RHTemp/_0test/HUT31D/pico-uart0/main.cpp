@@ -20,7 +20,7 @@ Cpl::TShell::Cmd::Threads                  threadsCmd_( cmdlist );
 #endif
 
 #ifndef OPTION_I2C_BAUDRATE
-#define OPTION_I2C_BAUDRATE (100*1000)      // 100KHz
+#define OPTION_I2C_BAUDRATE (1000*1000)      // 1MHz
 #endif
 
 #ifndef OPTION_I2C_TIMEOUT
@@ -40,7 +40,7 @@ Cpl::TShell::Cmd::Threads                  threadsCmd_( cmdlist );
 #endif
 
 static Driver::I2C::RP2040::Master          i2cBus0Driver_( OPTION_I2C_DEVICE, OPTION_I2C_BAUDRATE, OPTION_I2C_TIMEOUT );
-static Driver::RHTemp::HUT31D::Api          uut_( i2cBus0Driver_, OPTION_I2C_DEV_ADDRESS, 1000 * 1000 ); // 1MHz Baud Rate
+static Driver::RHTemp::HUT31D::Api          uut_( i2cBus0Driver_, OPTION_I2C_DEV_ADDRESS );
 Driver::RHTemp::Api*                        g_uutPtr = &uut_;
 
 

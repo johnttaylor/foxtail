@@ -14,11 +14,18 @@
 #include "Cpl/System/Assert.h"
 #include "Cpl/System/Api.h"
 #include "Cpl/System/Trace.h"
+#include "Cpl/System/ElapsedTime.h"
 #include "pico/time.h"
 
 using namespace Driver::RHTemp::HUT31D;
 
 #define SECT_ "Driver::RHTemp::HUT31D"
+
+#define MAX_CONVERSION_TIME 22
+
+static uint8_t htu31dCrc( uint16_t value );
+static float convertRH( uint16_t rawRH );
+static float convertTemp( uint16_t rawTemp );
 
 //////////////////////////////////////////////////////////////////////////////
 Api::Api( Driver::I2C::Master& i2cDriver, uint8_t i2cDevice7BitAddress )
@@ -28,27 +35,33 @@ Api::Api( Driver::I2C::Master& i2cDriver, uint8_t i2cDevice7BitAddress )
 {
 }
 
+void Api::initialize() noexcept
+{
+    // Nothing needed
+}
+
 bool Api::start() noexcept
 {
     // Skip processing if already started
     if ( !m_started )
     {
         // Check if the IC is responsive/connected
-        uint8_t diagVal;
-        auto result = m_i2cDriver.registerRead<uint8_t>( m_devAddress, 0x08, diagVal );
+        uint8_t data[2] ={ 0, };
+        auto result = m_i2cDriver.registerRead<uint8_t[2]>( m_devAddress, 0x08, data );
         if ( result == Driver::I2C::Master::eSUCCESS )
         {
             // Check if there are any errors (The LSb is heater on/off state)
-            if ( (diagVal & 0xFE) == 0x00 )
+            if ( htu31dCrc( data[0] ) == data[1] && (data[0] & 0xFE) == 0x00 )
             {
-                m_started = true;
+                m_sampleState = eNOT_STARTED;
+                m_started     = true;
                 return true;
             }
-            CPL_SYSTEM_TRACE_MSG( SECT_, ("HUT31D Sensor has one more errors: %02X", diagVal) );
+            CPL_SYSTEM_TRACE_MSG( SECT_, ("HUT31D Sensor has one more errors: %02X %02X", data[0], data[1]) );
         }
         else
         {
-            CPL_SYSTEM_TRACE_MSG( SECT_, ("HUT31D Sensor is not responding (i2c addr=%02X).", m_devAddress) );
+            CPL_SYSTEM_TRACE_MSG( SECT_, ("HUT31D Sensor is not responding (i2c addr=%02X). result=%d", m_devAddress, result) );
         }
 
     }
@@ -62,137 +75,173 @@ void Api::stop() noexcept
 }
 
 //////////////////////////////////////////////////////////////////////////////
-bool Api::sampleRHAndTemperature( float& rhOut, float& tempCOut, Accuracy_T requestedAccuracy = eLOWEST ) noexcept
+bool Api::sample( float& rhOut, float& tempCOut ) noexcept
 {
+    // Fail if sampling is in progress
+    if ( m_sampleState == eSAMPLING )
+    {
+        return false;
+    }
+
+    // Start the conversion
+    if ( startConversion() == Driver::I2C::Master::eSUCCESS )
+    {
+        Cpl::System::Api::sleep( MAX_CONVERSION_TIME );
+
+        if ( readConversionResult( rhOut, tempCOut ) == Driver::I2C::Master::eSUCCESS )
+        {
+            return true;
+        }
+    }
+
     return false;
 }
 
-
-/// See Driver::RHTemp::Api
-bool Api::sampleRH( float& rhOut, Accuracy_T requestedAccuracy = eLOWEST ) noexcept
+Driver::I2C::Master::Result_T Api::startConversion()
 {
-    return false;
+    uint8_t conversion = 0x40 | (0x0F << 1); // Highest accuracy
+    return m_i2cDriver.writeToDevice( m_devAddress, sizeof( conversion ), &conversion );
+}
+
+Driver::I2C::Master::Result_T Api::readConversionResult( float& rhOut, float& tempCOut )
+{
+    uint8_t readCmd = 0;
+    Driver::I2C::Master::Result_T result = m_i2cDriver.writeToDevice( m_devAddress, sizeof( readCmd ), &readCmd, true );
+    if ( result == Driver::I2C::Master::eSUCCESS )
+    {
+        uint8_t data[6];
+        result = m_i2cDriver.readFromDevice( m_devAddress, sizeof( data ), &data );
+        if ( result == Driver::I2C::Master::eSUCCESS )
+        {
+            uint16_t rawTemp = ((uint16_t) (data[0]) << 8) | data[1];
+            uint8_t  crcTemp = htu31dCrc( rawTemp );
+            if ( crcTemp == data[2] )
+            {
+                uint16_t rawRh = ((uint16_t) (data[3]) << 8) | data[4];
+                uint8_t  crcRh = htu31dCrc( rawRh );
+                if ( crcRh == data[5] )
+                {
+                    rhOut    = convertRH( rawRh );
+                    tempCOut = convertTemp( rawTemp );
+                    return Driver::I2C::Master::eSUCCESS;
+                }
+                else
+                {
+                    CPL_SYSTEM_TRACE_MSG( SECT_, ("RH CRC failed (calc=%02X, expected%02X", crcRh, data[5]) );
+                }
+            }
+            else
+            {
+                CPL_SYSTEM_TRACE_MSG( SECT_, ("Temperature CRC failed (calc=%02X, expected%02X", crcTemp, data[2]) );
+            }
+        }
+        else
+        {
+            CPL_SYSTEM_TRACE_MSG( SECT_, ("Failed to Read Conversion result. result=%d", result) );
+        }
+    }
+    else
+    {
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("Failed to write READ-RH-TEMP CMD (%02X). result=%d", readCmd, result) );
+    }
+
+    return result;
 }
 
 
-/// See Driver::RHTemp::Api
-bool Api::sampleTemperature( float& rhOut, Accuracy_T requestedAccuracy = eLOWEST ) noexcept
+//////////////////////////////////////////////////////////////////////////////
+Driver::RHTemp::Api::SamplingState_T Api::startSample() noexcept
 {
-    return false;
+    // Fail if sampling is in progress
+    if ( m_sampleState == eSAMPLING )
+    {
+        return eERROR;
+    }
+
+    // Start the conversion
+    if ( startConversion() == Driver::I2C::Master::eSUCCESS )
+    {
+        m_timeMarker  = Cpl::System::ElapsedTime::milliseconds();
+        m_sampleState = eSAMPLING;
+    }
+    else
+    {
+        m_sampleState = eERROR;
+    }
+
+    return m_sampleState;
 }
 
+Driver::RHTemp::Api::SamplingState_T Api::checkSamplingTime()
+{
+    if ( m_sampleState == eSAMPLING && Cpl::System::ElapsedTime::expiredMilliseconds( m_timeMarker, MAX_CONVERSION_TIME ) )
+    {
+        m_sampleState = eSAMPLE_READY;
+    }
 
+    return m_sampleState;
+}
+
+Driver::RHTemp::Api::SamplingState_T Api::getSamplingState() noexcept
+{
+    return checkSamplingTime();
+}
+
+Driver::RHTemp::Api::SamplingState_T Api::getSample( float& rhOut, float& tempCOut ) noexcept
+{
+    if ( checkSamplingTime() == eSAMPLE_READY )
+    {
+        if ( readConversionResult( rhOut, tempCOut ) != Driver::I2C::Master::eSUCCESS )
+        {
+            m_sampleState = eERROR;
+        }
+    }
+
+    return m_sampleState;
+}
+
+//////////////////////////////////////////////////////////////////////////////
 bool Api::setHeaderState( bool enabled ) noexcept
 {
     return false;
 }
 
 //////////////////////////////////////////////////////////////////////////////
-//bool Api::write( size_t dstOffset, const void* srcData, size_t numBytesToWrite ) noexcept
-//{
-//    // Fail if not started or write is out of range
-//    if ( !m_started ||
-//         (dstOffset + numBytesToWrite) > (OPTION_DRIVER_NV_ONSEMI_CAT24C512_NUM_PAGES * OPTION_DRIVER_NV_ONSEMI_CAT24C512_BYTES_PER_PAGE) )
-//    {
-//        return false;
-//    }
-//
-//    // The writes transactions can not cross page boundaries - so break up the write
-//    // into multiple page writes
-//    size_t startPage            = dstOffset / OPTION_DRIVER_NV_ONSEMI_CAT24C512_BYTES_PER_PAGE;
-//    size_t bytesRemainingInPage = (startPage + 1) * OPTION_DRIVER_NV_ONSEMI_CAT24C512_BYTES_PER_PAGE - dstOffset;
-//    const uint8_t* srcPtr       = (const uint8_t*) srcData;
-//
-//    while ( numBytesToWrite )
-//    {
-//        size_t bytesToWrite = numBytesToWrite > bytesRemainingInPage ? bytesRemainingInPage : numBytesToWrite;
-//        if ( !writePage( dstOffset, srcPtr, bytesToWrite ) )
-//        {
-//            return false;
-//        }
-//
-//        numBytesToWrite     -= bytesToWrite;
-//        dstOffset           += bytesToWrite;
-//        srcPtr              += bytesToWrite;
-//        bytesRemainingInPage = OPTION_DRIVER_NV_ONSEMI_CAT24C512_BYTES_PER_PAGE;
-//    }
-//
-//    // If get here - all of the provided bytes have been written
-//    return true;
-//}
-//
-//bool Api::read( size_t srcOffset, void* dstData, size_t numBytesToRead ) noexcept
-//{
-//    // Fail if not started or read is out of range
-//    if ( !m_started ||
-//         (srcOffset + numBytesToRead) > (OPTION_DRIVER_NV_ONSEMI_CAT24C512_NUM_PAGES * OPTION_DRIVER_NV_ONSEMI_CAT24C512_BYTES_PER_PAGE) )
-//    {
-//        return false;
-//    }
-//
-//    // Set the read address/offset (but keep retrying if a write-cycle is in progress)
-//    if ( !setReadOffsetPointer( srcOffset ) )
-//    {
-//        return false;
-//    }
-//
-//    // Read the data
-//    auto result = m_i2cDriver.readFromDevice( m_devAddress, numBytesToRead, dstData );
-//    return result == Driver::I2C::Master::eSUCCESS;
-//}
-//
-//bool Api::setReadOffsetPointer( size_t newOffset )
-//{
-//    unsigned retryCount = OPTION_DRIVER_NV_ONSEMI_CAT24C512_MAX_WAIT_RETRIES;
-//    uint8_t  address[2];
-//    address[0] = (uint8_t) ((newOffset >> 8) & 0xff);
-//    address[1] = (uint8_t) ((newOffset & 0xFF));
-//
-//    // Retry the transaction if there write-cycle-in-progress
-//    do
-//    {
-//        auto result = m_i2cDriver.writeToDevice( m_devAddress, 2, address );
-//        if ( result == Driver::I2C::Master::eSUCCESS )
-//        {
-//            return true;
-//        }
-//        Cpl::System::Api::sleep( OPTION_DRIVER_NV_ONSEMI_CAT24C512_MAX_WAIT_RETRIES );
-//    } while ( retryCount-- );
-//
-//    return false;
-//}
-//
-//bool Api::writePage( size_t offset, const uint8_t* srcBuffer, size_t numBytesToWrite )
-//{
-//    // Setup temporary page buffer that contains the eeprom offset of the page being written
-//    unsigned retryCount = OPTION_DRIVER_NV_ONSEMI_CAT24C512_MAX_WAIT_RETRIES;
-//    uint8_t  pageBuffer[OPTION_DRIVER_NV_ONSEMI_CAT24C512_BYTES_PER_PAGE + 2];
-//    pageBuffer[0] = (uint8_t) ((offset >> 8) & 0xff);
-//    pageBuffer[1] = (uint8_t) ((offset & 0xFF));
-//    memcpy( pageBuffer + 2, srcBuffer, numBytesToWrite );
-//
-//    // Retry the transaction if there write-cycle-in-progress
-//    do
-//    {
-//        auto result = m_i2cDriver.writeToDevice( m_devAddress, 2 + numBytesToWrite, pageBuffer );
-//        if ( result == Driver::I2C::Master::eSUCCESS )
-//        {
-//            return true;
-//        }
-//        Cpl::System::Api::sleep( OPTION_DRIVER_NV_ONSEMI_CAT24C512_MAX_WAIT_RETRIES );
-//    } while ( retryCount-- );
-//
-//    return false;
-//}
-//
-//
-//size_t Api::getNumPages() const noexcept
-//{
-//    return OPTION_DRIVER_NV_ONSEMI_CAT24C512_NUM_PAGES;
-//}
-//
-//size_t Api::getPageSize() const noexcept
-//{
-//    return OPTION_DRIVER_NV_ONSEMI_CAT24C512_BYTES_PER_PAGE;
-//}
-//
+float convertRH( uint16_t rawRH )
+{
+    // Convert to % (0-100)
+    float rh =  (rawRH / 65535.0) * 100;
+    return rh;
+}
+
+float convertTemp( uint16_t rawTemp )
+{
+    // Convert to degrees Centigrade
+    float temp = (rawTemp / 65535.0) * 165 - 40;
+    return temp;
+}
+
+uint8_t htu31dCrc( uint16_t value )
+{
+    uint32_t polynom = 0x988000; // x^8 + x^5 + x^4 + 1
+    uint32_t msb     = 0x800000;
+    uint32_t mask    = 0xFF8000;
+    uint32_t result  = (uint32_t) value << 8; // Pad with zeros as specified in spec
+
+    while ( msb != 0x80 )
+    {
+        // Check if msb of current value is 1 and apply XOR mask
+        if ( result & msb )
+        {
+            result = ((result ^ polynom) & mask) | (result & ~mask);
+        }
+
+        // Shift by one
+        msb >>= 1;
+        mask >>= 1;
+        polynom >>= 1;
+    }
+
+    return result;
+}
+

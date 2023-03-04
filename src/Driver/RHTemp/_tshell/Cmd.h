@@ -34,7 +34,10 @@ public:
 
     /// The command usage string
     static constexpr const char* usage = "rhtemp\n"
-                                         "rhtemp start|stop";
+                                         "rhtemp start|stop\n"
+                                         "rhtemp sample\n"
+                                         "rhtemp begin\n"
+                                         "rhtemp read";
 
 
     /** The command detailed help string (recommended that lines do not exceed 80 chars)
@@ -43,7 +46,10 @@ public:
      */
     static constexpr const char* detailedHelp = "  Exercises the RHTemp Driver.  The command with no arguments displays\n"
                                                 "  the state of the driver as well as the current input values. The user is\n"
-                                                "  manually start (and stop) the driver for proper operation.";
+                                                "  manually start (and stop) the driver for proper operation.\n"
+                                                "  'sample' performs a blocking sampling\n"
+                                                "  'begin' starts an asynchronous sample\n"
+                                                "  'read' returns the async result/state";
 protected:
     /// See Cpl::TShell::Command
     const char* getUsage() const noexcept { return usage; }
