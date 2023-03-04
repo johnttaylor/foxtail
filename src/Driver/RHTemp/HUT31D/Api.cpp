@@ -203,6 +203,14 @@ Driver::RHTemp::Api::SamplingState_T Api::getSample( float& rhOut, float& tempCO
 //////////////////////////////////////////////////////////////////////////////
 bool Api::setHeaderState( bool enabled ) noexcept
 {
+    uint8_t heaterCmd = enabled ? 0x04 : 0x02;
+    Driver::I2C::Master::Result_T result = m_i2cDriver.writeToDevice( m_devAddress, sizeof( heaterCmd ), &heaterCmd );
+    if ( result == Driver::I2C::Master::eSUCCESS )
+    {
+        return true;
+    }
+
+    CPL_SYSTEM_TRACE_MSG( SECT_, ("Failed to set the heater state (%d). result=%d", enabled, result) );
     return false;
 }
 

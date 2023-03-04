@@ -112,7 +112,7 @@ Cpl::TShell::Command::Result_T TShellCmd::execute( Cpl::TShell::Context_& contex
     {
         float rh;
         float temp;
-        Driver::RHTemp::Api::SamplingState_T result = m_driver.getSample( rh, temp);
+        Driver::RHTemp::Api::SamplingState_T result = m_driver.getSample( rh, temp );
         if ( result == Driver::RHTemp::Api::eSAMPLE_READY )
         {
             outtext.format( "Sample Result: RH=%g%c, Temp=%g'C.", rh, '%', temp );
@@ -123,13 +123,28 @@ Cpl::TShell::Command::Result_T TShellCmd::execute( Cpl::TShell::Context_& contex
         {
             outtext.format( "Sample state=%s",
                             result == Driver::RHTemp::Api::eERROR ? "eERROR" :
-                            result == Driver::RHTemp::Api::eSAMPLING ? "eSAMPLING" : 
+                            result == Driver::RHTemp::Api::eSAMPLING ? "eSAMPLING" :
                             "eNOT_STARTED" );
             io &= context.writeFrame( outtext.getString() );
             return io ? Command::eSUCCESS : Command::eERROR_IO;
         }
     }
- 
+
+    // Heater on/off
+    if ( tokens.numParameters() == 3 && *(tokens.getParameter( 1 )) == 'h' )
+    {
+        bool enabled = strcmp( tokens.getParameter( 2 ), "on" ) == 0 ? true : false;
+        if ( m_driver.setHeaderState( enabled ) )
+        {
+            outtext.format( "Heater %s", enabled ? "ENABLED" : "disabled" );
+            io &= context.writeFrame( outtext.getString() );
+            return io ? Command::eSUCCESS : Command::eERROR_IO;
+        }
+
+        context.writeFrame( "Failed to set/change the Heater state" );
+        return Command::eERROR_FAILED;
+    }
+
     // If I get here -->the argument(s) where bad
     return Cpl::TShell::Command::eERROR_INVALID_ARGS;
 }

@@ -37,7 +37,8 @@ public:
                                          "rhtemp start|stop\n"
                                          "rhtemp sample\n"
                                          "rhtemp begin\n"
-                                         "rhtemp read";
+                                         "rhtemp read\n"
+                                         "rhtemp heater on|off";
 
 
     /** The command detailed help string (recommended that lines do not exceed 80 chars)
