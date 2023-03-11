@@ -33,8 +33,7 @@ public:
     static constexpr const char* verb = "rhtemp";
 
     /// The command usage string
-    static constexpr const char* usage = "rhtemp\n"
-                                         "rhtemp start|stop\n"
+    static constexpr const char* usage = "rhtemp start|stop\n"
                                          "rhtemp sample\n"
                                          "rhtemp begin\n"
                                          "rhtemp read\n"

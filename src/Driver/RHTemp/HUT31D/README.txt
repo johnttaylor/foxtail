@@ -1,7 +1,7 @@
-/** @namespace Driver::Automation2040::RP2020
+/** @namespace Driver::RHTemp::HUT31D
 
-The 'RP2040' namespace implements the composite Automation2040 driver for
-the actual hardware
+The 'HUT31D' namespace implements the RH/Temperature driver using a HUT31D
+sensor.
 
 */  
 

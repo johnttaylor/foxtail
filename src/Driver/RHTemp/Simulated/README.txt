@@ -1,8 +1,8 @@
-/** @namespace Driver::Automation2040::Simulated
+/** @namespace Driver::RHTemp::Simulated
 
-The 'Simulated' namespace implements the composite Automation2040 driver that
+The 'Simulated' namespace implements the RH/Temperature driver that
 is mocked for a Desktop OS (e.g. Windoze, Linux).  The mocked driver uses
-model points for it 'physical' inputs/outputs.
+model points for its 'physical' inputs.
 
 */  
 
