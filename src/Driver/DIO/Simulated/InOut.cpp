@@ -1,5 +1,3 @@
-#ifndef Driver_LED_RedGreeBlue_h_
-#define Driver_LED_RedGreeBlue_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -10,44 +8,117 @@
 *
 * Redistributions of the source code must retain the above copyright notice.
 *----------------------------------------------------------------------------*/
-/** @file */
+/** @file
 
-#include <stdint.h>
+    This file implements the DIO::InOut driver with a simulated driver. 
+    
+    The IO signals are simulated using Model Points.
 
-///
-namespace Driver {
-///
-namespace LED {
+    When an Input PIN is configure with a Pull-Up resistor - then Model Point
+    value is inverted when reading the input.
 
-/** This abstract class defines a basic interface for a single Red-Green-Blue 
-    LED where the application can set the individual color values and the overall
-    brightness of the LED.
- */
-class RedGreenBlue
+*/
+
+#include "Driver/DIO/InOut.h"
+#include "InOutModelPoints.h"
+#include "InOut.h"
+
+using namespace Driver::DIO;
+
+
+static uint8_t          numInputs_;
+static uint8_t          numOutputs_;
+static InOut::Config_T  inputCfg_[DRIVER_DIO_SIMULATED_INOUT_MAX_INPUTS];
+static bool             started_;
+
+static bool afterPulls( uint8_t inputIndex, bool rawSignal )
 {
-public:
-    /** This method is used to set the LED's color value/state by individual Red/Green/Blue color values
-     */
-    virtual void setRgb( uint8_t redValue, uint8_t greenValue, uint8_t blueValue ) noexcept = 0;
-
-    /** This method is used to set the LED's color value/state by Hue, Saturation, Value
-     */
-    virtual void setHsv( float hue, float saturation, float value ) noexcept = 0;
-
-    /** This method is used to set the LED's overall brightness
-     */
-    virtual void setBrightness( uint8_t brightness ) noexcept = 0;
-
-    /// Convenience method to turn the LED off
-    inline void setOff() { setRgb( 0, 0, 0 ); }
-
-public:
-    /// Virtual destructor to make the compiler happy
-    virtual ~RedGreenBlue(){}
-};
-
-} // End namespace(s)
+    if ( (inputCfg_[inputIndex].blob & Driver::DIO::Simulated::INOUT_CFG_PULL_UPDOWN_MASK) == Driver::DIO::Simulated::INOUT_CFG_PULL_UP )
+    {
+        return !rawSignal;
+    }
+    return rawSignal;
 }
 
-/*--------------------------------------------------------------------------*/
-#endif  // end header latch
+
+///////////////////////////////////////////////////////////
+void Driver::DIO::InOut::initialize()
+{
+    // Nothing needed
+}
+
+bool Driver::DIO::InOut::start( uint8_t          numInputs,
+                                const Config_T   inputCfg[],
+                                uint8_t          numOutputs,
+                                const Config_T   outputCfg[] )
+{
+    // Ignore if already started
+    if ( !started_ )
+    {
+        // Enforce limits
+        if ( numInputs > DRIVER_DIO_SIMULATED_INOUT_MAX_INPUTS || numOutputs > DRIVER_DIO_SIMULATED_INOUT_MAX_OUTPUTS )
+        {
+            return false;
+        }
+        
+        // Copy the config (just the 'bits' we are interested in)
+        memcpy( inputCfg_, inputCfg, numInputs * sizeof( Config_T ) );
+        numInputs_  = numInputs;
+        numOutputs_ = numOutputs;
+
+        // Initialize the Inputs (to - in theory - the default state)
+        for ( uint8_t idx=0; idx < numInputs_; idx++ )
+        {
+            mp::simDioInOut_inputs[idx]->write( afterPulls( idx, false) );
+        }
+
+        // Initialize the Outputs state (per the interface semantics)
+        for ( uint8_t idx=0; idx < numOutputs_; idx++ )
+        {
+            mp::simDioInOut_outputs[idx]->write( false );
+        }
+
+        started_ = true;
+        return true;
+    }
+
+    return false;
+}
+
+void Driver::DIO::InOut::stop()
+{
+    started_ = false;
+}
+
+bool Driver::DIO::InOut::getOutput( uint8_t outputIndex, bool& assertedOut )
+{
+    if ( started_ && outputIndex < numOutputs_ )
+    {
+        return mp::simDioInOut_outputs[outputIndex]->read( assertedOut );
+    }
+
+    return false;
+}
+
+bool Driver::DIO::InOut::setOutput( uint8_t outputIndex, bool asserted )
+{
+    if ( started_ && outputIndex < numOutputs_ )
+    {
+        mp::simDioInOut_outputs[outputIndex]->write( asserted );
+        return true;
+    }
+
+    return false;
+}
+
+bool Driver::DIO::InOut::getInput( uint8_t inputIndex, bool& assertedOut )
+{
+    if ( started_ && inputIndex < numInputs_ )
+    {
+        return mp::simDioInOut_inputs[inputIndex]->read( assertedOut );
+    }
+
+    return false;
+}
+
+
