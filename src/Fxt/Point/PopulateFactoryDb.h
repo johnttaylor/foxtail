@@ -15,7 +15,7 @@
     This is header file is used to populate a Point Factory Database with
     all known (to this namespace) Points.  To use the application must
     define the symbol FXT_MY_APP_POINT_FACTORY_DB with an instance of
-    FactoryDatabaseApi.  This file should ONLY be include ONCE in SINGLE file.
+    FactoryDatabaseApi.  This file should ONLY be include ONCE in a SINGLE file.
 */
 
 

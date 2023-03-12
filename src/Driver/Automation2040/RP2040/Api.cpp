@@ -96,9 +96,10 @@ void Driver::Automation2040::Api::initialize()
     // Set up the connectivity LED
     configurePwmOutputPin( CONN_LED_PIN );
 }
-void Driver::Automation2040::Api::start()
+bool Driver::Automation2040::Api::start()
 {
     adc_set_temp_sensor_enabled( true );
+    return true;
 }
 
 void Driver::Automation2040::Api::stop()

@@ -13,8 +13,6 @@
 /** @file */
 
 
-#include "colony_config.h"
-
 ///
 namespace Driver {
 ///
@@ -80,8 +78,10 @@ public:
     static void initialize();
 
 
-    /// Starts the driver actively sampling and outputting signals
-    static void start();
+    /** Starts the driver actively sampling and outputting signals. Returns
+        false if an error was encountered
+     */
+    static bool start();
 
     /** Stops the driver from sampling inputs, and places all of the output
         into their 'safe' state

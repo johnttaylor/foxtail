@@ -47,7 +47,7 @@ public:
      */
     static constexpr const char* detailedHelp = "  Exercises the Automation2040 Driver.  The command with no arguments displays\n"
                                                 "  the state of the driver as well as the current input values. The user is\n"
-                                                "  manually start (and stop) the driver for proper operation.";
+                                                "  required to manually start (and stop) the driver for proper operation.";
 protected:
     /// See Cpl::TShell::Command
     const char* getUsage() const noexcept { return usage; }

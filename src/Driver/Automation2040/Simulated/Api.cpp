@@ -73,9 +73,10 @@ void Driver::Automation2040::Api::initialize()
 }
 
 
-void Driver::Automation2040::Api::start()
+bool Driver::Automation2040::Api::start()
 {
     // Nothing needed
+    return true;
 }
 
 void Driver::Automation2040::Api::stop()
