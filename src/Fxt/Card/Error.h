@@ -42,6 +42,7 @@ namespace Card {
     @param MISSING_SLOT                     Configuration does NOT contain a slot number
     @param POINT_CREATE_ERROR               One or more points were not successfully created
     @param POINT_WRONG_TYPE                 One or more points where the wrong type (as specified in the JSON object)
+    @param DRIVER_ERROR                     The card's low-level driver(s) encounter an error.
  */
 BETTER_ENUM( Err_T, uint8_t
              , SUCCESS = 0
@@ -56,6 +57,7 @@ BETTER_ENUM( Err_T, uint8_t
              , MISSING_SLOT
              , POINT_CREATE_ERROR
              , POINT_WRONG_TYPE
+             , DRIVER_ERROR
 );
 
 /** This concrete class defines the Error Category for the Card namespace.

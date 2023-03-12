@@ -58,7 +58,6 @@ static Fxt::Node::SBC::PiPicoDemo::Factory                 nodeFactory_( OPTION_
 // of commands
 Cpl::Container::Map<Cpl::TShell::Command>           g_cmdlist( "ignore_this_parameter-used to invoke the static constructor" );
 static Cpl::TShell::PolledMaker                     cmdProcessor_( g_cmdlist );
-static Cpl::TShell::Stdio                           shell_( cmdProcessor_, "TShell", CPL_SYSTEM_THREAD_PRIORITY_NORMAL + CPL_SYSTEM_THREAD_PRIORITY_LOWER + CPL_SYSTEM_THREAD_PRIORITY_LOWER );
 static Cpl::TShell::Cmd::Help                       helpCmd_( g_cmdlist );
 static Cpl::TShell::Cmd::Bye                        byeCmd_( g_cmdlist );
 static Cpl::TShell::Cmd::Trace                      traceCmd_( g_cmdlist );
