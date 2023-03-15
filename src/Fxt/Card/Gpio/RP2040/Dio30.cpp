@@ -38,13 +38,13 @@ Dio30::Dio30( Cpl::Memory::ContiguousAllocator&  generalAllocator,
     , m_numInputs( 0 )
     , m_numOutputs( 0 )
 {
+    memset( m_driverInCfg, 0, sizeof( m_driverInCfg ) );
+    memset( m_driverOutCfg, 0, sizeof( m_driverOutCfg ) );
+
     if ( m_error == Fxt::Type::Error::SUCCESS() )
     {
         parseConfiguration( generalAllocator, cardStatefulDataAllocator, haStatefulDataAllocator, pointFactoryDb, dbForPoints, cardObject );
     }
-
-    memset( m_driverInCfg, 0, sizeof( m_driverInCfg ) );
-    memset( m_driverOutCfg, 0, sizeof( m_driverOutCfg ) );
 }
 
 
@@ -65,17 +65,16 @@ void Dio30::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAlloca
         if ( !inputs.isNull() )
         {
             // Validate supported number of signals
-            size_t numInputs = inputs.size();
-            if ( numInputs > MAX_INPUT_CHANNELS )
+            m_numInputs = inputs.size();
+            if ( m_numInputs > MAX_INPUT_CHANNELS )
             {
                 m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::TOO_MANY_INPUT_POINTS );
                 m_error.logIt();
                 return;
             }
-            m_numInputs = numInputs;
 
             // Create Virtual Points
-            for ( size_t idx=0; idx < numInputs; idx++ )
+            for ( size_t idx=0; idx < m_numInputs; idx++ )
             {
                 uint16_t   channelNum_notUsed;
                 JsonObject channelObj = inputs[idx].as<JsonObject>();
@@ -101,7 +100,7 @@ void Dio30::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAlloca
             }
 
             // Create IO Register Points and Driver Configuration:Inputs
-            for ( size_t idx=0; idx < numInputs; idx++ )
+            for ( size_t idx=0; idx < m_numInputs; idx++ )
             {
                 uint16_t   channelNum;
                 JsonObject channelObj = inputs[idx].as<JsonObject>();
@@ -117,7 +116,6 @@ void Dio30::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAlloca
                                        generalAllocator,
                                        cardStatefulDataAllocator,
                                        dbForPoints );
-                m_driverInCfg[idx].pin = channelNum - 1;
 
                 // Stop processing if/when an error occurred
                 if ( m_error != Fxt::Type::Error::SUCCESS() )
@@ -135,17 +133,16 @@ void Dio30::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAlloca
         if ( !outputs.isNull() )
         {
             // Validate supported number of signals
-            size_t numOutputs = outputs.size();
-            if ( numOutputs > MAX_OUTPUT_CHANNELS )
+            m_numOutputs = outputs.size();
+            if ( m_numOutputs > MAX_OUTPUT_CHANNELS )
             {
                 m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::TOO_MANY_OUTPUT_POINTS );
                 m_error.logIt();
                 return;
             }
-            m_numOutputs = numOutputs;
 
             // Create Virtual Points
-            for ( size_t idx=0; idx < numOutputs; idx++ )
+            for ( size_t idx=0; idx < m_numOutputs; idx++ )
             {
                 uint16_t   channelNum_notUsed;
                 JsonObject channelObj = outputs[idx].as<JsonObject>();
@@ -169,7 +166,7 @@ void Dio30::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAlloca
             }
 
             // Create IO Register Points
-            for ( size_t idx=0; idx < numOutputs; idx++ )
+            for ( size_t idx=0; idx < m_numOutputs; idx++ )
             {
                 uint16_t   channelNum;
                 JsonObject channelObj = outputs[idx].as<JsonObject>();
@@ -192,8 +189,7 @@ void Dio30::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAlloca
                 }
 
                 // Parse Pull resistor option
-                parseDriverConfig( channelObj, m_driverInCfg, idx, channelNum );
-
+                parseDriverConfig( channelObj, m_driverOutCfg, idx, channelNum );
             }
         }
 

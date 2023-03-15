@@ -1,3 +1,6 @@
+# Driver(s)
+src/Driver/DIO/RP2040 < InOut30.cpp
+
 # UART
 src/Cpl/Io/Serial/RP2040/Uart
 xsrc/pico-sdk/src/rp2_common/pico_stdio_uart

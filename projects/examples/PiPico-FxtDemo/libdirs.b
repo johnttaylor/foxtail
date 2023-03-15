@@ -2,6 +2,7 @@
 src/Fxt/Node/SBC/PiPicoDemo
 src/Fxt/Card/Mock
 src/Fxt/Card/Mock/TShell
+src/Fxt/Card/Gpio/RP2040 < Dio30.cpp
 
 # Foxtail
 src/Fxt/Logging

@@ -1,5 +1,5 @@
-#ifndef Fxt_Node_SBC_PiPicoDemo_Dio30Factory_h_
-#define Fxt_Node_SBC_PiPicoDemo_Dio30Factory_h_
+#ifndef Fxt_Card_Gpio_RP2040_Dio30Factory_h_
+#define Fxt_Card_Gpio_RP2040_Dio30Factory_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -13,16 +13,16 @@
 /** @file */
 
 #include "Fxt/Card/FactoryCommon_.h"
-#include "Fxt/Node/SBC/PiPicoDemo/Dio30.h"
+#include "Fxt/Card/Gpio/RP2040/Dio30.h"
 
 ///
 namespace Fxt {
 ///
-namespace Node {
+namespace Card {
 ///
-namespace SBC {
+namespace Gpio {
 ///
-namespace PiPicoDemo {
+namespace RP2040 {
 
 
 /// Define factory type

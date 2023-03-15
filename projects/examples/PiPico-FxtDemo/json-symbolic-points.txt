@@ -13,7 +13,7 @@
             {
               "name": "pico",
               "type": "c896faf0-6ea2-47d6-a1a6-7e4074c32a43",
-              "typeName": "Fxt::Node::SBC::PiPicoDemo::Dio30",
+              "typeName": "Fxt::Card::Gpio::RP2040::Dio30",
               "slot": 0,
               "points": {
                 "inputs": [
@@ -22,6 +22,7 @@
                     "id": "GPIO9",
                     "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0",
                     "typeName": "Fxt::Point::Bool",
+                    "pulls": "up",
                     "initial": {
                       "val": true
                     }
@@ -43,7 +44,7 @@
             {
               "name": "My Digital8 Card",
               "type": "59d33888-62c7-45b2-a4d4-9dbc55914ed3",
-              "typeName": "Fxt::Card::HW::Mock::Digital8",
+              "typeName": "Fxt::Card::Mock::Digital8",
               "slot": 1,
               "points": {
                 "inputs": [

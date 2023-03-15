@@ -26,10 +26,10 @@
 using namespace Driver::DIO;
 
 
-static uint8_t          numInputs_;
-static uint8_t          numOutputs_;
-static InOut::Config_T  inputCfg_[DRIVER_DIO_SIMULATED_INOUT_MAX_INPUTS];
-static bool             started_;
+static uint8_t                 numInputs_;
+static uint8_t                 numOutputs_;
+static const InOut::Config_T*  inputCfg_;
+static bool                    started_;
 
 static bool afterPulls( uint8_t inputIndex, bool rawSignal )
 {
@@ -61,8 +61,8 @@ bool Driver::DIO::InOut::start( uint8_t          numInputs,
             return false;
         }
         
-        // Copy the config (just the 'bits' we are interested in)
-        memcpy( inputCfg_, inputCfg, numInputs * sizeof( Config_T ) );
+        // Cache the config (but only 'bits' we care about)
+        inputCfg_   = inputCfg;
         numInputs_  = numInputs;
         numOutputs_ = numOutputs;
 

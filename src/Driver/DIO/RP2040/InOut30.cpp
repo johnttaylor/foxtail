@@ -21,16 +21,15 @@
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
 
+#define MAX_IO      30
 
 using namespace Driver::DIO::RP2040;
 
-#define MAX_IO      30
-
-static Driver::DIO::InOut::Config_T   inputCfg_[MAX_IO];
-static Driver::DIO::InOut::Config_T   outputCfg_[MAX_IO];
-static uint8_t                        numInputs_;
-static uint8_t                        numOutputs_;
-static bool                           started_;
+static const Driver::DIO::InOut::Config_T*  inputCfg_;
+static const Driver::DIO::InOut::Config_T*  outputCfg_;
+static uint8_t                              numInputs_;
+static uint8_t                              numOutputs_;
+static bool                                 started_;
 
 
 static void configGpio( unsigned pin, bool output, size_t pullsOptions );
@@ -56,9 +55,9 @@ bool Driver::DIO::InOut::start( uint8_t          numInputs,
             return false;
         }
 
-        // Make a copy of configuration
-        memcpy( inputCfg_, inputCfg, numInputs * sizeof( Config_T ) );
-        memcpy( outputCfg_, outputCfg, numOutputs * sizeof( Config_T ) );
+        // Cache the configuration
+        inputCfg_   = inputCfg;
+        outputCfg_  = outputCfg;
         numInputs_  = numInputs;
         numOutputs_ = numOutputs;
 

@@ -52,6 +52,10 @@ public:
 
     /** Starts the driver actively sampling and outputting signals. 
 
+        The 'inputCfg[]' and 'outputCfg[]' array must stay in the scope while
+        the driver is started, i.e. can NOT go out of scope till stop() has
+        been called.
+         
         Returns false if an error was encountered (e.g. exceeded max number of 
         Inputs/Outputs signals)
      */

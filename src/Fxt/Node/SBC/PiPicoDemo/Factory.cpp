@@ -12,17 +12,20 @@
 
 
 #include "Factory.h"
-#include "Dio30Factory.h"
+#include "Fxt/Card/Gpio/RP2040/Dio30Factory.h"
 
 #define FXT_MY_APP_POINT_FACTORY_DB             Fxt::Node::FactoryCommon_::g_pointFactoryDb
 #define FXT_MY_APP_CARD_FACTORY_DB              Fxt::Node::FactoryCommon_::g_cardFactoryDb
 #define FXT_MY_APP_COMPONENT_FACTORY_DB         Fxt::Node::FactoryCommon_::g_componentFactoryDb
 
+// Supported Point types and Components
 #include "Fxt/Point/PopulateFactoryDb.h"
-#include "Fxt/Card/Mock/PopulateFactoryDb.h"
 #include "Fxt/Component/Digital/PopulateFactoryDb.h"
 
-static Fxt::Node::SBC::PiPicoDemo::Dio30Factory     dio30Factory_( FXT_MY_APP_CARD_FACTORY_DB );
+// Supported Cards
+#include "Fxt/Card/Gpio/RP2040/Dio30Factory.h"
+static Fxt::Card::Gpio::RP2040::Dio30Factory   dio30Factory_( FXT_MY_APP_CARD_FACTORY_DB );
+#include "Fxt/Card/Mock/PopulateFactoryDb.h"
 
 
 //////////////////////////////////////////
