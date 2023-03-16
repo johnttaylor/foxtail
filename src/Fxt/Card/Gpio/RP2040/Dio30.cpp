@@ -65,13 +65,14 @@ void Dio30::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAlloca
         if ( !inputs.isNull() )
         {
             // Validate supported number of signals
-            m_numInputs = inputs.size();
-            if ( m_numInputs > MAX_INPUT_CHANNELS )
+            size_t nInputs = inputs.size();
+            if ( nInputs > MAX_INPUT_CHANNELS )
             {
                 m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::TOO_MANY_INPUT_POINTS );
                 m_error.logIt();
                 return;
             }
+            m_numInputs = (uint8_t) nInputs;
 
             // Create Virtual Points
             for ( size_t idx=0; idx < m_numInputs; idx++ )
@@ -133,13 +134,14 @@ void Dio30::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAlloca
         if ( !outputs.isNull() )
         {
             // Validate supported number of signals
-            m_numOutputs = outputs.size();
-            if ( m_numOutputs > MAX_OUTPUT_CHANNELS )
+            size_t nOutputs = outputs.size();
+            if ( nOutputs > MAX_OUTPUT_CHANNELS )
             {
                 m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::TOO_MANY_OUTPUT_POINTS );
                 m_error.logIt();
                 return;
             }
+            m_numOutputs = (uint8_t) nOutputs;
 
             // Create Virtual Points
             for ( size_t idx=0; idx < m_numOutputs; idx++ )
