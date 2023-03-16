@@ -43,13 +43,6 @@ public:
     };
 
 public:
-    /** This method initializes the driver.  It must be called only ONCE and
-        BEFORE any of the other methods are called.  The output signals are
-        set the de-asserted state.
-     */
-    static void initialize();
-
-
     /** Starts the driver actively sampling and outputting signals. 
 
         The 'inputCfg[]' and 'outputCfg[]' array must stay in the scope while

@@ -42,11 +42,6 @@ static bool afterPulls( uint8_t inputIndex, bool rawSignal )
 
 
 ///////////////////////////////////////////////////////////
-void Driver::DIO::InOut::initialize()
-{
-    // Nothing needed
-}
-
 bool Driver::DIO::InOut::start( uint8_t          numInputs,
                                 const Config_T   inputCfg[],
                                 uint8_t          numOutputs,

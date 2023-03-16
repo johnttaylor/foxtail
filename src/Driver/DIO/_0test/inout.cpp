@@ -73,9 +73,6 @@ void test( Cpl::Io::Input& infd, Cpl::Io::Output& outfd )
     infd_  = &infd;
     outfd_ = &outfd;
 
-    // Initialize driver
-    Driver::DIO::InOut::initialize();
-
     // Create a 'Scheduler' thread for the TShell to run in
     Cpl::System::Thread::create( scheduler_, "TSHELL" );
 
