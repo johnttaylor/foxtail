@@ -13,9 +13,11 @@
 /** @file */
 
 
+#include "Fxt/Point/Float.h"
 #include "Fxt/Point/Bool.h"
 #include "Fxt/Card/Common_.h"
 #include "Cpl/Json/Arduino.h"
+#include "Fxt/Card/StartStopSync.h"
 
 ///
 namespace Fxt {
@@ -34,49 +36,66 @@ namespace I2C {
     to 'dry out' the sensor.  However, when the heater is on - the temperature
     reading is NOT accurate.
 
+    The card requires a 'driver thread' to execute in independently of the calls to
+    scanInputs() and flushOutputs().  This is so that the sensor can be scanned
+    in the background so a 'current' value is available when scanInputs() is
+    called.
 
     \code
 
     JSON Definition
     --------------------
     {
-      "name": "My Digital Card",                            // Text label for the card
-      "id": 0,                                              // ID assigned to the card
+      "name": "My RH/Temperature Card",                     // *Text label for the card
+      "id": 0,                                              // *ID assigned to the card
       "type": "9fd17cc7-88c1-46bc-8a8c-6f76ab4e6eee",       // Identifies the card type.  Value comes from the Supported/Available-card-list
-      "typename": "Fxt::Node::SBC::PiPicoDemo::Dio30",      // *Human readable type name
-      "slot": 0,                                            // *Physical identifier, e.g. its the card position in the Node's physical chassis
+      "typename": "Fxt::Card::Sensor::I2C::RHTemperature",  // *Human readable type name
+      "slot": 0,                                            // Physical identifier, e.g. its the card position in the Node's physical chassis
+      "i2cAddr: <integer>,                                  // 7 Bit I2C address of the Sensor
+      "driverInterval": <num_msec>,                         // Sampling rate/delay in milliseconds for the DRIVER level scanning.  The value must be >= 20ms
       "points": {
         "inputs": [                                         // Inputs. The card supports 30 input points that are exposed as individual Bool points
           {
-            "channel": 10                                   // Selects GPIO signal on the MCU. where n = GPIO signal + 1. Range is: 1 - 30. GPIO9 = 9+1
+            "channel": 1                                    // Channel 1 represents/holds the RH value
             "id": 0,                                        // ID assigned to the Virtual Point that represents the input value
             "ioRegId": 0,                                   // The ID of the Point's IO register.
-            "name": "My input name"                         // Text label for the input signal
-            "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0", // *REQUIRED Type for the input signal
-            "typeName": "Fxt::Point::Bool",                 // *OPTIONAL: Human readable Type name for the input signal
+            "name": "RH Input value"                        // *Text label for the input signal
+            "type": "708745fa-cef6-4364-abad-063a40f35cbc", // REQUIRED Type for the input signal
+            "typeName": "Fxt::Point::float",                // *OPTIONAL: Human readable Type name for the input signal
             "initial": {
               "valid": true|false                           // Initial valid state for the IO Register point
-              "val": <integer>                              // Initial value for the input point. Only required when 'valid' is true
+              "val": <float>                                // Initial value for the input point. Only required when 'valid' is true
               "id": 0                                       // The ID of the internal point that is used store the initial value in binary form
             }
           },
-          {...}
-        ],
-        "outputs": [                                        // Outputs. The card supports 30 output points that is exposed individual Bool points
           {
-            "channel": 26                                   // Selects GPIO signal on the MCU. where n = GPIO signal + 1. Range is: 1 - 30. GPIO25/LED = 25+1
+            "channel": 2                                    // Channel 2 represents/holds the Temperature value
+            "id": 0,                                        // ID assigned to the Virtual Point that represents the input value
+            "ioRegId": 0,                                   // The ID of the Point's IO register.
+            "name": "Temperature Input value"               // *Text label for the input signal
+            "type": "708745fa-cef6-4364-abad-063a40f35cbc", // REQUIRED Type for the input signal
+            "typeName": "Fxt::Point::float",                // *OPTIONAL: Human readable Type name for the input signal
+            "initial": {
+              "valid": true|false                           // Initial valid state for the IO Register point
+              "val": <float>                                // Initial value for the input point. Only required when 'valid' is true
+              "id": 0                                       // The ID of the internal point that is used store the initial value in binary form
+            }
+          }
+        ],
+        "outputs": [                                        // OPTIONAL Outputs. 
+          {
+            "channel": 1                                    // Channel 1 represents the output for enabling/disabling the heater
             "id": 0,                                        // ID assigned to the Virtual Point that represents the output value
             "ioRegId": 0,                                   // The ID of the Point's IO register.
-            "name": "My output name"                        // Text label for the output signal
-            "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0", // *REQUIRED Type for the output signal
+            "name": "Heater enable"                         // *Text label for the output signal
+            "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0", // REQUIRED Type for the output signal
             "typeName": "Fxt::Point::Bool",                 // *OPTIONAL: Human readable Type name for the output signal
             "initial": {
               "valid": true|false                           // Initial valid state for the IO Register point
-              "val": <integer>                              // Initial value for the input point. Only required when 'valid' is true
+              "val": true|false                             // Initial value for the input point. Only required when 'valid' is true
               "id": 0                                       // The ID of the internal point that is used store the initial value in binary form
             }
-          },
-          {...}
+          }
         ]
       }
     }
@@ -85,7 +104,7 @@ namespace I2C {
 
     \endcode
  */
-class RHTemperature : public Fxt::Card::Common_
+class RHTemperature : public Fxt::Card::Common_, public Fxt::Card::StartStopSync
 {
 public:
     /// Type ID for the card
@@ -95,7 +114,8 @@ public:
     static constexpr const char*    TYPE_NAME   = "Fxt::Card::Sensor::I2C::RHTemperature";
 
     /// Size (in bytes) of Stateful data that will be allocated on the Card Heap
-    static constexpr const size_t   CARD_STATEFUL_HEAP_SIZE = (1 * 3 * sizeof( Fxt::Point::Bool::StateBlock_T ));
+    static constexpr const size_t   CARD_STATEFUL_HEAP_SIZE = (2 * 2 * sizeof( Fxt::Point::Float::StateBlock_T ) + 
+                                                                sizeof( Fxt::Point::Bool::StateBlock_T ));
 
     /// Size (in bytes) of Stateful data that will be allocated on the HA Heap
     static constexpr const size_t   HA_STATEFUL_HEAP_SIZE = (1 * sizeof( Fxt::Point::Bool::StateBlock_T ));
@@ -107,13 +127,14 @@ public:
                    Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
                    Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
                    Fxt::Point::DatabaseApi&           dbForPoints,
-                   JsonVariant&                       cardObject );
+                   JsonVariant&                       cardObject,
+                   Cpl::Itc::PostApi*                 cardMbox );
 
 public:
-    /// See Fxt::Card::Api
+    /// See Fxt::Card::Api (invokes the ITC start request)
     bool start( uint64_t currentElapsedTimeUsec ) noexcept;
 
-    /// See Fxt::Card::Api
+    /// See Fxt::Card::Api (invokes the ITC stop request)
     void stop() noexcept;
 
     /// See Fxt::Card::Api
@@ -128,6 +149,12 @@ public:
     /// See Fxt::Card::Api
     bool flushOutputs( uint64_t currentElapsedTimeUsec ) noexcept;
 
+public:
+    /// ITC Start request
+    void request( StartMsg& msg );
+
+    /// ITC Stop request
+    void request( StopMsg& msg );
 
 protected:
     /// Helper method to parse the card's JSON config

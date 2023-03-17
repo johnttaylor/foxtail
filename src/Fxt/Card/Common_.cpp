@@ -16,6 +16,7 @@
 #include "Cpl/System/Trace.h"
 #include "Fxt/Point/Api.h"
 #include "Fxt/Logging/Api.h"
+#include "Cpl/Itc/SyncReturnHandler.h"
 #include <new>
 
 #define SECT_   "Fxt::Card"
@@ -152,13 +153,13 @@ Fxt::Point::Api* Common_::createPointForChannel( Fxt::Point::FactoryDatabaseApi&
 
     // Create Point
     Fxt::Type::Error pointErr;
-    bool result = pointBank.createPoint( pointFactoryDb, 
-                                         channelObject, 
-                                         pointErr, 
-                                         generalAllocator, 
-                                         statefulDataAllocator, 
-                                         dbForPoints, 
-                                         idName, 
+    bool result = pointBank.createPoint( pointFactoryDb,
+                                         channelObject,
+                                         pointErr,
+                                         generalAllocator,
+                                         statefulDataAllocator,
+                                         dbForPoints,
+                                         idName,
                                          isIoRegPt );
     if ( !result )
     {

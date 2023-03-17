@@ -40,41 +40,41 @@ namespace RP2040 {
     JSON Definition
     --------------------
     {
-      "name": "My Digital Card",                            // Text label for the card
-      "id": 0,                                              // ID assigned to the card
+      "name": "My Digital Card",                            // *Text label for the card
+      "id": 0,                                              // *ID assigned to the card
       "type": "c896faf0-6ea2-47d6-a1a6-7e4074c32a43",       // Identifies the card type.  Value comes from the Supported/Available-card-list
       "typename": "Fxt::Card::Gpio::RP2040::Dio30",         // *Human readable type name
-      "slot": 0,                                            // *Physical identifier, e.g. its the card position in the Node's physical chassis
+      "slot": 0,                                            // Physical identifier, e.g. its the card position in the Node's physical chassis
       "points": {
-        "inputs": [                                         // Inputs. The card supports 30 input points that are exposed as individual Bool points
+        "inputs": [                                         // OPTIONAL: Inputs. The card supports 30 input points that are exposed as individual Bool points
           {
             "channel": 10                                   // Selects GPIO signal on the MCU. where n = GPIO signal + 1. Range is: 1 - 30. GPIO9 = 9+1
             "id": 0,                                        // ID assigned to the Virtual Point that represents the input value
             "ioRegId": 0,                                   // The ID of the Point's IO register.
             "name": "My input name"                         // Text label for the input signal
-            "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0", // *REQUIRED Type for the input signal
+            "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0", // REQUIRED Type for the input signal
             "typeName": "Fxt::Point::Bool",                 // *OPTIONAL: Human readable Type name for the input signal
             "pulls: "none|up|down",                         // OPTIONAL: Internal Pull up/down resistor configuration for the channel/pin.  If not specified - the default is "none"
             "initial": {
               "valid": true|false                           // Initial valid state for the IO Register point
-              "val": <integer>                              // Initial value for the input point. Only required when 'valid' is true
+              "val": true|false                             // Initial value for the input point. Only required when 'valid' is true
               "id": 0                                       // The ID of the internal point that is used store the initial value in binary form
             }
           },
           {...}
         ],
-        "outputs": [                                        // Outputs. The card supports 30 output points that is exposed individual Bool points
+        "outputs": [                                        // OPTIONAL: Outputs. The card supports 30 output points that is exposed individual Bool points
           {
             "channel": 26                                   // Selects GPIO signal on the MCU. where n = GPIO signal + 1. Range is: 1 - 30. GPIO25/LED = 25+1
             "id": 0,                                        // ID assigned to the Virtual Point that represents the output value
             "ioRegId": 0,                                   // The ID of the Point's IO register.
             "name": "My output name"                        // Text label for the output signal
-            "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0", // *REQUIRED Type for the output signal
+            "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0", // REQUIRED Type for the output signal
             "typeName": "Fxt::Point::Bool",                 // *OPTIONAL: Human readable Type name for the output signal
             "pulls: "none|up|down",                         // OPTIONAL: Internal Pull up/down resistor configuration for the channel/pin.  If not specified - the default is "none"
             "initial": {
               "valid": true|false                           // Initial valid state for the IO Register point
-              "val": <integer>                              // Initial value for the input point. Only required when 'valid' is true
+              "val": true|false                             // Initial value for the input point. Only required when 'valid' is true
               "id": 0                                       // The ID of the internal point that is used store the initial value in binary form
             }
           },
@@ -97,10 +97,10 @@ public:
     static constexpr const char*    TYPE_NAME   = "Fxt::Card::Gpio::RP2040::Dio30";
 
     /// Size (in bytes) of Stateful data that will be allocated on the Card Heap
-    static constexpr const size_t   CARD_STATEFUL_HEAP_SIZE = (1 * 3 * sizeof( Fxt::Point::Bool::StateBlock_T ));
+    static constexpr const size_t   CARD_STATEFUL_HEAP_SIZE = (3 * 30 * sizeof( Fxt::Point::Bool::StateBlock_T ));
 
     /// Size (in bytes) of Stateful data that will be allocated on the HA Heap
-    static constexpr const size_t   HA_STATEFUL_HEAP_SIZE = (1 * sizeof( Fxt::Point::Bool::StateBlock_T ));
+    static constexpr const size_t   HA_STATEFUL_HEAP_SIZE = (30 * sizeof( Fxt::Point::Bool::StateBlock_T ));
 
 public:
     /// Constructor

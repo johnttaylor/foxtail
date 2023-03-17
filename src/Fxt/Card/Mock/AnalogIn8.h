@@ -48,11 +48,11 @@ namespace Mock {
     JSON Definition
     --------------------
     {
-      "name": "My AnalogIn8 Card",                          // Text label for the card
-      "id": 0,                                              // ID assigned to the card
+      "name": "My AnalogIn8 Card",                          // *Text label for the card
+      "id": 0,                                              // *ID assigned to the card
       "type": "1968f533-e323-4ae4-8493-9a572f3bd195",       // Identifies the card type.  Value comes from the Supported/Available-card-list
       "typename": "Fxt::Card::Mock::AnalogIn8",             // *Human readable type name
-      "slot": 0,                                            // *Physical identifier, e.g. its the card position in the Node's physical chassis
+      "slot": 0,                                            // Physical identifier, e.g. its the card position in the Node's physical chassis
       "points": {
         "inputs": [                                         // Inputs. The card supports 8 input values. Each input is exposed a Float point
           {
@@ -62,8 +62,7 @@ namespace Mock {
             "name": "My input#1 name"                       // *Text label for the input signal
             "type": "708745fa-cef6-4364-abad-063a40f35cbc", // REQUIRED Type for the input signal
             "typeName": "Fxt::Point::Float",                // *OPTIONAL: Human readable Type name for the input signal
-            "typeCfg: {..}                                  // <OPTIONAL type configuration for complex types, e.g. "typeCfg":{"numElems":2}>,
-            "initial": {
+            "initial": {                                    // OPTIONAL initial value
               "valid": true|false                           // Initial valid state for the IO Register point
               "val": <float>                                // Initial value for the input point. Only required when 'valid' is true
               "id": 2                                       // The ID of the internal point that is used store the initial value in binary form
