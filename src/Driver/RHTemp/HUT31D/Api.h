@@ -51,7 +51,7 @@ public:
 
 public:
     /// See Driver::RHTemp::Api
-    bool setHeaderState( bool enabled ) noexcept;
+    bool setHeaterState( bool enabled ) noexcept;
 
 public:
     /// See Driver::RHTemp::Api

@@ -18,8 +18,10 @@
 using namespace Fxt::Card;
 
 FactoryCommon_::FactoryCommon_( FactoryDatabaseApi& factoryDatabase,
-                                Cpl::Itc::PostApi*  cardMbox )
-    :m_cardMbox( cardMbox )
+                                Cpl::Itc::PostApi*  cardMbox,
+                                void*               extraArgs )
+    : m_cardMbox( cardMbox )
+    , m_extraArgs( extraArgs )
 {
     // Auto register with factory database
     factoryDatabase.put( *this );

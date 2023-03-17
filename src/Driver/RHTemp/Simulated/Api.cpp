@@ -54,7 +54,7 @@ bool Api::sample( float& rhOut, float& tempCOut ) noexcept
     return false;
 }
 
-bool Api::setHeaderState( bool enabled ) noexcept
+bool Api::setHeaterState( bool enabled ) noexcept
 {
     if ( m_started )
     {

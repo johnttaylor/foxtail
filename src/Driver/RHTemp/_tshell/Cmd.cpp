@@ -123,7 +123,7 @@ Cpl::TShell::Command::Result_T TShellCmd::execute( Cpl::TShell::Context_& contex
     if ( tokens.numParameters() == 3 && *(tokens.getParameter( 1 )) == 'h' )
     {
         bool enabled = strcmp( tokens.getParameter( 2 ), "on" ) == 0 ? true : false;
-        if ( m_driver.setHeaderState( enabled ) )
+        if ( m_driver.setHeaterState( enabled ) )
         {
             outtext.format( "Heater %s", enabled ? "ENABLED" : "disabled" );
             io &= context.writeFrame( outtext.getString() );

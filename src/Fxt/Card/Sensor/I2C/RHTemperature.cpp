@@ -11,47 +11,69 @@
 /** @file */
 
 
-#include "Dio30.h"
+#include "RHTemperature.h"
+#include "RHTemperatureDriver.h"
 #include "Cpl/System/Assert.h"
-#include "pico/stdlib.h"
-#include "hardware/gpio.h"
 
 ///
-using namespace Fxt::Node::SBC::PiPicoDemo;
+using namespace Fxt::Card::Sensor::I2C;
 
-#define MAX_INPUT_CHANNELS      30
-#define INPUT_POINT_OFFSET      0
+#define MAX_INPUT_CHANNELS          2
+#define INPUT_POINT_OFFSET          0
 
-#define MAX_OUTPUT_CHANNELS     30
-#define OUTPUT_POINT_OFFSET     (MAX_INPUT_CHANNELS)
+#define MAX_OUTPUT_CHANNELS         1
+#define OUTPUT_POINT_OFFSET         (MAX_INPUT_CHANNELS)
 
-#define TOTAL_MAX_CHANNELS      (MAX_INPUT_CHANNELS + MAX_OUTPUT_CHANNELS)
+#define TOTAL_MAX_CHANNELS          (MAX_INPUT_CHANNELS+MAX_OUTPUT_CHANNELS)
+
+
+
+#define INVALID_INDEX               MAX_INPUT_CHANNELS
 
 
 ///////////////////////////////////////////////////////////////////////////////
-Dio30::Dio30( Cpl::Memory::ContiguousAllocator&  generalAllocator,
-              Cpl::Memory::ContiguousAllocator&  cardStatefulDataAllocator,
-              Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
-              Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
-              Fxt::Point::DatabaseApi&           dbForPoints,
-              JsonVariant&                       cardObject )
+RHTemperature::RHTemperature( Cpl::Memory::ContiguousAllocator&  generalAllocator,
+                              Cpl::Memory::ContiguousAllocator&  cardStatefulDataAllocator,
+                              Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
+                              Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
+                              Fxt::Point::DatabaseApi&           dbForPoints,
+                              JsonVariant&                       cardObject,
+                              Cpl::Itc::PostApi*                 cardMbox,
+                              void*                              extraArgsNotUsed )
     : Fxt::Card::Common_( TOTAL_MAX_CHANNELS, generalAllocator, cardObject )
+    , StartStopSync( *cardMbox )
+    , m_driver( nullptr )
+    , m_rhIndex( INVALID_INDEX )
+    , m_tempIndex( INVALID_INDEX )
+    , m_validSamples( false )
+    , m_heaterEnable( false )
+    , m_pendingHeaterUpdate( false )
 {
     if ( m_error == Fxt::Type::Error::SUCCESS() )
     {
-        parseConfiguration( generalAllocator, cardStatefulDataAllocator, haStatefulDataAllocator, pointFactoryDb, dbForPoints, cardObject );
+        // Get the driver instance
+        m_driver = RHTemperatureDriver::get( m_slotNum );
+        if ( m_driver == nullptr )
+        {
+            m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::DRIVER_ERROR );
+            m_error.logIt();
+        }
+        else
+        {
+            parseConfiguration( generalAllocator, cardStatefulDataAllocator, haStatefulDataAllocator, pointFactoryDb, dbForPoints, cardObject );
+        }
     }
 }
 
 
 
 ///////////////////////////////////////////////////////////////////////////////
-void Dio30::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAllocator,
-                                Cpl::Memory::ContiguousAllocator&  cardStatefulDataAllocator,
-                                Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
-                                Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
-                                Fxt::Point::DatabaseApi&           dbForPoints,
-                                JsonVariant&                       cardObject ) noexcept
+void RHTemperature::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAllocator,
+                                        Cpl::Memory::ContiguousAllocator&  cardStatefulDataAllocator,
+                                        Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
+                                        Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
+                                        Fxt::Point::DatabaseApi&           dbForPoints,
+                                        JsonVariant&                       cardObject ) noexcept
 {
     // Parse channels
     if ( !cardObject["points"].isNull() )
@@ -72,26 +94,34 @@ void Dio30::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAlloca
             // Create Virtual Points
             for ( size_t idx=0; idx < numInputs; idx++ )
             {
+                uint16_t   channelNum;
+                JsonObject channelObj = inputs[idx].as<JsonObject>();
+                createPointForChannel( pointFactoryDb,
+                                       m_virtualInputs,
+                                       Fxt::Point::Float::GUID_STRING,
+                                       false,
+                                       channelObj,
+                                       m_error,
+                                       MAX_INPUT_CHANNELS,
+                                       0,
+                                       channelNum,
+                                       generalAllocator,
+                                       cardStatefulDataAllocator,
+                                       dbForPoints );
+
                 // Stop processing if/when an error occurred
                 if ( m_error != Fxt::Type::Error::SUCCESS() )
                 {
                     return;
                 }
 
-                uint16_t   channelNum_notUsed;
-                JsonObject channelObj = inputs[idx].as<JsonObject>();
-                createPointForChannel( pointFactoryDb,
-                                       m_virtualInputs,
-                                       Fxt::Point::Bool::GUID_STRING,
-                                       false,
-                                       channelObj,
-                                       m_error,
-                                       MAX_INPUT_CHANNELS,
-                                       INPUT_POINT_OFFSET,
-                                       channelNum_notUsed,
-                                       generalAllocator,
-                                       cardStatefulDataAllocator,
-                                       dbForPoints );
+                // Validate Channel number
+                if ( channelNum > 2 )
+                {
+                    m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::BAD_CHANNEL_ASSIGNMENTS );
+                    m_error.logIt();
+                    return;
+                }
             }
 
             // Create IO Register Points
@@ -103,7 +133,7 @@ void Dio30::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAlloca
                     return;
                 }
 
-                uint16_t   channelNum_notUsed;
+                uint16_t   channelNum;
                 JsonObject channelObj = inputs[idx].as<JsonObject>();
                 createPointForChannel( pointFactoryDb,
                                        m_ioRegisterInputs,
@@ -113,10 +143,38 @@ void Dio30::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAlloca
                                        m_error,
                                        MAX_INPUT_CHANNELS,
                                        INPUT_POINT_OFFSET,
-                                       channelNum_notUsed,
+                                       channelNum,
                                        generalAllocator,
                                        cardStatefulDataAllocator,
                                        dbForPoints );
+
+                // Capture IO Point index for the RH Channel
+                if ( channelNum == 1 )
+                {
+                    if ( m_rhIndex != INVALID_INDEX )
+                    {
+                        {
+                            m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::BAD_CHANNEL_ASSIGNMENTS );
+                            m_error.logIt();
+                            return;
+                        }
+                    }
+                    m_rhIndex = idx;
+                }
+
+                // Capture IO Point index for the TEMP Channel
+                if ( channelNum == 2 )
+                {
+                    if ( m_tempIndex != INVALID_INDEX )
+                    {
+                        {
+                            m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::BAD_CHANNEL_ASSIGNMENTS );
+                            m_error.logIt();
+                            return;
+                        }
+                    }
+                    m_tempIndex = idx;
+                }
             }
         }
 
@@ -136,7 +194,7 @@ void Dio30::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAlloca
             // Create Virtual Points
             for ( size_t idx=0; idx < numOutputs; idx++ )
             {
-                uint16_t   channelNum_notUsed;
+                uint16_t   channelNum;
                 JsonObject channelObj = outputs[idx].as<JsonObject>();
                 createPointForChannel( pointFactoryDb,
                                        m_virtualOutputs,
@@ -146,13 +204,21 @@ void Dio30::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAlloca
                                        m_error,
                                        MAX_OUTPUT_CHANNELS,
                                        OUTPUT_POINT_OFFSET,
-                                       channelNum_notUsed,
+                                       channelNum,
                                        generalAllocator,
                                        haStatefulDataAllocator,     // All Output Virtual Points are part of the HA Data set
                                        dbForPoints );
 
                 if ( m_error != Fxt::Type::Error::SUCCESS() )
                 {
+                    return;
+                }
+
+                // Validate Channel number
+                if ( channelNum > 1 )
+                {
+                    m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::BAD_CHANNEL_ASSIGNMENTS );
+                    m_error.logIt();
                     return;
                 }
             }
@@ -181,114 +247,121 @@ void Dio30::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAlloca
                 }
             }
         }
-
-        // Make sure that no IO pin has been 'doubled-up'
-        for ( int idx = 0; idx < MAX_INPUT_CHANNELS; idx++ )
-        {
-            if ( m_ioRegisterPoints[idx + INPUT_POINT_OFFSET] != nullptr &&
-                 m_ioRegisterPoints[idx + OUTPUT_POINT_OFFSET] != nullptr )
-            {
-                m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::BAD_CHANNEL_ASSIGNMENTS );
-                m_error.logIt();
-                return;
-            }
-        }
     }
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
-bool Dio30::start( uint64_t currentElapsedTimeUsec ) noexcept
+bool RHTemperature::start( uint64_t currentElapsedTimeUsec ) noexcept
 {
+    return issueStartRequest( currentElapsedTimeUsec );
+}
+
+void RHTemperature::stop() noexcept
+{
+    issueStopRequest();
+}
+
+// Note: This method executes in the 'driver thread'
+void RHTemperature::request( StartMsg& msg )
+{
+    StartRequest::StartPayload& payload = msg.getPayload();
+    payload.m_success                   = false;
+
     // Call the parent's start-up actions
-    if ( Common_::start( currentElapsedTimeUsec ) )
+    if ( Common_::start( payload.m_currentElapsedTimeUsec ) )
     {
         // Initialize inputs 
         for ( unsigned i=0; i < MAX_INPUT_CHANNELS; i++ )
         {
-            if ( m_ioRegisterPoints[i+ INPUT_POINT_OFFSET] != nullptr )
+            if ( m_ioRegisterPoints[i + INPUT_POINT_OFFSET] != nullptr )
             {
-                // Configure Inputs
-                gpio_init( i );
-                gpio_set_dir( i, GPIO_IN );
-                gpio_pull_up( i );
-
                 // Set the initial IO Register values
-                m_ioRegisterPoints[i+ INPUT_POINT_OFFSET]->updateFromSetter();
+                m_ioRegisterPoints[i + INPUT_POINT_OFFSET]->updateFromSetter();
             }
         }
 
         // Initialize Outputs 
         for ( unsigned i=0; i < MAX_OUTPUT_CHANNELS; i++ )
         {
-            if ( m_ioRegisterPoints[i+ OUTPUT_POINT_OFFSET] != nullptr )
+            if ( m_ioRegisterPoints[i + OUTPUT_POINT_OFFSET] != nullptr )
             {
-                // Configure Outputs
-                gpio_init( i );
-                gpio_set_dir( i, GPIO_OUT );
-
                 // Set the initial IO Register values
                 m_ioRegisterPoints[i + OUTPUT_POINT_OFFSET]->updateFromSetter();
             }
         }
 
+        // Start the underlying driver
+        if ( m_driver->start() )
+        {
+            // Set the initial state for the heater output
+            m_pendingHeaterUpdate = false;
+            if ( m_ioRegisterPoints[OUTPUT_POINT_OFFSET] != nullptr )
+            {
+                Fxt::Point::Bool* pt = (Fxt::Point::Bool*) m_ioRegisterOutputs[OUTPUT_POINT_OFFSET];
+                if ( pt->read( m_heaterEnable ) )
+                {
+                    m_pendingHeaterUpdate = true;
+                }
+            }
 
-        // If I get here -->everything worked            
-        return true;
+            // Start the background sampling (and update the Heater output)
+            expired();
+
+            // If I get here -->everything worked
+            payload.m_success = true;
+        }
     }
 
-    // Start FAILED
-    return false;
+    msg.returnToSender();
 }
 
-
-
-void Dio30::stop() noexcept
+// Note: This method executes in the 'driver thread'
+void RHTemperature::request( StopMsg& msg )
 {
-    // Release Input pins
-    for ( unsigned i=0; i < MAX_INPUT_CHANNELS; i++ )
-    {
-        if ( m_ioRegisterPoints[i+ INPUT_POINT_OFFSET] != nullptr )
-        {
-            gpio_deinit( i );
-            gpio_disable_pulls( i );
-        }
-    }
-
-    // Release Output pins
-    for ( unsigned i=0; i < MAX_OUTPUT_CHANNELS; i++ )
-    {
-        if ( m_ioRegisterPoints[i+ OUTPUT_POINT_OFFSET] != nullptr )
-        {
-            gpio_deinit( i );
-        }
-    }
+    // Stop the underlying driver
+    m_driver->stop();
 
     // Call my parent's stop
     Common_::stop();
 }
 
-const char* Dio30::getTypeGuid() const noexcept
+const char* RHTemperature::getTypeGuid() const noexcept
 {
     return GUID_STRING;
 }
 
-const char* Dio30::getTypeName() const noexcept
+const char* RHTemperature::getTypeName() const noexcept
 {
     return TYPE_NAME;
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
-bool Dio30::scanInputs( uint64_t currentElapsedTimeUsec ) noexcept
+// Note: This method executes in the 'Chassis thread'
+bool RHTemperature::scanInputs( uint64_t currentElapsedTimeUsec ) noexcept
 {
-    // Sample Inputs
-    for ( unsigned i=0; i < MAX_INPUT_CHANNELS; i++ )
+    // Copy the background driver samples to the Input IO Registers
+    for ( unsigned i=0, pinIdx=0; i < MAX_INPUT_CHANNELS; i++ )
     {
         if ( m_ioRegisterPoints[i + INPUT_POINT_OFFSET] != nullptr )
         {
-            Fxt::Point::Bool* pt = (Fxt::Point::Bool*) m_ioRegisterPoints[i + INPUT_POINT_OFFSET];
-            pt->write( gpio_get( i ) );
+            // Safely Read the latest sample value
+            m_lock.lock();
+            bool  validSample = m_validSamples;
+            float value       = m_samples[i];
+            m_lock.unlock();
+
+            // Update the corresponding IO Register
+            Fxt::Point::Float* pt = (Fxt::Point::Float*) m_ioRegisterPoints[i + INPUT_POINT_OFFSET];
+            if ( validSample )
+            {
+                pt->write( value );
+            }
+            else
+            {
+                pt->setInvalid();
+            }
         }
     }
 
@@ -297,7 +370,7 @@ bool Dio30::scanInputs( uint64_t currentElapsedTimeUsec ) noexcept
 }
 
 
-bool Dio30::flushOutputs( uint64_t currentElapsedTimeUsec ) noexcept
+bool RHTemperature::flushOutputs( uint64_t currentElapsedTimeUsec ) noexcept
 {
     // Call parent class to manage the transfer between IO Registers and Virtual Points
     bool result = Common_::flushOutputs( currentElapsedTimeUsec );
@@ -305,16 +378,18 @@ bool Dio30::flushOutputs( uint64_t currentElapsedTimeUsec ) noexcept
     // Update outputs
     if ( result )
     {
-        for ( unsigned i=0; i < MAX_OUTPUT_CHANNELS; i++ )
+        // NOTE: At most there will be ONE output (aka the Heater enable)
+        if ( m_ioRegisterPoints[OUTPUT_POINT_OFFSET] != nullptr )
         {
-            if ( m_ioRegisterPoints[i + OUTPUT_POINT_OFFSET] != nullptr )
+            Fxt::Point::Bool* pt = (Fxt::Point::Bool*) m_ioRegisterPoints[OUTPUT_POINT_OFFSET];
+            bool val;
+            if ( pt->read( val ) )
             {
-                Fxt::Point::Bool* pt = (Fxt::Point::Bool*) m_ioRegisterPoints[i + OUTPUT_POINT_OFFSET];
-                bool val;
-                if ( pt->read( val ) )
-                {
-                    gpio_put( i, val );
-                }
+                // Safely update my outputs flag to be physically set on the next polling cycle
+                m_lock.lock();
+                m_pendingHeaterUpdate = true;
+                m_heaterEnable = true;
+                m_lock.unlock();
             }
         }
     }

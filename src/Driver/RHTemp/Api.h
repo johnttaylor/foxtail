@@ -109,7 +109,7 @@ public:
         The method returns true when it is successful; else false is returned
         (e.g. a communication error occurred).
      */
-    virtual bool setHeaderState( bool enabled ) noexcept  { return true; }
+    virtual bool setHeaterState( bool enabled ) noexcept  { return true; }
 
 public:
     /// Virtual destructor

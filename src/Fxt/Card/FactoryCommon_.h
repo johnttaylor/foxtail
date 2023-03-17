@@ -34,7 +34,8 @@ class FactoryCommon_ : public Fxt::Card::FactoryApi
 public:
     /// Constructor
     FactoryCommon_( FactoryDatabaseApi&  factoryDatabase,
-                    Cpl::Itc::PostApi*   cardMbox = nullptr );
+                    Cpl::Itc::PostApi*   cardMbox = nullptr,
+                    void*                extraArgs = nullptr );
 
     /// Destructor
     ~FactoryCommon_();
@@ -59,6 +60,10 @@ protected:
         and flushOutputs() are called.
      */
     Cpl::Itc::PostApi*  m_cardMbox;
+
+    /** Optional pointer for additional card constructor arguments
+     */
+    void*               m_extraArgs;
 };
 
 
@@ -84,8 +89,7 @@ public:
                  Cpl::Memory::ContiguousAllocator&  cardStatefulDataAllocator,
                  Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
                  Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
-                 Fxt::Point::DatabaseApi&           dbForPoints,
-                 Cpl::Itc::PostApi*                 cardMbox = nullptr ) noexcept
+                 Fxt::Point::DatabaseApi&           dbForPoints ) noexcept
     {
         //  Get basic info about the card
         void* memCardInstance;
@@ -99,7 +103,8 @@ public:
                                                             pointFactoryDb,
                                                             dbForPoints,
                                                             cardObject,
-                                                            cardMbox );
+                                                            m_cardMbox,
+                                                            m_extraArgs );
 
             cardErrorCode = card->getErrorCode();
             return card;

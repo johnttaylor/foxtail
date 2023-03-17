@@ -99,7 +99,8 @@ public:
                Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
                Fxt::Point::DatabaseApi&           dbForPoints,
                JsonVariant&                       cardObject,
-               Cpl::Itc::PostApi*                 cardMbox = nullptr );
+               Cpl::Itc::PostApi*                 cardMboxNotUsed = nullptr,
+               void*                              extraArgsNotUsed = nullptr );
 
 public:
     /// See Fxt::Card::Api

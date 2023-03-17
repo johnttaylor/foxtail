@@ -18,6 +18,9 @@
 #include "Fxt/Card/Common_.h"
 #include "Cpl/Json/Arduino.h"
 #include "Fxt/Card/StartStopSync.h"
+#include "Cpl/System/Timer.h"
+#include "Driver/RHTemp/Api.h"
+#include "Cpl/System/Mutex.h"
 
 ///
 namespace Fxt {
@@ -41,6 +44,12 @@ namespace I2C {
     in the background so a 'current' value is available when scanInputs() is
     called.
 
+    NOTES: 
+        - The Factory class is responsible for providing the Mailbox
+        - The application is responsible for providing the driver instance
+          via the RHTemperatureDriver class.  The look-up for the driver 
+          instance is based on slot number.
+
     \code
 
     JSON Definition
@@ -50,11 +59,10 @@ namespace I2C {
       "id": 0,                                              // *ID assigned to the card
       "type": "9fd17cc7-88c1-46bc-8a8c-6f76ab4e6eee",       // Identifies the card type.  Value comes from the Supported/Available-card-list
       "typename": "Fxt::Card::Sensor::I2C::RHTemperature",  // *Human readable type name
-      "slot": 0,                                            // Physical identifier, e.g. its the card position in the Node's physical chassis
-      "i2cAddr: <integer>,                                  // 7 Bit I2C address of the Sensor
+      "slot": <sensor slot>,                                // Physical identifier. The containing node dedicates what are the valid values for 'slot' (i.e. slot number maps to a specific driver instance)
       "driverInterval": <num_msec>,                         // Sampling rate/delay in milliseconds for the DRIVER level scanning.  The value must be >= 20ms
       "points": {
-        "inputs": [                                         // Inputs. The card supports 30 input points that are exposed as individual Bool points
+        "inputs": [                                         // Inputs.
           {
             "channel": 1                                    // Channel 1 represents/holds the RH value
             "id": 0,                                        // ID assigned to the Virtual Point that represents the input value
@@ -104,7 +112,7 @@ namespace I2C {
 
     \endcode
  */
-class RHTemperature : public Fxt::Card::Common_, public Fxt::Card::StartStopSync
+class RHTemperature : public Fxt::Card::Common_, public Fxt::Card::StartStopSync, public Cpl::System::Timer
 {
 public:
     /// Type ID for the card
@@ -128,7 +136,8 @@ public:
                    Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
                    Fxt::Point::DatabaseApi&           dbForPoints,
                    JsonVariant&                       cardObject,
-                   Cpl::Itc::PostApi*                 cardMbox );
+                   Cpl::Itc::PostApi*                 cardMbox,
+                   void*                              extraArgsNotUsed );
 
 public:
     /// See Fxt::Card::Api (invokes the ITC start request)
@@ -165,6 +174,37 @@ protected:
                              Fxt::Point::DatabaseApi&           dbForPoints,
                              JsonVariant&                       cardObject ) noexcept;
 
+protected:
+    /// Background polling timer expired
+    void expired( void ) noexcept;
+
+protected:
+    /// Mutex need exchange data between the Chassis and Driver threads
+    Cpl::System::Mutex      m_lock;
+
+    /// Driver instance
+    Driver::RHTemp::Api*    m_driver;
+
+    /// Polling delay, in milliseconds
+    unsigned long           m_delayMs;
+
+    /// Last sampled RH & Temperature values
+    float                   m_samples[2];
+
+    /// Point Index for the RH input
+    uint16_t                m_rhIndex;
+
+    /// Point Index for the Temperature input
+    uint16_t                m_tempIndex;
+
+    /// Flag that indicates I have valid sampled values
+    bool                    m_validSamples;
+
+    /// Pending Heater output value
+    bool                    m_heaterEnable;
+
+    /// Flag that indicate if there is pending update to the Heater output
+    bool                    m_pendingHeaterUpdate;
 };
 
 
