@@ -43,13 +43,6 @@ public:
     };
 
 public:
-    /** This method initializes the driver.  It must be called only ONCE and
-        BEFORE any of the other methods are called.  The on-board heater is
-        placed in the disabled state.
-     */
-    virtual void initialize() noexcept = 0;
-
-
     /** Starts the driver actively sampling.
      
         The method returns true when it is successful; else false is returned

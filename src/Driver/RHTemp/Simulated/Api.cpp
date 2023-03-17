@@ -27,10 +27,6 @@ Api::Api( Cpl::Dm::Mp::Float& simulatedRHInputMP,
 }
 
 /////////////////////////////////////
-void Api::initialize() noexcept
-{
-}
-
 bool Api::start() noexcept
 {
     m_started = true;

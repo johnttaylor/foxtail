@@ -43,9 +43,6 @@ public:
 
 public:
     /// See Driver::RHTemp::Api
-    void initialize() noexcept;
-
-    /// See Driver::RHTemp::Api
     bool start() noexcept;
 
     /// See Driver::RHTemp::Api

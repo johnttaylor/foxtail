@@ -1,5 +1,5 @@
-#ifndef Fxt_Node_SBC_PiPicoDemo_Dio30_h_
-#define Fxt_Node_SBC_PiPicoDemo_Dio30_h_
+#ifndef Fxt_Card_Sensor_I2C_RHTemperature_h_
+#define Fxt_Card_Sensor_I2C_RHTemperature_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -20,16 +20,20 @@
 ///
 namespace Fxt {
 ///
-namespace Node {
+namespace Card {
 ///
-namespace SBC {
+namespace Sensor {
 ///
-namespace PiPicoDemo {
+namespace I2C {
 
 
-/** This concrete class implements an IO card that supports 30 digital inputs and
-    30 digital outputs.  The input enables the internal Pull-up resistor, i.e.
-    use a switch-to-ground to change the input state.
+/** This concrete class implements an IO card that is a single RH/Temperature
+    device connect to the Node via an I2C bus.  The card reports a single RH
+    value (in %) and a single Temperature value (in degrees Centigrade).  In
+    addition, the card supports enabling/disabling a on-board heating element
+    to 'dry out' the sensor.  However, when the heater is on - the temperature
+    reading is NOT accurate.
+
 
     \code
 
@@ -38,7 +42,7 @@ namespace PiPicoDemo {
     {
       "name": "My Digital Card",                            // Text label for the card
       "id": 0,                                              // ID assigned to the card
-      "type": "c896faf0-6ea2-47d6-a1a6-7e4074c32a43",       // Identifies the card type.  Value comes from the Supported/Available-card-list
+      "type": "9fd17cc7-88c1-46bc-8a8c-6f76ab4e6eee",       // Identifies the card type.  Value comes from the Supported/Available-card-list
       "typename": "Fxt::Node::SBC::PiPicoDemo::Dio30",      // *Human readable type name
       "slot": 0,                                            // *Physical identifier, e.g. its the card position in the Node's physical chassis
       "points": {
@@ -81,14 +85,14 @@ namespace PiPicoDemo {
 
     \endcode
  */
-class Dio30 : public Fxt::Card::Common_
+class RHTemperature : public Fxt::Card::Common_
 {
 public:
     /// Type ID for the card
-    static constexpr const char*    GUID_STRING = "c896faf0-6ea2-47d6-a1a6-7e4074c32a43";
+    static constexpr const char*    GUID_STRING = "9fd17cc7-88c1-46bc-8a8c-6f76ab4e6eee";
 
     /// Type name for the card
-    static constexpr const char*    TYPE_NAME   = "Fxt::Node::SBC::PiPicoDemo::Dio30";
+    static constexpr const char*    TYPE_NAME   = "Fxt::Card::Sensor::I2C::RHTemperature";
 
     /// Size (in bytes) of Stateful data that will be allocated on the Card Heap
     static constexpr const size_t   CARD_STATEFUL_HEAP_SIZE = (1 * 3 * sizeof( Fxt::Point::Bool::StateBlock_T ));
@@ -98,12 +102,12 @@ public:
 
 public:
     /// Constructor
-    Dio30( Cpl::Memory::ContiguousAllocator&  generalAllocator,
-           Cpl::Memory::ContiguousAllocator&  cardStatefulDataAllocator,
-           Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
-           Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
-           Fxt::Point::DatabaseApi&           dbForPoints,
-           JsonVariant&                       cardObject );
+    RHTemperature( Cpl::Memory::ContiguousAllocator&  generalAllocator,
+                   Cpl::Memory::ContiguousAllocator&  cardStatefulDataAllocator,
+                   Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
+                   Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
+                   Fxt::Point::DatabaseApi&           dbForPoints,
+                   JsonVariant&                       cardObject );
 
 public:
     /// See Fxt::Card::Api

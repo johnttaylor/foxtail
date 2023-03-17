@@ -35,11 +35,6 @@ Api::Api( Driver::I2C::Master& i2cDriver, uint8_t i2cDevice7BitAddress )
 {
 }
 
-void Api::initialize() noexcept
-{
-    // Nothing needed
-}
-
 bool Api::start() noexcept
 {
     // Skip processing if already started
