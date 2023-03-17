@@ -33,7 +33,8 @@ Dio30::Dio30( Cpl::Memory::ContiguousAllocator&  generalAllocator,
               Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
               Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
               Fxt::Point::DatabaseApi&           dbForPoints,
-              JsonVariant&                       cardObject )
+              JsonVariant&                       cardObject,
+              Cpl::Itc::PostApi*                 cardMbox )
     : Fxt::Card::Common_( TOTAL_MAX_CHANNELS, generalAllocator, cardObject )
     , m_numInputs( 0 )
     , m_numOutputs( 0 )

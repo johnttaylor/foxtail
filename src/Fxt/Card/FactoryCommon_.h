@@ -18,6 +18,7 @@
 #include "Fxt/Card/Error.h"
 #include "Fxt/Point/DatabaseApi.h"
 #include "Cpl/Memory/ContiguousAllocator.h"
+#include "Cpl/Itc/PostApi.h"
 
 ///
 namespace Fxt {
@@ -32,7 +33,8 @@ class FactoryCommon_ : public Fxt::Card::FactoryApi
 {
 public:
     /// Constructor
-    FactoryCommon_( FactoryDatabaseApi&  factoryDatabase );
+    FactoryCommon_( FactoryDatabaseApi&  factoryDatabase,
+                    Cpl::Itc::PostApi*   cardMbox = nullptr );
 
     /// Destructor
     ~FactoryCommon_();
@@ -51,6 +53,12 @@ protected:
                                        Cpl::Memory::ContiguousAllocator&  generalAllocator,
                                        size_t                             cardSizeInBytes,
                                        void*&                             memoryForCard ) noexcept;
+protected:
+    /** Optional pointer to the Card's mailbox (aka Thread).  The mailbox/thread
+        is required when the Card needs to execute other than when scanInputs() 
+        and flushOutputs() are called.
+     */
+    Cpl::Itc::PostApi*  m_cardMbox;
 };
 
 
@@ -61,7 +69,7 @@ class Factory : public FactoryCommon_
 {
 public:
     /// Constructor
-    Factory( FactoryDatabaseApi&  factoryDatabase ) : FactoryCommon_( factoryDatabase )
+    Factory( FactoryDatabaseApi&  factoryDatabase, Cpl::Itc::PostApi* cardMbox=nullptr ) : FactoryCommon_( factoryDatabase, cardMbox )
     {
     }
 
@@ -76,7 +84,8 @@ public:
                  Cpl::Memory::ContiguousAllocator&  cardStatefulDataAllocator,
                  Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
                  Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
-                 Fxt::Point::DatabaseApi&           dbForPoints ) noexcept
+                 Fxt::Point::DatabaseApi&           dbForPoints,
+                 Cpl::Itc::PostApi*                 cardMbox = nullptr ) noexcept
     {
         //  Get basic info about the card
         void* memCardInstance;
@@ -89,7 +98,8 @@ public:
                                                             haStatefulDataAllocator,
                                                             pointFactoryDb,
                                                             dbForPoints,
-                                                            cardObject );
+                                                            cardObject,
+                                                            cardMbox );
 
             cardErrorCode = card->getErrorCode();
             return card;

@@ -28,7 +28,8 @@ AnalogIn8::AnalogIn8( Cpl::Memory::ContiguousAllocator&  generalAllocator,
                       Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
                       Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
                       Fxt::Point::DatabaseApi&           dbForPoints,
-                      JsonVariant&                       cardObject )
+                      JsonVariant&                       cardObject,
+                      Cpl::Itc::PostApi*                 cardMbox )
     : Fxt::Card::Common_( MAX_CHANNELS, generalAllocator, cardObject )
 {
     if ( m_error == Fxt::Type::Error::SUCCESS() )

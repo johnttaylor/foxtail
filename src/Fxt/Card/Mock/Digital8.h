@@ -17,6 +17,7 @@
 #include "Fxt/Card/Common_.h"
 #include "Cpl/Json/Arduino.h"
 #include "Cpl/System/Mutex.h"
+#include "Cpl/Itc/PostApi.h"
 
 ///
 namespace Fxt {
@@ -111,7 +112,8 @@ public:
               Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
               Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
               Fxt::Point::DatabaseApi&           dbForPoints,
-              JsonVariant&                       cardObject );
+              JsonVariant&                       cardObject,
+              Cpl::Itc::PostApi*                 cardMbox = nullptr );
 
 public:
     /// See Fxt::Card::Api
