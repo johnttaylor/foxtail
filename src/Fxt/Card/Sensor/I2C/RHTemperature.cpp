@@ -56,7 +56,7 @@ RHTemperature::RHTemperature( Cpl::Memory::ContiguousAllocator&  generalAllocato
         if ( m_driver == nullptr )
         {
             m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::DRIVER_ERROR );
-            m_error.logIt();
+            m_error.logIt( getTypeName() );
         }
         else
         {
@@ -79,8 +79,8 @@ void RHTemperature::parseConfiguration( Cpl::Memory::ContiguousAllocator&  gener
     m_delayMs = cardObject["driverInterval"] | 0;
     if ( m_delayMs < MIN_SAMPLING_DELAY_MS )
     {
-        m_error = Fxt::Card::fullErr( m_delayMs == 0? Fxt::Card::Err_T::MISSING_REQUIRE_FIELD: Fxt::Card::Err_T::INVALID_FIELD );
-        m_error.logIt();
+        m_error = Fxt::Card::fullErr( m_delayMs == 0 ? Fxt::Card::Err_T::MISSING_REQUIRE_FIELD : Fxt::Card::Err_T::INVALID_FIELD );
+        m_error.logIt( getTypeName() );
         return;
     }
 
@@ -96,7 +96,7 @@ void RHTemperature::parseConfiguration( Cpl::Memory::ContiguousAllocator&  gener
             if ( numInputs > MAX_INPUT_CHANNELS )
             {
                 m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::TOO_MANY_INPUT_POINTS );
-                m_error.logIt();
+                m_error.logIt( getTypeName() );
                 return;
             }
 
@@ -128,7 +128,7 @@ void RHTemperature::parseConfiguration( Cpl::Memory::ContiguousAllocator&  gener
                 if ( channelNum > 2 )
                 {
                     m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::BAD_CHANNEL_ASSIGNMENTS );
-                    m_error.logIt();
+                    m_error.logIt( getTypeName() );
                     return;
                 }
             }
@@ -146,7 +146,7 @@ void RHTemperature::parseConfiguration( Cpl::Memory::ContiguousAllocator&  gener
                 JsonObject channelObj = inputs[idx].as<JsonObject>();
                 createPointForChannel( pointFactoryDb,
                                        m_ioRegisterInputs,
-                                       Fxt::Point::Bool::GUID_STRING,
+                                       Fxt::Point::Float::GUID_STRING,
                                        true,
                                        channelObj,
                                        m_error,
@@ -164,11 +164,11 @@ void RHTemperature::parseConfiguration( Cpl::Memory::ContiguousAllocator&  gener
                     {
                         {
                             m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::BAD_CHANNEL_ASSIGNMENTS );
-                            m_error.logIt();
+                            m_error.logIt( getTypeName() );
                             return;
                         }
                     }
-                    m_rhIndex = idx;
+                    m_rhIndex = (uint16_t) idx;
                 }
 
                 // Capture IO Point index for the TEMP Channel
@@ -178,11 +178,11 @@ void RHTemperature::parseConfiguration( Cpl::Memory::ContiguousAllocator&  gener
                     {
                         {
                             m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::BAD_CHANNEL_ASSIGNMENTS );
-                            m_error.logIt();
+                            m_error.logIt( getTypeName() );
                             return;
                         }
                     }
-                    m_tempIndex = idx;
+                    m_tempIndex =  (uint16_t) idx;
                 }
             }
         }
@@ -227,7 +227,7 @@ void RHTemperature::parseConfiguration( Cpl::Memory::ContiguousAllocator&  gener
                 if ( channelNum > 1 )
                 {
                     m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::BAD_CHANNEL_ASSIGNMENTS );
-                    m_error.logIt();
+                    m_error.logIt( getTypeName() );
                     return;
                 }
             }
@@ -305,10 +305,10 @@ void RHTemperature::request( StartMsg& msg )
         // Start the underlying driver
         if ( m_driver->start() )
         {
-            // Set the initial state for the heater output
+            // Set the initial state for the heater output (Note: There is only ONE heater output)
             if ( m_ioRegisterPoints[OUTPUT_POINT_OFFSET] != nullptr )
             {
-                Fxt::Point::Bool* pt = (Fxt::Point::Bool*) m_ioRegisterOutputs[OUTPUT_POINT_OFFSET];
+                Fxt::Point::Bool* pt = (Fxt::Point::Bool*) m_ioRegisterPoints[OUTPUT_POINT_OFFSET];
                 if ( pt->read( m_heaterEnable ) )
                 {
                     m_pendingHeaterUpdate = true;
@@ -321,12 +321,12 @@ void RHTemperature::request( StartMsg& msg )
             // If I get here -->everything worked
             payload.m_success = true;
         }
-        
+
         // Driver failed -->fail the card
         else
         {
             m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::DRIVER_ERROR );
-            m_error.logIt();
+            m_error.logIt( getTypeName() );
         }
     }
 
@@ -364,7 +364,7 @@ void RHTemperature::expired() noexcept
     bool heaterVal        = m_heaterEnable;
     m_pendingHeaterUpdate = false;
     m_lock.unlock();
-    
+
     // Update output
     if ( pendingUpdate )
     {

@@ -21,17 +21,17 @@
 
 /// The thread name for Chassis #1
 #ifndef OPTION_FXT_NODE_SBC_PIPICODEMO__CHASSIS_1_THREAD_NAME
-#define OPTION_FXT_NODE_SBC_PIPICODEMO__CHASSIS_1_THREAD_NAME      "CHASSIS_1"
+#define OPTION_FXT_NODE_SBC_PIPICODEMO__CHASSIS_1_THREAD_NAME           "CHASSIS_1"
 #endif
 
 /// The thread priority for all thread(s)
 #ifndef OPTION_FXT_NODE_SBC_PIPICODEMO__CHASSIS_THREAD_PRIORITY
-#define OPTION_FXT_NODE_SBC_PIPICODEMO__CHASSIS_THREAD_PRIORITY    (CPL_SYSTEM_THREAD_PRIORITY_HIGHEST+CPL_SYSTEM_THREAD_PRIORITY_LOWEST)
+#define OPTION_FXT_NODE_SBC_PIPICODEMO__CHASSIS_THREAD_PRIORITY         (CPL_SYSTEM_THREAD_PRIORITY_HIGHEST+CPL_SYSTEM_THREAD_PRIORITY_LOWEST)
 #endif
 
 /// The tick timing, in microseconds, for all chassis thread(s)
 #ifndef OPTION_FXT_NODE_SBC_PIPICODEMO__CHASSIS_TICK_TIMING
-#define OPTION_FXT_NODE_SBC_PIPICODEMO__CHASSIS_TICK_TIMING        OPTION_FXT_SYSTEM_TICK_1MSEC_BLOCKING_TICK_DELAY_US
+#define OPTION_FXT_NODE_SBC_PIPICODEMO__CHASSIS_TICK_TIMING             OPTION_FXT_SYSTEM_TICK_1MSEC_BLOCKING_TICK_DELAY_US
 #endif
 
 
@@ -48,8 +48,11 @@ namespace PiPicoDemo {
 
 /** This concrete class implements the 'PiPicoDemo' Node.  This node is intended
     to run on Raspberry PI Pico board (or equivalent board with an RP2040 MCU).
-    The Node supports all 30 digital IO pins as simple digital IO.  The node 
-    also supports some MOCK cards for experimenting.
+    
+    The Node supports the following IO: 
+        - All 30 digital IO pins as simple digital IO.
+        - A external HUT31D RH/Temp sensor on a I2C bus (default I2C address)
+        - All current MOCK cards
 
     The assumption is that the Chassis runs on a dedicate core.
 

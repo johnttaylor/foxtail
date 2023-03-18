@@ -26,9 +26,11 @@
 #include "Cpl/System/EventLoop.h"
 #include "Cpl/System/Semaphore.h"
 #include "Fxt/Card/Mock/TShell/Ain8.h"
+#include "Fxt/Card/Mock/TShell/Aout8.h"
 #include "Fxt/Card/Mock/TShell/Dio8.h"
 #include "Fxt/Node/TShell/Node.h"
 #include "Fxt/Node/SBC/PiPicoDemo/Factory.h"
+#include "Fxt/Node/SBC/PiPicoDemo/Drivers.h"
 #include "Cpl/System/Shutdown.h"
 
 #define SECT_       "main"
@@ -65,6 +67,7 @@ static Cpl::TShell::Cmd::TPrint                     tprintCmd_( g_cmdlist );
 
 static Fxt::Node::TShell::Node                      nodeCmd_( g_cmdlist, nodeFactory_, pointDb_ );
 static Fxt::Card::Mock::TShell::Ain8                ain8Cmd_( g_cmdlist );
+static Fxt::Card::Mock::TShell::Aout8               aout8Cmd_( g_cmdlist );
 static Fxt::Card::Mock::TShell::Dio8                dio8Cmd_( g_cmdlist );
 
 // Create the Logging FIFO (current size does not matter since we never drain the Log queue)
@@ -100,6 +103,9 @@ Cpl::Dm::PeriodicScheduler core0Mbox_( core0Intervals_,
                                        Cpl::System::ElapsedTime::precision,
                                        core0Idle );
 
+// Run the 'drivers' in a different than the Chassis thread
+Cpl::Itc::PostApi* g_driverThreadMailboxPtr = &core0Mbox_;    
+
 // In thread initialization 
 void core0Start( Cpl::System::ElapsedTime::Precision_T currentTick )
 {
@@ -132,7 +138,7 @@ void core0Idle( Cpl::System::ElapsedTime::Precision_T currentTick, bool atLeastO
     cmdProcessor_.getCommandProcessor().poll();
 }
 
-
+/////////////////////////////
 int runTheApplication( Cpl::Io::Input& infd, Cpl::Io::Output& outfd )
 {
     // Housekeeping

@@ -51,7 +51,7 @@ Api* FactoryDatabase::createPointfromJSON( JsonObject&                        po
     if ( factory == nullptr )
     {
         pointErrorCode = fullErr( Err_T::UNKNOWN_GUID );
-        pointErrorCode.logIt();
+        pointErrorCode.logIt( typeGuid );
         return nullptr;
     }
 

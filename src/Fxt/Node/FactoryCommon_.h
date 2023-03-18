@@ -39,7 +39,7 @@ public:
     void destroy( Api& nodeToDestroy ) noexcept;
 
     /// See Fxt::Node::FactoryApi
-    Api* createFromJSON( JsonVariant              nodeJsonObject,
+    Api* createFromJSON( JsonVariant&             nodeJsonObject,
                          Fxt::Point::DatabaseApi& dbForPoints,
                          Fxt::Type::Error&        nodeErrorode ) noexcept;
 

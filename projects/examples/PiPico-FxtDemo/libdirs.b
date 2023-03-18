@@ -3,6 +3,7 @@ src/Fxt/Node/SBC/PiPicoDemo
 src/Fxt/Card/Mock
 src/Fxt/Card/Mock/TShell
 src/Fxt/Card/Gpio/RP2040 < Dio30.cpp
+src/Fxt/Card/Sensor/I2C < RHTemperature.cpp
 
 # Foxtail
 src/Fxt/Logging
@@ -18,7 +19,7 @@ src/Fxt/Card
 src/Fxt/LogicChain
 src/Fxt/Component
 src/Fxt/Component/Digital
-
+src/Fxt/Component/Analog
 
 # Colony Core infrastructure
 src/Cpl/Logging
@@ -37,5 +38,3 @@ src/Cpl/System
 src/Cpl/TShell
 src/Cpl/TShell/Cmd
 src/Cpl/System/_trace
-
-

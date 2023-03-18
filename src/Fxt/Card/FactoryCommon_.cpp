@@ -48,7 +48,7 @@ Fxt::Type::Error FactoryCommon_::allocateAndParse( JsonVariant&                 
     if ( memoryForCard == nullptr )
     {
         Fxt::Type::Error errcode = fullErr( Err_T::MEMORY_CARD );
-        errcode.logIt();
+        errcode.logIt( getGuid() );
         return errcode;
     }
 

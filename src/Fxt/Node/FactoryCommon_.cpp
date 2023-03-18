@@ -49,7 +49,7 @@ void FactoryCommon_::destroy( Api& nodeToDestroy ) noexcept
     theOne_ = nullptr;
 }
 
-Api* FactoryCommon_::createFromJSON( JsonVariant              nodeJsonObject,
+Api* FactoryCommon_::createFromJSON( JsonVariant&             nodeJsonObject,
                                      Fxt::Point::DatabaseApi& dbForPoints,
                                      Fxt::Type::Error&        nodeErrorCode ) noexcept
 {

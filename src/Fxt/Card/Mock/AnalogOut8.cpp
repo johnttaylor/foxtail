@@ -59,7 +59,7 @@ void AnalogOut8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalA
             if ( numOutputs > MAX_CHANNELS )
             {
                 m_error = fullErr( Err_T::TOO_MANY_OUTPUT_POINTS );
-                m_error.logIt();
+                m_error.logIt( getTypeName() );
                 return;
             }
 

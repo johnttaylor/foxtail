@@ -127,7 +127,7 @@ Fxt::Point::Api* Common_::createPointForChannel( Fxt::Point::FactoryDatabaseApi&
     if ( channelObject.isNull() )
     {
         cardErrorCode = fullErr( Err_T::BAD_JSON );
-        cardErrorCode.logIt();
+        cardErrorCode.logIt( getTypeName() );
         return nullptr;
     }
 
@@ -137,7 +137,7 @@ Fxt::Point::Api* Common_::createPointForChannel( Fxt::Point::FactoryDatabaseApi&
     if ( id == Point::Api::INVALID_ID )
     {
         cardErrorCode = fullErr( Err_T::POINT_MISSING_ID );
-        cardErrorCode.logIt();
+        m_error.logItFormatted( "%s. chOffIdx=%d", getTypeName(), channelIndexOffset );
         return nullptr;
     }
 
@@ -147,7 +147,7 @@ Fxt::Point::Api* Common_::createPointForChannel( Fxt::Point::FactoryDatabaseApi&
     if ( channelNum == 0 || channelNum > maxChannels || m_ioRegisterPoints[channelIdx] != nullptr )
     {
         m_error = fullErr( Err_T::BAD_CHANNEL_ASSIGNMENTS );
-        m_error.logIt();
+        m_error.logItFormatted( "%s. chOffIdx=%d, ch=%d", getTypeName(), channelIndexOffset, channelNum );
         return nullptr;
     }
 
@@ -164,13 +164,13 @@ Fxt::Point::Api* Common_::createPointForChannel( Fxt::Point::FactoryDatabaseApi&
     if ( !result )
     {
         m_error = fullErr( Err_T::FAILED_POINT_CREATED );
-        m_error.logIt();
+        m_error.logItFormatted( "%s. chOffIdx=%d, ch=%d", getTypeName(), channelIndexOffset, channelNum );
         return nullptr;
     }
     if ( pointErr != Fxt::Type::Error::SUCCESS() )
     {
         m_error = fullErr( Err_T::POINT_CREATE_ERROR );
-        m_error.logIt();
+        m_error.logItFormatted( "%s. chOffIdx=%d, ch=%d", getTypeName(), channelIndexOffset, channelNum );
         return nullptr;
     }
 
@@ -179,7 +179,7 @@ Fxt::Point::Api* Common_::createPointForChannel( Fxt::Point::FactoryDatabaseApi&
     if ( !Fxt::Point::Api::validatePointTypes( &ptPtr, 1, expectedGUID ) )
     {
         m_error = fullErr( Err_T::POINT_WRONG_TYPE );
-        m_error.logIt();
+        m_error.logItFormatted( "%s. chOffIdx=%d, ch=%d", getTypeName(), channelIndexOffset, channelNum );
         return nullptr;
     }
 

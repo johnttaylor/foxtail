@@ -57,12 +57,12 @@ public:
     };
 
 
-    /// Message Type: Close
+    /// Message Type: Start
     typedef Cpl::Itc::RequestMessage<StartRequest, StartPayload> StartMsg;
 
 
 public:
-    /// Request: Close
+    /// Request: Start
     virtual void request( StartMsg& msg ) = 0;
 
 public:
@@ -94,12 +94,12 @@ public:
     };
 
 
-    /// Message Type: Close
+    /// Message Type: Stop
     typedef Cpl::Itc::RequestMessage<StopRequest, StopPayload> StopMsg;
 
 
 public:
-    /// Request: Close
+    /// Request: Stop
     virtual void request( StopMsg& msg ) = 0;
 
 public:

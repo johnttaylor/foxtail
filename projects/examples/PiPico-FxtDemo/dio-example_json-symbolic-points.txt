@@ -1,5 +1,5 @@
 {
-  "name": "My PiPicoDemo Node",
+  "name": "PiPicoDemo Node: DIO example",
   "type": "35599c37-c732-424e-84d3-ebbcf0d2f9ce",
   "chassis": [
     {

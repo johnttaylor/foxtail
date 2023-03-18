@@ -71,7 +71,7 @@ void Dio30::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAlloca
             if ( nInputs > MAX_INPUT_CHANNELS )
             {
                 m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::TOO_MANY_INPUT_POINTS );
-                m_error.logIt();
+                m_error.logIt( getTypeName() );
                 return;
             }
             m_numInputs = (uint8_t) nInputs;
@@ -140,7 +140,7 @@ void Dio30::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAlloca
             if ( nOutputs > MAX_OUTPUT_CHANNELS )
             {
                 m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::TOO_MANY_OUTPUT_POINTS );
-                m_error.logIt();
+                m_error.logIt( getTypeName() );
                 return;
             }
             m_numOutputs = (uint8_t) nOutputs;
@@ -204,7 +204,7 @@ void Dio30::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAlloca
                  m_ioRegisterPoints[idx + OUTPUT_POINT_OFFSET] != nullptr )
             {
                 m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::BAD_CHANNEL_ASSIGNMENTS );
-                m_error.logIt();
+                m_error.logIt( getTypeName() );
                 return;
             }
         }
@@ -239,7 +239,7 @@ bool Dio30::start( uint64_t currentElapsedTimeUsec ) noexcept
         if ( !Driver::DIO::InOut::start( m_numInputs, m_driverInCfg, m_numOutputs, m_driverOutCfg ) )
         {
             m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::DRIVER_ERROR );
-            m_error.logIt();
+            m_error.logIt( getTypeName() );
             return false;
         }
 
@@ -320,7 +320,7 @@ bool Dio30::scanInputs( uint64_t currentElapsedTimeUsec ) noexcept
             else
             {
                 m_error = fullErr( Err_T::DRIVER_ERROR );
-                m_error.logIt();
+                m_error.logIt( getTypeName() );
                 return false;
             }
         }
@@ -350,7 +350,7 @@ bool Dio30::flushOutputs( uint64_t currentElapsedTimeUsec ) noexcept
                     if ( !Driver::DIO::InOut::setOutput( pinIdx++, val ) )
                     {
                         m_error = fullErr( Err_T::DRIVER_ERROR );
-                        m_error.logIt();
+                        m_error.logIt( getTypeName() );
                         return false;
                     }
                 }

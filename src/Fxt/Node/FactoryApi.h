@@ -67,7 +67,7 @@ public:
         When an error occurs, the 'nodeErrorode' argument is updated with
         details of the error.
       */
-    virtual Api* createFromJSON( JsonVariant              nodeJsonObject,
+    virtual Api* createFromJSON( JsonVariant&             nodeJsonObject,
                                  Fxt::Point::DatabaseApi& dbForPoints,
                                  Fxt::Type::Error&        nodeErrorode ) noexcept = 0;
 
