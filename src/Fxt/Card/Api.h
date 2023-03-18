@@ -16,6 +16,7 @@
 #include "Cpl/Container/Item.h"
 #include "Cpl/Type/Guid.h"
 #include "Fxt/Type/Error.h"
+#include "Cpl/Itc/PostApi.h"
 #include <stdint.h>
 
 
@@ -48,13 +49,13 @@ public:
         A card can be started/stopped multiple times. When a card is created
         it is in the 'stopped' state.
      */
-    virtual bool start( uint64_t currentElapsedTimeUsec ) noexcept = 0;
+    virtual bool start( Cpl::Itc::PostApi& chassisMbox, uint64_t currentElapsedTimeUsec ) noexcept = 0;
 
     /** This method is used to stop/deactivate the IO card. 
 
         A card MUST be in the 'stopped state' before it can be deleted/destroyed
      */
-    virtual void stop() noexcept = 0;
+    virtual void stop( Cpl::Itc::PostApi& chassisMbox ) noexcept = 0;
 
     /** This method returns true if the card is in the started state
      */

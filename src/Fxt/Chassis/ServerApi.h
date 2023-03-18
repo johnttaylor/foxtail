@@ -46,6 +46,13 @@ public:
         : Cpl::Itc::CloseSync( myMbox )
     {
     }
+
+public:
+    /// Public accessor
+    Cpl::Itc::PostApi& getMailbox() noexcept
+    {
+        reutrn m_mbox;
+    }
 };
 
 

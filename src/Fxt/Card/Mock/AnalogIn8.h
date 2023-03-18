@@ -104,10 +104,10 @@ public:
 
 public:
     /// See Fxt::Card::Api
-    bool start( uint64_t currentElapsedTimeUsec ) noexcept;
+    bool start( Cpl::Itc::PostApi& chassisMbox, uint64_t currentElapsedTimeUsec ) noexcept;
 
     /// See Fxt::Card::Api
-    void stop() noexcept;
+    void stop( Cpl::Itc::PostApi& chassisMbox ) noexcept;
 
     /// See Fxt::Card::Api
     bool scanInputs( uint64_t currentElapsedTimeUsec ) noexcept;

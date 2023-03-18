@@ -77,10 +77,10 @@ public:
 
 public:
     /// Set Fxt::Chassis::ScannerApi
-    bool start( uint64_t currentElapsedTimeUsec ) noexcept;
+    bool start( Cpl::Itc::PostApi& chassisMbox, uint64_t currentElapsedTimeUsec ) noexcept;
 
     /// Set Fxt::Chassis::ScannerApi
-    void stop() noexcept;
+    void stop( Cpl::Itc::PostApi& chassisMbox ) noexcept;
 
     /// Set Fxt::Chassis::ScannerApi
     bool isStarted() const noexcept;

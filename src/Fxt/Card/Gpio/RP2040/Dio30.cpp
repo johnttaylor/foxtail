@@ -230,7 +230,7 @@ void Dio30::parseDriverConfig( JsonObject& channelObj, Driver::DIO::InOut::Confi
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-bool Dio30::start( uint64_t currentElapsedTimeUsec ) noexcept
+bool Dio30::start( Cpl::Itc::PostApi& chassisMbox, uint64_t currentElapsedTimeUsec ) noexcept
 {
     // Call the parent's start-up actions
     if ( Common_::start( currentElapsedTimeUsec ) )
@@ -283,7 +283,7 @@ bool Dio30::start( uint64_t currentElapsedTimeUsec ) noexcept
 
 
 
-void Dio30::stop() noexcept
+void Dio30::stop( Cpl::Itc::PostApi& chassisMbox ) noexcept
 {
     // Stop the driver
     Driver::DIO::InOut::stop();

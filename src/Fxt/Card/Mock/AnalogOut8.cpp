@@ -119,7 +119,7 @@ void AnalogOut8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalA
 
 
 ///////////////////////////////////////////////////////////////////////////////
-bool AnalogOut8::start( uint64_t currentElapsedTimeUsec ) noexcept
+bool AnalogOut8::start( Cpl::Itc::PostApi& chassisMbox, uint64_t currentElapsedTimeUsec ) noexcept
 {
     // Call the parent's start-up actions
     if ( Common_::start( currentElapsedTimeUsec ) )
@@ -143,7 +143,7 @@ bool AnalogOut8::start( uint64_t currentElapsedTimeUsec ) noexcept
 
 
 
-void AnalogOut8::stop() noexcept
+void AnalogOut8::stop( Cpl::Itc::PostApi& chassisMbox ) noexcept
 {
     Common_::stop();
 }

@@ -17,7 +17,7 @@
 #include "Fxt/Point/Bool.h"
 #include "Fxt/Card/Common_.h"
 #include "Cpl/Json/Arduino.h"
-#include "Fxt/Card/StartStopSync.h"
+#include "Fxt/Card/StartStopAsync.h"
 #include "Cpl/System/Timer.h"
 #include "Driver/RHTemp/Api.h"
 #include "Cpl/System/Mutex.h"
@@ -112,7 +112,7 @@ namespace I2C {
 
     \endcode
  */
-class RHTemperature : public Fxt::Card::Common_, public Fxt::Card::StartStopSync, public Cpl::System::Timer
+class RHTemperature : public Fxt::Card::Common_, public Fxt::Card::StartStopAsync, public Cpl::System::Timer
 {
 public:
     /// Type ID for the card
@@ -141,10 +141,10 @@ public:
 
 public:
     /// See Fxt::Card::Api (invokes the ITC start request)
-    bool start( uint64_t currentElapsedTimeUsec ) noexcept;
+    bool start( Cpl::Itc::PostApi& chassisMbox, uint64_t currentElapsedTimeUsec ) noexcept;
 
     /// See Fxt::Card::Api (invokes the ITC stop request)
-    void stop() noexcept;
+    void stop( Cpl::Itc::PostApi& chassisMbox ) noexcept;
 
     /// See Fxt::Card::Api
     const char* getTypeGuid() const noexcept;
@@ -159,11 +159,18 @@ public:
     bool flushOutputs( uint64_t currentElapsedTimeUsec ) noexcept;
 
 public:
-    /// ITC Start request
-    void request( StartMsg& msg );
+    /// ITC Start request (runs in the driver thread)
+    void request( StartReqMsg& msg );
 
-    /// ITC Stop request
-    void request( StopMsg& msg );
+    /// ITC Stop request (runs in the driver thread)
+    void request( StopReqMsg& msg );
+
+public:
+    /// ITC Start response (runs in the chassis thread)
+    void response( StartRspMsg& msg );
+
+    /// ITC Stop response (runs in the chassis thread)
+    void response( StopRspMsg& msg );
 
 protected:
     /// Helper method to parse the card's JSON config
@@ -185,26 +192,32 @@ protected:
     /// Driver instance
     Driver::RHTemp::Api*    m_driver;
 
-    /// Polling delay, in milliseconds
+    /// Polling delay, in milliseconds. SHARED between threads - but is constant value - so no critical section is needed
     unsigned long           m_delayMs;
 
-    /// Last sampled RH & Temperature values
+    /// Last sampled RH & Temperature values. SHARED between threads
     float                   m_samples[2];
 
-    /// Point Index for the RH input
+    /// Point Index for the RH input. SHARED between threads - but is constant value - so no critical section is needed
     uint16_t                m_rhIndex;
 
-    /// Point Index for the Temperature input
+    /// Point Index for the Temperature input. SHARED between threads - but is constant value - so no critical section is needed
     uint16_t                m_tempIndex;
 
-    /// Flag that indicates I have valid sampled values
+    /// Flag that indicates I have valid sampled values. SHARED between threads
     bool                    m_validSamples;
 
-    /// Pending Heater output value
+    /// Pending Heater output value. SHARED between threads
     bool                    m_heaterEnable;
 
-    /// Flag that indicate if there is pending update to the Heater output
+    /// Flag that indicate if there is pending update to the Heater output. SHARED between threads
     bool                    m_pendingHeaterUpdate;
+
+    /// State of my underlying driver (this member is not used/accessed in the DRIVER Thread)
+    bool                    m_driverStarted;
+
+    /// Last known heater enable state (so we can detect changes - so we are constantly updating the sensor)
+    bool                    m_lastHeaterEnabled;
 };
 
 

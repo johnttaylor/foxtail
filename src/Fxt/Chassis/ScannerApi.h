@@ -66,14 +66,14 @@ public:
         A scanner can be started/stopped multiple times. When a scanner is created
         it is in the 'stopped' state.
      */
-    virtual bool start( uint64_t currentElapsedTimeUsec ) noexcept = 0;
+    virtual bool start( Cpl::Itc::PostApi& chassisMbox, uint64_t currentElapsedTimeUsec ) noexcept = 0;
 
     /** This method is used to stop/deactivate the Scanner.  Each Scanner is
         responsible for stopping its contained IO Cards
 
         A Scanner MUST be in the 'stopped state' before it can be deleted/destroyed
      */
-    virtual void stop() noexcept = 0;
+    virtual void stop( Cpl::Itc::PostApi& chassisMbox ) noexcept = 0;
 
     /** This method returns true if the Scanner is in the started state
      */

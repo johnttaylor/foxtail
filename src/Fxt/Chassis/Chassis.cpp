@@ -188,7 +188,7 @@ bool Chassis::start( uint64_t currentElapsedTimeUsec ) noexcept
                 return false;
             }
 
-            if ( m_scanners[i]->start( currentElapsedTimeUsec ) == false )
+            if ( m_scanners[i]->start( m_server.getMailbox(), currentElapsedTimeUsec ) == false )
             {
                 m_error = fullErr( Err_T::SCANNER_FAILED_START );
                 m_error.logIt();
@@ -240,16 +240,6 @@ void Chassis::stop() noexcept
         // Stop the Chassis server
         m_server.close();
 
-        // Stop the Scanners
-        for ( uint16_t i=0; i < m_numScanners; i++ )
-        {
-            // Check for valid pointer (when stopping when there was a create error)
-            if ( m_scanners[i] )
-            {
-                m_scanners[i]->stop();
-            }
-        }
-
         // Stop the ExecutionSets
         for ( uint16_t i=0; i < m_numExecutionSets; i++ )
         {
@@ -257,6 +247,16 @@ void Chassis::stop() noexcept
             if ( m_executionSets[i] )
             {
                 m_executionSets[i]->stop();
+            }
+        }
+
+        // Stop the Scanners
+        for ( uint16_t i=0; i < m_numScanners; i++ )
+        {
+            // Check for valid pointer (when stopping when there was a create error)
+            if ( m_scanners[i] )
+            {
+                m_scanners[i]->stop( m_server.getMailbox() );
             }
         }
 

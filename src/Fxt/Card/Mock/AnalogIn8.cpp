@@ -121,7 +121,7 @@ void AnalogIn8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAl
 
 
 ///////////////////////////////////////////////////////////////////////////////
-bool AnalogIn8::start( uint64_t currentElapsedTimeUsec ) noexcept
+bool AnalogIn8::start( Cpl::Itc::PostApi& chassisMbox, uint64_t currentElapsedTimeUsec ) noexcept
 {
     // Call the parent's start-up actions
     if ( Common_::start( currentElapsedTimeUsec ) )
@@ -145,7 +145,7 @@ bool AnalogIn8::start( uint64_t currentElapsedTimeUsec ) noexcept
 
 
 
-void AnalogIn8::stop() noexcept
+void AnalogIn8::stop( Cpl::Itc::PostApi& chassisMbox ) noexcept
 {
     Common_::stop();
 }

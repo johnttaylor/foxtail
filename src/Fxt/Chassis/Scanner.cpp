@@ -64,7 +64,7 @@ Scanner::~Scanner()
 }
 
 //////////////////////////////////////////////////
-bool Scanner::start( uint64_t currentElapsedTimeUsec ) noexcept
+bool Scanner::start( Cpl::Itc::PostApi& chassisMbox, uint64_t currentElapsedTimeUsec ) noexcept
 {
     // Do nothing if already started
     if ( !m_started && m_error == Fxt::Type::Error::SUCCESS() )
@@ -80,7 +80,7 @@ bool Scanner::start( uint64_t currentElapsedTimeUsec ) noexcept
                 return false;
             }
 
-            if ( m_cards[i]->start( currentElapsedTimeUsec ) == false )
+            if ( m_cards[i]->start( chassisMbox, currentElapsedTimeUsec ) == false )
             {
                 m_error = fullErr( Err_T::CARD_FAILED_START );
                 m_error.logIt();
@@ -94,7 +94,7 @@ bool Scanner::start( uint64_t currentElapsedTimeUsec ) noexcept
     return true;
 }
 
-void Scanner::stop() noexcept
+void Scanner::stop( Cpl::Itc::PostApi& chassisMbox ) noexcept
 {
     // Only stop if I have been started
     if ( m_started )
@@ -104,7 +104,7 @@ void Scanner::stop() noexcept
         {
             if ( m_cards[i] )
             {
-                m_cards[i]->stop();
+                m_cards[i]->stop( chassisMbox );
             }
         }
 

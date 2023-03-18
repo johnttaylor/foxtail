@@ -41,13 +41,14 @@ RHTemperature::RHTemperature( Cpl::Memory::ContiguousAllocator&  generalAllocato
                               Cpl::Itc::PostApi*                 cardMbox,
                               void*                              extraArgsNotUsed )
     : Fxt::Card::Common_( TOTAL_MAX_CHANNELS, generalAllocator, cardObject )
-    , StartStopSync( *cardMbox )
+    , StartStopAsync( *cardMbox )
     , m_driver( nullptr )
     , m_rhIndex( INVALID_INDEX )
     , m_tempIndex( INVALID_INDEX )
     , m_validSamples( false )
     , m_heaterEnable( false )
     , m_pendingHeaterUpdate( false )
+    , m_driverStarted( false )
 {
     if ( m_error == Fxt::Type::Error::SUCCESS() )
     {
@@ -261,88 +262,121 @@ void RHTemperature::parseConfiguration( Cpl::Memory::ContiguousAllocator&  gener
 
 
 ///////////////////////////////////////////////////////////////////////////////
-bool RHTemperature::start( uint64_t currentElapsedTimeUsec ) noexcept
+// NO Guarantee on which thread this method executes in, but it is NOT the chassis thread
+bool RHTemperature::start( Cpl::Itc::PostApi& chassisMbox, uint64_t currentElapsedTimeUsec ) noexcept
 {
-    return issueStartRequest( currentElapsedTimeUsec );
-}
+    // Because the chassis server has NOT been started at this point - I
+    // can safely access all class members since there we are effectively 
+    // 'single threaded' at this point
 
-void RHTemperature::stop() noexcept
-{
-    issueStopRequest();
+    // Call the parent's start-up actions (note: returns false if ALREADY started OR if there is card error)
+    if ( !Common_::start( currentElapsedTimeUsec ) )
+    {
+        return false;
+    }
+
+    // Initialize inputs 
+    m_validSamples = false;
+    for ( unsigned i=0; i < MAX_INPUT_CHANNELS; i++ )
+    {
+        if ( m_ioRegisterPoints[i + INPUT_POINT_OFFSET] != nullptr )
+        {
+            // Set the initial IO Register values
+            m_ioRegisterPoints[i + INPUT_POINT_OFFSET]->updateFromSetter();
+        }
+    }
+
+    // Initialize Outputs (at most there is ONE)
+    m_pendingHeaterUpdate = false;
+    Fxt::Point::Bool* pt = (Fxt::Point::Bool*) m_ioRegisterPoints[OUTPUT_POINT_OFFSET];
+    if ( pt != nullptr )
+    {
+        // Set the initial IO Register values
+        pt->updateFromSetter();
+    }
+
+    // Force an initial update of the Heater. Note: if the IO Point is invalid -->the heater will be forced off
+    m_heaterEnable = false;
+    pt->read( m_heaterEnable );
+    m_pendingHeaterUpdate = true;
+    m_lastHeaterEnabled   = !m_heaterEnable;
+
+    // Request to start the driver (which executes in the driver thread)
+    // NOTE: The method only fails if there is pending ITC start transaction.
+    //       If the driver fails to start, it is reported at run time via
+    //       scan()/flush() methods.
+    return issueAsyncStartRequest( chassisMbox, currentElapsedTimeUsec );
 }
 
 // Note: This method executes in the 'driver thread'
-void RHTemperature::request( StartMsg& msg )
+void RHTemperature::request( StartReqMsg& msg )
 {
     StartRequest::StartPayload& payload = msg.getPayload();
     payload.m_success                   = false;
 
-    // Call the parent's start-up actions
-    if ( Common_::start( payload.m_currentElapsedTimeUsec ) )
+    // Start the underlying driver
+    if ( m_driver->start() )
     {
-        // Initialize inputs 
-        m_validSamples = false;
-        for ( unsigned i=0; i < MAX_INPUT_CHANNELS; i++ )
-        {
-            if ( m_ioRegisterPoints[i + INPUT_POINT_OFFSET] != nullptr )
-            {
-                // Set the initial IO Register values
-                m_ioRegisterPoints[i + INPUT_POINT_OFFSET]->updateFromSetter();
-            }
-        }
+        // Start the background sampling (and update the Heater output)
+        expired();
 
-        // Initialize Outputs 
-        m_pendingHeaterUpdate = false;
-        for ( unsigned i=0; i < MAX_OUTPUT_CHANNELS; i++ )
-        {
-            if ( m_ioRegisterPoints[i + OUTPUT_POINT_OFFSET] != nullptr )
-            {
-                // Set the initial IO Register values
-                m_ioRegisterPoints[i + OUTPUT_POINT_OFFSET]->updateFromSetter();
-            }
-        }
-
-        // Start the underlying driver
-        if ( m_driver->start() )
-        {
-            // Set the initial state for the heater output (Note: There is only ONE heater output)
-            if ( m_ioRegisterPoints[OUTPUT_POINT_OFFSET] != nullptr )
-            {
-                Fxt::Point::Bool* pt = (Fxt::Point::Bool*) m_ioRegisterPoints[OUTPUT_POINT_OFFSET];
-                if ( pt->read( m_heaterEnable ) )
-                {
-                    m_pendingHeaterUpdate = true;
-                }
-            }
-
-            // Start the background sampling (and update the Heater output)
-            expired();
-
-            // If I get here -->everything worked
-            payload.m_success = true;
-        }
-
-        // Driver failed -->fail the card
-        else
-        {
-            m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::DRIVER_ERROR );
-            m_error.logIt( getTypeName() );
-        }
+        // If I get here -->everything worked
+        payload.m_success = true;
     }
 
+    // Complete the ITC transaction
     msg.returnToSender();
 }
 
+// Note: This method executes in the 'chassis thread'
+void RHTemperature::response( StartRspMsg& msg )
+{
+    m_driverStarted = msg.getPayload().m_success;
+    if ( !m_driverStarted )
+    {
+        m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::DRIVER_ERROR );
+        m_error.logIt( getTypeName() );
+    }
+
+    startTransactionCompleted();
+}
+
+// NO Guarantee on which thread this method executes in, but it is NOT the chassis thread
+void RHTemperature::stop( Cpl::Itc::PostApi& chassisMbox ) noexcept
+{
+    if ( m_started  )
+    {
+        // Prevents the scan()/flush() methods from accessing the driver
+        m_driverStarted = false;
+
+        // Call my parent's stop
+        Common_::stop();
+        m_started = true;   // Need to ensure the card's state stays in the 'started' state until the driver actually is stopped.
+
+        // Request the driver to stop (which executes in the driver thread)
+        issueAsyncStopRequest( chassisMbox );
+    }
+}
+
 // Note: This method executes in the 'driver thread'
-void RHTemperature::request( StopMsg& msg )
+void RHTemperature::request( StopReqMsg& msg )
 {
     // Stop the underlying driver
     m_driver->stop();
 
-    // Call my parent's stop
-    Common_::stop();
+    // Complete the ITC transaction
+    msg.returnToSender();
 }
 
+// Note: This method executes in the 'chassis thread'
+void RHTemperature::response( StopRspMsg& msg )
+{
+    m_started = false;
+
+    stopTransactionCompleted();
+}
+
+/////////////////////////////////////////////
 const char* RHTemperature::getTypeGuid() const noexcept
 {
     return GUID_STRING;
@@ -410,32 +444,44 @@ void RHTemperature::expired() noexcept
 // Note: This method executes in the 'Chassis thread'
 bool RHTemperature::scanInputs( uint64_t currentElapsedTimeUsec ) noexcept
 {
-    // Copy the background driver samples to the Input IO Registers
-    for ( unsigned i=0, pinIdx=0; i < MAX_INPUT_CHANNELS; i++ )
+    // Skip/wait till the driver has been started
+    if ( m_driverStarted )
     {
-        if ( m_ioRegisterPoints[i + INPUT_POINT_OFFSET] != nullptr )
-        {
-            // Safely Read the latest sample value
-            m_lock.lock();
-            bool  validSample = m_validSamples;
-            float value       = m_samples[i];
-            m_lock.unlock();
+        // Get local cache of the driver data (so I lock/unlock the mutex ONLY once per scan cycle)
+        m_lock.lock();
+        bool  validSample = m_validSamples;
+        float samples[2];
+        memcpy( samples, m_samples, sizeof( samples ) );
+        m_lock.unlock();
 
-            // Update the corresponding IO Register
-            Fxt::Point::Float* pt = (Fxt::Point::Float*) m_ioRegisterPoints[i + INPUT_POINT_OFFSET];
-            if ( validSample )
+        // Copy the background driver samples to the Input IO Registers
+        for ( unsigned i=0, pinIdx=0; i < MAX_INPUT_CHANNELS; i++ )
+        {
+            if ( m_ioRegisterPoints[i + INPUT_POINT_OFFSET] != nullptr )
             {
-                pt->write( value );
-            }
-            else
-            {
-                pt->setInvalid();
+                // Update the corresponding IO Register
+                Fxt::Point::Float* pt = (Fxt::Point::Float*) m_ioRegisterPoints[i + INPUT_POINT_OFFSET];
+                if ( validSample )
+                {
+                    pt->write( samples[i] );
+                }
+                else
+                {
+                    pt->setInvalid();
+                }
             }
         }
     }
 
     // Call parent class to manage the transfer between IO Registers and Virtual Points
-    return Common_::scanInputs( currentElapsedTimeUsec );
+    bool result = Common_::scanInputs( currentElapsedTimeUsec );
+
+    // Check for failures (include the async failures in starting the driver)
+    if ( !result || m_error != Fxt::Type::Error::SUCCESS() )
+    {
+        return false;
+    }
+    return true;
 }
 
 
@@ -450,19 +496,29 @@ bool RHTemperature::flushOutputs( uint64_t currentElapsedTimeUsec ) noexcept
         // NOTE: At most there will be ONE output (aka the Heater enable)
         if ( m_ioRegisterPoints[OUTPUT_POINT_OFFSET] != nullptr )
         {
+            // Get current value (and force the 'off state' if the Point is invalid)
             Fxt::Point::Bool* pt = (Fxt::Point::Bool*) m_ioRegisterPoints[OUTPUT_POINT_OFFSET];
-            bool val;
-            if ( pt->read( val ) )
+            bool val = false;
+            pt->read( val );
+
+            // Only update the driver on change in value
+            if ( val != m_lastHeaterEnabled )
             {
                 // Safely update my output flags to be physically set on the next polling cycle
+                m_lastHeaterEnabled   = val;
                 m_lock.lock();
+                m_heaterEnable        = val;
                 m_pendingHeaterUpdate = true;
-                m_heaterEnable = true;
                 m_lock.unlock();
             }
         }
     }
 
-    return result;
+    // Check for failures (include the async failures in starting the driver)
+    if ( !result || m_error != Fxt::Type::Error::SUCCESS() )
+    {
+        return false;
+    }
+    return true; 
 }
 

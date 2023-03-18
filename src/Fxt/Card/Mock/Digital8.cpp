@@ -186,7 +186,7 @@ void Digital8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAll
 
 
 ///////////////////////////////////////////////////////////////////////////////
-bool Digital8::start( uint64_t currentElapsedTimeUsec ) noexcept
+bool Digital8::start( Cpl::Itc::PostApi& chassisMbox, uint64_t currentElapsedTimeUsec ) noexcept
 {
     // Call the parent's start-up actions
     if ( Common_::start( currentElapsedTimeUsec ) )
@@ -210,7 +210,7 @@ bool Digital8::start( uint64_t currentElapsedTimeUsec ) noexcept
 
 
 
-void Digital8::stop() noexcept
+void Digital8::stop( Cpl::Itc::PostApi& chassisMbox ) noexcept
 {
     Common_::stop();
 }
