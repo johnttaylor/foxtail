@@ -51,7 +51,7 @@ public:
     /// Public accessor
     Cpl::Itc::PostApi& getMailbox() noexcept
     {
-        reutrn m_mbox;
+        return m_mbox;
     }
 };
 

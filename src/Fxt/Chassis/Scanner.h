@@ -133,6 +133,9 @@ protected:
     /// Array/List of IO Cards
     Fxt::Card::Api**    m_cards;
 
+    /// Cache the Chassis mbox reference (needed for the destructor)
+    Cpl::Itc::PostApi*  m_chassisMboxPtr;
+
     /// Error state. A value of 0 indicates NO error
     Fxt::Type::Error    m_error;
 

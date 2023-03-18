@@ -30,6 +30,7 @@ Scanner::Scanner( Cpl::Memory::ContiguousAllocator&   generalAllocator,
     , m_error( Fxt::Type::Error::SUCCESS() )
     , m_srm( scanRateMultipler )
     , m_numCards( numCards )
+    , m_chassisMboxPtr( nullptr )
     , m_nextCardIdx( 0 )
     , m_started( false )
 {
@@ -51,7 +52,10 @@ Scanner::Scanner( Cpl::Memory::ContiguousAllocator&   generalAllocator,
 Scanner::~Scanner()
 {
     // Ensure stop is called first
-    stop();
+    if ( m_chassisMboxPtr )
+    {
+        stop( *m_chassisMboxPtr );
+    }
 
     // Call the destructors on all of the cards
     for ( uint16_t i=0; i < m_numCards; i++ )
@@ -88,6 +92,7 @@ bool Scanner::start( Cpl::Itc::PostApi& chassisMbox, uint64_t currentElapsedTime
             }
         }
 
+        m_chassisMboxPtr = &chassisMbox;
         m_started = true;
     }
 
@@ -108,6 +113,7 @@ void Scanner::stop( Cpl::Itc::PostApi& chassisMbox ) noexcept
             }
         }
 
+        m_chassisMboxPtr = nullptr;
         m_started = false;
     }
 }
