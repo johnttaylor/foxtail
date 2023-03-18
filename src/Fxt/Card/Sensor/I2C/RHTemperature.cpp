@@ -26,7 +26,7 @@ using namespace Fxt::Card::Sensor::I2C;
 
 #define TOTAL_MAX_CHANNELS          (MAX_INPUT_CHANNELS+MAX_OUTPUT_CHANNELS)
 
-
+#define MIN_SAMPLING_DELAY_MS       20
 
 #define INVALID_INDEX               MAX_INPUT_CHANNELS
 
@@ -75,6 +75,15 @@ void RHTemperature::parseConfiguration( Cpl::Memory::ContiguousAllocator&  gener
                                         Fxt::Point::DatabaseApi&           dbForPoints,
                                         JsonVariant&                       cardObject ) noexcept
 {
+    // Parse background sampling time
+    m_delayMs = cardObject["driverInterval"] | 0;
+    if ( m_delayMs < MIN_SAMPLING_DELAY_MS )
+    {
+        m_error = Fxt::Card::fullErr( m_delayMs == 0? Fxt::Card::Err_T::MISSING_REQUIRE_FIELD: Fxt::Card::Err_T::INVALID_FIELD );
+        m_error.logIt();
+        return;
+    }
+
     // Parse channels
     if ( !cardObject["points"].isNull() )
     {
@@ -272,6 +281,7 @@ void RHTemperature::request( StartMsg& msg )
     if ( Common_::start( payload.m_currentElapsedTimeUsec ) )
     {
         // Initialize inputs 
+        m_validSamples = false;
         for ( unsigned i=0; i < MAX_INPUT_CHANNELS; i++ )
         {
             if ( m_ioRegisterPoints[i + INPUT_POINT_OFFSET] != nullptr )
@@ -282,6 +292,7 @@ void RHTemperature::request( StartMsg& msg )
         }
 
         // Initialize Outputs 
+        m_pendingHeaterUpdate = false;
         for ( unsigned i=0; i < MAX_OUTPUT_CHANNELS; i++ )
         {
             if ( m_ioRegisterPoints[i + OUTPUT_POINT_OFFSET] != nullptr )
@@ -295,7 +306,6 @@ void RHTemperature::request( StartMsg& msg )
         if ( m_driver->start() )
         {
             // Set the initial state for the heater output
-            m_pendingHeaterUpdate = false;
             if ( m_ioRegisterPoints[OUTPUT_POINT_OFFSET] != nullptr )
             {
                 Fxt::Point::Bool* pt = (Fxt::Point::Bool*) m_ioRegisterOutputs[OUTPUT_POINT_OFFSET];
@@ -310,6 +320,13 @@ void RHTemperature::request( StartMsg& msg )
 
             // If I get here -->everything worked
             payload.m_success = true;
+        }
+        
+        // Driver failed -->fail the card
+        else
+        {
+            m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::DRIVER_ERROR );
+            m_error.logIt();
         }
     }
 
@@ -338,6 +355,58 @@ const char* RHTemperature::getTypeName() const noexcept
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// NOTE: This method executes in the Driver Thread
+void RHTemperature::expired() noexcept
+{
+    // Get output state
+    m_lock.lock();
+    bool pendingUpdate    = m_pendingHeaterUpdate;
+    bool heaterVal        = m_heaterEnable;
+    m_pendingHeaterUpdate = false;
+    m_lock.unlock();
+    
+    // Update output
+    if ( pendingUpdate )
+    {
+        m_driver->setHeaterState( heaterVal );
+    }
+
+    // Start the first sample
+    Driver::RHTemp::Api::SamplingState_T state = m_driver->getSamplingState();
+    if ( state == Driver::RHTemp::Api::eNOT_STARTED )
+    {
+        m_driver->startSample();
+    }
+
+    // Trap sampling errors
+    else if ( state == Driver::RHTemp::Api::eERROR )
+    {
+        m_lock.lock();
+        m_validSamples = false;
+        m_lock.unlock();
+
+        m_driver->startSample();
+    }
+
+    // Read sample and restart the sampling
+    else if ( state == Driver::RHTemp::Api::eSAMPLE_READY )
+    {
+        float rh, temp;
+        m_driver->getSample( rh, temp );
+
+        m_lock.lock();
+        m_samples[m_rhIndex]   = rh;
+        m_samples[m_tempIndex] = temp;
+        m_validSamples         = true;
+        m_lock.unlock();
+
+        m_driver->startSample();
+    }
+
+    // Restart my sampling timer
+    Timer::start( m_delayMs );
+}
+
 // Note: This method executes in the 'Chassis thread'
 bool RHTemperature::scanInputs( uint64_t currentElapsedTimeUsec ) noexcept
 {
@@ -385,7 +454,7 @@ bool RHTemperature::flushOutputs( uint64_t currentElapsedTimeUsec ) noexcept
             bool val;
             if ( pt->read( val ) )
             {
-                // Safely update my outputs flag to be physically set on the next polling cycle
+                // Safely update my output flags to be physically set on the next polling cycle
                 m_lock.lock();
                 m_pendingHeaterUpdate = true;
                 m_heaterEnable = true;

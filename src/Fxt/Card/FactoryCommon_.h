@@ -74,7 +74,9 @@ class Factory : public FactoryCommon_
 {
 public:
     /// Constructor
-    Factory( FactoryDatabaseApi&  factoryDatabase, Cpl::Itc::PostApi* cardMbox=nullptr ) : FactoryCommon_( factoryDatabase, cardMbox )
+    Factory( FactoryDatabaseApi&  factoryDatabase, 
+             Cpl::Itc::PostApi*   cardMbox=nullptr,
+             void*                extraArgs=nullptr ) : FactoryCommon_( factoryDatabase, cardMbox, extraArgs )
     {
     }
 

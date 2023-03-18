@@ -43,6 +43,8 @@ namespace Card {
     @param POINT_CREATE_ERROR               One or more points were not successfully created
     @param POINT_WRONG_TYPE                 One or more points where the wrong type (as specified in the JSON object)
     @param DRIVER_ERROR                     The card's low-level driver(s) encounter an error.
+    @param MISSING_REQUIRE_FIELD            One or more required key-value pair(s) are missing
+    @param INVALID_FIELD                    One or more values are out-of-range or wrong type
  */
 BETTER_ENUM( Err_T, uint8_t
              , SUCCESS = 0
@@ -58,6 +60,8 @@ BETTER_ENUM( Err_T, uint8_t
              , POINT_CREATE_ERROR
              , POINT_WRONG_TYPE
              , DRIVER_ERROR
+             , MISSING_REQUIRE_FIELD
+             , INVALID_FIELD
 );
 
 /** This concrete class defines the Error Category for the Card namespace.

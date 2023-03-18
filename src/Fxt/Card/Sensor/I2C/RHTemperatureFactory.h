@@ -1,5 +1,5 @@
-#ifndef Fxt_Node_SBC_PiPicoDemo_Dio30Factory_h_
-#define Fxt_Node_SBC_PiPicoDemo_Dio30Factory_h_
+#ifndef Fxt_Card_Sensor_I2C_RHTemperatureFactory_h_
+#define Fxt_Card_Sensor_I2C_RHTemperatureFactory_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -13,20 +13,29 @@
 /** @file */
 
 #include "Fxt/Card/FactoryCommon_.h"
-#include "Fxt/Node/SBC/PiPicoDemo/Dio30.h"
+#include "Fxt/Card/Sensor/I2C/RHTemperature.h"
 
 ///
 namespace Fxt {
 ///
-namespace Node {
+namespace Card {
 ///
-namespace SBC {
+namespace Sensor {
 ///
-namespace PiPicoDemo {
+namespace I2C {
 
 
-/// Define factory type
-typedef Fxt::Card::Factory<Dio30> Dio30Factory;
+/// Factory class for the RH/Temperature card
+class RHTemperatureFactory : public Fxt::Card::Factory<RHTemperature>
+{
+public:
+    /// Constructor -->require a Mailbox (and no extra args used)
+    RHTemperatureFactory( FactoryDatabaseApi&  factoryDatabase, Cpl::Itc::PostApi* cardMbox )
+        : Fxt::Card::Factory<RHTemperature>( factoryDatabase, cardMbox )
+    {
+    }
+};
+
 
 
 };      // end namespaces

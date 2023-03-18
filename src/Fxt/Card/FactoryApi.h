@@ -85,8 +85,7 @@ public:
                          Cpl::Memory::ContiguousAllocator&  cardStatefulDataAllocator,
                          Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
                          Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
-                         Fxt::Point::DatabaseApi&           dbForPoints,
-                         Cpl::Itc::PostApi*                 cardMbox = nullptr ) noexcept = 0;
+                         Fxt::Point::DatabaseApi&           dbForPoints  ) noexcept = 0;
 
 
     /** This method is used to destroy/free an IO card.  
