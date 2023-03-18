@@ -31,7 +31,7 @@ namespace Component {
     The semantics of the Factory interface is NOT thread safe.
 
     Note: Factories support being in a Container - however 'that' container
-          is the Factory Database.  This means if the application what to maintain
+          is the Factory Database.  This means if the application wants to maintain
           a list of factories - it must provide its own wrapper.
 
     \code

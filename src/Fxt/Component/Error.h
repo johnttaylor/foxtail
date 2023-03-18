@@ -42,7 +42,8 @@ namespace Component {
     @param FAILED_START                     Failed to start the component (e.g. already running)
     @param INPUT_REFRENCE_BAD_TYPE          Input Point Reference is the wrong type
     @param OUTPUT_REFRENCE_BAD_TYPE         Output Point Reference is the wrong type
-    @param DIGITAL                          A Digital Component sub-system specific error
+    @param MISMATCHED_INPUTS_OUTPUTS        The number of inputs and number of output is not a supported a combination/permutation (e.g. number of inputs does not equal the number of outputs)
+    @parem MISSING_REQUIRED_FIELD           Missing one or more required key/value pair(s)
  */
 BETTER_ENUM( Err_T, uint8_t
              , SUCCESS = 0
@@ -57,6 +58,8 @@ BETTER_ENUM( Err_T, uint8_t
              , FAILED_START
              , INPUT_REFRENCE_BAD_TYPE
              , OUTPUT_REFRENCE_BAD_TYPE
+             , MISMATCHED_INPUTS_OUTPUTS
+             , MISSING_REQUIRED_FIELD
 );
 
 /** This concrete class defines the Error Category for the Component namespace.

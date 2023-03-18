@@ -1,5 +1,5 @@
-#ifndef Fxt_Card_Mock_AnalogIn8Factory_h_
-#define Fxt_Card_Mock_AnalogIn8Factory_h_
+#ifndef Fxt_Card_Mock_AnalogOut8Factory_h_
+#define Fxt_Card_Mock_AnalogOut8Factory_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -13,7 +13,7 @@
 /** @file */
 
 #include "Fxt/Card/FactoryCommon_.h"
-#include "Fxt/Card/Mock/AnalogIn8.h"
+#include "Fxt/Card/Mock/AnalogOut8.h"
 
 ///
 namespace Fxt {
@@ -24,7 +24,7 @@ namespace Mock {
 
 
 /// Define factory type
-typedef Factory<AnalogIn8> AnalogIn8Factory;
+typedef Factory<AnalogOut8> AnalogOut8Factory;
 
 
 };      // end namespaces

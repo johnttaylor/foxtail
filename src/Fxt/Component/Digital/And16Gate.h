@@ -27,7 +27,7 @@ namespace Digital {
 
 
 /** This concrete class implements a Component that functions as AND gate
-    for boolean inputs.  Up to 16 inputs are supportED, and has two outputs. The
+    for boolean inputs.  Up to 16 inputs are supported, and has two outputs. The
     first output is result of the AND operation and the second output is the
     logical complement of the AND output
 

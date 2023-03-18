@@ -11,7 +11,7 @@
 /** @file */
 
 
-#include "AnalogIn8.h"
+#include "AnalogOut8.h"
 #include "Cpl/System/Assert.h"
 #include <stdint.h>
 
@@ -22,14 +22,14 @@ using namespace Fxt::Card::Mock;
 
 
 ///////////////////////////////////////////////////////////////////////////////
-AnalogIn8::AnalogIn8( Cpl::Memory::ContiguousAllocator&  generalAllocator,
-                      Cpl::Memory::ContiguousAllocator&  cardStatefulDataAllocator,
-                      Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
-                      Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
-                      Fxt::Point::DatabaseApi&           dbForPoints,
-                      JsonVariant&                       cardObject,
-                      Cpl::Itc::PostApi*                 cardMboxNotUsed,
-                      void*                              extraArgsNotUsed )
+AnalogOut8::AnalogOut8( Cpl::Memory::ContiguousAllocator&  generalAllocator,
+                        Cpl::Memory::ContiguousAllocator&  cardStatefulDataAllocator,
+                        Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
+                        Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
+                        Fxt::Point::DatabaseApi&           dbForPoints,
+                        JsonVariant&                       cardObject,
+                        Cpl::Itc::PostApi*                 cardMboxNotUsed,
+                        void*                              extraArgsNotUsed )
     : Fxt::Card::Common_( MAX_CHANNELS, generalAllocator, cardObject )
 {
     if ( m_error == Fxt::Type::Error::SUCCESS() )
@@ -40,34 +40,34 @@ AnalogIn8::AnalogIn8( Cpl::Memory::ContiguousAllocator&  generalAllocator,
 
 
 ///////////////////////////////////////////////////////////////////////////////
-void AnalogIn8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAllocator,
-                                    Cpl::Memory::ContiguousAllocator&  cardStatefulDataAllocator,
-                                    Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
-                                    Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
-                                    Fxt::Point::DatabaseApi&           dbForPoints,
-                                    JsonVariant&                       cardObject ) noexcept
+void AnalogOut8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAllocator,
+                                     Cpl::Memory::ContiguousAllocator&  cardStatefulDataAllocator,
+                                     Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
+                                     Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
+                                     Fxt::Point::DatabaseApi&           dbForPoints,
+                                     JsonVariant&                       cardObject ) noexcept
 {
     // Parse channels
     if ( !cardObject["points"].isNull() )
     {
-        // INPUTS
-        JsonArray inputs = cardObject["points"]["inputs"];
-        if ( !inputs.isNull() )
+        // OUTPUTS
+        JsonArray outputs = cardObject["points"]["outputs"];
+        if ( !outputs.isNull() )
         {
             // Validate supported number of signals
-            size_t numInputs = inputs.size();
-            if ( numInputs > MAX_CHANNELS )
+            size_t numOutputs = outputs.size();
+            if ( numOutputs > MAX_CHANNELS )
             {
-                m_error = fullErr( Err_T::TOO_MANY_INPUT_POINTS );
+                m_error = fullErr( Err_T::TOO_MANY_OUTPUT_POINTS );
                 m_error.logIt();
                 return;
             }
 
             // Create Virtual Points
-            for ( size_t idx=0; idx < numInputs && m_error == Fxt::Type::Error::SUCCESS(); idx++ )
+            for ( size_t idx=0; idx < numOutputs && m_error == Fxt::Type::Error::SUCCESS(); idx++ )
             {
                 uint16_t   channelNum_notUsed;
-                JsonObject channelObj = inputs[idx].as<JsonObject>();
+                JsonObject channelObj = outputs[idx].as<JsonObject>();
                 createPointForChannel( pointFactoryDb,
                                        m_virtualInputs,
                                        Fxt::Point::Float::GUID_STRING,
@@ -78,21 +78,20 @@ void AnalogIn8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAl
                                        0,
                                        channelNum_notUsed,
                                        generalAllocator,
-                                       cardStatefulDataAllocator,
+                                       haStatefulDataAllocator,     // All Output Virtual Points are part of the HA Data set
                                        dbForPoints );
 
                 if ( m_error != Fxt::Type::Error::SUCCESS() )
                 {
                     return;
                 }
-
             }
 
             // Create IO Register Points
-            for ( size_t idx=0; idx < numInputs && m_error == Fxt::Type::Error::SUCCESS(); idx++ )
+            for ( size_t idx=0; idx < numOutputs && m_error == Fxt::Type::Error::SUCCESS(); idx++ )
             {
                 uint16_t   channelNum_notUsed;
-                JsonObject channelObj = inputs[idx].as<JsonObject>();
+                JsonObject channelObj = outputs[idx].as<JsonObject>();
                 createPointForChannel( pointFactoryDb,
                                        m_ioRegisterInputs,
                                        Fxt::Point::Float::GUID_STRING,
@@ -110,7 +109,6 @@ void AnalogIn8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAl
                 {
                     return;
                 }
-
             }
         }
     }
@@ -121,7 +119,7 @@ void AnalogIn8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAl
 
 
 ///////////////////////////////////////////////////////////////////////////////
-bool AnalogIn8::start( uint64_t currentElapsedTimeUsec ) noexcept
+bool AnalogOut8::start( uint64_t currentElapsedTimeUsec ) noexcept
 {
     // Call the parent's start-up actions
     if ( Common_::start( currentElapsedTimeUsec ) )
@@ -145,71 +143,37 @@ bool AnalogIn8::start( uint64_t currentElapsedTimeUsec ) noexcept
 
 
 
-void AnalogIn8::stop() noexcept
+void AnalogOut8::stop() noexcept
 {
     Common_::stop();
 }
 
-bool AnalogIn8::scanInputs( uint64_t currentElapsedTimeUsec ) noexcept
+bool AnalogOut8::scanInputs( uint64_t currentElapsedTimeUsec ) noexcept
 {
-    // Need to wrap with a mutex since my input data is coming from a different thread
-    Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
-    return Common_::scanInputs( currentElapsedTimeUsec );
-}
-
-bool AnalogIn8::flushOutputs( uint64_t currentElapsedTimeUsec ) noexcept
-{
-    // Do nothing since I have no outputs
+    // Do nothing since I have no inputs
     return true;
 }
 
-const char* AnalogIn8::getTypeGuid() const noexcept
+bool AnalogOut8::flushOutputs( uint64_t currentElapsedTimeUsec ) noexcept
+{
+    // Need to wrap with a mutex since my output data is accessed from a different thread
+    Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
+    return Common_::flushOutputs( currentElapsedTimeUsec );
+}
+
+const char* AnalogOut8::getTypeGuid() const noexcept
 {
     return GUID_STRING;
 }
 
-const char* AnalogIn8::getTypeName() const noexcept
+const char* AnalogOut8::getTypeName() const noexcept
 {
     return TYPE_NAME;
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
-void AnalogIn8::setInput( uint8_t channelNumber, float newValue )
-{
-    Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
-
-    // Validate the range of channel number
-    if ( channelNumber > 0 && channelNumber <= MAX_CHANNELS )
-    {
-        // Was the channel specified in the JSON syntax?
-        if ( m_ioRegisterPoints[channelNumber - 1] != nullptr )
-        {
-            // Update the IO Register
-            Fxt::Point::Float* pt = (Fxt::Point::Float*) m_ioRegisterPoints[channelNumber - 1];
-            pt->write( newValue );
-        }
-    }
-}
-
-void AnalogIn8::setInvalid( uint8_t channelNumber )
-{
-    Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
-
-    // Validate the range of channel number
-    if ( channelNumber > 0 && channelNumber <= MAX_CHANNELS )
-    {
-        // Was the channel specified in the JSON syntax?
-        if ( m_ioRegisterPoints[channelNumber - 1] != nullptr )
-        {
-            // Update the IO Register
-            Fxt::Point::Api* pt =  m_ioRegisterPoints[channelNumber - 1];
-            pt->setInvalid();
-        }
-    }
-}
-
-bool AnalogIn8::getInput( uint8_t channelNumber, float& dstValue, bool& dstIsValid )
+bool AnalogOut8::getOutputs( uint8_t channelNumber, float& dstValue, bool& dstIsValid )
 {
     Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
 

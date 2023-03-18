@@ -14,7 +14,6 @@
 #include "Digital8.h"
 #include "Cpl/System/Assert.h"
 #include <stdint.h>
-#include <new>
 
 ///
 using namespace Fxt::Card::Mock;

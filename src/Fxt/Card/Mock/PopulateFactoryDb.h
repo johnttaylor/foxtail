@@ -20,9 +20,11 @@
 
 
 #include "Fxt/Card/Mock/AnalogIn8Factory.h"
+#include "Fxt/Card/Mock/AnalogOut8Factory.h"
 #include "Fxt/Card/Mock/Digital8Factory.h"
 
 static Fxt::Card::Mock::AnalogIn8Factory    analogIn8Factory_( FXT_MY_APP_CARD_FACTORY_DB );
+static Fxt::Card::Mock::AnalogOut8Factory   analogOut8Factory_( FXT_MY_APP_CARD_FACTORY_DB );
 static Fxt::Card::Mock::Digital8Factory     digital8Factory_( FXT_MY_APP_CARD_FACTORY_DB );
 
 #endif  // end header latch
