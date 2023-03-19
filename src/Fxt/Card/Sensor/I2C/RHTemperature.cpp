@@ -38,10 +38,11 @@ RHTemperature::RHTemperature( Cpl::Memory::ContiguousAllocator&  generalAllocato
                               Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
                               Fxt::Point::DatabaseApi&           dbForPoints,
                               JsonVariant&                       cardObject,
-                              Cpl::Itc::PostApi*                 cardMbox,
+                              Cpl::Dm::MailboxServer*            cardMbox,
                               void*                              extraArgsNotUsed )
     : Fxt::Card::Common_( TOTAL_MAX_CHANNELS, generalAllocator, cardObject )
     , StartStopAsync( *cardMbox )
+    , Timer( *cardMbox )
     , m_driver( nullptr )
     , m_rhIndex( INVALID_INDEX )
     , m_tempIndex( INVALID_INDEX )
@@ -361,6 +362,9 @@ void RHTemperature::stop( Cpl::Itc::PostApi& chassisMbox ) noexcept
 // Note: This method executes in the 'driver thread'
 void RHTemperature::request( StopReqMsg& msg )
 {
+    // Stop my timer
+    Timer::stop();
+
     // Stop the underlying driver
     m_driver->stop();
 

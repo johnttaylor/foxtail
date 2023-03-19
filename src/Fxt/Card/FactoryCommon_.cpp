@@ -17,9 +17,9 @@
 ///
 using namespace Fxt::Card;
 
-FactoryCommon_::FactoryCommon_( FactoryDatabaseApi& factoryDatabase,
-                                Cpl::Itc::PostApi*  cardMbox,
-                                void*               extraArgs )
+FactoryCommon_::FactoryCommon_( FactoryDatabaseApi&     factoryDatabase,
+                                Cpl::Dm::MailboxServer* cardMbox,
+                                void*                   extraArgs )
     : m_cardMbox( cardMbox )
     , m_extraArgs( extraArgs )
 {

@@ -12,5 +12,7 @@
 #define OPTION_CPL_TSHELL_PROCESSOR_INPUT_SIZE      (1024*32)
 #define OPTION_CPL_TSHELL_PROCESSOR_OUTPUT_SIZE     (1024*32)
 
+// Enable console hack - so the polled TShell work'ish
+#define USE_CPL_IO_STDIO_WIN32_STDIN_CONSOLE_HACK
 
 #endif

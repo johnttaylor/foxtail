@@ -24,7 +24,8 @@ using namespace Fxt::System;
 
 /////////////////////
 MainLoop::MainLoop( Cpl::System::SharedEventHandlerApi* eventHandler )
-    : m_myThreadPtr( 0 )
+    : MainLoopApi()
+    , m_myThreadPtr( 0 )
     , m_eventHandler( eventHandler )
     , m_events( 0 )
     , m_run( true )
@@ -120,6 +121,13 @@ bool MainLoop::waitAndProcessEvents() noexcept
             }
         }
     }
+
+    // Drain the ITC message queue
+    while ( isPendingMessage() )
+    {
+        processMessages();
+    }
+     
 
     // Tick delay over (and any pending Event flags have been processed)
     return true;

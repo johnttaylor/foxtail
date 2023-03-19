@@ -12,7 +12,7 @@
 *----------------------------------------------------------------------------*/
 /** @file */
 
-#include "Cpl/Itc/PostApi.h"
+#include "Cpl/Dm/MailboxServer.h"
 #include "Fxt/Card/StartStopRequests.h"
 #include "Cpl/Memory/Aligned.h"
 #include <new>
@@ -34,7 +34,7 @@ class StartStopAsync :
 {
 protected:
     /// Constructor
-    StartStopAsync( Cpl::Itc::PostApi& driverMbox ) noexcept
+    StartStopAsync( Cpl::Dm::MailboxServer& driverMbox ) noexcept
         : m_driverbox( driverMbox )
         , m_startInProgress( false )
         , m_stopInProgress( false )
@@ -86,7 +86,7 @@ protected:
 
 protected:
     /// The driver thread's mailbox reference
-    Cpl::Itc::PostApi&  m_driverbox;
+    Cpl::Dm::MailboxServer&  m_driverbox;
 
     /// Memory for Start Message
     Cpl::Memory::AlignedClass<StartResponse::StartRspMsg>  	m_memoryStartRspMsg;

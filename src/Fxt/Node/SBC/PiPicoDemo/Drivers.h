@@ -14,7 +14,7 @@
 
 
 #include "colony_config.h"
-#include "Cpl/Itc/PostApi.h"
+#include "Cpl/Dm/MailboxServer.h"
 #include "Driver/RHTemp/Api.h"
 
 /// Maximum number of RH/Temperature sensors supported
@@ -31,7 +31,7 @@
 /*---------------------------------------------------------------------------*/
 /** Reference to the Driver thread's Mailbox server
  */
-extern Cpl::Itc::PostApi*   g_driverThreadMailboxPtr;
+extern Cpl::Dm::MailboxServer*   g_driverThreadMailboxPtr;
 
 /// Reference(s) to RH/Temp sensor driver instance(s)
 extern Driver::RHTemp::Api* g_rhTempDrivers[OPTION_FXT_NODE_SBC_PIPICODEMO__CHASSIS_RHTEMP_SENSORS_NUM_SUPPORTED];

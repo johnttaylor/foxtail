@@ -28,7 +28,7 @@ AnalogIn8::AnalogIn8( Cpl::Memory::ContiguousAllocator&  generalAllocator,
                       Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
                       Fxt::Point::DatabaseApi&           dbForPoints,
                       JsonVariant&                       cardObject,
-                      Cpl::Itc::PostApi*                 cardMboxNotUsed,
+                      Cpl::Dm::MailboxServer*            cardMboxNotUsed,
                       void*                              extraArgsNotUsed )
     : Fxt::Card::Common_( MAX_CHANNELS, generalAllocator, cardObject )
 {

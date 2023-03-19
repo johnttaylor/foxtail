@@ -16,6 +16,7 @@
 #include "Cpl/System/EventFlag.h"
 #include "Cpl/System/Runnable.h"
 #include "Cpl/System/Signable.h"
+#include "Cpl/Itc/Mailbox.h"
 
 ///
 namespace Fxt {
@@ -39,13 +40,23 @@ namespace System {
     deferred until the tick has expired. Possible 'events' are:
         1. The main-loop/runnable-object is signaled
         2. Event Flags are set (see Cpl::System::EventFlag)
+        3. ITC Messages
 
     NOTE: All of the PUBLIC method come from the parent classes.
  */
 class MainLoopApi : public Cpl::System::Runnable, 
     public Cpl::System::EventFlag, 
-    public Cpl::System::Signable
+    public Cpl::System::Signable,
+    public Cpl::Itc::Mailbox
+
 {
+protected: 
+    /// Constructor
+    MainLoopApi()
+        : Cpl::Itc::Mailbox( *((Cpl::System::Signable*) this) )
+    {
+    }
+
 public:
     /// Virtual destructor
     virtual ~MainLoopApi() {}

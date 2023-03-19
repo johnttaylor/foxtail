@@ -28,7 +28,7 @@ AnalogOut8::AnalogOut8( Cpl::Memory::ContiguousAllocator&  generalAllocator,
                         Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
                         Fxt::Point::DatabaseApi&           dbForPoints,
                         JsonVariant&                       cardObject,
-                        Cpl::Itc::PostApi*                 cardMboxNotUsed,
+                        Cpl::Dm::MailboxServer*            cardMboxNotUsed,
                         void*                              extraArgsNotUsed )
     : Fxt::Card::Common_( MAX_CHANNELS, generalAllocator, cardObject )
 {
@@ -69,7 +69,7 @@ void AnalogOut8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalA
                 uint16_t   channelNum_notUsed;
                 JsonObject channelObj = outputs[idx].as<JsonObject>();
                 createPointForChannel( pointFactoryDb,
-                                       m_virtualInputs,
+                                       m_virtualOutputs,
                                        Fxt::Point::Float::GUID_STRING,
                                        false,
                                        channelObj,
@@ -93,7 +93,7 @@ void AnalogOut8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalA
                 uint16_t   channelNum_notUsed;
                 JsonObject channelObj = outputs[idx].as<JsonObject>();
                 createPointForChannel( pointFactoryDb,
-                                       m_ioRegisterInputs,
+                                       m_ioRegisterOutputs,
                                        Fxt::Point::Float::GUID_STRING,
                                        true,
                                        channelObj,

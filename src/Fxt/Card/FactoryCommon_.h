@@ -18,7 +18,7 @@
 #include "Fxt/Card/Error.h"
 #include "Fxt/Point/DatabaseApi.h"
 #include "Cpl/Memory/ContiguousAllocator.h"
-#include "Cpl/Itc/PostApi.h"
+#include "Cpl/Dm/MailboxServer.h"
 
 ///
 namespace Fxt {
@@ -33,9 +33,9 @@ class FactoryCommon_ : public Fxt::Card::FactoryApi
 {
 public:
     /// Constructor
-    FactoryCommon_( FactoryDatabaseApi&  factoryDatabase,
-                    Cpl::Itc::PostApi*   cardMbox = nullptr,
-                    void*                extraArgs = nullptr );
+    FactoryCommon_( FactoryDatabaseApi&     factoryDatabase,
+                    Cpl::Dm::MailboxServer* cardMbox = nullptr,
+                    void*                   extraArgs = nullptr );
 
     /// Destructor
     ~FactoryCommon_();
@@ -59,11 +59,11 @@ protected:
         is required when the Card needs to execute other than when scanInputs() 
         and flushOutputs() are called.
      */
-    Cpl::Itc::PostApi*  m_cardMbox;
+    Cpl::Dm::MailboxServer* m_cardMbox;
 
     /** Optional pointer for additional card constructor arguments
      */
-    void*               m_extraArgs;
+    void*                   m_extraArgs;
 };
 
 
@@ -74,9 +74,9 @@ class Factory : public FactoryCommon_
 {
 public:
     /// Constructor
-    Factory( FactoryDatabaseApi&  factoryDatabase, 
-             Cpl::Itc::PostApi*   cardMbox=nullptr,
-             void*                extraArgs=nullptr ) : FactoryCommon_( factoryDatabase, cardMbox, extraArgs )
+    Factory( FactoryDatabaseApi&        factoryDatabase, 
+             Cpl::Dm::MailboxServer*    cardMbox=nullptr,
+             void*                      extraArgs=nullptr ) : FactoryCommon_( factoryDatabase, cardMbox, extraArgs )
     {
     }
 

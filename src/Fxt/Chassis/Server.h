@@ -38,7 +38,6 @@ namespace Chassis {
  */
 template <class TICKSOURCE>
 class Server : public TICKSOURCE, 
-    public Cpl::Itc::Mailbox,
     public ServerApi
 {
 public:
@@ -51,7 +50,6 @@ public:
             Fxt::System::PeriodicScheduler::ReportSlippageFunc_T    outSlippageFunc = nullptr,
             Cpl::System::SharedEventHandlerApi*                     eventHandler    = nullptr ) noexcept
         : TICKSOURCE( timingTickInMicroseconds, eventHandler )
-        , Cpl::Itc::Mailbox( *((Cpl::System::Signable*) this) )
         , ServerApi( *((Cpl::Itc::PostApi*) this) )
         , m_inputScheduler( inSlippageFunc )
         , m_executionScheduler( exeSlippageFunc )

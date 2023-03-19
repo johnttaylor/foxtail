@@ -104,7 +104,7 @@ Cpl::Dm::PeriodicScheduler core0Mbox_( core0Intervals_,
                                        core0Idle );
 
 // Run the 'drivers' in a different than the Chassis thread
-Cpl::Itc::PostApi* g_driverThreadMailboxPtr = &core0Mbox_;    
+Cpl::Dm::MailboxServer* g_driverThreadMailboxPtr = &core0Mbox_;    
 
 // In thread initialization 
 void core0Start( Cpl::System::ElapsedTime::Precision_T currentTick )

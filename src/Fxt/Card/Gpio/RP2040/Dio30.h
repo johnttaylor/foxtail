@@ -17,7 +17,7 @@
 #include "Fxt/Card/Common_.h"
 #include "Cpl/Json/Arduino.h"
 #include "Driver/DIO/InOut.h"
-#include "Cpl/Itc/PostApi.h"
+#include "Cpl/Dm/MailboxServer.h"
 
 ///
 namespace Fxt {
@@ -110,7 +110,7 @@ public:
            Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
            Fxt::Point::DatabaseApi&           dbForPoints,
            JsonVariant&                       cardObject,
-           Cpl::Itc::PostApi*                 cardMboxNotUsed = nullptr,
+           Cpl::Dm::MailboxServer*            cardMboxNotUsed = nullptr,
            void*                              extraArgsNotUsed = nullptr );
 
 public:

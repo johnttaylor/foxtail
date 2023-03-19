@@ -136,7 +136,7 @@ public:
                    Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
                    Fxt::Point::DatabaseApi&           dbForPoints,
                    JsonVariant&                       cardObject,
-                   Cpl::Itc::PostApi*                 cardMbox,
+                   Cpl::Dm::MailboxServer*            cardMbox,
                    void*                              extraArgsNotUsed );
 
 public:

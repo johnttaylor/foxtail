@@ -30,7 +30,7 @@ class RHTemperatureFactory : public Fxt::Card::Factory<RHTemperature>
 {
 public:
     /// Constructor -->require a Mailbox (and no extra args used)
-    RHTemperatureFactory( FactoryDatabaseApi&  factoryDatabase, Cpl::Itc::PostApi* cardMbox )
+    RHTemperatureFactory( FactoryDatabaseApi&  factoryDatabase, Cpl::Dm::MailboxServer* cardMbox )
         : Fxt::Card::Factory<RHTemperature>( factoryDatabase, cardMbox )
     {
     }
