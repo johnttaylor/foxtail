@@ -25,6 +25,11 @@
                     "channel": 2,
                     "id": "Temperature 'C Out",
                     "typeName": "Fxt::Point::Float"
+                  },
+                  {
+                    "channel": 3,
+                    "id": "Temperature 'F Out",
+                    "typeName": "Fxt::Point::Float"
                   }
                 ]
               }
@@ -112,7 +117,7 @@
               "id": 1,
               "components": [
                 {
-                  "name": "null scaler",
+                  "name": "scaler",
                   "typeName": "Fxt::Component::Analog::SimpleScaler8",
                   "inputs": [
                     {
@@ -126,18 +131,26 @@
                       "b": 0,
                       "typeName": "Fxt::Point::Float",
                       "idRef": "Temperature 'C Input"
+                    },
+					{
+                      "m": 1.8,
+                      "b": 32,
+                      "typeName": "Fxt::Point::Float",
+                      "idRef": "Temperature 'C Input"
                     }
                   ],
                   "outputs": [
                     {
-                      "bit": 0,
                       "typeName": "Fxt::Point::Float",
                       "idRef": "RH Out"
                     },
                     {
-                      "bit": 0,
                       "typeName": "Fxt::Point::Float",
                       "idRef": "Temperature 'C Out"
+                    },
+                    {
+                      "typeName": "Fxt::Point::Float",
+                      "idRef": "Temperature 'F Out"
                     }
                   ]
                 }
