@@ -215,6 +215,20 @@ void Digital8::stop( Cpl::Itc::PostApi& chassisMbox ) noexcept
     Common_::stop();
 }
 
+bool Digital8::scanInputs( uint64_t currentElapsedTimeUsec ) noexcept
+{
+    // Need to wrap with a mutex since my input data is coming from a different thread
+    Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
+    return Common_::scanInputs( currentElapsedTimeUsec );
+}
+
+bool Digital8::flushOutputs( uint64_t currentElapsedTimeUsec ) noexcept
+{
+    // Need to wrap with a mutex since my input data is coming from a different thread
+    Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
+    return Common_::flushOutputs( currentElapsedTimeUsec );
+}
+
 const char* Digital8::getTypeGuid() const noexcept
 {
     return GUID_STRING;

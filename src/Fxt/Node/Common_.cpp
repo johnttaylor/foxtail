@@ -87,8 +87,12 @@ Common_::Common_( uint8_t                  numChassis,
 
 Common_::~Common_()
 {
-    // Ensure stop is called first
-    stop();
+    // The application is REQUIRED to stop the node before deleting it.
+    if ( isStarted() )
+    {
+        Cpl::System::FatalError::logf( "Fxt::Node instance is being deleted when the node is NOT in the stopped state" );
+    }
+
 
     // Call the destructors on all of the Chassis
     for ( uint8_t i=0; i < m_numChassis; i++ )
@@ -198,7 +202,26 @@ void Common_::stop() noexcept
 
 bool Common_::isStarted() const noexcept
 {
-    return m_started;
+    if ( m_started )
+    {
+        return true;
+    }
+
+    // When stopped, report my started state as a function of my contained
+    // chassis.  This is needed because a chassis can contain cards that have 
+    // asynchronous start/stop implementations (and the stop scenario must be 
+    // handled differently, i.e need to wait to till the cards have actually 
+    // stopped).
+    bool started = false;
+    for ( uint16_t i=0; i < m_numChassis; i++ )
+    {
+        if ( m_chassis[i].chassis )
+        {
+            started |= m_chassis[i].chassis->isStarted();
+        }
+    }
+
+    return started;
 }
 
 Fxt::Type::Error Common_::getErrorCode() const noexcept

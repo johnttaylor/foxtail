@@ -210,14 +210,14 @@ protected:
     /// Pending Heater output value. SHARED between threads
     bool                    m_heaterEnable;
 
-    /// Flag that indicate if there is pending update to the Heater output. SHARED between threads
-    bool                    m_pendingHeaterUpdate;
-
     /// State of my underlying driver (this member is not used/accessed in the DRIVER Thread)
     bool                    m_driverStarted;
 
-    /// Last known heater enable state (so we can detect changes - so we are constantly updating the sensor)
-    bool                    m_lastHeaterEnabled;
+    /// Flag to force the heater state to update on start-up. Pseudo Shared - technically shared - but only during start-up so no critical section is needed
+    bool                    m_forceHeaterUpdate;
+
+    /// Last heater enabled value sent to the driver.  This variable only accessed in the Driver thread
+    bool                    m_lastHeaterEnable;
 };
 
 

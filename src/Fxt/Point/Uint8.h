@@ -40,7 +40,7 @@ public:
     static constexpr const char* GUID_STRING = "918cff9e-8007-4666-99ac-384b9624329c";
 
     /// Type name for the card
-    static constexpr const char* TYPE_NAME   = "Fxt::Point::Uin8";
+    static constexpr const char* TYPE_NAME   = "Fxt::Point::Uint8";
 
 public:
     /** Constructor. Invalid Point.

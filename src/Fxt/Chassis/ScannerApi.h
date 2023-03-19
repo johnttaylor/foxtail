@@ -75,7 +75,8 @@ public:
      */
     virtual void stop( Cpl::Itc::PostApi& chassisMbox ) noexcept = 0;
 
-    /** This method returns true if the Scanner is in the started state
+    /** This method returns true if the Scanner (and ALL of it contained cards)
+        are in the started state.
      */
     virtual bool isStarted() const noexcept = 0;
 

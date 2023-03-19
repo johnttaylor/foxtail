@@ -1,0 +1,26 @@
+# Known Foxtail types
+_types_dict = {
+    "Fxt::Card::Mock::AnalogIn8": "1968f533-e323-4ae4-8493-9a572f3bd195",
+    "Fxt::Card::Gpio::RP2040::Dio30": "c896faf0-6ea2-47d6-a1a6-7e4074c32a43",
+    "Fxt::Card::Mock::AnalogOut8": "dcec26d7-8dea-4e1b-946d-4a0313677173",
+    "Fxt::Card::Mock::Digital8": "59d33888-62c7-45b2-a4d4-9dbc55914ed3",
+    "Fxt::Card::Sensor::I2C::RHTemperature": "9fd17cc7-88c1-46bc-8a8c-6f76ab4e6eee",
+    "Fxt::Component::Analog::SimpleScaler8": "0eb51702-677f-4022-91ab-bc84efcc4ed1",
+    "Fxt::Component::Digital::And16Gate": "e62e395c-d27a-4821-bba9-aa1e6de42a05",
+    "Fxt::Component::Digital::ByteDemux": "8c55aa52-3bc8-4b8a-ad73-c434a0bbd4b4",
+    "Fxt::Component::Digital::ByteMux": "d60f2daf-9709-42d6-ba92-b76f641eb930",
+    "Fxt::Node::Mock::Kestrel": "d65ee614-dce4-43f0-af2c-830e3664ecaf",
+    "Fxt::Node::SBC::PiPicoDemo": "35599c37-c732-424e-84d3-ebbcf0d2f9ce",
+    "Fxt::Point::Bool": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0",
+    "Fxt::Point::Double": "05e542d9-2e54-4a32-9b64-a99084b2910b",
+    "Fxt::Point::Float": "708745fa-cef6-4364-abad-063a40f35cbc",
+    "Fxt::Point::Int16": "9b747497-eabf-4d11-8ce3-11ad9b048c43",
+    "Fxt::Point::Int32": "c357de9a-a10b-4c87-83b9-ed230135752d",
+    "Fxt::Point::Int64": "49d79369-32d7-4f78-bba3-0fcb1ddff2a1",
+    "Fxt::Point::Int8": "8e0ca635-bbe9-45a0-8f7c-2599a90ba48b",
+    "Fxt::Point::String": "e2c8172c-fca3-4023-bb9f-79f92dec7c34",
+    "Fxt::Point::Uint16": "a1c42126-aaae-4e0f-a361-00d06f829759",
+    "Fxt::Point::Uint32": "99f91433-b8e4-4480-9203-8fcab5d9f20f",
+    "Fxt::Point::Uint64": "20deff73-0f58-495e-a30e-166ee10df46f",
+    "Fxt::Point::Uint8": "918cff9e-8007-4666-99ac-384b9624329c"
+}

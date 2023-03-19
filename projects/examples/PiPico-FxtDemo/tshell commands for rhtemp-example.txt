@@ -1,0 +1,31 @@
+# Download node
+# To get the JSON object, do the following:
+# 	name2id rhtemp-example_json-symbolic-points.txt -sve
+node download
+{"type":"35599c37-c732-424e-84d3-ebbcf0d2f9ce","chassis":[{"fer":1000,"scanners":[{"scanRateMultiplier":40,"cards":[{"type":"dcec26d7-8dea-4e1b-946d-4a0313677173","slot":1,"points":{"outputs":[{"channel":1,"id":0,"type":"708745fa-cef6-4364-abad-063a40f35cbc","ioRegId":1},{"channel":2,"id":2,"type":"708745fa-cef6-4364-abad-063a40f35cbc","ioRegId":3}]}},{"type":"59d33888-62c7-45b2-a4d4-9dbc55914ed3","slot":2,"points":{"inputs":[{"channel":1,"id":4,"type":"918cff9e-8007-4666-99ac-384b9624329c","initial":{"valid":true,"val":0,"id":6},"ioRegId":5}]}},{"type":"9fd17cc7-88c1-46bc-8a8c-6f76ab4e6eee","slot":255,"driverInterval":20,"points":{"inputs":[{"channel":1,"id":7,"type":"708745fa-cef6-4364-abad-063a40f35cbc","ioRegId":8},{"channel":2,"id":9,"type":"708745fa-cef6-4364-abad-063a40f35cbc","ioRegId":10}],"outputs":[{"channel":1,"id":11,"type":"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0","initial":{"valid":true,"val":true,"id":13},"ioRegId":12}]}}]}],"executionSets":[{"exeRateMultiplier":40,"logicChains":[{"components":[{"type":"8c55aa52-3bc8-4b8a-ad73-c434a0bbd4b4","inputs":[{"type":"918cff9e-8007-4666-99ac-384b9624329c","idRef":4}],"outputs":[{"bit":0,"type":"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0","idRef":11}]}]},{"components":[{"type":"0eb51702-677f-4022-91ab-bc84efcc4ed1","inputs":[{"m":1,"b":0,"type":"708745fa-cef6-4364-abad-063a40f35cbc","idRef":7},{"m":1,"b":0,"type":"708745fa-cef6-4364-abad-063a40f35cbc","idRef":9}],"outputs":[{"bit":0,"type":"708745fa-cef6-4364-abad-063a40f35cbc","idRef":0},{"bit":0,"type":"708745fa-cef6-4364-abad-063a40f35cbc","idRef":2}]}]}]}]}]}
+node
+
+
+# Select Aout8 card (to monitor Rh/temp values)
+aout8 setcard 0 1
+
+# view my inputs via the output card
+aout8
+
+# view simulated inputs
+dm read simRh
+dm read simTemp
+
+# view simulated outputs
+dm read simHeater
+
+# Set simulate inputs
+dm write {name:"simRh",val:10.2}
+dm write {name:"simTemp",val:15.3}
+
+# Select DIO card to control the Heater enable
+dio8 setcard 0 2
+dio8
+
+# Start the node
+node start

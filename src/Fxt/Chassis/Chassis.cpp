@@ -125,8 +125,11 @@ Chassis::Chassis( ServerApi&                         chassisServer,
 
 Chassis::~Chassis()
 {
-    // Ensure stop is called first
-    stop();
+    // The application is REQUIRED to stop the chassis before deleting it.
+    if ( isStarted() )
+    {
+        Cpl::System::FatalError::logf( "Fxt::Chassis instance is being deleted when the chassis is NOT in the stopped state" );
+    }
 
     // Call the destructors on all of the Scanners
     for ( uint16_t i=0; i < m_numScanners; i++ )
@@ -266,7 +269,26 @@ void Chassis::stop() noexcept
 
 bool Chassis::isStarted() const noexcept
 {
-    return m_started;
+    if ( m_started )
+    {
+        return true;
+    }
+
+    // When stopped, report my started state as a function of my contained
+    // scanners.  This is needed because a scanner can contain cards that have 
+    // asynchronous start/stop implementations (and the stop scenario must be 
+    // handled differently, i.e need to wait to till the cards have actually 
+    // stopped).
+    bool started = false;
+    for ( uint16_t i=0; i < m_numScanners; i++ )
+    {
+        if ( m_scanners[i] )
+        {
+            started |= m_scanners[i]->isStarted();
+        }
+    }
+
+    return started; 
 }
 
 Fxt::Type::Error Chassis::getErrorCode() const noexcept

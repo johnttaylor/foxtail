@@ -56,7 +56,12 @@ Cpl::TShell::Command::Result_T Node::execute( Cpl::TShell::Context_& context, ch
         }
 
         // Ensure the node is stop then destroy the node
-        node->stop();
+        if ( node->isStarted() )
+        {
+            context.writeFrame( "The Node is in the started state.  The Node must be stopped before deleting it" );
+            return Command::eERROR_FAILED;
+        }
+
         m_pointDb.clearPoints();    // Must clear BEFORE destroying the node
         m_nodeFactory.destroy( *node );
         io &= context.writeFrame( "Node deleted." );

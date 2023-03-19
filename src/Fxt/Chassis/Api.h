@@ -173,6 +173,15 @@ public:
         method returns nullptr; else a pointer to the newly created Chassis
         object is returned.  When an error occurs, details about the specific
         chassis error is returned via 'chassisErrorode' argument.
+
+        NOTE: A chassis is destroyed by calling the instance's destructor. 
+              HOWEVER, the application is responsible for stopping the chassis
+              before deleting it.  IN ADDITION, calling chassis.stop() can/will
+              return BEFORE the chassis has fully stopped.  The application is
+              required to call chassis.isStarted() to determine when the chassis
+              has stopped.  Depending on the threading model of the application,
+              the polling of the isStarted() state may have to be done asynchronously,
+              i.e. NOT is busy wait loop.
      */
     static Api* createChassisfromJSON( JsonVariant                         chassisJsonObject,
                                        ServerApi&                          chassisServer,

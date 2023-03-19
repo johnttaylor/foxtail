@@ -53,9 +53,14 @@ class FactoryApi
 public:
     /** This method is used to destroy/free an Node.
 
-        Note: The factory will call stop() on the specified Node before
-              destroying.
-      */
+        NOTE: A Node can NOT be destroyed until it has been stopped. The application 
+              is responsible for stopping the node before destroying it.  IN 
+              ADDITION, calling node.stop() can/will return BEFORE the node has 
+              fully stopped.  The application is required to call node.isStarted() 
+              to determine when the node has stopped.  Depending on the threading 
+              model of the application, the polling of the isStarted() state may 
+              have to be done asynchronously, i.e. NOT is busy wait loop.     
+     */
     virtual void destroy( Fxt::Node::Api& nodeToDestroy ) noexcept = 0;
 
     /** This method creates a Node. The concrete type of the Node is

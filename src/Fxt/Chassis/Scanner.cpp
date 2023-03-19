@@ -93,7 +93,7 @@ bool Scanner::start( Cpl::Itc::PostApi& chassisMbox, uint64_t currentElapsedTime
         }
 
         m_chassisMboxPtr = &chassisMbox;
-        m_started = true;
+        m_started        = true;
     }
 
     return true;
@@ -114,13 +114,31 @@ void Scanner::stop( Cpl::Itc::PostApi& chassisMbox ) noexcept
         }
 
         m_chassisMboxPtr = nullptr;
-        m_started = false;
+        m_started        = false;
     }
 }
 
 bool Scanner::isStarted() const noexcept
 {
-    return m_started;
+    if ( m_started )
+    {
+        return true;
+    }
+
+    // When stopped, report my started state as a function of my contained
+    // cards.  This is needed because some cards have asynchronous start/stop
+    // implementations (and the stop scenario must be handled differently, i.e
+    // need to wait to till the cards have actually stopped).
+    bool started = false;
+    for ( uint16_t i=0; i < m_numCards; i++ )
+    {
+        if ( m_cards[i] )
+        {
+            started |= m_cards[i]->isStarted();
+        }
+    }
+
+    return started;
 }
 
 Fxt::Type::Error Scanner::getErrorCode() const noexcept

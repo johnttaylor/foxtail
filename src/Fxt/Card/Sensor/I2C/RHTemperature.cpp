@@ -48,8 +48,9 @@ RHTemperature::RHTemperature( Cpl::Memory::ContiguousAllocator&  generalAllocato
     , m_tempIndex( INVALID_INDEX )
     , m_validSamples( false )
     , m_heaterEnable( false )
-    , m_pendingHeaterUpdate( false )
     , m_driverStarted( false )
+    , m_forceHeaterUpdate( false )
+    , m_lastHeaterEnable( false )
 {
     if ( m_error == Fxt::Type::Error::SUCCESS() )
     {
@@ -288,7 +289,6 @@ bool RHTemperature::start( Cpl::Itc::PostApi& chassisMbox, uint64_t currentElaps
     }
 
     // Initialize Outputs (at most there is ONE)
-    m_pendingHeaterUpdate = false;
     Fxt::Point::Bool* pt = (Fxt::Point::Bool*) m_ioRegisterPoints[OUTPUT_POINT_OFFSET];
     if ( pt != nullptr )
     {
@@ -297,10 +297,9 @@ bool RHTemperature::start( Cpl::Itc::PostApi& chassisMbox, uint64_t currentElaps
     }
 
     // Force an initial update of the Heater. Note: if the IO Point is invalid -->the heater will be forced off
-    m_heaterEnable = false;
+    m_forceHeaterUpdate = true;
+    m_heaterEnable      = false;
     pt->read( m_heaterEnable );
-    m_pendingHeaterUpdate = true;
-    m_lastHeaterEnabled   = !m_heaterEnable;
 
     // Request to start the driver (which executes in the driver thread)
     // NOTE: The method only fails if there is pending ITC start transaction.
@@ -345,7 +344,7 @@ void RHTemperature::response( StartRspMsg& msg )
 // NO Guarantee on which thread this method executes in, but it is NOT the chassis thread
 void RHTemperature::stop( Cpl::Itc::PostApi& chassisMbox ) noexcept
 {
-    if ( m_started  )
+    if ( m_started )
     {
         // Prevents the scan()/flush() methods from accessing the driver
         m_driverStarted = false;
@@ -398,14 +397,14 @@ void RHTemperature::expired() noexcept
 {
     // Get output state
     m_lock.lock();
-    bool pendingUpdate    = m_pendingHeaterUpdate;
-    bool heaterVal        = m_heaterEnable;
-    m_pendingHeaterUpdate = false;
+    bool heaterVal = m_heaterEnable;
     m_lock.unlock();
 
     // Update output
-    if ( pendingUpdate )
+    if ( m_forceHeaterUpdate || heaterVal != m_lastHeaterEnable )
     {
+        m_lastHeaterEnable  = heaterVal;
+        m_forceHeaterUpdate = false;
         m_driver->setHeaterState( heaterVal );
     }
 
@@ -505,16 +504,10 @@ bool RHTemperature::flushOutputs( uint64_t currentElapsedTimeUsec ) noexcept
             bool val = false;
             pt->read( val );
 
-            // Only update the driver on change in value
-            if ( val != m_lastHeaterEnabled )
-            {
-                // Safely update my output flags to be physically set on the next polling cycle
-                m_lastHeaterEnabled   = val;
-                m_lock.lock();
-                m_heaterEnable        = val;
-                m_pendingHeaterUpdate = true;
-                m_lock.unlock();
-            }
+            // Safely update my output flags to be physically set on the next polling cycle
+            m_lock.lock();
+            m_heaterEnable = val;
+            m_lock.unlock();
         }
     }
 
@@ -523,6 +516,6 @@ bool RHTemperature::flushOutputs( uint64_t currentElapsedTimeUsec ) noexcept
     {
         return false;
     }
-    return true; 
+    return true;
 }
 

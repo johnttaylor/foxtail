@@ -1,1 +1,188 @@
-{"type":"35599c37-c732-424e-84d3-ebbcf0d2f9ce","chassis":[{"fer":1000,"scanners":[{"scanRateMultiplier":1,"cards":[{"type":"c896faf0-6ea2-47d6-a1a6-7e4074c32a43","slot":0,"points":{"inputs":[{"channel":10,"id":0,"type":"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0","pulls":"up","initial":{"val":true,"id":2},"ioRegId":1}],"outputs":[{"channel":26,"id":3,"type":"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0","initial":{"val":true,"id":5},"ioRegId":4}]}},{"type":"59d33888-62c7-45b2-a4d4-9dbc55914ed3","slot":1,"points":{"inputs":[{"channel":1,"id":6,"type":"918cff9e-8007-4666-99ac-384b9624329c","initial":{"val":0,"id":8},"ioRegId":7}],"outputs":[{"channel":1,"id":9,"type":"918cff9e-8007-4666-99ac-384b9624329c","initial":{"val":0,"id":11},"ioRegId":10}]}}]}],"executionSets":[{"exeRateMultiplier":1,"logicChains":[{"components":[{"type":"8c55aa52-3bc8-4b8a-ad73-c434a0bbd4b4","inputs":[{"type":"918cff9e-8007-4666-99ac-384b9624329c","idRef":6}],"outputs":[{"bit":0,"type":"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0","idRef":12}]},{"type":"e62e395c-d27a-4821-bba9-aa1e6de42a05","inputs":[{"type":"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0","idRef":0},{"type":"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0","idRef":12}],"outputs":[{"type":"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0","idRef":3}]},{"type":"d60f2daf-9709-42d6-ba92-b76f641eb930","inputs":[{"bit":0,"type":"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0","idRef":3}],"outputs":[{"type":"918cff9e-8007-4666-99ac-384b9624329c","idRef":9}]}],"connectionPts":[{"id":12,"type":"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"}]}]}]}]}
+{
+  "name": "PiPicoDemo Node: DIO example",
+  "typeName": "Fxt::Node::SBC::PiPicoDemo",
+  "chassis": [
+    {
+      "name": "My Chassis",
+      "fer": 1000,
+      "scanners": [
+        {
+          "name": "My Scanner",
+          "scanRateMultiplier": 1,
+          "cards": [
+            {
+              "name": "pico",
+              "typeName": "Fxt::Card::Gpio::RP2040::Dio30",
+              "slot": 0,
+              "points": {
+                "inputs": [
+                  {
+                    "channel": 10,
+                    "id": 0,
+                    "typeName": "Fxt::Point::Bool",
+                    "pulls": "up",
+                    "initial": {
+                      "val": true,
+                      "id": 2
+                    },
+                    "name": "GPIO9",
+                    "ioRegId": 1,
+                    "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                  }
+                ],
+                "outputs": [
+                  {
+                    "channel": 26,
+                    "id": 3,
+                    "typeName": "Fxt::Point::Bool",
+                    "initial": {
+                      "val": true,
+                      "id": 5
+                    },
+                    "name": "GPIO25/LED",
+                    "ioRegId": 4,
+                    "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                  }
+                ]
+              },
+              "type": "c896faf0-6ea2-47d6-a1a6-7e4074c32a43"
+            },
+            {
+              "name": "My Digital8 Card",
+              "typeName": "Fxt::Card::Mock::Digital8",
+              "slot": 1,
+              "points": {
+                "inputs": [
+                  {
+                    "channel": 1,
+                    "id": 6,
+                    "typeName": "Fxt::Point::Uint8",
+                    "initial": {
+                      "val": 0,
+                      "id": 8
+                    },
+                    "name": "InputByte",
+                    "ioRegId": 7,
+                    "type": "918cff9e-8007-4666-99ac-384b9624329c"
+                  }
+                ],
+                "outputs": [
+                  {
+                    "channel": 1,
+                    "id": 9,
+                    "typeName": "Fxt::Point::Uint8",
+                    "initial": {
+                      "val": 0,
+                      "id": 11
+                    },
+                    "name": "OutputByte",
+                    "ioRegId": 10,
+                    "type": "918cff9e-8007-4666-99ac-384b9624329c"
+                  }
+                ]
+              },
+              "type": "59d33888-62c7-45b2-a4d4-9dbc55914ed3"
+            }
+          ]
+        }
+      ],
+      "executionSets": [
+        {
+          "name": "My Execution Set",
+          "exeRateMultiplier": 1,
+          "logicChains": [
+            {
+              "name": "my logic chain",
+              "id": 1,
+              "components": [
+                {
+                  "name": "Byte Demux #1",
+                  "typeName": "Fxt::Component::Digital::ByteDemux",
+                  "inputs": [
+                    {
+                      "typeName": "Fxt::Point::Uint8",
+                      "idRef": 6,
+                      "idRefName": "InputByte",
+                      "type": "918cff9e-8007-4666-99ac-384b9624329c"
+                    }
+                  ],
+                  "outputs": [
+                    {
+                      "bit": 0,
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": 12,
+                      "idRefName": "user: bit0",
+                      "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                    }
+                  ],
+                  "type": "8c55aa52-3bc8-4b8a-ad73-c434a0bbd4b4"
+                },
+                {
+                  "name": "AND Gate#1",
+                  "typeName": "Fxt::Component::Digital::And16Gate",
+                  "inputs": [
+                    {
+                      "name": "Signal#1",
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": 0,
+                      "idRefName": "GPIO9",
+                      "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                    },
+                    {
+                      "name": "Signal#2",
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": 12,
+                      "idRefName": "user: bit0",
+                      "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                    }
+                  ],
+                  "outputs": [
+                    {
+                      "name": "out",
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": 3,
+                      "idRefName": "GPIO25/LED",
+                      "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                    }
+                  ],
+                  "type": "e62e395c-d27a-4821-bba9-aa1e6de42a05"
+                },
+                {
+                  "name": "Byte Mux #1",
+                  "typeName": "Fxt::Component::Digital::ByteMux",
+                  "inputs": [
+                    {
+                      "bit": 0,
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": 3,
+                      "idRefName": "GPIO25/LED",
+                      "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                    }
+                  ],
+                  "outputs": [
+                    {
+                      "typeName": "Fxt::Point::Uint8",
+                      "idRef": 9,
+                      "idRefName": "OutputByte",
+                      "type": "918cff9e-8007-4666-99ac-384b9624329c"
+                    }
+                  ],
+                  "type": "d60f2daf-9709-42d6-ba92-b76f641eb930"
+                }
+              ],
+              "connectionPts": [
+                {
+                  "id": 12,
+                  "typeName": "Fxt::Point::Bool",
+                  "name": "user: bit0",
+                  "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "type": "35599c37-c732-424e-84d3-ebbcf0d2f9ce"
+}

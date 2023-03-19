@@ -148,7 +148,7 @@ protected:
     /// Array index for the next Card add operation
     uint16_t            m_nextCardIdx;
 
-    /// My started state
+    /// My LOGICAL started state
     bool                m_started;
 };
 

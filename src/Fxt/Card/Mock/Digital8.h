@@ -124,6 +124,12 @@ public:
     void stop( Cpl::Itc::PostApi& chassisMbox ) noexcept;
 
     /// See Fxt::Card::Api
+    bool scanInputs( uint64_t currentElapsedTimeUsec ) noexcept;
+
+    /// See Fxt::Card::Api
+    bool flushOutputs( uint64_t currentElapsedTimeUsec ) noexcept;
+    
+    /// See Fxt::Card::Api
     const char* getTypeGuid() const noexcept;
 
     /// See Fxt::Card::Api
