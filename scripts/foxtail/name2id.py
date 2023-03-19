@@ -194,14 +194,12 @@ def generate_define_list( filename ):
 #------------------------------------------------------------------------------
 # Creates numeric values for all points 
 def scanPoints( json_dict ):
-    print(json_dict)
     if ( not "chassis" in json_dict ):
         sys.exit( "ERROR: Input file is missing 'chassis' object" )
     chassis_list = json_dict["chassis"]
     
     # Process each chassis
     for c in chassis_list:
-        print(c)
         utils.print_verbose( f"Processing Chassis: {c['name']}" )
 
         # Process shared points - if there are any  

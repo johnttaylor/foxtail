@@ -27,10 +27,10 @@ Scanner::Scanner( Cpl::Memory::ContiguousAllocator&   generalAllocator,
     : m_inputPeriod( *this )
     , m_outputPeriod( *this )
     , m_cards( nullptr )
+    , m_chassisMboxPtr( nullptr )
     , m_error( Fxt::Type::Error::SUCCESS() )
     , m_srm( scanRateMultipler )
     , m_numCards( numCards )
-    , m_chassisMboxPtr( nullptr )
     , m_nextCardIdx( 0 )
     , m_started( false )
 {

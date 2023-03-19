@@ -22,6 +22,11 @@
 #include "Driver/RHTemp/Api.h"
 #include "Cpl/System/Mutex.h"
 
+/// Minimum driver-background sampling time in milliseconds
+#ifndef OPTION_FXT_CARD_SENSOR_I2C_MIN_DRIVER_SAMPLE_TIME_MS
+#define OPTION_FXT_CARD_SENSOR_I2C_MIN_DRIVER_SAMPLE_TIME_MS        100
+#endif
+
 ///
 namespace Fxt {
 ///
@@ -60,7 +65,7 @@ namespace I2C {
       "type": "9fd17cc7-88c1-46bc-8a8c-6f76ab4e6eee",       // Identifies the card type.  Value comes from the Supported/Available-card-list
       "typename": "Fxt::Card::Sensor::I2C::RHTemperature",  // *Human readable type name
       "slot": <sensor slot>,                                // Physical identifier. The containing node dedicates what are the valid values for 'slot' (i.e. slot number maps to a specific driver instance)
-      "driverInterval": <num_msec>,                         // Sampling rate/delay in milliseconds for the DRIVER level scanning.  The value must be >= 20ms
+      "driverInterval": <num_msec>,                         // Sampling rate/delay in milliseconds for the DRIVER level scanning.  The value must be >= 100ms
       "points": {
         "inputs": [                                         // Inputs.
           {

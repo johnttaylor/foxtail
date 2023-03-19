@@ -1,5 +1,7 @@
 # Driver(s)
 src/Driver/DIO/RP2040 < InOut30.cpp
+src/Driver/RHTemp/HUT31D
+src/Driver/I2C/RP2040
 
 # UART
 src/Cpl/Io/Serial/RP2040/Uart
@@ -34,6 +36,7 @@ xsrc/pico-sdk/src/rp2_common/hardware_sync
 xsrc/pico-sdk/src/rp2_common/hardware_irq
 xsrc/pico-sdk/src/rp2_common/hardware_timer
 xsrc/pico-sdk/src/rp2_common/hardware_uart
+xsrc/pico-sdk/src/rp2_common/hardware_i2c
 xsrc/pico-sdk/src/rp2_common/hardware_divider
 xsrc/pico-sdk/src/rp2_common/pico_runtime
 xsrc/pico-sdk/src/rp2_common/hardware_clocks

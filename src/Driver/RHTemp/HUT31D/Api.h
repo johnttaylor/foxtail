@@ -13,8 +13,15 @@
 /** @file */
 
 
+#include "colony_config.h"
 #include "Driver/RHTemp/Api.h"
 #include "Driver/I2C/Master.h"
+
+
+/// Number of read attempts when reading conversion results
+#ifndef OPTION_DRIVER_RHTEMP_HUT31D_READ_RESULT_ATTEMPTS
+#define OPTION_DRIVER_RHTEMP_HUT31D_READ_RESULT_ATTEMPTS        2   // Initial read, plus one retry
+#endif
 
 ///
 namespace Driver {

@@ -8,7 +8,7 @@
       "scanners": [
         {
           "name": "My Scanner (scan at twice the driver sampling rate)",
-          "scanRateMultiplier": 40,
+          "scanRateMultiplier": 200,
           "cards": [
             {
               "name": "My Analog Out card (for displaying RH/Temp values)",
@@ -50,7 +50,7 @@
               "name": "My RH/Temp card",
               "typeName": "Fxt::Card::Sensor::I2C::RHTemperature",
               "slot": 255,
-              "driverInterval": 20,
+              "driverInterval": 100,
               "points": {
                 "inputs": [
                   {
@@ -81,8 +81,8 @@
       ],
       "executionSets": [
         {
-          "name": "My Execution Set (same rate as my IO scanner)",
-          "exeRateMultiplier": 40,
+          "name": "My Execution Set (Twice the scanner scanner)",
+          "exeRateMultiplier": 400,
           "logicChains": [
             {
               "name": "control the RH/Temp sensor's heater",

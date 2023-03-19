@@ -21,7 +21,8 @@ using namespace Driver::RHTemp::HUT31D;
 
 #define SECT_ "Driver::RHTemp::HUT31D"
 
-#define MAX_CONVERSION_TIME 22
+#define MAX_CONVERSION_TIME 50      // Approximate double the time in the datasheet
+#define WAIT_ON_RESET_MS    10      // Approximate double the time in the datasheet
 
 static uint8_t htu31dCrc( uint16_t value );
 static float convertRH( uint16_t rawRH );
@@ -40,25 +41,37 @@ bool Api::start() noexcept
     // Skip processing if already started
     if ( !m_started )
     {
-        // Check if the IC is responsive/connected
-        uint8_t data[2] ={ 0, };
-        auto result = m_i2cDriver.registerRead<uint8_t[2]>( m_devAddress, 0x08, data );
-        if ( result == Driver::I2C::Master::eSUCCESS )
-        {
-            // Check if there are any errors (The LSb is heater on/off state)
-            if ( htu31dCrc( data[0] ) == data[1] && (data[0] & 0xFE) == 0x00 )
-            {
-                m_sampleState = eNOT_STARTED;
-                m_started     = true;
-                return true;
-            }
-            CPL_SYSTEM_TRACE_MSG( SECT_, ("HUT31D Sensor has one more errors: %02X %02X", data[0], data[1]) );
-        }
-        else
-        {
-            CPL_SYSTEM_TRACE_MSG( SECT_, ("HUT31D Sensor is not responding (i2c addr=%02X). result=%d", m_devAddress, result) );
-        }
+        // Reset the device
+        uint8_t cmd = 0x1E;
+        m_i2cDriver.writeToDevice( m_devAddress, sizeof( cmd ), &cmd );
+        Cpl::System::Api::sleep( WAIT_ON_RESET_MS );
 
+        // Check if the IC is responsive/connected
+        // On my boards - the I2C transactions periodically fail -->so build in retry attempts
+        for ( uint8_t readAttempts = OPTION_DRIVER_RHTEMP_HUT31D_READ_RESULT_ATTEMPTS; readAttempts; readAttempts-- )
+        {
+
+            uint8_t data[2] ={ 0, };
+            auto result = m_i2cDriver.registerRead<uint8_t[2]>( m_devAddress, 0x08, data );
+            if ( result == Driver::I2C::Master::eSUCCESS )
+            {
+                // Check if there are any errors (The LSb is heater on/off state)
+                if ( htu31dCrc( data[0] ) == data[1] && (data[0] & 0xFE) == 0x00 )
+                {
+                    m_sampleState = eNOT_STARTED;
+                    m_started     = true;
+                    return true;
+                }
+                else if ( readAttempts == 1 )
+                {
+                    CPL_SYSTEM_TRACE_MSG( SECT_, ("HUT31D Sensor has one more errors: %02X %02X", data[0], data[1]) );
+                }
+            }
+            else if ( readAttempts == 1 )
+            {
+                CPL_SYSTEM_TRACE_MSG( SECT_, ("HUT31D Sensor is not responding (i2c addr=%02X). result=%d", m_devAddress, result) );
+            }
+        }
     }
 
     return false;
@@ -100,44 +113,50 @@ Driver::I2C::Master::Result_T Api::startConversion()
 
 Driver::I2C::Master::Result_T Api::readConversionResult( float& rhOut, float& tempCOut )
 {
-    uint8_t readCmd = 0;
-    Driver::I2C::Master::Result_T result = m_i2cDriver.writeToDevice( m_devAddress, sizeof( readCmd ), &readCmd, true );
-    if ( result == Driver::I2C::Master::eSUCCESS )
+    Driver::I2C::Master::Result_T result = Driver::I2C::Master::Result_T::eERROR;
+
+    // On my boards - the I2C transactions periodically fail -->so build in retry attempts
+    for ( uint8_t readAttempts = OPTION_DRIVER_RHTEMP_HUT31D_READ_RESULT_ATTEMPTS; readAttempts; readAttempts-- )
     {
-        uint8_t data[6];
-        result = m_i2cDriver.readFromDevice( m_devAddress, sizeof( data ), &data );
+        uint8_t readCmd  = 0;
+        result = m_i2cDriver.writeToDevice( m_devAddress, sizeof( readCmd ), &readCmd, true );
         if ( result == Driver::I2C::Master::eSUCCESS )
         {
-            uint16_t rawTemp = ((uint16_t) (data[0]) << 8) | data[1];
-            uint8_t  crcTemp = htu31dCrc( rawTemp );
-            if ( crcTemp == data[2] )
+            uint8_t data[6];
+            result = m_i2cDriver.readFromDevice( m_devAddress, sizeof( data ), &data );
+            if ( result == Driver::I2C::Master::eSUCCESS )
             {
-                uint16_t rawRh = ((uint16_t) (data[3]) << 8) | data[4];
-                uint8_t  crcRh = htu31dCrc( rawRh );
-                if ( crcRh == data[5] )
+                uint16_t rawTemp = ((uint16_t) (data[0]) << 8) | data[1];
+                uint8_t  crcTemp = htu31dCrc( rawTemp );
+                if ( crcTemp == data[2] )
                 {
-                    rhOut    = convertRH( rawRh );
-                    tempCOut = convertTemp( rawTemp );
-                    return Driver::I2C::Master::eSUCCESS;
+                    uint16_t rawRh = ((uint16_t) (data[3]) << 8) | data[4];
+                    uint8_t  crcRh = htu31dCrc( rawRh );
+                    if ( crcRh == data[5] )
+                    {
+                        rhOut    = convertRH( rawRh );
+                        tempCOut = convertTemp( rawTemp );
+                        return Driver::I2C::Master::eSUCCESS;
+                    }
+                    else if ( readAttempts == 1 )
+                    {
+                        CPL_SYSTEM_TRACE_MSG( SECT_, ("RH CRC failed (calc=%02X, expected%02X", crcRh, data[5]) );
+                    }
                 }
-                else
+                else if ( readAttempts == 1 )
                 {
-                    CPL_SYSTEM_TRACE_MSG( SECT_, ("RH CRC failed (calc=%02X, expected%02X", crcRh, data[5]) );
+                    CPL_SYSTEM_TRACE_MSG( SECT_, ("Temperature CRC failed (calc=%02X, expected%02X", crcTemp, data[2]) );
                 }
             }
-            else
+            else if ( readAttempts == 1 )
             {
-                CPL_SYSTEM_TRACE_MSG( SECT_, ("Temperature CRC failed (calc=%02X, expected%02X", crcTemp, data[2]) );
+                CPL_SYSTEM_TRACE_MSG( SECT_, ("Failed to Read Conversion result. result=%d (timeMark=%lu)", result, m_timeMarker) );
             }
         }
-        else
+        else if ( readAttempts == 1 )
         {
-            CPL_SYSTEM_TRACE_MSG( SECT_, ("Failed to Read Conversion result. result=%d", result) );
+            CPL_SYSTEM_TRACE_MSG( SECT_, ("Failed to write READ-RH-TEMP CMD (%02X). result=%d (timeMark=%lu)", readCmd, result, m_timeMarker) );
         }
-    }
-    else
-    {
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("Failed to write READ-RH-TEMP CMD (%02X). result=%d", readCmd, result) );
     }
 
     return result;
@@ -202,6 +221,7 @@ bool Api::setHeaterState( bool enabled ) noexcept
     Driver::I2C::Master::Result_T result = m_i2cDriver.writeToDevice( m_devAddress, sizeof( heaterCmd ), &heaterCmd );
     if ( result == Driver::I2C::Master::eSUCCESS )
     {
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("Set the heater state (%d)", enabled ) );
         return true;
     }
 

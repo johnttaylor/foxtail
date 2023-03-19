@@ -71,7 +71,6 @@ protected:
             run = TICKSOURCE::waitAndProcessEvents();
             if ( run )
             {
-                processMessages();
                 uint64_t now = Fxt::System::ElapsedTime::now();
                 m_inputScheduler.executeScheduler( now );
                 m_executionScheduler.executeScheduler( now );

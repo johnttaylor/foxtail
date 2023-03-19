@@ -5,7 +5,6 @@
 #include "Cpl/TShell/Cmd/Threads.h"
 #include "Cpl/System/RP2040/Console.h"
 #include "Driver/I2C/RP2040/Master.h"
-#include "Driver/RHTemp/HUT31D/Api.h"
 
 // External references
 extern void test( Cpl::Io::Input& infd, Cpl::Io::Output& outfd );

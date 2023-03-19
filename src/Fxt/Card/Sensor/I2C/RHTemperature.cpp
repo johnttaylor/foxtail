@@ -14,6 +14,9 @@
 #include "RHTemperature.h"
 #include "RHTemperatureDriver.h"
 #include "Cpl/System/Assert.h"
+#include "Cpl/System/Trace.h"
+
+#define SECT_ "Fxt::Card::Sensor::I2C::RHTemperature"
 
 ///
 using namespace Fxt::Card::Sensor::I2C;
@@ -25,8 +28,6 @@ using namespace Fxt::Card::Sensor::I2C;
 #define OUTPUT_POINT_OFFSET         (MAX_INPUT_CHANNELS)
 
 #define TOTAL_MAX_CHANNELS          (MAX_INPUT_CHANNELS+MAX_OUTPUT_CHANNELS)
-
-#define MIN_SAMPLING_DELAY_MS       20
 
 #define INVALID_INDEX               MAX_INPUT_CHANNELS
 
@@ -80,7 +81,7 @@ void RHTemperature::parseConfiguration( Cpl::Memory::ContiguousAllocator&  gener
 {
     // Parse background sampling time
     m_delayMs = cardObject["driverInterval"] | 0;
-    if ( m_delayMs < MIN_SAMPLING_DELAY_MS )
+    if ( m_delayMs < OPTION_FXT_CARD_SENSOR_I2C_MIN_DRIVER_SAMPLE_TIME_MS )
     {
         m_error = Fxt::Card::fullErr( m_delayMs == 0 ? Fxt::Card::Err_T::MISSING_REQUIRE_FIELD : Fxt::Card::Err_T::INVALID_FIELD );
         m_error.logIt( getTypeName() );
@@ -403,9 +404,11 @@ void RHTemperature::expired() noexcept
     // Update output
     if ( m_forceHeaterUpdate || heaterVal != m_lastHeaterEnable )
     {
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("Updating heater enabled: %d", heaterVal) );
         m_lastHeaterEnable  = heaterVal;
         m_forceHeaterUpdate = false;
         m_driver->setHeaterState( heaterVal );
+        
     }
 
     // Start the first sample
@@ -458,7 +461,7 @@ bool RHTemperature::scanInputs( uint64_t currentElapsedTimeUsec ) noexcept
         m_lock.unlock();
 
         // Copy the background driver samples to the Input IO Registers
-        for ( unsigned i=0, pinIdx=0; i < MAX_INPUT_CHANNELS; i++ )
+        for ( unsigned i=0; i < MAX_INPUT_CHANNELS; i++ )
         {
             if ( m_ioRegisterPoints[i + INPUT_POINT_OFFSET] != nullptr )
             {
