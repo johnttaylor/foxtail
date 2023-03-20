@@ -298,7 +298,7 @@ Cpl::TShell::Command::Result_T Node::execute( Cpl::TShell::Context_& context, ch
                 if ( uut == nullptr )
                 {
                     // Clean up after the failure
-                    m_pointDb.clearPoints();    
+                    m_pointDb.cleanupPointsAfterNodeCreateFailure();
 
                     outtext.format( "ERROR: Failed to create Node: %s", nodeError.toText( smallBuf ) );
                     context.writeFrame( outtext );

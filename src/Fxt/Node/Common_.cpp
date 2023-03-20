@@ -231,6 +231,10 @@ Fxt::Type::Error Common_::getErrorCode() const noexcept
 
 void Common_::destroyChassisThread( Cpl::System::Thread & chassisThreadToDelete ) noexcept
 {
+    // Attempt to stop the Chassis threads before forcibly destroying it
+    chassisThreadToDelete.getRunnable().pleaseStop();
+    Cpl::System::Api::sleep( 250 );
+
     Cpl::System::Thread::destroy( chassisThreadToDelete );
 }
 

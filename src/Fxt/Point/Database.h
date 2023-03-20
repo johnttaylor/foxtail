@@ -79,6 +79,9 @@ public:
     /// See Fxt::Point::DatabaseApi
     void clearPoints() noexcept;
 
+    /// See Fxt::Point::DatabaseApi
+    void cleanupPointsAfterNodeCreateFailure() noexcept;
+
 public:
     /** This method has 'PACKAGE Scope' in that is should only be called by
         other classes in the Cpl::Point namespace.  It is ONLY public to avoid
@@ -200,6 +203,19 @@ void Database<N>::clearPoints() noexcept
     }
 }
 
+template <int N>
+void Database<N>::cleanupPointsAfterNodeCreateFailure() noexcept
+{
+    // Walk all possible points
+    for ( int i=0; i < N; i++ )
+    {
+        // Because the state of the Node/Point is unknown -->skip calling the point destructor
+        if ( m_points[i] != nullptr )
+        {
+            m_points[i] = nullptr;
+        }
+    }
+}
 
 template <int N>
 void Database<N>::globalLock_() noexcept

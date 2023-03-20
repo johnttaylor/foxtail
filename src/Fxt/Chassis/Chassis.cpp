@@ -57,6 +57,7 @@ Chassis::Chassis( ServerApi&                         chassisServer,
     {
         // Zero the array so we can tell if there are scanners
         memset( m_scanners, 0, sizeof( ScannerApi* ) * numScanners );
+        memset( m_usedSlots, 0, sizeof( m_usedSlots ) );    
     }
 
     // Allocate my array of ExecutionSet pointers
@@ -369,7 +370,24 @@ Fxt::Type::Error Chassis::add( ScannerApi& scannerToAdd ) noexcept
         }
         else
         {
+            // Cache the scanner
             m_scanners[m_nextScannerIdx] = &scannerToAdd;
+
+            // Check for duplicate Slot numbers
+            for ( uint8_t idx=0; idx < scannerToAdd.getNumCards(); idx++ )
+            {
+                Fxt::Card::Api* card = scannerToAdd.getCard( idx );
+
+                if ( m_usedSlots[card->getSlotNumber()] )
+                {
+                    m_error = fullErr( Err_T::DUPLICATE_SLOT_ASSIGNMENTS );
+                    m_error.logIt( card->getTypeName() );
+                    return m_error;
+                }
+                m_usedSlots[card->getSlotNumber()] = true;
+            }
+            
+            // Advance internal index for 'next' scanner
             m_nextScannerIdx++;
         }
     }

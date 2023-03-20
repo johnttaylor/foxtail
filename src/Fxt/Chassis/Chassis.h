@@ -129,6 +129,9 @@ protected:
 
     /// My started state
     bool                                m_started;
+
+    /// Array used to detected duplicate Slot number
+    bool                                m_usedSlots[256];
 };
 
 

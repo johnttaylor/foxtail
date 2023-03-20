@@ -59,6 +59,11 @@ public:
      */
     virtual void clearPoints() noexcept = 0;
 
+    /** This method is similar to clearPoints() - except it is used to clean-up
+        AFTER a failure in instantiation the Node's configuration.
+     */
+    virtual void cleanupPointsAfterNodeCreateFailure() noexcept = 0;
+
 public:
     /** This method converts the Point's data to JSON string and
         copies the resultant string into 'dst'.  If the Point's data

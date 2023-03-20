@@ -126,6 +126,7 @@ Api* FactoryCommon_::createFromJSON( JsonVariant&             nodeJsonObject,
         {
             nodeErrorCode = fullErr( Err_T::FAILED_CREATE_CHASSIS );
             nodeErrorCode.logIt();
+            node->destroyChassisThread( *chassisThread );   // Destroy the thread before deleting the node
             destroy( *node );
             return nullptr;
         }
@@ -133,12 +134,14 @@ Api* FactoryCommon_::createFromJSON( JsonVariant&             nodeJsonObject,
         {
             nodeErrorCode = fullErr( Err_T::CHASSIS_CREATE_ERROR );
             nodeErrorCode.logIt();
+            node->destroyChassisThread( *chassisThread );   // Destroy the thread before deleting the node
             destroy( *node );
             return nullptr;
         }
         nodeErrorCode = node->add( *chassisPtr, *chassisThread );
         if ( nodeErrorCode != Fxt::Type::Error::SUCCESS() )
         {
+            node->destroyChassisThread( *chassisThread );   // Destroy the thread before deleting the node
             destroy( *node );
             return nullptr;
         }
