@@ -51,7 +51,7 @@ namespace Mock {
       "name": "My AnalogIn8 Card",                          // *Text label for the card
       "id": 0,                                              // *ID assigned to the card
       "type": "1968f533-e323-4ae4-8493-9a572f3bd195",       // Identifies the card type.  Value comes from the Supported/Available-card-list
-      "typename": "Fxt::Card::Mock::AnalogIn8",             // *Human readable type name
+      "typeName": "Fxt::Card::Mock::AnalogIn8",             // *Human readable type name
       "slot": 0,                                            // Physical identifier, e.g. its the card position in the Node's physical chassis
       "points": {
         "inputs": [                                         // Inputs. The card supports 8 input values. Each input is exposed a Float point
@@ -152,7 +152,10 @@ protected:
 
 protected:
     /// Mutex to provide thread safety for the application driving/reading the mocked IO
-    Cpl::System::Mutex m_lock;
+    Cpl::System::Mutex  m_lock;
+
+    /// Number of input channels
+    uint16_t            m_numInputs;
 };
 
 

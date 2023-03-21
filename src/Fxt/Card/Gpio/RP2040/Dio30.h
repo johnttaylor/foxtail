@@ -43,7 +43,7 @@ namespace RP2040 {
       "name": "My Digital Card",                            // *Text label for the card
       "id": 0,                                              // *ID assigned to the card
       "type": "c896faf0-6ea2-47d6-a1a6-7e4074c32a43",       // Identifies the card type.  Value comes from the Supported/Available-card-list
-      "typename": "Fxt::Card::Gpio::RP2040::Dio30",         // *Human readable type name
+      "typeName": "Fxt::Card::Gpio::RP2040::Dio30",         // *Human readable type name
       "slot": 0,                                            // Physical identifier, e.g. its the card position in the Node's physical chassis
       "points": {
         "inputs": [                                         // OPTIONAL: Inputs. The card supports 30 input points that are exposed as individual Bool points
@@ -51,7 +51,7 @@ namespace RP2040 {
             "channel": 10                                   // Selects GPIO signal on the MCU. where n = GPIO signal + 1. Range is: 1 - 30. GPIO9 = 9+1
             "id": 0,                                        // ID assigned to the Virtual Point that represents the input value
             "ioRegId": 0,                                   // The ID of the Point's IO register.
-            "name": "My input name"                         // Text label for the input signal
+            "name": "My input name"                         // *Text label for the input signal
             "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0", // REQUIRED Type for the input signal
             "typeName": "Fxt::Point::Bool",                 // *OPTIONAL: Human readable Type name for the input signal
             "pulls: "none|up|down",                         // OPTIONAL: Internal Pull up/down resistor configuration for the channel/pin.  If not specified - the default is "none"
@@ -68,7 +68,7 @@ namespace RP2040 {
             "channel": 26                                   // Selects GPIO signal on the MCU. where n = GPIO signal + 1. Range is: 1 - 30. GPIO25/LED = 25+1
             "id": 0,                                        // ID assigned to the Virtual Point that represents the output value
             "ioRegId": 0,                                   // The ID of the Point's IO register.
-            "name": "My output name"                        // Text label for the output signal
+            "name": "My output name"                        // *Text label for the output signal
             "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0", // REQUIRED Type for the output signal
             "typeName": "Fxt::Point::Bool",                 // *OPTIONAL: Human readable Type name for the output signal
             "pulls: "none|up|down",                         // OPTIONAL: Internal Pull up/down resistor configuration for the channel/pin.  If not specified - the default is "none"

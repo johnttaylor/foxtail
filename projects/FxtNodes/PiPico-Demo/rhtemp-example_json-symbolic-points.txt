@@ -1,0 +1,164 @@
+{
+  "name": "PiPicoDemo Node: RH/Temp sensor example",
+  "typeName": "Fxt::Node::SBC::PiPicoDemo",
+  "chassis": [
+    {
+      "name": "My Chassis",
+      "fer": 1000,
+      "scanners": [
+        {
+          "name": "My Scanner (scan at twice the driver sampling rate)",
+          "scanRateMultiplier": 200,
+          "cards": [
+            {
+              "name": "My Analog Out card (for displaying RH/Temp values)",
+              "typeName": "Fxt::Card::Mock::AnalogOut8",
+              "slot": 1,
+              "points": {
+                "outputs": [
+                  {
+                    "channel": 1,
+                    "id": "RH Out",
+                    "typeName": "Fxt::Point::Float"
+                  },
+                  {
+                    "channel": 2,
+                    "id": "Temperature 'C Out",
+                    "typeName": "Fxt::Point::Float"
+                  },
+                  {
+                    "channel": 3,
+                    "id": "Temperature 'F Out",
+                    "typeName": "Fxt::Point::Float"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "My Digital8 Card (for driving the Heater enable)",
+              "typeName": "Fxt::Card::Mock::Digital8",
+              "slot": 2,
+              "points": {
+                "inputs": [
+                  {
+                    "channel": 1,
+                    "id": "Heater Enable Input",
+                    "typeName": "Fxt::Point::Uint8",
+                    "initial": {
+                      "val": 0
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "name": "My RH/Temp card",
+              "typeName": "Fxt::Card::Sensor::I2C::RHTemperature",
+              "slot": 255,
+              "driverInterval": 100,
+              "points": {
+                "inputs": [
+                  {
+                    "channel": 1,
+                    "id": "RH Input Value",
+                    "typeName": "Fxt::Point::Float"
+                  },
+                  {
+                    "channel": 2,
+                    "id": "Temperature 'C Input",
+                    "typeName": "Fxt::Point::Float"
+                  }
+                ],
+                "outputs": [
+                  {
+                    "channel": 1,
+                    "id": "Heater Enable",
+                    "typeName": "Fxt::Point::Bool",
+                    "initial": {
+                      "val": false
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "executionSets": [
+        {
+          "name": "My Execution Set (Twice the scanner scanner)",
+          "exeRateMultiplier": 400,
+          "logicChains": [
+            {
+              "name": "control the RH/Temp sensor's heater",
+              "id": 1,
+              "components": [
+                {
+                  "name": "Byte Demux #1",
+                  "typeName": "Fxt::Component::Digital::ByteDemux",
+                  "inputs": [
+                    {
+                      "typeName": "Fxt::Point::Uint8",
+                      "idRef": "Heater Enable Input"
+                    }
+                  ],
+                  "outputs": [
+                    {
+                      "bit": 0,
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": "Heater Enable"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Pass-through the RH/Sensor value to the mocked AOUT card",
+              "id": 1,
+              "components": [
+                {
+                  "name": "scaler",
+                  "typeName": "Fxt::Component::Analog::SimpleScaler8",
+                  "inputs": [
+                    {
+                      "m": 1,
+                      "b": 0,
+                      "typeName": "Fxt::Point::Float",
+                      "idRef": "RH Input Value"
+                    },
+                    {
+                      "m": 1,
+                      "b": 0,
+                      "typeName": "Fxt::Point::Float",
+                      "idRef": "Temperature 'C Input"
+                    },
+					{
+                      "m": 1.8,
+                      "b": 32,
+                      "typeName": "Fxt::Point::Float",
+                      "idRef": "Temperature 'C Input"
+                    }
+                  ],
+                  "outputs": [
+                    {
+                      "typeName": "Fxt::Point::Float",
+                      "idRef": "RH Out"
+                    },
+                    {
+                      "typeName": "Fxt::Point::Float",
+                      "idRef": "Temperature 'C Out"
+                    },
+                    {
+                      "typeName": "Fxt::Point::Float",
+                      "idRef": "Temperature 'F Out"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -127,12 +127,16 @@ Cpl::TShell::Command::Result_T Node::execute( Cpl::TShell::Context_& context, ch
     {
         if ( node == nullptr )
         {
+            outtext.format( "Node Factory Type:  %s", m_nodeFactory.getTypeName() );
+            io &= context.writeFrame( outtext );
             io &= context.writeFrame( "No Node is current defined." );
             return io ? Command::eSUCCESS : Command::eERROR_IO;
         }
 
         // Node exists
         uint16_t numChassis = node->getNumChassis();
+        outtext.format( "Node Type:      %s", node->getTypeName() );
+        io &= context.writeFrame( outtext );
         outtext.format( "Node state:     %s", node->getErrorCode().toText( smallBuf ) );
         io &= context.writeFrame( outtext );
         outtext.format( "Type:           %s", node->getTypeName() );

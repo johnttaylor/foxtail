@@ -50,7 +50,7 @@ namespace Mock {
       "name": "My Digital Card",                            // *Text label for the card
       "id": 0,                                              // *ID assigned to the card
       "type": "59d33888-62c7-45b2-a4d4-9dbc55914ed3",       // Identifies the card type.  Value comes from the Supported/Available-card-list
-      "typename": "Fxt::Card::Mock::Digital8",              // *Human readable type name
+      "typeName": "Fxt::Card::Mock::Digital8",              // *Human readable type name
       "slot": 0,                                            // Physical identifier, e.g. its the card position in the Node's physical chassis
       "points": {
         "inputs": [                                         // OPTIONA: Inputs. The card supports 8 input points that is exposed a single Byte
@@ -188,7 +188,13 @@ protected:
 
 protected:
     /// Mutex to provide thread safety for the application driving/reading the mocked IO
-    Cpl::System::Mutex                  m_lock;
+    Cpl::System::Mutex  m_lock;
+
+    /// Number of input channels
+    uint16_t            m_numInputs;
+
+    /// Number of output channels
+    uint16_t            m_numOutputs;
 
 };
 

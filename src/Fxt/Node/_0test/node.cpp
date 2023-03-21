@@ -69,7 +69,7 @@ static const char* NODE_DEFINITION = R"literalString(
             {
               "name": "bob",
               "type": "1968f533-e323-4ae4-8493-9a572f3bd195",
-              "typename": "Fxt::Card::HW::Mock::AnalogIn8",
+              "typeName": "Fxt::Card::HW::Mock::AnalogIn8",
               "slot": 22,
               "points": {
                 "inputs": [
@@ -118,7 +118,7 @@ static const char* NODE_DEFINITION = R"literalString(
             {
               "name": "My Digital8 Card",
               "type": "59d33888-62c7-45b2-a4d4-9dbc55914ed3",
-              "typename": "Fxt::Card::HW::Mock::Digital8",
+              "typeName": "Fxt::Card::HW::Mock::Digital8",
               "slot": 0,
               "points": {
                 "inputs": [

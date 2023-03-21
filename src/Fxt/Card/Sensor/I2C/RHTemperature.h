@@ -63,7 +63,7 @@ namespace I2C {
       "name": "My RH/Temperature Card",                     // *Text label for the card
       "id": 0,                                              // *ID assigned to the card
       "type": "9fd17cc7-88c1-46bc-8a8c-6f76ab4e6eee",       // Identifies the card type.  Value comes from the Supported/Available-card-list
-      "typename": "Fxt::Card::Sensor::I2C::RHTemperature",  // *Human readable type name
+      "typeName": "Fxt::Card::Sensor::I2C::RHTemperature",  // *Human readable type name
       "slot": <sensor slot>,                                // Physical identifier. The containing node dedicates what are the valid values for 'slot' (i.e. slot number maps to a specific driver instance)
       "driverInterval": <num_msec>,                         // Sampling rate/delay in milliseconds for the DRIVER level scanning.  The value must be >= 100ms
       "points": {

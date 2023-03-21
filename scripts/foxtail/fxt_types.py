@@ -10,6 +10,7 @@ _types_dict = {
     "Fxt::Component::Digital::ByteDemux": "8c55aa52-3bc8-4b8a-ad73-c434a0bbd4b4",
     "Fxt::Component::Digital::ByteMux": "d60f2daf-9709-42d6-ba92-b76f641eb930",
     "Fxt::Node::Mock::Kestrel": "d65ee614-dce4-43f0-af2c-830e3664ecaf",
+    "Fxt::Node::SBC::Automation2040W": "dce5cbcc-7d87-4e84-98b6-42b8188ab12f",
     "Fxt::Node::SBC::PiPicoDemo": "35599c37-c732-424e-84d3-ebbcf0d2f9ce",
     "Fxt::Point::Bool": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0",
     "Fxt::Point::Double": "05e542d9-2e54-4a32-9b64-a99084b2910b",

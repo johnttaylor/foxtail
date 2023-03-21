@@ -18,7 +18,11 @@
 ///
 using namespace Fxt::Card::Mock;
 
-#define MAX_CHANNELS        8 
+#define MAX_OUTPUT_CHANNELS         8 
+#define MAX_INPUT_CHANNELS          0
+
+#define STARTING_OUTPUT_CHANNEL_NUM 1
+#define ENDING_OUTPUT_CHANNEL_NUM   MAX_OUTPUT_CHANNELS
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -30,7 +34,7 @@ AnalogOut8::AnalogOut8( Cpl::Memory::ContiguousAllocator&  generalAllocator,
                         JsonVariant&                       cardObject,
                         Cpl::Dm::MailboxServer*            cardMboxNotUsed,
                         void*                              extraArgsNotUsed )
-    : Fxt::Card::Common_( MAX_CHANNELS, generalAllocator, cardObject )
+    : Fxt::Card::Common_( MAX_INPUT_CHANNELS, MAX_OUTPUT_CHANNELS, generalAllocator, cardObject )
 {
     if ( m_error == Fxt::Type::Error::SUCCESS() )
     {
@@ -55,16 +59,17 @@ void AnalogOut8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalA
         if ( !outputs.isNull() )
         {
             // Validate supported number of signals
-            size_t numOutputs = outputs.size();
-            if ( numOutputs > MAX_CHANNELS )
+            size_t nOutputs = outputs.size();
+            if ( nOutputs > MAX_OUTPUT_CHANNELS )
             {
                 m_error = fullErr( Err_T::TOO_MANY_OUTPUT_POINTS );
                 m_error.logIt( getTypeName() );
                 return;
             }
+            m_numOutputs = (uint16_t) nOutputs;
 
             // Create Virtual Points
-            for ( size_t idx=0; idx < numOutputs && m_error == Fxt::Type::Error::SUCCESS(); idx++ )
+            for ( size_t idx=0; idx < m_numOutputs; idx++ )
             {
                 uint16_t   channelNum_notUsed;
                 JsonObject channelObj = outputs[idx].as<JsonObject>();
@@ -74,8 +79,8 @@ void AnalogOut8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalA
                                        false,
                                        channelObj,
                                        m_error,
-                                       MAX_CHANNELS,
-                                       0,
+                                       STARTING_OUTPUT_CHANNEL_NUM,
+                                       ENDING_OUTPUT_CHANNEL_NUM,
                                        channelNum_notUsed,
                                        generalAllocator,
                                        haStatefulDataAllocator,     // All Output Virtual Points are part of the HA Data set
@@ -88,27 +93,30 @@ void AnalogOut8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalA
             }
 
             // Create IO Register Points
-            for ( size_t idx=0; idx < numOutputs && m_error == Fxt::Type::Error::SUCCESS(); idx++ )
+            for ( size_t idx=0; idx < m_numOutputs; idx++ )
             {
-                uint16_t   channelNum_notUsed;
+                uint16_t   channelNum;
                 JsonObject channelObj = outputs[idx].as<JsonObject>();
-                createPointForChannel( pointFactoryDb,
-                                       m_ioRegisterOutputs,
-                                       Fxt::Point::Float::GUID_STRING,
-                                       true,
-                                       channelObj,
-                                       m_error,
-                                       MAX_CHANNELS,
-                                       0,
-                                       channelNum_notUsed,
-                                       generalAllocator,
-                                       cardStatefulDataAllocator,
-                                       dbForPoints );
+                Fxt::Point::Api* pt = createPointForChannel( pointFactoryDb,
+                                                             m_ioRegisterOutputs,
+                                                             Fxt::Point::Float::GUID_STRING,
+                                                             true,
+                                                             channelObj,
+                                                             m_error,
+                                                             STARTING_OUTPUT_CHANNEL_NUM,
+                                                             ENDING_OUTPUT_CHANNEL_NUM,
+                                                             channelNum,
+                                                             generalAllocator,
+                                                             cardStatefulDataAllocator,
+                                                             dbForPoints );
 
                 if ( m_error != Fxt::Type::Error::SUCCESS() )
                 {
                     return;
                 }
+
+                // Cache the IO Register PT.  NOTE: The IO Register index is function of the channel number!
+                m_outputIoRegisterPoints[channelNum - 1] = pt;
             }
         }
     }
@@ -125,12 +133,9 @@ bool AnalogOut8::start( Cpl::Itc::PostApi& chassisMbox, uint64_t currentElapsedT
     if ( Common_::start( currentElapsedTimeUsec ) )
     {
         // Set the initial IO Register values
-        for ( unsigned i=0; i < MAX_CHANNELS; i++ )
+        for ( unsigned i=0; i < m_numOutputs; i++ )
         {
-            if ( m_ioRegisterPoints[i] != nullptr )
-            {
-                m_ioRegisterPoints[i]->updateFromSetter();
-            }
+            m_outputIoRegisterPoints[i]->updateFromSetter();
         }
 
         // If I get here -->everything worked            
@@ -178,13 +183,13 @@ bool AnalogOut8::getOutputs( uint8_t channelNumber, float& dstValue, bool& dstIs
     Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
 
     // Validate the range of channel number
-    if ( channelNumber > 0 && channelNumber <= MAX_CHANNELS )
+    if ( channelNumber >= STARTING_OUTPUT_CHANNEL_NUM && channelNumber <= ENDING_OUTPUT_CHANNEL_NUM )
     {
         // Was the channel specified in the JSON syntax?
-        if ( m_ioRegisterPoints[channelNumber - 1] != nullptr )
+        if ( m_outputIoRegisterPoints[channelNumber - 1] != nullptr )
         {
             // Update the IO Register
-            Fxt::Point::Float* pt = (Fxt::Point::Float*) m_ioRegisterPoints[channelNumber - 1];
+            Fxt::Point::Float* pt = (Fxt::Point::Float*) m_outputIoRegisterPoints[channelNumber - 1];
             dstIsValid = pt->read( dstValue );
             return true;
         }

@@ -1,5 +1,5 @@
-#ifndef Fxt_Card_Mock_Analog8Factory_h_
-#define Fxt_Card_Mock_Analog8Factory_h_
+#ifndef Fxt_Card_Composiste_RP2040_Factory_h_
+#define Fxt_Card_Composiste_RP2040_Factory_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -13,21 +13,24 @@
 /** @file */
 
 #include "Fxt/Card/FactoryCommon_.h"
-#include "Fxt/Card/Mock/AnalogIn8.h"
+#include "Fxt/Card/Composite/RP2040/Automation2040.h"
 
 ///
 namespace Fxt {
 ///
 namespace Card {
 ///
-namespace Mock {
+namespace Composite {
+///
+namespace RP2040 {
 
 
 /// Define factory type
-typedef Factory<AnalogIn8> AnalogIn8Factory;
+typedef Factory<Automation2040> Automation2040Factory;
 
 
-};      // end namespaces
-};
-};
+}       // end namespaces
+}
+}
+}
 #endif  // end header latch

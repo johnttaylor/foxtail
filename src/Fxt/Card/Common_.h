@@ -34,7 +34,8 @@ class Common_ : public Api
 {
 public:
     /// Constructor
-    Common_( uint16_t                           totalNumChannels,
+    Common_( uint16_t                           maxInputChannels,
+             uint16_t                           maxOutputChannels,
              Cpl::Memory::ContiguousAllocator&  generalAllocator,
              JsonVariant&                       cardObject );
 
@@ -74,8 +75,8 @@ protected:
                                             bool                               isIoRegPt,
                                             JsonObject&                        channelObject,
                                             Fxt::Type::Error&                  cardErrorCode,
-                                            uint16_t                           maxChannels,
-                                            uint16_t                           channelIndexOffset,
+                                            uint16_t                           minChannelNumber,
+                                            uint16_t                           maxChannelNumber,
                                             uint16_t&                          channelNum,
                                             Cpl::Memory::ContiguousAllocator&  generalAllocator,
                                             Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
@@ -94,8 +95,11 @@ protected:
     /// Bank for the Card's OUtput Virtual Points
     Fxt::Point::Bank                    m_virtualOutputs;
 
-    /// Array of IoRegister Point Pointers.  Ordered by Channel Index
-    Fxt::Point::Api**                   m_ioRegisterPoints;
+    /// Array of INPUT IoRegister Point Pointers.  
+    Fxt::Point::Api**                   m_inputIoRegisterPoints;
+
+    /// Array of OUTPUT IoRegister Point Pointers.  
+    Fxt::Point::Api**                   m_outputIoRegisterPoints;
 
     /// Error state. A value of 0 indicates NO error
     Fxt::Type::Error                    m_error;

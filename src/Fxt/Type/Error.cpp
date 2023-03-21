@@ -111,20 +111,21 @@ const char* Error::toText( Error errCode, Cpl::Text::String& buffer ) noexcept
     return buffer.getString();
 }
 
-void Error::logIt( const char* optionalErrMsg ) const noexcept
+void Error::logIt() const noexcept
 {
     Cpl::Text::FString<MAX_TEXT_LEN + 2 + 8 + 1> buf;
-    Fxt::Logging::logf( Fxt::Logging::ErrCodeMsg::ERRVALUE, "%s (%08lX). %s", toText(buf), errVal, optionalErrMsg? optionalErrMsg: "" );
+    Fxt::Logging::logf( Fxt::Logging::ErrCodeMsg::ERRVALUE, "%s (%08lX)", toText( buf ), errVal );
 }
 
-
-void Error::logItFormatted( const char* msgFormat, ... ) const noexcept
+void Error::logIt( const char* msgFormat, ... ) const noexcept
 {
     va_list ap;
     va_start( ap, msgFormat );
     Cpl::Text::FString<MAX_ERR_MSG> buf;
     buf.vformat( msgFormat, ap );
-    logIt( buf.getString() );
+
+    Fxt::Logging::logf( Fxt::Logging::ErrCodeMsg::ERRVALUE, "%s (%08lX). %s", toText( buf ), errVal, buf.getString() );
+
     va_end( ap );
 }
 

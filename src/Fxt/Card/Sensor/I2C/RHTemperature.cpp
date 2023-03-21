@@ -21,15 +21,16 @@
 ///
 using namespace Fxt::Card::Sensor::I2C;
 
-#define MAX_INPUT_CHANNELS          2
-#define INPUT_POINT_OFFSET          0
-
-#define MAX_OUTPUT_CHANNELS         1
-#define OUTPUT_POINT_OFFSET         (MAX_INPUT_CHANNELS)
-
-#define TOTAL_MAX_CHANNELS          (MAX_INPUT_CHANNELS+MAX_OUTPUT_CHANNELS)
 
 #define INVALID_INDEX               MAX_INPUT_CHANNELS
+
+#define MAX_INPUT_CHANNELS          2
+#define STARTING_INPUT_CHANNEL_NUM  1
+#define ENDING_INPUT_CHANNEL_NUM    MAX_INPUT_CHANNELS
+
+#define MAX_OUTPUT_CHANNELS         1
+#define STARTING_OUTPUT_CHANNEL_NUM 1
+#define ENDING_OUTPUT_CHANNEL_NUM   MAX_OUTPUT_CHANNELS
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -41,7 +42,7 @@ RHTemperature::RHTemperature( Cpl::Memory::ContiguousAllocator&  generalAllocato
                               JsonVariant&                       cardObject,
                               Cpl::Dm::MailboxServer*            cardMbox,
                               void*                              extraArgsNotUsed )
-    : Fxt::Card::Common_( TOTAL_MAX_CHANNELS, generalAllocator, cardObject )
+    : Fxt::Card::Common_( MAX_INPUT_CHANNELS, MAX_OUTPUT_CHANNELS, generalAllocator, cardObject )
     , StartStopAsync( *cardMbox )
     , Timer( *cardMbox )
     , m_driver( nullptr )
@@ -107,7 +108,7 @@ void RHTemperature::parseConfiguration( Cpl::Memory::ContiguousAllocator&  gener
             // Create Virtual Points
             for ( size_t idx=0; idx < numInputs; idx++ )
             {
-                uint16_t   channelNum;
+                uint16_t   channelNumNotUsed;
                 JsonObject channelObj = inputs[idx].as<JsonObject>();
                 createPointForChannel( pointFactoryDb,
                                        m_virtualInputs,
@@ -115,9 +116,9 @@ void RHTemperature::parseConfiguration( Cpl::Memory::ContiguousAllocator&  gener
                                        false,
                                        channelObj,
                                        m_error,
-                                       MAX_INPUT_CHANNELS,
-                                       0,
-                                       channelNum,
+                                       STARTING_INPUT_CHANNEL_NUM,
+                                       ENDING_INPUT_CHANNEL_NUM,
+                                       channelNumNotUsed,
                                        generalAllocator,
                                        cardStatefulDataAllocator,
                                        dbForPoints );
@@ -125,14 +126,6 @@ void RHTemperature::parseConfiguration( Cpl::Memory::ContiguousAllocator&  gener
                 // Stop processing if/when an error occurred
                 if ( m_error != Fxt::Type::Error::SUCCESS() )
                 {
-                    return;
-                }
-
-                // Validate Channel number
-                if ( channelNum > 2 )
-                {
-                    m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::BAD_CHANNEL_ASSIGNMENTS );
-                    m_error.logIt( getTypeName() );
                     return;
                 }
             }
@@ -148,18 +141,21 @@ void RHTemperature::parseConfiguration( Cpl::Memory::ContiguousAllocator&  gener
 
                 uint16_t   channelNum;
                 JsonObject channelObj = inputs[idx].as<JsonObject>();
-                createPointForChannel( pointFactoryDb,
-                                       m_ioRegisterInputs,
-                                       Fxt::Point::Float::GUID_STRING,
-                                       true,
-                                       channelObj,
-                                       m_error,
-                                       MAX_INPUT_CHANNELS,
-                                       INPUT_POINT_OFFSET,
-                                       channelNum,
-                                       generalAllocator,
-                                       cardStatefulDataAllocator,
-                                       dbForPoints );
+                Fxt::Point::Api* pt   = createPointForChannel( pointFactoryDb,
+                                                               m_ioRegisterInputs,
+                                                               Fxt::Point::Float::GUID_STRING,
+                                                               true,
+                                                               channelObj,
+                                                               m_error,
+                                                               STARTING_INPUT_CHANNEL_NUM,
+                                                               ENDING_INPUT_CHANNEL_NUM,
+                                                               channelNum,
+                                                               generalAllocator,
+                                                               cardStatefulDataAllocator,
+                                                               dbForPoints );
+
+                // Cache the IO Register PT. 
+                m_inputIoRegisterPoints[idx] = pt;
 
                 // Capture IO Point index for the RH Channel
                 if ( channelNum == 1 )
@@ -207,7 +203,7 @@ void RHTemperature::parseConfiguration( Cpl::Memory::ContiguousAllocator&  gener
             // Create Virtual Points
             for ( size_t idx=0; idx < numOutputs; idx++ )
             {
-                uint16_t   channelNum;
+                uint16_t   channelNumNotUsed;
                 JsonObject channelObj = outputs[idx].as<JsonObject>();
                 createPointForChannel( pointFactoryDb,
                                        m_virtualOutputs,
@@ -215,23 +211,15 @@ void RHTemperature::parseConfiguration( Cpl::Memory::ContiguousAllocator&  gener
                                        false,
                                        channelObj,
                                        m_error,
-                                       MAX_OUTPUT_CHANNELS,
-                                       OUTPUT_POINT_OFFSET,
-                                       channelNum,
+                                       STARTING_OUTPUT_CHANNEL_NUM,
+                                       ENDING_OUTPUT_CHANNEL_NUM,
+                                       channelNumNotUsed,
                                        generalAllocator,
                                        haStatefulDataAllocator,     // All Output Virtual Points are part of the HA Data set
                                        dbForPoints );
 
                 if ( m_error != Fxt::Type::Error::SUCCESS() )
                 {
-                    return;
-                }
-
-                // Validate Channel number
-                if ( channelNum > 1 )
-                {
-                    m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::BAD_CHANNEL_ASSIGNMENTS );
-                    m_error.logIt( getTypeName() );
                     return;
                 }
             }
@@ -241,23 +229,26 @@ void RHTemperature::parseConfiguration( Cpl::Memory::ContiguousAllocator&  gener
             {
                 uint16_t   channelNum_notUsed;
                 JsonObject channelObj = outputs[idx].as<JsonObject>();
-                createPointForChannel( pointFactoryDb,
-                                       m_ioRegisterOutputs,
-                                       Fxt::Point::Bool::GUID_STRING,
-                                       true,
-                                       channelObj,
-                                       m_error,
-                                       MAX_OUTPUT_CHANNELS,
-                                       OUTPUT_POINT_OFFSET,
-                                       channelNum_notUsed,
-                                       generalAllocator,
-                                       cardStatefulDataAllocator,
-                                       dbForPoints );
+                Fxt::Point::Api* pt   =  createPointForChannel( pointFactoryDb,
+                                                                m_ioRegisterOutputs,
+                                                                Fxt::Point::Bool::GUID_STRING,
+                                                                true,
+                                                                channelObj,
+                                                                m_error,
+                                                                STARTING_OUTPUT_CHANNEL_NUM,
+                                                                ENDING_OUTPUT_CHANNEL_NUM,
+                                                                channelNum_notUsed,
+                                                                generalAllocator,
+                                                                cardStatefulDataAllocator,
+                                                                dbForPoints );
 
                 if ( m_error != Fxt::Type::Error::SUCCESS() )
                 {
                     return;
                 }
+
+                // Cache the IO Register PT. 
+                m_outputIoRegisterPoints[idx] = pt;
             }
         }
     }
@@ -282,15 +273,15 @@ bool RHTemperature::start( Cpl::Itc::PostApi& chassisMbox, uint64_t currentElaps
     m_validSamples = false;
     for ( unsigned i=0; i < MAX_INPUT_CHANNELS; i++ )
     {
-        if ( m_ioRegisterPoints[i + INPUT_POINT_OFFSET] != nullptr )
+        if ( m_inputIoRegisterPoints[i] != nullptr )
         {
             // Set the initial IO Register values
-            m_ioRegisterPoints[i + INPUT_POINT_OFFSET]->updateFromSetter();
+            m_inputIoRegisterPoints[i]->updateFromSetter();
         }
     }
 
     // Initialize Outputs (at most there is ONE)
-    Fxt::Point::Bool* pt = (Fxt::Point::Bool*) m_ioRegisterPoints[OUTPUT_POINT_OFFSET];
+    Fxt::Point::Bool* pt = (Fxt::Point::Bool*) m_outputIoRegisterPoints[0];
     if ( pt != nullptr )
     {
         // Set the initial IO Register values
@@ -408,7 +399,7 @@ void RHTemperature::expired() noexcept
         m_lastHeaterEnable  = heaterVal;
         m_forceHeaterUpdate = false;
         m_driver->setHeaterState( heaterVal );
-        
+
     }
 
     // Start the first sample
@@ -463,10 +454,10 @@ bool RHTemperature::scanInputs( uint64_t currentElapsedTimeUsec ) noexcept
         // Copy the background driver samples to the Input IO Registers
         for ( unsigned i=0; i < MAX_INPUT_CHANNELS; i++ )
         {
-            if ( m_ioRegisterPoints[i + INPUT_POINT_OFFSET] != nullptr )
+            if ( m_inputIoRegisterPoints[i] != nullptr )
             {
                 // Update the corresponding IO Register
-                Fxt::Point::Float* pt = (Fxt::Point::Float*) m_ioRegisterPoints[i + INPUT_POINT_OFFSET];
+                Fxt::Point::Float* pt = (Fxt::Point::Float*) m_inputIoRegisterPoints[i];
                 if ( validSample )
                 {
                     pt->write( samples[i] );
@@ -500,10 +491,10 @@ bool RHTemperature::flushOutputs( uint64_t currentElapsedTimeUsec ) noexcept
     if ( result )
     {
         // NOTE: At most there will be ONE output (aka the Heater enable)
-        if ( m_ioRegisterPoints[OUTPUT_POINT_OFFSET] != nullptr )
+        if ( m_outputIoRegisterPoints[0] != nullptr )
         {
             // Get current value (and force the 'off state' if the Point is invalid)
-            Fxt::Point::Bool* pt = (Fxt::Point::Bool*) m_ioRegisterPoints[OUTPUT_POINT_OFFSET];
+            Fxt::Point::Bool* pt = (Fxt::Point::Bool*) m_outputIoRegisterPoints[0];
             bool val = false;
             pt->read( val );
 

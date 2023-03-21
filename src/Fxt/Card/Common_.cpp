@@ -25,34 +25,48 @@
 using namespace Fxt::Card;
 
 //////////////////////////////////////////////////
-Common_::Common_( uint16_t                           totalNumChannels,
+Common_::Common_( uint16_t                           maxInputChannels,
+                  uint16_t                           maxOutputChannels,
                   Cpl::Memory::ContiguousAllocator&  generalAllocator,
                   JsonVariant&                       cardObject )
-    : m_ioRegisterPoints( nullptr )
+    : m_inputIoRegisterPoints( nullptr )
+    , m_outputIoRegisterPoints( nullptr )
     , m_error( Fxt::Type::Error::SUCCESS() )
     , m_slotNum( 0xFF )
     , m_started( false )
 {
-    // Create the array of IO Register point pointers
-    m_ioRegisterPoints = (Fxt::Point::Api**) generalAllocator.allocate( sizeof( Fxt::Point::Api* ) * totalNumChannels );
-    if ( m_ioRegisterPoints )
+    // Create the arrays of IO Register point pointers
+    if ( maxInputChannels > 0 )
     {
-        memset( m_ioRegisterPoints, 0, sizeof( Fxt::Point::Api* ) * totalNumChannels );
-
-        if ( cardObject["slot"].is<uint8_t>() == false )
+        m_inputIoRegisterPoints = (Fxt::Point::Api**) generalAllocator.allocate( sizeof( Fxt::Point::Api* ) * maxInputChannels );
+        if ( !m_inputIoRegisterPoints )
         {
-            m_error = fullErr( Err_T::MISSING_SLOT );
+            m_error = fullErr( Err_T::MEMORY_CARD );
             m_error.logIt();
         }
-        else
+        memset( m_inputIoRegisterPoints, 0, sizeof( Fxt::Point::Api* ) * maxInputChannels );
+    }
+    if ( maxOutputChannels > 0 )
+    {
+        m_outputIoRegisterPoints = (Fxt::Point::Api**) generalAllocator.allocate( sizeof( Fxt::Point::Api* ) * maxOutputChannels );
+        if ( !m_outputIoRegisterPoints )
         {
-            m_slotNum = cardObject["slot"];
+            m_error = fullErr( Err_T::MEMORY_CARD );
+            m_error.logIt();
         }
+        memset( m_outputIoRegisterPoints, 0, sizeof( Fxt::Point::Api* ) * maxOutputChannels );
+    }
+
+
+    // Parse slot assignment
+    if ( cardObject["slot"].is<uint8_t>() == false )
+    {
+        m_error = fullErr( Err_T::MISSING_SLOT );
+        m_error.logIt();
     }
     else
     {
-        m_error = fullErr( Err_T::MEMORY_CARD );
-        m_error.logIt();
+        m_slotNum = cardObject["slot"];
     }
 }
 
@@ -116,8 +130,8 @@ Fxt::Point::Api* Common_::createPointForChannel( Fxt::Point::FactoryDatabaseApi&
                                                  bool                               isIoRegPt,
                                                  JsonObject&                        channelObject,
                                                  Fxt::Type::Error&                  cardErrorCode,
-                                                 uint16_t                           maxChannels,
-                                                 uint16_t                           channelIndexOffset,
+                                                 uint16_t                           minChannelNumber,
+                                                 uint16_t                           maxChannelNumber,
                                                  uint16_t&                          channelNum,
                                                  Cpl::Memory::ContiguousAllocator&  generalAllocator,
                                                  Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
@@ -137,17 +151,16 @@ Fxt::Point::Api* Common_::createPointForChannel( Fxt::Point::FactoryDatabaseApi&
     if ( id == Point::Api::INVALID_ID )
     {
         cardErrorCode = fullErr( Err_T::POINT_MISSING_ID );
-        m_error.logItFormatted( "%s. chOffIdx=%d", getTypeName(), channelIndexOffset );
+        m_error.logIt( getTypeName() );
         return nullptr;
     }
 
     // Parse channel Number
     channelNum          = channelObject["channel"] | 0;   // Zero is NOT a valid channel number
-    uint16_t channelIdx = channelIndexOffset + channelNum - 1;
-    if ( channelNum == 0 || channelNum > maxChannels || m_ioRegisterPoints[channelIdx] != nullptr )
+    if ( channelNum == 0 || channelNum < minChannelNumber || channelNum > maxChannelNumber )
     {
         m_error = fullErr( Err_T::BAD_CHANNEL_ASSIGNMENTS );
-        m_error.logItFormatted( "%s. chOffIdx=%d, ch=%d", getTypeName(), channelIndexOffset, channelNum );
+        m_error.logIt( "%s. ch=%d", getTypeName(), channelNum );
         return nullptr;
     }
 
@@ -164,13 +177,13 @@ Fxt::Point::Api* Common_::createPointForChannel( Fxt::Point::FactoryDatabaseApi&
     if ( !result )
     {
         m_error = fullErr( Err_T::FAILED_POINT_CREATED );
-        m_error.logItFormatted( "%s. chOffIdx=%d, ch=%d", getTypeName(), channelIndexOffset, channelNum );
+        m_error.logIt( "%s. ch=%d", getTypeName(), channelNum );
         return nullptr;
     }
     if ( pointErr != Fxt::Type::Error::SUCCESS() )
     {
         m_error = fullErr( Err_T::POINT_CREATE_ERROR );
-        m_error.logItFormatted( "%s. chOffIdx=%d, ch=%d", getTypeName(), channelIndexOffset, channelNum );
+        m_error.logIt( "%s. ch=%d", getTypeName(), channelNum );
         return nullptr;
     }
 
@@ -179,15 +192,9 @@ Fxt::Point::Api* Common_::createPointForChannel( Fxt::Point::FactoryDatabaseApi&
     if ( !Fxt::Point::Api::validatePointTypes( &ptPtr, 1, expectedGUID ) )
     {
         m_error = fullErr( Err_T::POINT_WRONG_TYPE );
-        m_error.logItFormatted( "%s. chOffIdx=%d, ch=%d", getTypeName(), channelIndexOffset, channelNum );
+        m_error.logIt( "%s. ch=%d", getTypeName(), channelNum );
         return nullptr;
     }
 
-    // Cache the point for the IO Point register
-    if ( isIoRegPt )
-    {
-        m_ioRegisterPoints[channelIdx] = ptPtr;
-    }
-
-    return m_ioRegisterPoints[channelIdx];
+    return ptPtr;
 }

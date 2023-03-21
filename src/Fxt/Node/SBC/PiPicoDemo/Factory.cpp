@@ -13,7 +13,6 @@
 
 #include "Factory.h"
 #include "Drivers.h"
-#include "Fxt/Card/Gpio/RP2040/Dio30Factory.h"
 
 #define FXT_MY_APP_POINT_FACTORY_DB             Fxt::Node::FactoryCommon_::g_pointFactoryDb
 #define FXT_MY_APP_CARD_FACTORY_DB              Fxt::Node::FactoryCommon_::g_cardFactoryDb

@@ -1,0 +1,342 @@
+{
+  "name": "Automatoin2040W: IO example",
+  "typeName": "Fxt::Node::SBC::Automatoin2040W",
+  "chassis": [
+    {
+      "name": "My Chassis - 1KHz FER",
+      "fer": 1000,
+      "scanners": [
+        {
+          "name": "on board IO Scanner - 100Hz",
+          "scanRateMultiplier": 10,
+          "cards": [
+            {
+              "name": "Automatoin2040W SBC",
+              "typeName": "Fxt::Card::Composite::RP2040::Automatoin2040W",
+              "slot": 0,
+              "points": {
+                "inputs": [
+                  {
+                    "channel": 1,
+                    "id": "Din#1",
+                    "typeName": "Fxt::Point::Bool"
+                  },
+                  {
+                    "channel": 2,
+                    "id": "Din#2",
+                    "typeName": "Fxt::Point::Bool"
+                  },
+                  {
+                    "channel": 3,
+                    "id": "Din#3",
+                    "typeName": "Fxt::Point::Bool"
+                  },
+                  {
+                    "channel": 4,
+                    "id": "Din#4",
+                    "typeName": "Fxt::Point::Bool"
+                  },
+                  {
+                    "channel": 11,
+                    "id": "Ain#1",
+                    "typeName": "Fxt::Point::Float"
+                  },
+                  {
+                    "channel": 12,
+                    "id": "Ain#2",
+                    "typeName": "Fxt::Point::Float"
+                  },
+                  {
+                    "channel": 13,
+                    "id": "Ain#3",
+                    "typeName": "Fxt::Point::Float"
+                  },
+                  {
+                    "channel": 21,
+                    "id": "ButtonIn-A",
+                    "typeName": "Fxt::Point::Bool"
+                  },
+                  {
+                    "channel": 22,
+                    "id": "ButtonIn-B",
+                    "typeName": "Fxt::Point::Bool"
+                  },
+                  {
+                    "channel": 31,
+                    "id": "OnboardTemp",
+                    "typeName": "Fxt::Point::Float"
+                  }
+                ],
+                "outputs": [
+                  {
+                    "channel": 1,
+                    "id": "Dout#1",
+                    "typeName": "Fxt::Point::Bool",
+                    "initial": {
+                      "val": false
+                    }
+                  },
+                  {
+                    "channel": 2,
+                    "id": "Dout#2",
+                    "typeName": "Fxt::Point::Bool",
+                    "initial": {
+                      "val": false
+                    }
+                  },
+                  {
+                    "channel": 3,
+                    "id": "Dout#3",
+                    "typeName": "Fxt::Point::Bool",
+                    "initial": {
+                      "val": false
+                    }
+                  },
+                  {
+                    "channel": 11,
+                    "id": "RelayOut#1",
+                    "typeName": "Fxt::Point::Bool",
+                    "initial": {
+                      "val": false
+                    }
+                  },
+                  {
+                    "channel": 12,
+                    "id": "RelayOut#2",
+                    "typeName": "Fxt::Point::Bool",
+                    "initial": {
+                      "val": false
+                    }
+                  },
+                  {
+                    "channel": 13,
+                    "id": "RelayOut#3",
+                    "typeName": "Fxt::Point::Bool",
+                    "initial": {
+                      "val": false
+                    }
+                  },
+                  {
+                    "channel": 21,
+                    "id": "ButtonLED-A",
+                    "typeName": "Fxt::Point::Bool",
+                    "initial": {
+                      "val": false
+                    }
+                  },
+                  {
+                    "channel": 22,
+                    "id": "ButtonLED-B",
+                    "typeName": "Fxt::Point::Bool",
+                    "initial": {
+                      "val": false
+                    }
+                  },
+                  {
+                    "channel": 31,
+                    "id": "ConnectedLED",
+                    "typeName": "Fxt::Point::Bool",
+                    "initial": {
+                      "val": false
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "name": "Mock Analog Out card (for displaying AIN & RH/Temp values)",
+              "typeName": "Fxt::Card::Mock::AnalogOut8",
+              "slot": 1,
+              "points": {
+                "outputs": [
+                  {
+                    "channel": 1,
+                    "id": "RH Out",
+                    "typeName": "Fxt::Point::Float"
+                  },
+                  {
+                    "channel": 2,
+                    "id": "Temperature 'C Out",
+                    "typeName": "Fxt::Point::Float"
+                  },
+                  {
+                    "channel": 3,
+                    "id": "Temperature 'F Out",
+                    "typeName": "Fxt::Point::Float"
+                  },
+                  {
+                    "channel": 4,
+                    "id": "Echo: AIN#1",
+                    "typeName": "Fxt::Point::Float"
+                  },
+                  {
+                    "channel": 5,
+                    "id": "Echo: AIN#2",
+                    "typeName": "Fxt::Point::Float"
+                  },
+                  {
+                    "channel": 6,
+                    "id": "Echo: AIN#3",
+                    "typeName": "Fxt::Point::Float"
+                  },
+                  {
+                    "channel": 7,
+                    "id": "Echo: Onboard Temp 'C",
+                    "typeName": "Fxt::Point::Float"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "Mock Digital8 Card - Echo Digital Inputs",
+              "typeName": "Fxt::Card::Mock::Digital8",
+              "slot": 2,
+              "points": {
+                "outputs": [
+                  {
+                    "channel": 1,
+                    "id": "OutputByte",
+                    "typeName": "Fxt::Point::Uint8",
+                    "initial": {
+                      "val": 0
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "name": "Mock Digital8 Card - Echo Digital Outputs",
+              "typeName": "Fxt::Card::Mock::Digital8",
+              "slot": 3,
+              "points": {
+                "outputs": [
+                  {
+                    "channel": 1,
+                    "id": "OutputByte",
+                    "typeName": "Fxt::Point::Uint8",
+                    "initial": {
+                      "val": 0
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Off-board scanner. 5Hz (scan at half the driver sampling rate)",
+          "scanRateMultiplier": 200,
+          "cards": [
+            {
+              "name": "My RH/Temp card. Driver sample Rate: 10Hz",
+              "typeName": "Fxt::Card::Sensor::I2C::RHTemperature",
+              "slot": 255,
+              "driverInterval": 100,
+              "points": {
+                "inputs": [
+                  {
+                    "channel": 1,
+                    "id": "RH Input Value",
+                    "typeName": "Fxt::Point::Float"
+                  },
+                  {
+                    "channel": 2,
+                    "id": "Temperature 'C Input",
+                    "typeName": "Fxt::Point::Float"
+                  }
+                ],
+                "outputs": [
+                  {
+                    "channel": 1,
+                    "id": "Heater Enable",
+                    "typeName": "Fxt::Point::Bool",
+                    "initial": {
+                      "val": false
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "executionSets": [
+        {
+          "name": "Fast Execution Set",
+          "exeRateMultiplier": 1,
+          "logicChains": [
+            {
+              "name": "my logic chain",
+              "id": 1,
+              "components": [
+                {
+                  "name": "Byte Demux #1",
+                  "typeName": "Fxt::Component::Digital::ByteDemux",
+                  "inputs": [
+                    {
+                      "typeName": "Fxt::Point::Uint8",
+                      "idRef": "InputByte"
+                    }
+                  ],
+                  "outputs": [
+                    {
+                      "bit": 0,
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": "user: bit0"
+                    }
+                  ]
+                },
+                {
+                  "name": "AND Gate#1",
+                  "typeName": "Fxt::Component::Digital::And16Gate",
+                  "inputs": [
+                    {
+                      "name": "Signal#1",
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": "GPIO9"
+                    },
+                    {
+                      "name": "Signal#2",
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": "user: bit0"
+                    }
+                  ],
+                  "outputs": [
+                    {
+                      "name": "out",
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": "GPIO25/LED"
+                    }
+                  ]
+                },
+                {
+                  "name": "Byte Mux #1",
+                  "typeName": "Fxt::Component::Digital::ByteMux",
+                  "inputs": [
+                    {
+                      "bit": 0,
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": "GPIO25/LED"
+                    }
+                  ],
+                  "outputs": [
+                    {
+                      "typeName": "Fxt::Point::Uint8",
+                      "idRef": "OutputByte"
+                    }
+                  ]
+                }
+              ],
+              "connectionPts": [
+                {
+                  "id": "user: bit0",
+                  "typeName": "Fxt::Point::Bool"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

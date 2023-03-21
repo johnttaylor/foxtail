@@ -139,10 +139,10 @@ public:
     }
 
     /// Logs the error
-    void logIt( const char* optionalErrMsg = nullptr ) const noexcept;
+    void logIt() const noexcept;
 
     /// Logs using printf formating for optiona error message
-    void logItFormatted( const char* msgFormat, ... ) const noexcept;
+    void logIt( const char* msgFormat, ... ) const noexcept;
 
 public:
     /** Maximum string size when converting a error code to text (NOT including
