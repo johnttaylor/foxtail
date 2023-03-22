@@ -19,6 +19,7 @@
 #include "Driver/I2C/RP2040/Master.h"
 #include "Driver/RHTemp/HUT31D/Api.h"
 #include "Fxt/Node/SBC/Automation2040W/Drivers.h"
+#include "Driver/Automation2040/Api.h"
 
 
 /// Generic thread TShell command
@@ -68,6 +69,9 @@ int main( void )
     // Initialize/Start the I2C driver
     Driver::I2C::RP2040::Master::configureI2CPins( OPTION_I2C_SDA_PIN, OPTION_I2C_SCL_PIN );
     i2cBus0Driver_.start();
+
+    // Initialize the Automation2040 driver
+    Driver::Automation2040::Api::initialize();
 
     // Start the application
     return runTheApplication( Cpl::System::RP2040::getConsoleStream(), Cpl::System::RP2040::getConsoleStream() ); // This method should never return

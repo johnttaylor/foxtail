@@ -35,6 +35,7 @@ xsrc/pico-sdk/src/rp2_common/pico_platform
 xsrc/pico-sdk/src/rp2_common/hardware_sync
 xsrc/pico-sdk/src/rp2_common/hardware_irq
 xsrc/pico-sdk/src/rp2_common/hardware_timer
+xsrc/pico-sdk/src/rp2_common/hardware_adc
 xsrc/pico-sdk/src/rp2_common/hardware_uart
 xsrc/pico-sdk/src/rp2_common/hardware_i2c
 xsrc/pico-sdk/src/rp2_common/hardware_divider

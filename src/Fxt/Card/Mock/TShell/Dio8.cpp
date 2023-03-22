@@ -123,9 +123,9 @@ Cpl::TShell::Command::Result_T Dio8::execute( Cpl::TShell::Context_& context, ch
     // Write Input Byte value
     if ( tokens.numParameters() == 3 && *(tokens.getParameter( 1 )) == 'w' )
     {
-        // Get byte to write
+        // Get byte to write (allow hex values)
         unsigned value;
-        if ( Cpl::Text::a2ui( value, tokens.getParameter( 2 ) ) == false || value > 0xFF )
+        if ( Cpl::Text::a2ui( value, tokens.getParameter( 2 ), 0 ) == false || value > 0xFF )
         {
             outtext.format( "ERROR: invalid byte value (%s)", tokens.getParameter( 2 ) );
             context.writeFrame( outtext );

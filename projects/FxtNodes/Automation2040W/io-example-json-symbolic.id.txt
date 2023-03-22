@@ -315,11 +315,11 @@
               "type": "59d33888-62c7-45b2-a4d4-9dbc55914ed3"
             },
             {
-              "name": "Mock Digital8 Card - Echo Digital Outputs",
+              "name": "Mock Digital8 Card - Set and Echo Digital Outputs",
               "typeName": "Fxt::Card::Mock::Digital8",
               "slot": 3,
               "points": {
-                "outputs": [
+                "inputs": [
                   {
                     "channel": 1,
                     "id": 68,
@@ -328,8 +328,22 @@
                       "val": 0,
                       "id": 70
                     },
-                    "name": "EchoDoutByte",
+                    "name": "SetDoutByte",
                     "ioRegId": 69,
+                    "type": "918cff9e-8007-4666-99ac-384b9624329c"
+                  }
+                ],
+                "outputs": [
+                  {
+                    "channel": 1,
+                    "id": 71,
+                    "typeName": "Fxt::Point::Uint8",
+                    "initial": {
+                      "val": 0,
+                      "id": 73
+                    },
+                    "name": "EchoDoutByte",
+                    "ioRegId": 72,
                     "type": "918cff9e-8007-4666-99ac-384b9624329c"
                   }
                 ]
@@ -351,32 +365,32 @@
                 "inputs": [
                   {
                     "channel": 1,
-                    "id": 71,
+                    "id": 74,
                     "typeName": "Fxt::Point::Float",
                     "name": "RH Input Value",
-                    "ioRegId": 72,
+                    "ioRegId": 75,
                     "type": "708745fa-cef6-4364-abad-063a40f35cbc"
                   },
                   {
                     "channel": 2,
-                    "id": 73,
+                    "id": 76,
                     "typeName": "Fxt::Point::Float",
                     "name": "Temperature 'C Input",
-                    "ioRegId": 74,
+                    "ioRegId": 77,
                     "type": "708745fa-cef6-4364-abad-063a40f35cbc"
                   }
                 ],
                 "outputs": [
                   {
                     "channel": 1,
-                    "id": 75,
+                    "id": 78,
                     "typeName": "Fxt::Point::Bool",
                     "initial": {
                       "val": false,
-                      "id": 77
+                      "id": 80
                     },
                     "name": "Heater Enable",
-                    "ioRegId": 76,
+                    "ioRegId": 79,
                     "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
                   }
                 ]
@@ -395,7 +409,7 @@
               "name": "button-pressed-led-feedback loop",
               "components": [
                 {
-                  "name": "use button pressed state (true) to drive its LED",
+                  "name": "use button pressed state (false) to drive its LED",
                   "typeName": "Fxt::Component::Digital::Not16Gate",
                   "inputs": [
                     {
@@ -442,7 +456,7 @@
                       "m": 1,
                       "b": 0,
                       "typeName": "Fxt::Point::Float",
-                      "idRef": 71,
+                      "idRef": 74,
                       "idRefName": "RH Input Value",
                       "type": "708745fa-cef6-4364-abad-063a40f35cbc"
                     },
@@ -450,7 +464,7 @@
                       "m": 1,
                       "b": 0,
                       "typeName": "Fxt::Point::Float",
-                      "idRef": 73,
+                      "idRef": 76,
                       "idRefName": "Temperature 'C Input",
                       "type": "708745fa-cef6-4364-abad-063a40f35cbc"
                     },
@@ -458,7 +472,7 @@
                       "m": 1.8,
                       "b": 32,
                       "typeName": "Fxt::Point::Float",
-                      "idRef": 73,
+                      "idRef": 76,
                       "idRefName": "Temperature 'C Input",
                       "type": "708745fa-cef6-4364-abad-063a40f35cbc"
                     },
@@ -646,12 +660,76 @@
                   "outputs": [
                     {
                       "typeName": "Fxt::Point::Uint8",
-                      "idRef": 68,
+                      "idRef": 71,
                       "idRefName": "EchoDoutByte",
                       "type": "918cff9e-8007-4666-99ac-384b9624329c"
                     }
                   ],
                   "type": "d60f2daf-9709-42d6-ba92-b76f641eb930"
+                },
+                {
+                  "name": "Byte Demux #1. Set Digital Outputs",
+                  "typeName": "Fxt::Component::Digital::ByteDemux",
+                  "outputs": [
+                    {
+                      "bit": 0,
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": 24,
+                      "idRefName": "Dout#1",
+                      "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                    },
+                    {
+                      "bit": 1,
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": 27,
+                      "idRefName": "Dout#2",
+                      "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                    },
+                    {
+                      "bit": 2,
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": 30,
+                      "idRefName": "Dout#3",
+                      "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                    },
+                    {
+                      "bit": 3,
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": 33,
+                      "idRefName": "RelayOut#1",
+                      "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                    },
+                    {
+                      "bit": 4,
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": 36,
+                      "idRefName": "RelayOut#2",
+                      "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                    },
+                    {
+                      "bit": 5,
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": 39,
+                      "idRefName": "RelayOut#3",
+                      "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                    },
+                    {
+                      "bit": 6,
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": 48,
+                      "idRefName": "ConnectedLED",
+                      "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                    }
+                  ],
+                  "inputs": [
+                    {
+                      "typeName": "Fxt::Point::Uint8",
+                      "idRef": 68,
+                      "idRefName": "SetDoutByte",
+                      "type": "918cff9e-8007-4666-99ac-384b9624329c"
+                    }
+                  ],
+                  "type": "8c55aa52-3bc8-4b8a-ad73-c434a0bbd4b4"
                 }
               ]
             }

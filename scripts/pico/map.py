@@ -77,7 +77,7 @@ if __name__ == '__main__':
     lines = {}
     p  = re.compile( r"^(.*) 0x(.*) .*0x(.*) (.*\.a\()(.*)") 
     p2 = re.compile( r"^(.\*fill\*) .*0x(.*) .*0x(.*).*") 
-    p3 = re.compile( r"^(.*) 0x(.*) .*0x(.*) (\.\.\\.*.o$)") 
+    p3 = re.compile( r"^(.*) 0x(.*) .*0x(.*) (.*.o$)") 
     rawlines = fix_split_lines( args['<map-file>'] )
     rodataentry = None
     for line in rawlines:
