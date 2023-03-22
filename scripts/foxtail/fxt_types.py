@@ -1,7 +1,8 @@
 # Known Foxtail types
 _types_dict = {
-    "Fxt::Card::Mock::AnalogIn8": "1968f533-e323-4ae4-8493-9a572f3bd195",
+    "Fxt::Card::Composite::RP2040::Automation2040": "d0580e5c-ce7b-47a7-b8de-e43e6ad68c49",
     "Fxt::Card::Gpio::RP2040::Dio30": "c896faf0-6ea2-47d6-a1a6-7e4074c32a43",
+    "Fxt::Card::Mock::AnalogIn8": "1968f533-e323-4ae4-8493-9a572f3bd195",
     "Fxt::Card::Mock::AnalogOut8": "dcec26d7-8dea-4e1b-946d-4a0313677173",
     "Fxt::Card::Mock::Digital8": "59d33888-62c7-45b2-a4d4-9dbc55914ed3",
     "Fxt::Card::Sensor::I2C::RHTemperature": "9fd17cc7-88c1-46bc-8a8c-6f76ab4e6eee",
@@ -9,6 +10,7 @@ _types_dict = {
     "Fxt::Component::Digital::And16Gate": "e62e395c-d27a-4821-bba9-aa1e6de42a05",
     "Fxt::Component::Digital::ByteDemux": "8c55aa52-3bc8-4b8a-ad73-c434a0bbd4b4",
     "Fxt::Component::Digital::ByteMux": "d60f2daf-9709-42d6-ba92-b76f641eb930",
+    "Fxt::Component::Digital::Not16Gate": "31d8a613-bc99-4d0d-a96f-4b4dc9b0cc6f",
     "Fxt::Node::Mock::Kestrel": "d65ee614-dce4-43f0-af2c-830e3664ecaf",
     "Fxt::Node::SBC::Automation2040W": "dce5cbcc-7d87-4e84-98b6-42b8188ab12f",
     "Fxt::Node::SBC::PiPicoDemo": "35599c37-c732-424e-84d3-ebbcf0d2f9ce",

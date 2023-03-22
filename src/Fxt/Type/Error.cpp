@@ -121,10 +121,12 @@ void Error::logIt( const char* msgFormat, ... ) const noexcept
 {
     va_list ap;
     va_start( ap, msgFormat );
+
     Cpl::Text::FString<MAX_ERR_MSG> buf;
     buf.vformat( msgFormat, ap );
 
-    Fxt::Logging::logf( Fxt::Logging::ErrCodeMsg::ERRVALUE, "%s (%08lX). %s", toText( buf ), errVal, buf.getString() );
+    Cpl::Text::FString<MAX_TEXT_LEN + 2 + 8 + 1> errCodeAsText;
+    Fxt::Logging::logf( Fxt::Logging::ErrCodeMsg::ERRVALUE, "%s (%08lX). %s", toText( errCodeAsText ), errVal, buf.getString() );
 
     va_end( ap );
 }

@@ -27,6 +27,7 @@ using namespace Fxt::Card::Composite::RP2040;
 #define STARTING_OUTPUT_CHANNEL_NUM 1
 #define ENDING_OUTPUT_CHANNEL_NUM   31
 
+static const char* inputGuidForChannelNum( JsonObject channelObj );
 
 static void readDriverDigitalInput( Fxt::Point::Api* dstPt, int inIdentifier );
 static void readDriverAnalogInput( Fxt::Point::Api* dstPt, int inIdentifier );
@@ -88,10 +89,12 @@ void Automation2040::parseConfiguration( Cpl::Memory::ContiguousAllocator&  gene
             for ( size_t idx=0; idx < m_numInputs; idx++ )
             {
                 uint16_t   channelNum_notUsed;
-                JsonObject channelObj = inputs[idx].as<JsonObject>();
+                JsonObject channelObj      = inputs[idx].as<JsonObject>();
+                const char* expectTypeGuid = inputGuidForChannelNum( channelObj );
+
                 createPointForChannel( pointFactoryDb,
                                        m_virtualInputs,
-                                       Fxt::Point::Bool::GUID_STRING,
+                                       expectTypeGuid,
                                        false,
                                        channelObj,
                                        m_error,
@@ -113,19 +116,20 @@ void Automation2040::parseConfiguration( Cpl::Memory::ContiguousAllocator&  gene
             for ( size_t idx=0; idx < m_numInputs; idx++ )
             {
                 uint16_t   channelNum;
-                JsonObject channelObj = inputs[idx].as<JsonObject>();
-                Fxt::Point::Api* pt   = createPointForChannel( pointFactoryDb,
-                                                               m_ioRegisterInputs,
-                                                               Fxt::Point::Bool::GUID_STRING,
-                                                               true,
-                                                               channelObj,
-                                                               m_error,
-                                                               STARTING_INPUT_CHANNEL_NUM,
-                                                               ENDING_INPUT_CHANNEL_NUM,
-                                                               channelNum,
-                                                               generalAllocator,
-                                                               cardStatefulDataAllocator,
-                                                               dbForPoints );
+                JsonObject channelObj      = inputs[idx].as<JsonObject>();
+                const char* expectTypeGuid = inputGuidForChannelNum( channelObj );
+                Fxt::Point::Api* pt        = createPointForChannel( pointFactoryDb,
+                                                                    m_ioRegisterInputs,
+                                                                    expectTypeGuid,
+                                                                    true,
+                                                                    channelObj,
+                                                                    m_error,
+                                                                    STARTING_INPUT_CHANNEL_NUM,
+                                                                    ENDING_INPUT_CHANNEL_NUM,
+                                                                    channelNum,
+                                                                    generalAllocator,
+                                                                    cardStatefulDataAllocator,
+                                                                    dbForPoints );
 
                 // Stop processing if/when an error occurred
                 if ( m_error != Fxt::Type::Error::SUCCESS() )
@@ -151,7 +155,7 @@ void Automation2040::parseConfiguration( Cpl::Memory::ContiguousAllocator&  gene
                 int driverId  = m_inputMap[idx].inputId;
                 for ( size_t j=idx + 1; j < m_numInputs; j++ )
                 {
-                    if ( m_inputMap[idx].inputId == driverId )
+                    if ( m_inputMap[j].inputId == driverId )
                     {
                         m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::BAD_CHANNEL_ASSIGNMENTS );
                         m_error.logIt( "Card: %s, Inputs. Duplicate. idx %u == idx %u ", getTypeName(), idx, j );
@@ -241,7 +245,7 @@ void Automation2040::parseConfiguration( Cpl::Memory::ContiguousAllocator&  gene
                 int driverId  = m_outputMap[idx].outputId;
                 for ( size_t j=idx + 1; j < nOutputs; j++ )
                 {
-                    if ( m_outputMap[idx].outputId == driverId )
+                    if ( m_outputMap[j].outputId == driverId )
                     {
                         m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::BAD_CHANNEL_ASSIGNMENTS );
                         m_error.logIt( "Card: %s, Outputs. Duplicate. idx %u == idx %u ", getTypeName(), idx, j );
@@ -251,6 +255,19 @@ void Automation2040::parseConfiguration( Cpl::Memory::ContiguousAllocator&  gene
             }
         }
     }
+}
+
+
+static const char* inputGuidForChannelNum( JsonObject channelObj )
+{
+    uint8_t channelNum = channelObj["channel"] | 0;
+    if ( (channelNum >= 11 && channelNum <= 13) ||
+         channelNum == 31 )
+    {
+        return  Fxt::Point::Float::GUID_STRING;
+    }
+
+    return Fxt::Point::Bool::GUID_STRING;
 }
 
 bool Automation2040::updateInputMap( size_t ioRegisterIdx, uint16_t channelNum )
@@ -338,7 +355,7 @@ bool Automation2040::updateOutputMap( size_t ioRegisterIdx, uint16_t channelNum 
 ///////////////////////////////////////////////////////////////////////////////
 bool Automation2040::start( Cpl::Itc::PostApi & chassisMbox, uint64_t currentElapsedTimeUsec ) noexcept
 {
-    // Call the parent's start-up actions
+    // Call the parent's start-up actions (Note: sets the VPoint/IORegPoints initial values)
     if ( Common_::start( currentElapsedTimeUsec ) )
     {
         // Start the low-level driver
@@ -349,18 +366,9 @@ bool Automation2040::start( Cpl::Itc::PostApi & chassisMbox, uint64_t currentEla
             return false;
         }
 
-        // Initialize input IO Registers
-        for ( unsigned i=0; i < m_numInputs; i++ )
-        {
-            m_inputIoRegisterPoints[i]->updateFromSetter();
-        }
-
-        // Initialize output IO Registers and Update the physical outputs
+        // Initialize the physical outputs
         for ( unsigned i=0; i < m_numOutputs; i++ )
         {
-            // Set the initial IO Register values
-            m_outputIoRegisterPoints[i]->updateFromSetter();
-
             // Set the initial output value (if there is one)
             Fxt::Point::Bool* pt = (Fxt::Point::Bool*) m_outputIoRegisterPoints[i];
             bool bitValue;

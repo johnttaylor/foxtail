@@ -32,6 +32,8 @@ Common_::Common_( uint16_t                           maxInputChannels,
     : m_inputIoRegisterPoints( nullptr )
     , m_outputIoRegisterPoints( nullptr )
     , m_error( Fxt::Type::Error::SUCCESS() )
+    , m_numInputs( 0 )
+    , m_numOutputs( 0 )
     , m_slotNum( 0xFF )
     , m_started( false )
 {
@@ -81,8 +83,8 @@ bool Common_::start( uint64_t currentElapsedTimeUsec ) noexcept
 {
     if ( !m_started && m_error == Fxt::Type::Error::SUCCESS() )
     {
-        m_started = true;
-        return true;
+        m_started = setInitialPointValues();
+        return m_started;
     }
     return false;
 }
@@ -121,6 +123,7 @@ bool Common_::flushOutputs( uint64_t currentElapsedTimeUsec ) noexcept
 {
     return m_ioRegisterOutputs.copyStatefulMemoryFrom( m_virtualOutputs );
 }
+
 
 //////////////////////////////////////////////////
 
@@ -198,3 +201,34 @@ Fxt::Point::Api* Common_::createPointForChannel( Fxt::Point::FactoryDatabaseApi&
 
     return ptPtr;
 }
+
+bool Common_::setInitialPointValues() noexcept
+{
+    // Initialize input IO Registers
+    for ( unsigned i=0; i < m_numInputs; i++ )
+    {
+        m_inputIoRegisterPoints[i]->updateFromSetter();
+    }
+
+    // Update the Virtual Input points to match their corresponding IO Registers
+    if ( !m_virtualInputs.copyStatefulMemoryFrom( m_ioRegisterInputs ) )
+    {
+        return false;
+    }
+
+    // Initialize OUPUT IO Registers
+    for ( unsigned i=0; i < m_numOutputs; i++ )
+    {
+        m_outputIoRegisterPoints[i]->updateFromSetter();
+    }
+
+    // Update the Virtual Output points to match their corresponding IO Registers
+    if ( !m_virtualOutputs.copyStatefulMemoryFrom( m_ioRegisterOutputs) )
+    {
+        return false;
+    }
+
+    return true;
+}
+
+

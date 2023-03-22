@@ -242,7 +242,7 @@ void Dio30::parseDriverConfig( JsonObject & channelObj, Driver::DIO::InOut::Conf
 ///////////////////////////////////////////////////////////////////////////////
 bool Dio30::start( Cpl::Itc::PostApi & chassisMbox, uint64_t currentElapsedTimeUsec ) noexcept
 {
-    // Call the parent's start-up actions
+    // Call the parent's start-up actions (Note: sets the VPoint/IORegPoints initial values)
     if ( Common_::start( currentElapsedTimeUsec ) )
     {
         // Start the low-level driver
@@ -253,24 +253,9 @@ bool Dio30::start( Cpl::Itc::PostApi & chassisMbox, uint64_t currentElapsedTimeU
             return false;
         }
 
-        // Initialize input IO Registers
-        for ( unsigned i=0; i < m_numInputs; i++ )
-        {
-            // Set the initial IO Register values
-            m_inputIoRegisterPoints[i]->updateFromSetter();
-        }
+        // Initialize the physical outputs
         for ( unsigned i=0; i < m_numOutputs; i++ )
         {
-            // Set the initial IO Register values
-            m_outputIoRegisterPoints[i]->updateFromSetter();
-        }
-
-        // Initialize output IO Registers and Update the physical outputs
-        for ( unsigned i=0; i < m_numOutputs; i++ )
-        {
-            // Set the initial IO Register values
-            m_outputIoRegisterPoints[i]->updateFromSetter();
-
             // Set the initial output value (if there is one)
             Fxt::Point::Bool* pt = (Fxt::Point::Bool*) m_outputIoRegisterPoints[i];
             bool bitValue;

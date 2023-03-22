@@ -259,12 +259,6 @@ protected:
 
     /// Maps IO Register index to driver outputs
     DriverWriter_T  m_outputMap[MAX_OUTPUT_CHANNELS];
-
-    /// Number of input channels
-    uint16_t    m_numInputs;
-
-    /// Number of output channels
-    uint16_t    m_numOutputs;
 };
 
 

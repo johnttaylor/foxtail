@@ -97,16 +97,17 @@ void RHTemperature::parseConfiguration( Cpl::Memory::ContiguousAllocator&  gener
         if ( !inputs.isNull() )
         {
             // Validate supported number of signals
-            size_t numInputs = inputs.size();
-            if ( numInputs > MAX_INPUT_CHANNELS )
+            size_t nInputs = inputs.size();
+            if ( nInputs > MAX_INPUT_CHANNELS )
             {
                 m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::TOO_MANY_INPUT_POINTS );
                 m_error.logIt( getTypeName() );
                 return;
             }
+            m_numInputs = (uint16_t) nInputs;
 
             // Create Virtual Points
-            for ( size_t idx=0; idx < numInputs; idx++ )
+            for ( size_t idx=0; idx < m_numInputs; idx++ )
             {
                 uint16_t   channelNumNotUsed;
                 JsonObject channelObj = inputs[idx].as<JsonObject>();
@@ -131,7 +132,7 @@ void RHTemperature::parseConfiguration( Cpl::Memory::ContiguousAllocator&  gener
             }
 
             // Create IO Register Points
-            for ( size_t idx=0; idx < numInputs; idx++ )
+            for ( size_t idx=0; idx < m_numInputs; idx++ )
             {
                 // Stop processing if/when an error occurred
                 if ( m_error != Fxt::Type::Error::SUCCESS() )
@@ -192,16 +193,17 @@ void RHTemperature::parseConfiguration( Cpl::Memory::ContiguousAllocator&  gener
         if ( !outputs.isNull() )
         {
             // Validate supported number of signals
-            size_t numOutputs = outputs.size();
-            if ( numOutputs > MAX_OUTPUT_CHANNELS )
+            size_t nOutputs = outputs.size();
+            if ( nOutputs > MAX_OUTPUT_CHANNELS )
             {
                 m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::TOO_MANY_OUTPUT_POINTS );
                 m_error.logIt();
                 return;
             }
+            m_numOutputs = (uint16_t) nOutputs;
 
             // Create Virtual Points
-            for ( size_t idx=0; idx < numOutputs; idx++ )
+            for ( size_t idx=0; idx < m_numOutputs; idx++ )
             {
                 uint16_t   channelNumNotUsed;
                 JsonObject channelObj = outputs[idx].as<JsonObject>();
@@ -225,7 +227,7 @@ void RHTemperature::parseConfiguration( Cpl::Memory::ContiguousAllocator&  gener
             }
 
             // Create IO Register Points
-            for ( size_t idx=0; idx < numOutputs; idx++ )
+            for ( size_t idx=0; idx < m_numOutputs; idx++ )
             {
                 uint16_t   channelNum_notUsed;
                 JsonObject channelObj = outputs[idx].as<JsonObject>();
@@ -269,29 +271,17 @@ bool RHTemperature::start( Cpl::Itc::PostApi& chassisMbox, uint64_t currentElaps
         return false;
     }
 
-    // Initialize inputs 
+    // Housekeeping
     m_validSamples = false;
-    for ( unsigned i=0; i < MAX_INPUT_CHANNELS; i++ )
-    {
-        if ( m_inputIoRegisterPoints[i] != nullptr )
-        {
-            // Set the initial IO Register values
-            m_inputIoRegisterPoints[i]->updateFromSetter();
-        }
-    }
 
-    // Initialize Outputs (at most there is ONE)
+    // Update the physical outputs (aka the heater)
     Fxt::Point::Bool* pt = (Fxt::Point::Bool*) m_outputIoRegisterPoints[0];
-    if ( pt != nullptr )
+    bool heaterValue;
+    if ( pt->read( heaterValue ) )
     {
-        // Set the initial IO Register values
-        pt->updateFromSetter();
+        m_heaterEnable      = heaterValue;
+        m_forceHeaterUpdate = true;
     }
-
-    // Force an initial update of the Heater. Note: if the IO Point is invalid -->the heater will be forced off
-    m_forceHeaterUpdate = true;
-    m_heaterEnable      = false;
-    pt->read( m_heaterEnable );
 
     // Request to start the driver (which executes in the driver thread)
     // NOTE: The method only fails if there is pending ITC start transaction.

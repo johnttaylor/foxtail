@@ -1,0 +1,664 @@
+{
+  "name": "Automation2040W: IO example",
+  "typeName": "Fxt::Node::SBC::Automation2040W",
+  "chassis": [
+    {
+      "name": "My Chassis - 1KHz FER",
+      "fer": 1000,
+      "scanners": [
+        {
+          "name": "on board IO Scanner - 100Hz",
+          "scanRateMultiplier": 10,
+          "cards": [
+            {
+              "name": "Automatoin2040W SBC",
+              "typeName": "Fxt::Card::Composite::RP2040::Automation2040",
+              "slot": 0,
+              "points": {
+                "inputs": [
+                  {
+                    "channel": 1,
+                    "id": 0,
+                    "typeName": "Fxt::Point::Bool",
+                    "initial": {
+                      "val": false,
+                      "id": 2
+                    },
+                    "name": "Din#1",
+                    "ioRegId": 1,
+                    "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                  },
+                  {
+                    "channel": 2,
+                    "id": 3,
+                    "typeName": "Fxt::Point::Bool",
+                    "initial": {
+                      "val": false,
+                      "id": 5
+                    },
+                    "name": "Din#2",
+                    "ioRegId": 4,
+                    "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                  },
+                  {
+                    "channel": 3,
+                    "id": 6,
+                    "typeName": "Fxt::Point::Bool",
+                    "initial": {
+                      "val": false,
+                      "id": 8
+                    },
+                    "name": "Din#3",
+                    "ioRegId": 7,
+                    "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                  },
+                  {
+                    "channel": 4,
+                    "id": 9,
+                    "typeName": "Fxt::Point::Bool",
+                    "initial": {
+                      "val": false,
+                      "id": 11
+                    },
+                    "name": "Din#4",
+                    "ioRegId": 10,
+                    "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                  },
+                  {
+                    "channel": 11,
+                    "id": 12,
+                    "typeName": "Fxt::Point::Float",
+                    "name": "Ain#1",
+                    "ioRegId": 13,
+                    "type": "708745fa-cef6-4364-abad-063a40f35cbc"
+                  },
+                  {
+                    "channel": 12,
+                    "id": 14,
+                    "typeName": "Fxt::Point::Float",
+                    "name": "Ain#2",
+                    "ioRegId": 15,
+                    "type": "708745fa-cef6-4364-abad-063a40f35cbc"
+                  },
+                  {
+                    "channel": 13,
+                    "id": 16,
+                    "typeName": "Fxt::Point::Float",
+                    "name": "Ain#3",
+                    "ioRegId": 17,
+                    "type": "708745fa-cef6-4364-abad-063a40f35cbc"
+                  },
+                  {
+                    "channel": 21,
+                    "id": 18,
+                    "typeName": "Fxt::Point::Bool",
+                    "name": "ButtonIn-A",
+                    "ioRegId": 19,
+                    "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                  },
+                  {
+                    "channel": 22,
+                    "id": 20,
+                    "typeName": "Fxt::Point::Bool",
+                    "name": "ButtonIn-B",
+                    "ioRegId": 21,
+                    "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                  },
+                  {
+                    "channel": 31,
+                    "id": 22,
+                    "typeName": "Fxt::Point::Float",
+                    "name": "OnboardTemp",
+                    "ioRegId": 23,
+                    "type": "708745fa-cef6-4364-abad-063a40f35cbc"
+                  }
+                ],
+                "outputs": [
+                  {
+                    "channel": 1,
+                    "id": 24,
+                    "typeName": "Fxt::Point::Bool",
+                    "initial": {
+                      "val": false,
+                      "id": 26
+                    },
+                    "name": "Dout#1",
+                    "ioRegId": 25,
+                    "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                  },
+                  {
+                    "channel": 2,
+                    "id": 27,
+                    "typeName": "Fxt::Point::Bool",
+                    "initial": {
+                      "val": false,
+                      "id": 29
+                    },
+                    "name": "Dout#2",
+                    "ioRegId": 28,
+                    "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                  },
+                  {
+                    "channel": 3,
+                    "id": 30,
+                    "typeName": "Fxt::Point::Bool",
+                    "initial": {
+                      "val": false,
+                      "id": 32
+                    },
+                    "name": "Dout#3",
+                    "ioRegId": 31,
+                    "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                  },
+                  {
+                    "channel": 11,
+                    "id": 33,
+                    "typeName": "Fxt::Point::Bool",
+                    "initial": {
+                      "val": false,
+                      "id": 35
+                    },
+                    "name": "RelayOut#1",
+                    "ioRegId": 34,
+                    "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                  },
+                  {
+                    "channel": 12,
+                    "id": 36,
+                    "typeName": "Fxt::Point::Bool",
+                    "initial": {
+                      "val": false,
+                      "id": 38
+                    },
+                    "name": "RelayOut#2",
+                    "ioRegId": 37,
+                    "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                  },
+                  {
+                    "channel": 13,
+                    "id": 39,
+                    "typeName": "Fxt::Point::Bool",
+                    "initial": {
+                      "val": false,
+                      "id": 41
+                    },
+                    "name": "RelayOut#3",
+                    "ioRegId": 40,
+                    "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                  },
+                  {
+                    "channel": 21,
+                    "id": 42,
+                    "typeName": "Fxt::Point::Bool",
+                    "initial": {
+                      "val": false,
+                      "id": 44
+                    },
+                    "name": "ButtonLED-A",
+                    "ioRegId": 43,
+                    "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                  },
+                  {
+                    "channel": 22,
+                    "id": 45,
+                    "typeName": "Fxt::Point::Bool",
+                    "initial": {
+                      "val": false,
+                      "id": 47
+                    },
+                    "name": "ButtonLED-B",
+                    "ioRegId": 46,
+                    "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                  },
+                  {
+                    "channel": 31,
+                    "id": 48,
+                    "typeName": "Fxt::Point::Bool",
+                    "initial": {
+                      "val": false,
+                      "id": 50
+                    },
+                    "name": "ConnectedLED",
+                    "ioRegId": 49,
+                    "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                  }
+                ]
+              },
+              "type": "d0580e5c-ce7b-47a7-b8de-e43e6ad68c49"
+            },
+            {
+              "name": "Mock Analog Out card (for displaying AIN & RH/Temp values)",
+              "typeName": "Fxt::Card::Mock::AnalogOut8",
+              "slot": 1,
+              "points": {
+                "outputs": [
+                  {
+                    "channel": 1,
+                    "id": 51,
+                    "typeName": "Fxt::Point::Float",
+                    "name": "RH Out",
+                    "ioRegId": 52,
+                    "type": "708745fa-cef6-4364-abad-063a40f35cbc"
+                  },
+                  {
+                    "channel": 2,
+                    "id": 53,
+                    "typeName": "Fxt::Point::Float",
+                    "name": "Temperature 'C Out",
+                    "ioRegId": 54,
+                    "type": "708745fa-cef6-4364-abad-063a40f35cbc"
+                  },
+                  {
+                    "channel": 3,
+                    "id": 55,
+                    "typeName": "Fxt::Point::Float",
+                    "name": "Temperature 'F Out",
+                    "ioRegId": 56,
+                    "type": "708745fa-cef6-4364-abad-063a40f35cbc"
+                  },
+                  {
+                    "channel": 4,
+                    "id": 57,
+                    "typeName": "Fxt::Point::Float",
+                    "name": "Echo: AIN#1",
+                    "ioRegId": 58,
+                    "type": "708745fa-cef6-4364-abad-063a40f35cbc"
+                  },
+                  {
+                    "channel": 5,
+                    "id": 59,
+                    "typeName": "Fxt::Point::Float",
+                    "name": "Echo: AIN#2",
+                    "ioRegId": 60,
+                    "type": "708745fa-cef6-4364-abad-063a40f35cbc"
+                  },
+                  {
+                    "channel": 6,
+                    "id": 61,
+                    "typeName": "Fxt::Point::Float",
+                    "name": "Echo: AIN#3",
+                    "ioRegId": 62,
+                    "type": "708745fa-cef6-4364-abad-063a40f35cbc"
+                  },
+                  {
+                    "channel": 7,
+                    "id": 63,
+                    "typeName": "Fxt::Point::Float",
+                    "name": "Echo: Onboard Temp 'C",
+                    "ioRegId": 64,
+                    "type": "708745fa-cef6-4364-abad-063a40f35cbc"
+                  }
+                ]
+              },
+              "type": "dcec26d7-8dea-4e1b-946d-4a0313677173"
+            },
+            {
+              "name": "Mock Digital8 Card - Echo Digital Inputs",
+              "typeName": "Fxt::Card::Mock::Digital8",
+              "slot": 2,
+              "points": {
+                "outputs": [
+                  {
+                    "channel": 1,
+                    "id": 65,
+                    "typeName": "Fxt::Point::Uint8",
+                    "initial": {
+                      "val": 0,
+                      "id": 67
+                    },
+                    "name": "EchoDinByte",
+                    "ioRegId": 66,
+                    "type": "918cff9e-8007-4666-99ac-384b9624329c"
+                  }
+                ]
+              },
+              "type": "59d33888-62c7-45b2-a4d4-9dbc55914ed3"
+            },
+            {
+              "name": "Mock Digital8 Card - Echo Digital Outputs",
+              "typeName": "Fxt::Card::Mock::Digital8",
+              "slot": 3,
+              "points": {
+                "outputs": [
+                  {
+                    "channel": 1,
+                    "id": 68,
+                    "typeName": "Fxt::Point::Uint8",
+                    "initial": {
+                      "val": 0,
+                      "id": 70
+                    },
+                    "name": "EchoDoutByte",
+                    "ioRegId": 69,
+                    "type": "918cff9e-8007-4666-99ac-384b9624329c"
+                  }
+                ]
+              },
+              "type": "59d33888-62c7-45b2-a4d4-9dbc55914ed3"
+            }
+          ]
+        },
+        {
+          "name": "Off-board scanner. 5Hz (scan at half the driver sampling rate)",
+          "scanRateMultiplier": 200,
+          "cards": [
+            {
+              "name": "My RH/Temp card. Driver sample Rate: 10Hz",
+              "typeName": "Fxt::Card::Sensor::I2C::RHTemperature",
+              "slot": 255,
+              "driverInterval": 100,
+              "points": {
+                "inputs": [
+                  {
+                    "channel": 1,
+                    "id": 71,
+                    "typeName": "Fxt::Point::Float",
+                    "name": "RH Input Value",
+                    "ioRegId": 72,
+                    "type": "708745fa-cef6-4364-abad-063a40f35cbc"
+                  },
+                  {
+                    "channel": 2,
+                    "id": 73,
+                    "typeName": "Fxt::Point::Float",
+                    "name": "Temperature 'C Input",
+                    "ioRegId": 74,
+                    "type": "708745fa-cef6-4364-abad-063a40f35cbc"
+                  }
+                ],
+                "outputs": [
+                  {
+                    "channel": 1,
+                    "id": 75,
+                    "typeName": "Fxt::Point::Bool",
+                    "initial": {
+                      "val": false,
+                      "id": 77
+                    },
+                    "name": "Heater Enable",
+                    "ioRegId": 76,
+                    "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                  }
+                ]
+              },
+              "type": "9fd17cc7-88c1-46bc-8a8c-6f76ab4e6eee"
+            }
+          ]
+        }
+      ],
+      "executionSets": [
+        {
+          "name": "Fast Execution Set. 100Hz",
+          "exeRateMultiplier": 1,
+          "logicChains": [
+            {
+              "name": "button-pressed-led-feedback loop",
+              "components": [
+                {
+                  "name": "use button pressed state (true) to drive its LED",
+                  "typeName": "Fxt::Component::Digital::Not16Gate",
+                  "inputs": [
+                    {
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": 18,
+                      "idRefName": "ButtonIn-A",
+                      "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                    },
+                    {
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": 20,
+                      "idRefName": "ButtonIn-B",
+                      "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                    }
+                  ],
+                  "outputs": [
+                    {
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": 42,
+                      "negate": true,
+                      "idRefName": "ButtonLED-A",
+                      "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                    },
+                    {
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": 45,
+                      "negate": true,
+                      "idRefName": "ButtonLED-B",
+                      "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                    }
+                  ],
+                  "type": "31d8a613-bc99-4d0d-a96f-4b4dc9b0cc6f"
+                }
+              ]
+            },
+            {
+              "name": "Pass-through Analog Inputs to the mocked AOUT card",
+              "components": [
+                {
+                  "name": "scaler",
+                  "typeName": "Fxt::Component::Analog::SimpleScaler8",
+                  "inputs": [
+                    {
+                      "m": 1,
+                      "b": 0,
+                      "typeName": "Fxt::Point::Float",
+                      "idRef": 71,
+                      "idRefName": "RH Input Value",
+                      "type": "708745fa-cef6-4364-abad-063a40f35cbc"
+                    },
+                    {
+                      "m": 1,
+                      "b": 0,
+                      "typeName": "Fxt::Point::Float",
+                      "idRef": 73,
+                      "idRefName": "Temperature 'C Input",
+                      "type": "708745fa-cef6-4364-abad-063a40f35cbc"
+                    },
+                    {
+                      "m": 1.8,
+                      "b": 32,
+                      "typeName": "Fxt::Point::Float",
+                      "idRef": 73,
+                      "idRefName": "Temperature 'C Input",
+                      "type": "708745fa-cef6-4364-abad-063a40f35cbc"
+                    },
+                    {
+                      "m": 1,
+                      "b": 0,
+                      "typeName": "Fxt::Point::Float",
+                      "idRef": 12,
+                      "idRefName": "Ain#1",
+                      "type": "708745fa-cef6-4364-abad-063a40f35cbc"
+                    },
+                    {
+                      "m": 1,
+                      "b": 0,
+                      "typeName": "Fxt::Point::Float",
+                      "idRef": 14,
+                      "idRefName": "Ain#2",
+                      "type": "708745fa-cef6-4364-abad-063a40f35cbc"
+                    },
+                    {
+                      "m": 1,
+                      "b": 0,
+                      "typeName": "Fxt::Point::Float",
+                      "idRef": 16,
+                      "idRefName": "Ain#3",
+                      "type": "708745fa-cef6-4364-abad-063a40f35cbc"
+                    },
+                    {
+                      "m": 1,
+                      "b": 0,
+                      "typeName": "Fxt::Point::Float",
+                      "idRef": 22,
+                      "idRefName": "OnboardTemp",
+                      "type": "708745fa-cef6-4364-abad-063a40f35cbc"
+                    }
+                  ],
+                  "outputs": [
+                    {
+                      "typeName": "Fxt::Point::Float",
+                      "idRef": 51,
+                      "idRefName": "RH Out",
+                      "type": "708745fa-cef6-4364-abad-063a40f35cbc"
+                    },
+                    {
+                      "typeName": "Fxt::Point::Float",
+                      "idRef": 53,
+                      "idRefName": "Temperature 'C Out",
+                      "type": "708745fa-cef6-4364-abad-063a40f35cbc"
+                    },
+                    {
+                      "typeName": "Fxt::Point::Float",
+                      "idRef": 55,
+                      "idRefName": "Temperature 'F Out",
+                      "type": "708745fa-cef6-4364-abad-063a40f35cbc"
+                    },
+                    {
+                      "typeName": "Fxt::Point::Float",
+                      "idRef": 57,
+                      "idRefName": "Echo: AIN#1",
+                      "type": "708745fa-cef6-4364-abad-063a40f35cbc"
+                    },
+                    {
+                      "typeName": "Fxt::Point::Float",
+                      "idRef": 59,
+                      "idRefName": "Echo: AIN#2",
+                      "type": "708745fa-cef6-4364-abad-063a40f35cbc"
+                    },
+                    {
+                      "typeName": "Fxt::Point::Float",
+                      "idRef": 61,
+                      "idRefName": "Echo: AIN#3",
+                      "type": "708745fa-cef6-4364-abad-063a40f35cbc"
+                    },
+                    {
+                      "typeName": "Fxt::Point::Float",
+                      "idRef": 63,
+                      "idRefName": "Echo: Onboard Temp 'C",
+                      "type": "708745fa-cef6-4364-abad-063a40f35cbc"
+                    }
+                  ],
+                  "type": "0eb51702-677f-4022-91ab-bc84efcc4ed1"
+                }
+              ]
+            },
+            {
+              "name": "Pass-through Digital Inputs & Ouptuts to the mocked DIO8 cards' output",
+              "components": [
+                {
+                  "name": "Byte Mux #1. Digital Inputs",
+                  "typeName": "Fxt::Component::Digital::ByteMux",
+                  "inputs": [
+                    {
+                      "bit": 0,
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": 0,
+                      "idRefName": "Din#1",
+                      "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                    },
+                    {
+                      "bit": 1,
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": 3,
+                      "idRefName": "Din#2",
+                      "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                    },
+                    {
+                      "bit": 2,
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": 6,
+                      "idRefName": "Din#3",
+                      "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                    },
+                    {
+                      "bit": 3,
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": 9,
+                      "idRefName": "Din#4",
+                      "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                    }
+                  ],
+                  "outputs": [
+                    {
+                      "typeName": "Fxt::Point::Uint8",
+                      "idRef": 65,
+                      "idRefName": "EchoDinByte",
+                      "type": "918cff9e-8007-4666-99ac-384b9624329c"
+                    }
+                  ],
+                  "type": "d60f2daf-9709-42d6-ba92-b76f641eb930"
+                },
+                {
+                  "name": "Byte Mux #2. Digital Outputs",
+                  "typeName": "Fxt::Component::Digital::ByteMux",
+                  "inputs": [
+                    {
+                      "bit": 0,
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": 24,
+                      "idRefName": "Dout#1",
+                      "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                    },
+                    {
+                      "bit": 1,
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": 27,
+                      "idRefName": "Dout#2",
+                      "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                    },
+                    {
+                      "bit": 2,
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": 30,
+                      "idRefName": "Dout#3",
+                      "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                    },
+                    {
+                      "bit": 3,
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": 33,
+                      "idRefName": "RelayOut#1",
+                      "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                    },
+                    {
+                      "bit": 4,
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": 36,
+                      "idRefName": "RelayOut#2",
+                      "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                    },
+                    {
+                      "bit": 5,
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": 39,
+                      "idRefName": "RelayOut#3",
+                      "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                    },
+                    {
+                      "bit": 6,
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": 48,
+                      "idRefName": "ConnectedLED",
+                      "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0"
+                    }
+                  ],
+                  "outputs": [
+                    {
+                      "typeName": "Fxt::Point::Uint8",
+                      "idRef": 68,
+                      "idRefName": "EchoDoutByte",
+                      "type": "918cff9e-8007-4666-99ac-384b9624329c"
+                    }
+                  ],
+                  "type": "d60f2daf-9709-42d6-ba92-b76f641eb930"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "type": "dce5cbcc-7d87-4e84-98b6-42b8188ab12f"
+}

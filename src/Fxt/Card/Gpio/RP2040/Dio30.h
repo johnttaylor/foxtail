@@ -151,12 +151,6 @@ protected:
 
     /// Driver configuration: Outputs
     Driver::DIO::InOut::Config_T m_driverOutCfg[30];
-
-    /// Number of Inputs
-    uint8_t                      m_numInputs;
-
-    /// Number of Inputs
-    uint8_t                      m_numOutputs;
 };
 
 

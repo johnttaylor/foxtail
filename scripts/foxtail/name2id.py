@@ -5,12 +5,14 @@ Converts a Node file with symbolic point IDs to numeric point IDs
 ================================================================================
 usage: name2id.py [options] <infile> [<outfile>]
        name2id.py [options] --guids <srcpath>
+       name2id.py [options] --list-guids
 
 Arguments:
     <infile>       Input file (should be a valid Node JSON file)
     <outfile>      Output file. Defaults to <infile>.id
     --guids        Searches for GUID strings in the source code and populates
                    the type database/dictionary.
+    --list-guids   Display current set of known guids
     <srcpath>      Path to source code to search
                          
 Options:
@@ -467,7 +469,7 @@ if __name__ == '__main__':
     utils.set_verbose_mode( args['-v'] )
     
     # Convert file
-    if ( not args['--guids']  ):
+    if ( not args['--guids']  and not args['--list-guids'] ):
         # Load input file
         json_dict = utils.load_node_file( args['<infile>'] )
         if ( json_dict == None ):
@@ -496,7 +498,7 @@ if __name__ == '__main__':
             generate_define_list( args['-c'] )
 
     # Generate GUID dictionary
-    else:
+    elif ( args['--guids'] ):
         # Get a list of header files
         file_list = utils.walk_file_list( "*.h", args['<srcpath>'] )
         fxttypes = {}
@@ -505,8 +507,6 @@ if __name__ == '__main__':
             if ( g != None and t != None ):
                 fxttypes[t] = g
 
-        print(fxttypes)
-        
         # Create type dictionary
         if ( args['--append'] ):
             fxttypes.update(fxt_types._types_dict)
@@ -525,3 +525,11 @@ if __name__ == '__main__':
                 i = i + 1
             fd.write( "}" )
         
+        if ( args['-v'] ):
+            for k in fxttypes:
+                print(f'"{k}": "{fxttypes[k]}"' )
+
+    # Display type guids
+    else:
+        for k in fxt_types._types_dict:
+            print(f'"{k}": "{fxt_types._types_dict[k]}"' )

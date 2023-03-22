@@ -82,6 +82,19 @@ protected:
                                             Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
                                             Fxt::Point::DatabaseApi&           dbForPoints ) noexcept;
 
+
+    /** Helper method that initializes the Virtual and IO Register points
+        when starting the card.  This method ensure that BOTH the Virtual
+        and IO Register Point have the same initial values.  It does NOT
+        update the card's physical HW (that is the responsibility of the
+        concrete card class).
+
+        The method initializes both Input and Output sets of points.
+
+        Return false if an error occurred
+     */
+    bool setInitialPointValues() noexcept;
+
 protected:
     /// Bank for the Card's Input IO Register Points
     Fxt::Point::Bank                    m_ioRegisterInputs;
@@ -103,6 +116,12 @@ protected:
 
     /// Error state. A value of 0 indicates NO error
     Fxt::Type::Error                    m_error;
+
+    /// Number of input channels
+    uint16_t                            m_numInputs;
+
+    /// Number of output channels
+    uint16_t                            m_numOutputs;
 
     /// My slot number
     uint8_t                             m_slotNum;

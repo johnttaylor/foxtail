@@ -189,13 +189,6 @@ protected:
 protected:
     /// Mutex to provide thread safety for the application driving/reading the mocked IO
     Cpl::System::Mutex  m_lock;
-
-    /// Number of input channels
-    uint16_t            m_numInputs;
-
-    /// Number of output channels
-    uint16_t            m_numOutputs;
-
 };
 
 

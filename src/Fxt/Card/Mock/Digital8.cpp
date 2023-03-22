@@ -197,25 +197,8 @@ void Digital8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAll
 ///////////////////////////////////////////////////////////////////////////////
 bool Digital8::start( Cpl::Itc::PostApi& chassisMbox, uint64_t currentElapsedTimeUsec ) noexcept
 {
-    // Call the parent's start-up actions
-    if ( Common_::start( currentElapsedTimeUsec ) )
-    {
-        // Set the initial IO Register values (both inputs and outputs)
-        for ( unsigned i=0; i < m_numInputs; i++ )
-        {
-            m_inputIoRegisterPoints[i]->updateFromSetter();
-        }
-        for ( unsigned i=0; i < m_numOutputs; i++ )
-        {
-            m_outputIoRegisterPoints[i]->updateFromSetter();
-        }
-
-        // If I get here -->everything worked            
-        return true;
-    }
-
-    // Start FAILED
-    return false;
+    // Call the parent's start-up actions (Note: sets the VPoint/IORegPoints initial values)
+    return Common_::start( currentElapsedTimeUsec );
 }
 
 

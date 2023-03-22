@@ -149,7 +149,7 @@ bool Driver::Automation2040::Api::userButtonPressed( ButtonId_T button )
 
 void Driver::Automation2040::Api::setButtonLED( ButtonId_T button, bool on )
 {
-    pwm_set_gpio_level( button, on ? ON_PWM : OFF_PWM );
+    pwm_set_gpio_level( BUTTON_PIN_TO_LED_PIN( button ), on ? ON_PWM : OFF_PWM );
 }
 
 void Driver::Automation2040::Api::setButtonLED( ButtonId_T button, float brightness )
