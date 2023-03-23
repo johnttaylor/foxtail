@@ -11,7 +11,7 @@
 /** @file */
 
 
-#include "Not16Gate.h"
+#include "And64Gate.h"
 #include "Cpl/System/Assert.h"
 #include "Fxt/Point/Bool.h"
 #include <stdint.h>
@@ -21,7 +21,7 @@ using namespace Fxt::Component::Digital;
 
 
 ///////////////////////////////////////////////////////////////////////////////
-Not16Gate::Not16Gate( JsonVariant&                       componentObject,
+And64Gate::And64Gate( JsonVariant&                       componentObject,
                       Cpl::Memory::ContiguousAllocator&  generalAllocator,
                       Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
                       Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
@@ -29,87 +29,111 @@ Not16Gate::Not16Gate( JsonVariant&                       componentObject,
     : m_numInputs( 0 )
     , m_numOutputs( 0 )
 {
-    memset( &m_inputRefs, 0, sizeof( m_inputRefs ) );
-    memset( &m_outputRefs, 0, sizeof( m_outputRefs ) );
-    memset( &m_outputPassthrough, 0, sizeof( m_outputPassthrough ) );
-
-    parseConfiguration( componentObject );
+    parseConfiguration( generalAllocator, componentObject );
 }
 
-Not16Gate::~Not16Gate()
+And64Gate::~And64Gate()
 {
     // Nothing required
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-const char* Not16Gate::getTypeGuid() const noexcept
+const char* And64Gate::getTypeGuid() const noexcept
 {
     return GUID_STRING;
 }
 
-const char* Not16Gate::getTypeName() const noexcept
+const char* And64Gate::getTypeName() const noexcept
 {
     return TYPE_NAME;
 }
 
-bool Not16Gate::parseConfiguration( JsonVariant & obj ) noexcept
+bool And64Gate::parseConfiguration( Cpl::Memory::ContiguousAllocator& generalAllocator, JsonVariant & obj ) noexcept
 {
     // Parse Input Point references
     JsonArray inputs = obj["inputs"];
     if ( !inputs.isNull() )
     {
-        unsigned numInputsFound;
+        // Validate number of points
+        size_t nInputs = inputs.size();
+        if ( nInputs == 0 || nInputs > MAX_INPUTS )
+        {
+            m_error = fullErr( Err_T::INCORRECT_NUM_INPUT_REFS );
+            m_error.logIt( getTypeName() );
+            return false;
+        }
+        m_numInputs = (uint8_t) nInputs;
+
+        // Allocate memory for managing input references
+        m_inputRefs = (Fxt::Point::Bool**) generalAllocator.allocate( sizeof( Fxt::Point::Bool* ) * m_numInputs );
+        if ( m_inputRefs == nullptr )
+        {
+            m_error = fullErr( Err_T::OUT_OF_MEMORY );
+            m_error.logIt( getTypeName() );
+            return false;
+        }
+
+        // Parse the input points
+        unsigned numInputsFoundNotUsed;
         if ( !parsePointReferences( (size_t*) m_inputRefs,  // Start by storing the point ID
                                     MAX_INPUTS,
                                     inputs,
                                     fullErr( Err_T::TOO_MANY_INPUT_REFS ),
                                     fullErr( Err_T::BAD_INPUT_REFERENCE ),
-                                    numInputsFound ) )
+                                    numInputsFoundNotUsed ) )
         {
             return false;
         }
-
-        m_numInputs = (uint8_t) numInputsFound;
     }
 
     // Parse Output Point references
     JsonArray outputs = obj["outputs"];
     if ( !outputs.isNull() )
     {
-        unsigned numOutputsFound;
-        if ( !parsePointReferences( (size_t*) m_outputRefs, // Start by storing the point ID
-                                    MAX_INPUTS,
-                                    outputs,
-                                    fullErr( Err_T::TOO_MANY_INPUT_REFS ),
-                                    fullErr( Err_T::BAD_INPUT_REFERENCE ),
-                                    numOutputsFound ) )
+        // Validate number of points
+        size_t nOutputs = outputs.size();
+        if ( nOutputs == 0 || nOutputs > MAX_OUTPUTS )
         {
+            m_error = fullErr( Err_T::INCORRECT_NUM_OUTPUT_REFS );
+            m_error.logIt( getTypeName() );
+            return false;
+        }
+        m_numOutputs = (uint8_t) nOutputs;
+
+        // Allocate memory for managing input references
+        m_outputRefs    = (Fxt::Point::Bool**) generalAllocator.allocate( sizeof( Fxt::Point::Bool* ) * m_numOutputs );
+        m_outputNegated = (bool*) generalAllocator.allocate( sizeof( bool ) * m_numOutputs );
+        if ( m_outputRefs == nullptr || m_outputNegated == nullptr )
+        {
+            m_error = fullErr( Err_T::OUT_OF_MEMORY );
+            m_error.logIt( getTypeName() );
             return false;
         }
 
-        m_numOutputs = (uint8_t) numOutputsFound;
+        // Parse the output points
+        unsigned numInputsFoundNotUsed;
+        if ( !parsePointReferences( (size_t*) m_outputRefs, // Start by storing the point ID
+                                    MAX_OUTPUTS,
+                                    outputs,
+                                    fullErr( Err_T::TOO_MANY_INPUT_REFS ),
+                                    fullErr( Err_T::BAD_INPUT_REFERENCE ),
+                                    numInputsFoundNotUsed ) )
+        {
+            return false;
+        }
     }
 
-    // The number of inputs must match the number of outputs
-    if ( m_numInputs != m_numOutputs )
-    {
-
-        m_error = fullErr( Err_T::MISMATCHED_INPUTS_OUTPUTS );
-        m_error.logIt( "%s. in=%u, out=%u", getTypeName(), m_numInputs, m_numOutputs );
-        return false;
-    }
-
-    // Parse output negate qualifiers (Note: if negate is TRUE - that means do NOT - NOT the input)
+    // Parse output negate qualifiers
     for ( unsigned i=0; i < m_numOutputs; i++ )
     {
-        m_outputPassthrough[i] = outputs[i]["negate"] | false;
+        m_outputNegated[i] = outputs[i]["negate"] | false;
     }
 
     return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-Fxt::Type::Error Not16Gate::resolveReferences( Fxt::Point::DatabaseApi& pointDb )  noexcept
+Fxt::Type::Error And64Gate::resolveReferences( Fxt::Point::DatabaseApi& pointDb )  noexcept
 {
     // Resolve INPUT references
     if ( !Common_::resolveReferences( pointDb,
@@ -117,7 +141,7 @@ Fxt::Type::Error Not16Gate::resolveReferences( Fxt::Point::DatabaseApi& pointDb 
                                       m_numInputs ) )
     {
         m_error = fullErr( Err_T::UNRESOLVED_INPUT_REFRENCE );
-        m_error.logIt();
+        m_error.logIt( getTypeName() );
         return m_error;
     }
 
@@ -127,7 +151,7 @@ Fxt::Type::Error Not16Gate::resolveReferences( Fxt::Point::DatabaseApi& pointDb 
                                       m_numOutputs ) )
     {
         m_error = fullErr( Err_T::UNRESOLVED_OUTPUT_REFRENCE );
-        m_error.logIt();
+        m_error.logIt( getTypeName() );
         return m_error;
     }
 
@@ -135,13 +159,13 @@ Fxt::Type::Error Not16Gate::resolveReferences( Fxt::Point::DatabaseApi& pointDb 
     if ( Fxt::Point::Api::validatePointTypes( (Fxt::Point::Api **) m_inputRefs, m_numInputs, Fxt::Point::Bool::GUID_STRING ) == false )
     {
         m_error = fullErr( Err_T::INPUT_REFRENCE_BAD_TYPE );
-        m_error.logIt();
+        m_error.logIt( getTypeName() );
         return m_error;
     }
     if ( Fxt::Point::Api::validatePointTypes( (Fxt::Point::Api **) m_outputRefs, m_numOutputs, Fxt::Point::Bool::GUID_STRING ) == false )
     {
         m_error = fullErr( Err_T::OUTPUT_REFRENCE_BAD_TYPE );
-        m_error.logIt();
+        m_error.logIt( getTypeName() );
         return m_error;
     }
 
@@ -149,28 +173,36 @@ Fxt::Type::Error Not16Gate::resolveReferences( Fxt::Point::DatabaseApi& pointDb 
     return m_error;
 }
 
-Fxt::Type::Error Not16Gate::execute( int64_t currentTickUsec ) noexcept
+Fxt::Type::Error And64Gate::execute( int64_t currentTickUsec ) noexcept
 {
     // NOTE: The method NEVER fails
 
-    // Read all of my inputs!
+    // Read all of my inputs!  
+    bool outputVal = true;
     for ( int i=0; i < m_numInputs; i++ )
     {
-        bool inVal = true;
+        bool temp = true;
 
         // Set the outputs to invalid if at least one input is invalid
-        if ( !m_inputRefs[i]->read( inVal ) )
+        if ( !m_inputRefs[i]->read( temp ) )
         {
-            // Invalidate the corresponding output
-            m_outputRefs[i]->setInvalid();
+            // Invalidate the outputs
+            for ( int i=0; i < m_numOutputs; i++ )
+            {
+                m_outputRefs[i]->setInvalid();
+            }
+            return Fxt::Type::Error::SUCCESS();
         }
 
-        // NOT or (NOT NOT) the output
-        else
-        {
-            bool finalOut = m_outputPassthrough[i] ? inVal : !inVal;
-            m_outputRefs[i]->write( finalOut );
-        }
+        // AND the individual inputs
+        outputVal &= temp;
+    }
+
+    // If I get here all of the inputs have valid values -->generate output signals
+    for ( int i=0; i < m_numOutputs; i++ )
+    {
+        bool finalOut = m_outputNegated[i] ? !outputVal : outputVal;
+        m_outputRefs[i]->write( finalOut );
     }
 
     return Fxt::Type::Error::SUCCESS();

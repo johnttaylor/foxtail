@@ -12,12 +12,13 @@
 #include "Catch/catch.hpp"
 #include "Cpl/System/_testsupport/Shutdown_TS.h"
 #include "Fxt/Component/Digital/Error.h"
-#include "Fxt/Component/Digital/ByteDemux.h"
-#include "Fxt/Component/Digital/ByteDemuxFactory.h"
+#include "Fxt/Component/Digital/MuxFactory.h"
 #include "Fxt/Component/FactoryDatabase.h"
 #include "Fxt/Point/Database.h"
 #include "Fxt/Point/FactoryDatabase.h"
+#include "Fxt/Point/Int16.h"
 #include "Cpl/Memory/LeanHeap.h"
+#include "Cpl/Text/FString.h"
 #include <string.h>
 
 #define SECT_   "_0test"
@@ -28,27 +29,20 @@ using namespace Fxt::Component::Digital;
 
 #define COMP_DEFINTION     "{\"components\":[" \
                            "{" \
-                           "  \"name\": \"ByteDemux #1\"," \
-                           "  \"type\": \"8c55aa52-3bc8-4b8a-ad73-c434a0bbd4b4\"," \
-                           "  \"typeName\": \"Fxt::Component::Digital::ByteDemux\"," \
+                           "  \"name\": \"Mux #1\"," \
+                           "  \"type\": \"d60f2daf-9709-42d6-ba92-b76f641eb930\"," \
+                           "  \"typeName\": \"Fxt::Component::Digital::Mux\"," \
                            "  \"inputs\": [" \
                            "      {" \
-                           "          \"name\": \"input byte\"," \
-                           "          \"type\": \"918cff9e-8007-4666-99ac-384b9624329c\"," \
-                           "          \"typeName\": \"Fxt::Point::Uint8\"," \
-                           "          \"idRef\": 2" \
-                           "      }" \
-                           "    ]," \
-                           "  \"outputs\": [" \
-                           "      {" \
-                           "          \"bit\": 1," \
-                           "          \"name\": \"bit1\"," \
+                           "          \"bit\": 4," \
+                           "          \"name\": \"bit4\"," \
                            "          \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
                            "          \"typeName\": \"Fxt::Point::Bool\"," \
-                           "          \"idRef\": 3" \
+                           "          \"idRef\": 0," \
+                           "          \"negate\": false" \
                            "      }," \
                            "      {" \
-                           "          \"bit\": 1," \
+                           "          \"bit\": 0," \
                            "          \"name\": \"/bit1\"," \
                            "          \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
                            "          \"typeName\": \"Fxt::Point::Bool\"," \
@@ -56,27 +50,19 @@ using namespace Fxt::Component::Digital;
                            "          \"negate\": true" \
                            "      }," \
                            "      {" \
-                           "          \"bit\": 4," \
-                           "          \"name\": \"bit4\"," \
+                           "          \"bit\": 1," \
+                           "          \"name\": \"bit1\"," \
                            "          \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
                            "          \"typeName\": \"Fxt::Point::Bool\"," \
-                           "          \"idRef\": 0" \
-                           "      }," \
+                           "          \"idRef\": 2" \
+                           "      }" \
+                           "    ]," \
+                           "  \"outputs\": [" \
                            "      {" \
-                           "          \"bit\": 4," \
-                           "          \"name\": \"/bit4\"," \
-                           "          \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
-                           "          \"typeName\": \"Fxt::Point::Bool\"," \
-                           "          \"idRef\": 4," \
-                           "          \"negate\": true" \
-                           "      }," \
-                           "      {" \
-                           "          \"bit\": 5," \
-                           "          \"name\": \"/bit5\"," \
-                           "          \"type\": \"f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0\"," \
-                           "          \"typeName\": \"Fxt::Point::Bool\"," \
-                           "          \"idRef\": 5," \
-                           "          \"negate\": true" \
+                           "          \"name\": \"output word\"," \
+                           "          \"type\": \"9b747497-eabf-4d11-8ce3-11ad9b048c43\"," \
+                           "          \"typeName\": \"Fxt::Point::Int16\"," \
+                           "          \"idRef\": 3" \
                            "      }" \
                           "    ]" \
                            "  }" \
@@ -85,23 +71,18 @@ using namespace Fxt::Component::Digital;
 static size_t generalHeap_[10000];
 static size_t statefulHeap_[10000];
 
-#define MAX_COMPONENTS  2
+#define MAX_POINTS              4
 
-#define MAX_POINTS              6
+#define POINT_ID__OUT_SIGNAL    3
 
-#define POINT_ID__IN_SIGNAL_1   2
-
-#define POINT_ID__BIT1_OUT      3
-#define POINT_ID__BIT1_NEGATED  1
-#define POINT_ID__BIT4_OUT      0
-#define POINT_ID__BIT4_NEGATED  4
-#define POINT_ID__BIT5_NEGATED  5
-
+#define POINT_ID__BIT4_IN       0
+#define POINT_ID__BIT0_IN       1
+#define POINT_ID__BIT1_IN       2
 
 
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE( "ByteDemuxFactory" )
+TEST_CASE( "MuxFactory" )
 {
     Cpl::System::Shutdown_TS::clearAndUseCounter();
     Cpl::Memory::LeanHeap                       generalAllocator( generalHeap_, sizeof( generalHeap_ ) );
@@ -109,7 +90,7 @@ TEST_CASE( "ByteDemuxFactory" )
     Fxt::Point::Database<MAX_POINTS>            pointDb;
     Fxt::Component::FactoryDatabase             componentFactoryDb;
     Fxt::Point::FactoryDatabase                 pointFactoryDb;
-    ByteDemuxFactory                         uut( componentFactoryDb );
+    MuxFactory                                  uut( componentFactoryDb );
     Fxt::Type::Error                            componentErrorCode;
     Cpl::Text::FString<Fxt::Type::Error::MAX_TEXT_LEN> buf;
 
@@ -131,8 +112,8 @@ TEST_CASE( "ByteDemuxFactory" )
 
         REQUIRE( componentErrorCode == Fxt::Type::Error::SUCCESS() );
 
-        REQUIRE( strcmp( component->getTypeName(), ByteDemux::TYPE_NAME ) == 0 );
-        REQUIRE( strcmp( component->getTypeGuid(), ByteDemux::GUID_STRING ) == 0 );
+        REQUIRE( strcmp( component->getTypeName(), Mux::TYPE_NAME ) == 0 );
+        REQUIRE( strcmp( component->getTypeGuid(), Mux::GUID_STRING ) == 0 );
 
         REQUIRE( component->resolveReferences( pointDb ) == Fxt::Component::fullErr( Fxt::Component::Err_T::UNRESOLVED_INPUT_REFRENCE ) );
         uut.destroy( *component );
@@ -142,6 +123,7 @@ TEST_CASE( "ByteDemuxFactory" )
     {
         StaticJsonDocument<10240> doc;
         DeserializationError err = deserializeJson( doc, COMP_DEFINTION );
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("json error=%s", err.c_str()) );
         REQUIRE( err == DeserializationError::Ok );
 
         JsonVariant componentObj = doc["components"][0];
@@ -156,15 +138,14 @@ TEST_CASE( "ByteDemuxFactory" )
 
         REQUIRE( componentErrorCode == Fxt::Type::Error::SUCCESS() );
 
-        REQUIRE( strcmp( component->getTypeName(), ByteDemux::TYPE_NAME ) == 0 );
-        REQUIRE( strcmp( component->getTypeGuid(), ByteDemux::GUID_STRING ) == 0 );
+        REQUIRE( strcmp( component->getTypeName(), Mux::TYPE_NAME ) == 0 );
+        REQUIRE( strcmp( component->getTypeGuid(), Mux::GUID_STRING ) == 0 );
 
-        new(std::nothrow) Fxt::Point::Uint8( pointDb, POINT_ID__IN_SIGNAL_1, statefulAllocator );
-        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT1_OUT, statefulAllocator );
-        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT1_NEGATED, statefulAllocator );
-        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT4_OUT, statefulAllocator );
-        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT4_NEGATED, statefulAllocator );
-        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT5_NEGATED, statefulAllocator );
+        new(std::nothrow) Fxt::Point::Int16( pointDb, POINT_ID__OUT_SIGNAL, statefulAllocator );
+        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT0_IN, statefulAllocator );
+        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT1_IN, statefulAllocator );
+        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT4_IN, statefulAllocator );
+
         componentErrorCode = component->resolveReferences( pointDb );
         REQUIRE( componentErrorCode == Fxt::Type::Error::SUCCESS() );
 
@@ -184,19 +165,18 @@ TEST_CASE( "ByteDemuxFactory" )
                                                                                      pointFactoryDb,
                                                                                      pointDb,
                                                                                      componentErrorCode );
-        REQUIRE( component );
         CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", Fxt::Type::Error::toText( componentErrorCode, buf )) );
+        REQUIRE( component );
         REQUIRE( componentErrorCode == Fxt::Type::Error::SUCCESS() );
 
-        REQUIRE( strcmp( component->getTypeName(), ByteDemux::TYPE_NAME ) == 0 );
-        REQUIRE( strcmp( component->getTypeGuid(), ByteDemux::GUID_STRING ) == 0 );
+        REQUIRE( strcmp( component->getTypeName(), Mux::TYPE_NAME ) == 0 );
+        REQUIRE( strcmp( component->getTypeGuid(), Mux::GUID_STRING ) == 0 );
 
-        new(std::nothrow) Fxt::Point::Uint8( pointDb, POINT_ID__IN_SIGNAL_1, statefulAllocator );
-        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT1_OUT, statefulAllocator );
-        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT1_NEGATED, statefulAllocator );
-        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT4_OUT, statefulAllocator );
-        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT4_NEGATED, statefulAllocator );
-        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT5_NEGATED, statefulAllocator );
+        new(std::nothrow) Fxt::Point::Int16( pointDb, POINT_ID__OUT_SIGNAL, statefulAllocator );
+        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT0_IN, statefulAllocator );
+        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT1_IN, statefulAllocator );
+        new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT4_IN, statefulAllocator );
+
         REQUIRE( component->resolveReferences( pointDb ) == Fxt::Type::Error::SUCCESS() );
 
         uut.destroy( *component );

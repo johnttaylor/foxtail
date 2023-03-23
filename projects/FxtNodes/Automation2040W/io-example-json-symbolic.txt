@@ -292,7 +292,7 @@
               "components": [
                 {
                   "name": "use button pressed state (false) to drive its LED",
-                  "typeName": "Fxt::Component::Digital::Not16Gate",
+                  "typeName": "Fxt::Component::Digital::Not64Gate",
                   "inputs": [
                     {
                       "typeName": "Fxt::Point::Bool",
@@ -406,7 +406,7 @@
               "components": [
                 {
                   "name": "Byte Mux #1. Digital Inputs",
-                  "typeName": "Fxt::Component::Digital::ByteMux",
+                  "typeName": "Fxt::Component::Digital::Mux",
                   "inputs": [
                     {
                       "bit": 0,
@@ -438,7 +438,7 @@
                 },
                 {
                   "name": "Byte Mux #2. Digital Outputs",
-                  "typeName": "Fxt::Component::Digital::ByteMux",
+                  "typeName": "Fxt::Component::Digital::Mux",
                   "inputs": [
                     {
                       "bit": 0,
@@ -485,7 +485,7 @@
                 },
                 {
                   "name": "Byte Demux #1. Set Digital Outputs",
-                  "typeName": "Fxt::Component::Digital::ByteDemux",
+                  "typeName": "Fxt::Component::Digital::Demux",
                   "outputs": [
                     {
                       "bit": 0,

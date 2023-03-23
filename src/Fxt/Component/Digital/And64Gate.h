@@ -27,7 +27,7 @@ namespace Digital {
 
 
 /** This concrete class implements a Component that functions as AND gate
-    for boolean inputs.  Up to 16 inputs are supported, and has two outputs. The
+    for boolean inputs.  Up to 64 inputs are supported, and has two outputs. The
     first output is result of the AND operation and the second output is the
     logical complement of the AND output
 
@@ -43,7 +43,7 @@ namespace Digital {
     {
        "name": "AND Gate#1"                                 // Text label for the component
        "type": "e62e395c-d27a-4821-bba9-aa1e6de42a05",      // Identifies the card type.  Value comes from the Supported/Available-card-list
-       "typeName": "Fxt::Component::Digital::And16Gate"     // OPTIONAL: Human readable type name
+       "typeName": "Fxt::Component::Digital::And64Gate"     // OPTIONAL: Human readable type name
        "inputs": [                                          // Array of Point references that supply the Component's input values.  Number of elements: 1-16
           {
             "name": "Signal A",                             // human readable name for the input value
@@ -74,35 +74,35 @@ namespace Digital {
 
     \endcode
  */
-class And16Gate : public Fxt::Component::Common_
+class And64Gate : public Fxt::Component::Common_
 {
 public:
     /// Type ID for the card
     static constexpr const char*    GUID_STRING = "e62e395c-d27a-4821-bba9-aa1e6de42a05";
 
     /// Type name for the card
-    static constexpr const char*    TYPE_NAME   = "Fxt::Component::Digital::And16Gate";
+    static constexpr const char*    TYPE_NAME   = "Fxt::Component::Digital::And64Gate";
 
     /// Size (in bytes) of Stateful data that will be allocated on the HA Heap
     static constexpr const size_t   HA_STATEFUL_HEAP_SIZE = 0;
 
 public:
     /// Maximum number of Input signals
-    static constexpr unsigned MAX_INPUTS = 16;
+    static constexpr unsigned MAX_INPUTS = 64;
 
     /// Maximum number of Output signals
     static constexpr unsigned MAX_OUTPUTS = 2;
 
 public:
     /// Constructor
-    And16Gate( JsonVariant&                       componentObject,
+    And64Gate( JsonVariant&                       componentObject,
                Cpl::Memory::ContiguousAllocator&  generalAllocator,
                Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
                Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
                Fxt::Point::DatabaseApi&           dbForPoints );
 
     /// Destructor
-    ~And16Gate();
+    ~And64Gate();
 
 public:
     /// See Fxt::Component::Api
@@ -121,17 +121,17 @@ public:
 
 protected:
     /// Helper method to parse the card's JSON config
-    bool parseConfiguration( JsonVariant& obj ) noexcept;
+    bool parseConfiguration( Cpl::Memory::ContiguousAllocator& generalAllocator, JsonVariant& obj ) noexcept;
 
 protected:
-    /// List of Input Points.  Note: Initially the point IDs are stored instead of pointers
-    Fxt::Point::Bool*   m_inputRefs[MAX_INPUTS];
+    /// List of Input Points Pointers.  Note: Initially the point IDs are stored instead of pointers
+    Fxt::Point::Bool**  m_inputRefs;
 
-    /// List of Output Points. Note: Initially the point IDs are stored instead of pointers
-    Fxt::Point::Bool*   m_outputRefs[MAX_OUTPUTS];
+    /// List of Output Points Pointers. Note: Initially the point IDs are stored instead of pointers
+    Fxt::Point::Bool**  m_outputRefs;
 
-    /// Negate qualifier for the output points
-    bool                m_outputNegated[MAX_OUTPUTS];
+    /// List of Negate qualifier for the output points
+    bool*               m_outputNegated;
 
     /// Number of Input points
     uint8_t             m_numInputs;

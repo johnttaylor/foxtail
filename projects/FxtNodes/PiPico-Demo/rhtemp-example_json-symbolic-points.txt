@@ -95,7 +95,7 @@
               "components": [
                 {
                   "name": "Byte Demux #1",
-                  "typeName": "Fxt::Component::Digital::ByteDemux",
+                  "typeName": "Fxt::Component::Digital::Demux",
                   "inputs": [
                     {
                       "typeName": "Fxt::Point::Uint8",

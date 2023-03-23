@@ -19,15 +19,15 @@
 */
 
 
-#include "Fxt/Component/Digital/And16GateFactory.h"
-#include "Fxt/Component/Digital/Not16GateFactory.h"
-#include "Fxt/Component/Digital/ByteDemuxFactory.h"
-#include "Fxt/Component/Digital/ByteMuxFactory.h"
+#include "Fxt/Component/Digital/And64GateFactory.h"
+#include "Fxt/Component/Digital/Not64GateFactory.h"
+#include "Fxt/Component/Digital/DemuxFactory.h"
+#include "Fxt/Component/Digital/MuxFactory.h"
 
-static Fxt::Component::Digital::And16GateFactory         and16GateFactory_( FXT_MY_APP_COMPONENT_FACTORY_DB );
-static Fxt::Component::Digital::Not16GateFactory         not16GateFactory_( FXT_MY_APP_COMPONENT_FACTORY_DB );
-static Fxt::Component::Digital::ByteDemuxFactory         byteDemuxFactory_( FXT_MY_APP_COMPONENT_FACTORY_DB );
-static Fxt::Component::Digital::ByteMuxFactory           byteMuxFactory_( FXT_MY_APP_COMPONENT_FACTORY_DB );
+static Fxt::Component::Digital::And64GateFactory         and64GateFactory_( FXT_MY_APP_COMPONENT_FACTORY_DB );
+static Fxt::Component::Digital::Not64GateFactory         not64GateFactory_( FXT_MY_APP_COMPONENT_FACTORY_DB );
+static Fxt::Component::Digital::DemuxFactory             demuxFactory_( FXT_MY_APP_COMPONENT_FACTORY_DB );
+static Fxt::Component::Digital::MuxFactory               muxFactory_( FXT_MY_APP_COMPONENT_FACTORY_DB );
 
 
 #endif  // end header latch

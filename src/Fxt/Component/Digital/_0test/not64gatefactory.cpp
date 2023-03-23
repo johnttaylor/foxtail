@@ -12,8 +12,8 @@
 #include "Catch/catch.hpp"
 #include "Cpl/System/_testsupport/Shutdown_TS.h"
 #include "Fxt/Component/Digital/Error.h"
-#include "Fxt/Component/Digital/Not16Gate.h"
-#include "Fxt/Component/Digital/Not16GateFactory.h"
+#include "Fxt/Component/Digital/Not64Gate.h"
+#include "Fxt/Component/Digital/Not64GateFactory.h"
 #include "Fxt/Component/FactoryDatabase.h"
 #include "Fxt/Point/Database.h"
 #include "Fxt/Point/FactoryDatabase.h"
@@ -30,9 +30,9 @@ static const char* COMP_DEFINTION = R"literalString(
 {
   "components": [
     {
-      "name": "NOT16 Gate",
-      "type": "1d8a613-bc99-4d0d-a96f-4b4dc9b0cc6f",
-      "typeName": "Fxt::Component::Digital::Not16Gate",
+      "name": "NOT64 Gate",
+      "type": "31d8a613-bc99-4d0d-a96f-4b4dc9b0cc6f",
+      "typeName": "Fxt::Component::Digital::Not64Gate",
       "inputs": [
         {
           "name": "IN Signal A",
@@ -86,7 +86,7 @@ static size_t statefulHeap_[10000];
 
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE( "Not16GateFactory" )
+TEST_CASE( "Not64GateFactory" )
 {
     Cpl::System::Shutdown_TS::clearAndUseCounter();
     Cpl::Memory::LeanHeap               generalAllocator( generalHeap_, sizeof( generalHeap_ ) );
@@ -94,7 +94,7 @@ TEST_CASE( "Not16GateFactory" )
     Fxt::Point::Database<MAX_POINTS>    pointDb;
     Fxt::Component::FactoryDatabase     componentFactoryDb;
     Fxt::Point::FactoryDatabase         pointFactoryDb;
-    Not16GateFactory                    uut( componentFactoryDb );
+    Not64GateFactory                    uut( componentFactoryDb );
     Fxt::Type::Error                    componentErrorCode;
     Cpl::Text::FString<Fxt::Type::Error::MAX_TEXT_LEN> buf;
 
@@ -115,8 +115,8 @@ TEST_CASE( "Not16GateFactory" )
         CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", Fxt::Type::Error::toText( componentErrorCode, buf )) );
         REQUIRE( componentErrorCode == Fxt::Type::Error::SUCCESS() );
 
-        REQUIRE( strcmp( component->getTypeName(), Not16Gate::TYPE_NAME ) == 0 );
-        REQUIRE( strcmp( component->getTypeGuid(), Not16Gate::GUID_STRING ) == 0 );
+        REQUIRE( strcmp( component->getTypeName(), Not64Gate::TYPE_NAME ) == 0 );
+        REQUIRE( strcmp( component->getTypeGuid(), Not64Gate::GUID_STRING ) == 0 );
 
         REQUIRE( component->resolveReferences( pointDb ) == Fxt::Component::fullErr( Fxt::Component::Err_T::UNRESOLVED_INPUT_REFRENCE) );
 
@@ -140,8 +140,8 @@ TEST_CASE( "Not16GateFactory" )
         CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", Fxt::Type::Error::toText( componentErrorCode, buf )) );
         REQUIRE( componentErrorCode == Fxt::Type::Error::SUCCESS() );
 
-        REQUIRE( strcmp( component->getTypeName(), Not16Gate::TYPE_NAME ) == 0 );
-        REQUIRE( strcmp( component->getTypeGuid(), Not16Gate::GUID_STRING ) == 0 );
+        REQUIRE( strcmp( component->getTypeName(), Not64Gate::TYPE_NAME ) == 0 );
+        REQUIRE( strcmp( component->getTypeGuid(), Not64Gate::GUID_STRING ) == 0 );
 
         new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_1, statefulAllocator );
         new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_2, statefulAllocator );
@@ -171,8 +171,8 @@ TEST_CASE( "Not16GateFactory" )
         CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", Fxt::Type::Error::toText( componentErrorCode, buf )) );
         REQUIRE( componentErrorCode == Fxt::Type::Error::SUCCESS() );
         
-        REQUIRE( strcmp( component->getTypeName(), Not16Gate::TYPE_NAME ) == 0 );
-        REQUIRE( strcmp( component->getTypeGuid(), Not16Gate::GUID_STRING ) == 0 );
+        REQUIRE( strcmp( component->getTypeName(), Not64Gate::TYPE_NAME ) == 0 );
+        REQUIRE( strcmp( component->getTypeGuid(), Not64Gate::GUID_STRING ) == 0 );
 
         new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_1, statefulAllocator );
         new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_2, statefulAllocator );

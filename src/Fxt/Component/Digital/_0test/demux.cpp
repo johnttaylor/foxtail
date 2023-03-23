@@ -11,10 +11,11 @@
 
 #include "Catch/catch.hpp"
 #include "Cpl/System/_testsupport/Shutdown_TS.h"
-#include "Fxt/Component/Digital/ByteDemux.h"
+#include "Fxt/Component/Digital/Demux.h"
 #include "Fxt/Component/Digital/Error.h"
 #include "Fxt/Point/Database.h"
 #include "Fxt/Point/FactoryDatabase.h"
+#include "Fxt/Point/Int32.h"
 #include "Cpl/Memory/LeanHeap.h"
 #include <string.h>
 
@@ -26,14 +27,14 @@ using namespace Fxt::Component::Digital;
 
 #define COMP_DEFINTION     "{\"components\":[" \
                            "{" \
-                           "  \"name\": \"ByteDemux #1\"," \
+                           "  \"name\": \"Demux #1\"," \
                            "  \"type\": \"8c55aa52-3bc8-4b8a-ad73-c434a0bbd4b4\"," \
-                           "  \"typeName\": \"Fxt::Component::Digital::ByteDemux\"," \
+                           "  \"typeName\": \"Fxt::Component::Digital::Demux\"," \
                            "  \"inputs\": [" \
                            "      {" \
                            "          \"name\": \"input byte\"," \
-                           "          \"type\": \"918cff9e-8007-4666-99ac-384b9624329c\"," \
-                           "          \"typeName\": \"Fxt::Point::Uint8\"," \
+                           "          \"type\": \"c357de9a-a10b-4c87-83b9-ed230135752d\"," \
+                           "          \"typeName\": \"Fxt::Point::Int32\"," \
                            "          \"idRef\": 2" \
                            "      }" \
                            "    ]," \
@@ -96,7 +97,7 @@ static size_t statefulHeap_[10000];
 
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE( "ByteDemux" )
+TEST_CASE( "Demux" )
 {
     Cpl::System::Shutdown_TS::clearAndUseCounter();
     Cpl::Memory::LeanHeap generalAllocator( generalHeap_, sizeof( generalHeap_ ) );
@@ -111,7 +112,7 @@ TEST_CASE( "ByteDemux" )
         REQUIRE( err == DeserializationError::Ok );
 
         JsonVariant componentObj = doc["components"][0];
-        ByteDemux uut( componentObj,
+        Demux uut( componentObj,
                           generalAllocator,
                           statefulAllocator,
                           pointFactoryDb,
@@ -119,8 +120,8 @@ TEST_CASE( "ByteDemux" )
 
         REQUIRE( uut.getErrorCode() == Fxt::Type::Error::SUCCESS() );
 
-        REQUIRE( strcmp( uut.getTypeGuid(), ByteDemux::GUID_STRING ) == 0 );
-        REQUIRE( strcmp( uut.getTypeName(), ByteDemux::TYPE_NAME ) == 0 );
+        REQUIRE( strcmp( uut.getTypeGuid(), Demux::GUID_STRING ) == 0 );
+        REQUIRE( strcmp( uut.getTypeName(), Demux::TYPE_NAME ) == 0 );
 
         REQUIRE( uut.isStarted() == false );
     }
@@ -132,7 +133,7 @@ TEST_CASE( "ByteDemux" )
         REQUIRE( err == DeserializationError::Ok );
 
         JsonVariant componentObj = doc["components"][0];
-        ByteDemux uut( componentObj,
+        Demux uut( componentObj,
                           generalAllocator,
                           statefulAllocator,
                           pointFactoryDb,
@@ -153,7 +154,7 @@ TEST_CASE( "ByteDemux" )
         REQUIRE( err == DeserializationError::Ok );
 
         JsonVariant componentObj = doc["components"][0];
-        ByteDemux uut( componentObj,
+        Demux uut( componentObj,
                           generalAllocator,
                           statefulAllocator,
                           pointFactoryDb,
@@ -161,12 +162,12 @@ TEST_CASE( "ByteDemux" )
 
         REQUIRE( uut.getErrorCode() == Fxt::Type::Error::SUCCESS() );
 
-        Fxt::Point::Uint8* ptIn1  = new(std::nothrow) Fxt::Point::Uint8( pointDb, POINT_ID__IN_SIGNAL_1,  statefulAllocator );
-        Fxt::Point::Bool* ptOutBit1 = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT1_OUT, statefulAllocator );
-        Fxt::Point::Bool* ptOutBit1_N = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT1_NEGATED, statefulAllocator );
-        Fxt::Point::Bool* ptOutBit4 = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT4_OUT, statefulAllocator );
-        Fxt::Point::Bool* ptOutBit4_N = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT4_NEGATED, statefulAllocator );
-        Fxt::Point::Bool* ptOutBit5_N = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT5_NEGATED, statefulAllocator );
+        Fxt::Point::Int32* ptIn1       = new(std::nothrow) Fxt::Point::Int32( pointDb, POINT_ID__IN_SIGNAL_1,  statefulAllocator );
+        Fxt::Point::Bool*  ptOutBit1   = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT1_OUT, statefulAllocator );
+        Fxt::Point::Bool*  ptOutBit1_N = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT1_NEGATED, statefulAllocator );
+        Fxt::Point::Bool*  ptOutBit4   = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT4_OUT, statefulAllocator );
+        Fxt::Point::Bool*  ptOutBit4_N = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT4_NEGATED, statefulAllocator );
+        Fxt::Point::Bool*  ptOutBit5_N = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT5_NEGATED, statefulAllocator );
 
         Fxt::Type::Error errCode = uut.resolveReferences( pointDb );
         REQUIRE( errCode == Fxt::Type::Error::SUCCESS() );

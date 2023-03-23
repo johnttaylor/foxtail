@@ -79,7 +79,7 @@
               "components": [
                 {
                   "name": "Byte Demux #1",
-                  "typeName": "Fxt::Component::Digital::ByteDemux",
+                  "typeName": "Fxt::Component::Digital::Demux",
                   "inputs": [
                     {
                       "typeName": "Fxt::Point::Uint8",
@@ -96,7 +96,7 @@
                 },
                 {
                   "name": "AND Gate#1",
-                  "typeName": "Fxt::Component::Digital::And16Gate",
+                  "typeName": "Fxt::Component::Digital::And64Gate",
                   "inputs": [
                     {
                       "name": "Signal#1",
@@ -119,7 +119,7 @@
                 },
                 {
                   "name": "Byte Mux #1",
-                  "typeName": "Fxt::Component::Digital::ByteMux",
+                  "typeName": "Fxt::Component::Digital::Mux",
                   "inputs": [
                     {
                       "bit": 0,

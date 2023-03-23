@@ -11,11 +11,12 @@
 
 #include "Catch/catch.hpp"
 #include "Cpl/System/_testsupport/Shutdown_TS.h"
-#include "Fxt/Component/Digital/ByteMux.h"
+#include "Fxt/Component/Digital/Mux.h"
 #include "Fxt/Component/Digital/Error.h"
 #include "Fxt/Point/Database.h"
 #include "Fxt/Point/FactoryDatabase.h"
 #include "Cpl/Memory/LeanHeap.h"
+#include "Fxt/Point/Int16.h"
 #include <string.h>
 
 #define SECT_   "_0test"
@@ -26,9 +27,9 @@ using namespace Fxt::Component::Digital;
 
 #define COMP_DEFINTION     "{\"components\":[" \
                            "{" \
-                           "  \"name\": \"ByteMux #1\"," \
+                           "  \"name\": \"Mux #1\"," \
                            "  \"type\": \"d60f2daf-9709-42d6-ba92-b76f641eb930\"," \
-                           "  \"typeName\": \"Fxt::Component::Digital::ByteMux\"," \
+                           "  \"typeName\": \"Fxt::Component::Digital::Mux\"," \
                            "  \"inputs\": [" \
                            "      {" \
                            "          \"bit\": 4," \
@@ -56,9 +57,9 @@ using namespace Fxt::Component::Digital;
                            "    ]," \
                            "  \"outputs\": [" \
                            "      {" \
-                           "          \"name\": \"input byte\"," \
-                           "          \"type\": \"918cff9e-8007-4666-99ac-384b9624329c\"," \
-                           "          \"typeName\": \"Fxt::Point::Uint8\"," \
+                           "          \"name\": \"output word\"," \
+                           "          \"type\": \"9b747497-eabf-4d11-8ce3-11ad9b048c43\"," \
+                           "          \"typeName\": \"Fxt::Point::Int16\"," \
                            "          \"idRef\": 3" \
                            "      }" \
                           "    ]" \
@@ -79,7 +80,7 @@ static size_t statefulHeap_[10000];
 
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE( "ByteMux" )
+TEST_CASE( "Mux" )
 {
     Cpl::System::Shutdown_TS::clearAndUseCounter();
     Cpl::Memory::LeanHeap generalAllocator( generalHeap_, sizeof( generalHeap_ ) );
@@ -95,16 +96,16 @@ TEST_CASE( "ByteMux" )
         REQUIRE( err == DeserializationError::Ok );
 
         JsonVariant componentObj = doc["components"][0];
-        ByteMux uut( componentObj,
-                       generalAllocator,
-                       statefulAllocator,
-                       pointFactoryDb,
-                       pointDb );
+        Mux uut( componentObj,
+                 generalAllocator,
+                 statefulAllocator,
+                 pointFactoryDb,
+                 pointDb );
 
         REQUIRE( uut.getErrorCode() == Fxt::Type::Error::SUCCESS() );
 
-        REQUIRE( strcmp( uut.getTypeGuid(), ByteMux::GUID_STRING ) == 0 );
-        REQUIRE( strcmp( uut.getTypeName(), ByteMux::TYPE_NAME ) == 0 );
+        REQUIRE( strcmp( uut.getTypeGuid(), Mux::GUID_STRING ) == 0 );
+        REQUIRE( strcmp( uut.getTypeName(), Mux::TYPE_NAME ) == 0 );
 
         REQUIRE( uut.isStarted() == false );
     }
@@ -116,11 +117,11 @@ TEST_CASE( "ByteMux" )
         REQUIRE( err == DeserializationError::Ok );
 
         JsonVariant componentObj = doc["components"][0];
-        ByteMux uut( componentObj,
-                       generalAllocator,
-                       statefulAllocator,
-                       pointFactoryDb,
-                       pointDb );
+        Mux uut( componentObj,
+                 generalAllocator,
+                 statefulAllocator,
+                 pointFactoryDb,
+                 pointDb );
 
         REQUIRE( uut.getErrorCode() == Fxt::Type::Error::SUCCESS() );
 
@@ -137,15 +138,15 @@ TEST_CASE( "ByteMux" )
         REQUIRE( err == DeserializationError::Ok );
 
         JsonVariant componentObj = doc["components"][0];
-        ByteMux uut( componentObj,
-                       generalAllocator,
-                       statefulAllocator,
-                       pointFactoryDb,
-                       pointDb );
+        Mux uut( componentObj,
+                 generalAllocator,
+                 statefulAllocator,
+                 pointFactoryDb,
+                 pointDb );
 
         REQUIRE( uut.getErrorCode() == Fxt::Type::Error::SUCCESS() );
 
-        Fxt::Point::Uint8* ptOut    = new(std::nothrow) Fxt::Point::Uint8( pointDb, POINT_ID__OUT_SIGNAL, statefulAllocator );
+        Fxt::Point::Int16* ptOut    = new(std::nothrow) Fxt::Point::Int16( pointDb, POINT_ID__OUT_SIGNAL, statefulAllocator );
         Fxt::Point::Bool*  ptInBit0 = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT0_IN, statefulAllocator );
         Fxt::Point::Bool*  ptInBit1 = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT1_IN, statefulAllocator );
         Fxt::Point::Bool*  ptInBit4 = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__BIT4_IN, statefulAllocator );
@@ -164,10 +165,10 @@ TEST_CASE( "ByteMux" )
         ptInBit1->write( true );
         REQUIRE( uut.execute( nowUsec ) == Fxt::Type::Error::SUCCESS() );
         REQUIRE( ptOut->isNotValid() );
-        
+
         ptInBit4->write( true );
         REQUIRE( uut.execute( nowUsec ) == Fxt::Type::Error::SUCCESS() );
-        uint8_t val;
+        int16_t val;
         REQUIRE( ptOut->read( val ) );
         REQUIRE( val == 0b10010 );
 

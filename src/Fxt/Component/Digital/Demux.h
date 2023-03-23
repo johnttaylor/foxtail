@@ -1,5 +1,5 @@
-#ifndef Fxt_Component_Digital_ByteDemux_h_
-#define Fxt_Component_Digital_ByteDemux_h_
+#ifndef Fxt_Component_Digital_Demux_h_
+#define Fxt_Component_Digital_Demux_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -29,9 +29,10 @@ namespace Digital {
 
 
 /** This concrete class implements a Component that breaks-out the each
-    individual bit in an 8 bit byte into 2 Boolean outputs (1 pt for
+    individual bit in an integer into 2 Boolean outputs (1 pt for
     the logical value, an 1 pt for its complement).  There are total of
-    16 possible boolean outputs.  Only 1 output signal is required.
+    possible boolean outputs is dependent on the input type, e.g. Uint8
+    input has 8 outputs, an Int64 has 64 outputs.
 
     Bit ordering: Bit0 is the LEAST significant bit
 
@@ -46,11 +47,11 @@ namespace Digital {
     {
        "name": "Byte Demux #1"                           // *Text label for the component
        "type": "8c55aa52-3bc8-4b8a-ad73-c434a0bbd4b4",      // Identifies the card type.  Value comes from the Supported/Available-card-list
-       "typeName": "Fxt::Component::Digital::ByteDemux"  // *OPTIONAL: Human readable type name
+       "typeName": "Fxt::Component::Digital::Demux"  // *OPTIONAL: Human readable type name
        "inputs": [                                          // Array of Point references that supply the Component's input values.  Number of elements: 1-16
           {
-            "name": "input byte",                           // human readable name for the input value
-            "type": "918cff9e-8007-4666-99ac-384b9624329c", // *REQUIRED Type for the input signal
+            "name": "input word",                           // human readable name for the input value
+            "type": "918cff9e-8007-4666-99ac-384b9624329c", // *REQUIRED Type for the input signal. Can be any integer type: Int8, Uint8, ... Int64, Uint64.
             "typeName": "Fxt::Point::Uint8",                // *OPTIONAL: Human readable Type name for the input signal
             "idRef": 4294967295                             // Point ID Reference to the point to read the input value from
           },
@@ -81,14 +82,14 @@ namespace Digital {
 
     \endcode
  */
-class ByteDemux : public Fxt::Component::Common_
+class Demux : public Fxt::Component::Common_
 {
 public:
     /// Type ID for the card
     static constexpr const char*    GUID_STRING = "8c55aa52-3bc8-4b8a-ad73-c434a0bbd4b4";
 
     /// Type name for the card
-    static constexpr const char*    TYPE_NAME   = "Fxt::Component::Digital::ByteDemux";
+    static constexpr const char*    TYPE_NAME   = "Fxt::Component::Digital::Demux";
 
     /// Size (in bytes) of Stateful data that will be allocated on the HA Heap
     static constexpr const size_t   HA_STATEFUL_HEAP_SIZE = 0;
@@ -98,18 +99,18 @@ public:
     static constexpr unsigned MAX_INPUTS = 1;
 
     /// Maximum number of Output signals
-    static constexpr unsigned MAX_OUTPUTS = 16;
+    static constexpr unsigned MAX_OUTPUTS = 64;
 
 public:
     /// Constructor
-    ByteDemux( JsonVariant&                       componentObject,
-                  Cpl::Memory::ContiguousAllocator&  generalAllocator,
-                  Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
-                  Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
-                  Fxt::Point::DatabaseApi&           dbForPoints );
+    Demux( JsonVariant&                       componentObject,
+           Cpl::Memory::ContiguousAllocator&  generalAllocator,
+           Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
+           Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
+           Fxt::Point::DatabaseApi&           dbForPoints );
 
     /// Destructor
-    ~ByteDemux();
+    ~Demux();
 
 public:
     /// See Fxt::Component::Api
@@ -127,20 +128,27 @@ public:
 
 protected:
     /// Helper method to parse the card's JSON config
-    bool parseConfiguration( JsonVariant& obj ) noexcept;
+    bool parseConfiguration( Cpl::Memory::ContiguousAllocator& generalAllocator, JsonVariant& obj ) noexcept;
+
+protected:
+    /// Function signature for reading the input value
+    typedef bool (*ReadFunc_T)(Fxt::Point::Api* genericPt, uint64_t& dstValue );
 
 protected:
     /// List of Input Points.  Note: Initially the point IDs are stored instead of pointers
-    Fxt::Point::Uint8*   m_inputRefs[MAX_INPUTS];
+    Fxt::Point::Api**   m_inputRefs;
 
     /// List of Output Points. Note: Initially the point IDs are stored instead of pointers
-    Fxt::Point::Bool*   m_outputRefs[MAX_OUTPUTS];
+    Fxt::Point::Bool**  m_outputRefs;
 
-    /// Negate qualifier for the output points
-    bool                m_outputNegated[MAX_OUTPUTS];
+    /// List of Negate qualifier for the output points
+    bool*               m_outputNegated;
 
-    /// Bit offset for the output points
-    uint8_t             m_bitOffsets[MAX_OUTPUTS];
+    /// List of Bit offset for the output points
+    uint8_t*            m_bitOffsets;
+
+    /// Type specific function to read the input value
+    ReadFunc_T          m_readFunc;
 
     /// Number of Input points
     uint8_t             m_numInputs;

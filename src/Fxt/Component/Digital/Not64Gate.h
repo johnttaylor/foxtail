@@ -1,5 +1,5 @@
-#ifndef Fxt_Component_Digital_Not16Gate_h_
-#define Fxt_Component_Digital_Not16Gate_h_
+#ifndef Fxt_Component_Digital_Not64Gate_h_
+#define Fxt_Component_Digital_Not64Gate_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -43,7 +43,7 @@ namespace Digital {
     {
        "name": "NOT Gate#1"                                 // *Text label for the component
        "type": "31d8a613-bc99-4d0d-a96f-4b4dc9b0cc6f",      // Identifies the card type.  Value comes from the Supported/Available-card-list
-       "typeName": "Fxt::Component::Digital::Not16Gate"     // *OPTIONAL: Human readable type name
+       "typeName": "Fxt::Component::Digital::Not64Gate"     // *OPTIONAL: Human readable type name
        "inputs": [                                          // Array of Point references that supply the Component's input values.  Number of elements: 1-16
           {                                                 // NOTE: Order of the Inputs MUST MATCH the Order of the Outputs
             "name": "Signal A",                             // *human readable name for the input value
@@ -69,35 +69,35 @@ namespace Digital {
 
     \endcode
  */
-class Not16Gate : public Fxt::Component::Common_
+class Not64Gate : public Fxt::Component::Common_
 {
 public:
     /// Type ID for the card
     static constexpr const char*    GUID_STRING = "31d8a613-bc99-4d0d-a96f-4b4dc9b0cc6f";
 
     /// Type name for the card
-    static constexpr const char*    TYPE_NAME   = "Fxt::Component::Digital::Not16Gate";
+    static constexpr const char*    TYPE_NAME   = "Fxt::Component::Digital::Not64Gate";
 
     /// Size (in bytes) of Stateful data that will be allocated on the HA Heap
     static constexpr const size_t   HA_STATEFUL_HEAP_SIZE = 0;
 
 public:
     /// Maximum number of Input signals
-    static constexpr unsigned MAX_INPUTS = 16;
+    static constexpr unsigned MAX_INPUTS = 64;
 
     /// Maximum number of Output signals
     static constexpr unsigned MAX_OUTPUTS = MAX_INPUTS;
 
 public:
     /// Constructor
-    Not16Gate( JsonVariant&                       componentObject,
+    Not64Gate( JsonVariant&                       componentObject,
                Cpl::Memory::ContiguousAllocator&  generalAllocator,
                Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
                Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
                Fxt::Point::DatabaseApi&           dbForPoints );
 
     /// Destructor
-    ~Not16Gate();
+    ~Not64Gate();
 
 public:
     /// See Fxt::Component::Api
@@ -116,17 +116,17 @@ public:
 
 protected:
     /// Helper method to parse the card's JSON config
-    bool parseConfiguration( JsonVariant& obj ) noexcept;
+    bool parseConfiguration( Cpl::Memory::ContiguousAllocator& generalAllocator, JsonVariant& obj ) noexcept;
 
 protected:
     /// List of Input Points.  Note: Initially the point IDs are stored instead of pointers
-    Fxt::Point::Bool*   m_inputRefs[MAX_INPUTS];
+    Fxt::Point::Bool**  m_inputRefs;
 
     /// List of Output Points. Note: Initially the point IDs are stored instead of pointers
-    Fxt::Point::Bool*   m_outputRefs[MAX_OUTPUTS];
+    Fxt::Point::Bool**  m_outputRefs;
 
-    /// Negate qualifier for the output points
-    bool                m_outputPassthrough[MAX_OUTPUTS];
+    /// List of Negate qualifier for the output points
+    bool*               m_outputPassthrough;
 
     /// Number of Input points
     uint8_t             m_numInputs;

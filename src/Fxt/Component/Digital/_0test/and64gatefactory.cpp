@@ -12,8 +12,8 @@
 #include "Catch/catch.hpp"
 #include "Cpl/System/_testsupport/Shutdown_TS.h"
 #include "Fxt/Component/Digital/Error.h"
-#include "Fxt/Component/Digital/And16Gate.h"
-#include "Fxt/Component/Digital/And16GateFactory.h"
+#include "Fxt/Component/Digital/And64Gate.h"
+#include "Fxt/Component/Digital/And64GateFactory.h"
 #include "Fxt/Component/FactoryDatabase.h"
 #include "Fxt/Point/Database.h"
 #include "Fxt/Point/FactoryDatabase.h"
@@ -30,7 +30,7 @@ using namespace Fxt::Component::Digital;
                            "{" \
                            "  \"name\": \"AND Gate#1\"," \
                            "  \"type\": \"e62e395c-d27a-4821-bba9-aa1e6de42a05\"," \
-                           "  \"typeName\": \"Fxt::Component::Digital::And16Gate\"," \
+                           "  \"typeName\": \"Fxt::Component::Digital::And64Gate\"," \
                            "  \"inputs\": [" \
                            "      {" \
                            "          \"name\": \"Signal#1\"," \
@@ -86,7 +86,7 @@ static size_t statefulHeap_[10000];
 
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE( "And16GateFactory" )
+TEST_CASE( "And64GateFactory" )
 {
     Cpl::System::Shutdown_TS::clearAndUseCounter();
     Cpl::Memory::LeanHeap               generalAllocator( generalHeap_, sizeof( generalHeap_ ) );
@@ -94,7 +94,7 @@ TEST_CASE( "And16GateFactory" )
     Fxt::Point::Database<MAX_POINTS>    pointDb;
     Fxt::Component::FactoryDatabase     componentFactoryDb;
     Fxt::Point::FactoryDatabase         pointFactoryDb;
-    And16GateFactory                    uut( componentFactoryDb );
+    And64GateFactory                    uut( componentFactoryDb );
     Fxt::Type::Error                    componentErrorCode;
     Cpl::Text::FString<Fxt::Type::Error::MAX_TEXT_LEN> buf;
 
@@ -115,8 +115,8 @@ TEST_CASE( "And16GateFactory" )
         CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", Fxt::Type::Error::toText( componentErrorCode, buf )) );
         REQUIRE( componentErrorCode == Fxt::Type::Error::SUCCESS() );
 
-        REQUIRE( strcmp( component->getTypeName(), And16Gate::TYPE_NAME ) == 0 );
-        REQUIRE( strcmp( component->getTypeGuid(), And16Gate::GUID_STRING ) == 0 );
+        REQUIRE( strcmp( component->getTypeName(), And64Gate::TYPE_NAME ) == 0 );
+        REQUIRE( strcmp( component->getTypeGuid(), And64Gate::GUID_STRING ) == 0 );
 
         REQUIRE( component->resolveReferences( pointDb ) == Fxt::Component::fullErr( Fxt::Component::Err_T::UNRESOLVED_INPUT_REFRENCE) );
 
@@ -140,8 +140,8 @@ TEST_CASE( "And16GateFactory" )
         CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", Fxt::Type::Error::toText( componentErrorCode, buf )) );
         REQUIRE( componentErrorCode == Fxt::Type::Error::SUCCESS() );
 
-        REQUIRE( strcmp( component->getTypeName(), And16Gate::TYPE_NAME ) == 0 );
-        REQUIRE( strcmp( component->getTypeGuid(), And16Gate::GUID_STRING ) == 0 );
+        REQUIRE( strcmp( component->getTypeName(), And64Gate::TYPE_NAME ) == 0 );
+        REQUIRE( strcmp( component->getTypeGuid(), And64Gate::GUID_STRING ) == 0 );
 
         new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_1, statefulAllocator );
         new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_2, statefulAllocator );
@@ -172,8 +172,8 @@ TEST_CASE( "And16GateFactory" )
         CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", Fxt::Type::Error::toText( componentErrorCode, buf )) );
         REQUIRE( componentErrorCode == Fxt::Type::Error::SUCCESS() );
         
-        REQUIRE( strcmp( component->getTypeName(), And16Gate::TYPE_NAME ) == 0 );
-        REQUIRE( strcmp( component->getTypeGuid(), And16Gate::GUID_STRING ) == 0 );
+        REQUIRE( strcmp( component->getTypeName(), And64Gate::TYPE_NAME ) == 0 );
+        REQUIRE( strcmp( component->getTypeGuid(), And64Gate::GUID_STRING ) == 0 );
 
         new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_1, statefulAllocator );
         new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_2, statefulAllocator );

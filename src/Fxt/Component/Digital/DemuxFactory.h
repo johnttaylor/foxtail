@@ -1,5 +1,5 @@
-#ifndef Fxt_Component_Digital_Not16GateFactory_h_
-#define Fxt_Component_Digital_Not16GateFactory_h_
+#ifndef Fxt_Component_Digital_DemuxFactory_h_
+#define Fxt_Component_Digital_DemuxFactory_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -13,7 +13,7 @@
 /** @file */
 
 #include "Fxt/Component/FactoryCommon_.h"
-#include "Fxt/Component/Digital/Not16Gate.h"
+#include "Fxt/Component/Digital/Demux.h"
 
 ///
 namespace Fxt {
@@ -24,7 +24,7 @@ namespace Digital {
 
 
 /// Define factory type
-typedef Factory<Not16Gate> Not16GateFactory;
+typedef Factory<Demux> DemuxFactory;
 
 
 

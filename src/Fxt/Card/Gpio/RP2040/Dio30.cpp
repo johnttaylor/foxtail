@@ -38,8 +38,6 @@ Dio30::Dio30( Cpl::Memory::ContiguousAllocator&  generalAllocator,
               Cpl::Dm::MailboxServer*            cardMboxNotUsed,
               void*                              extraArgsNotUsed )
     : Fxt::Card::Common_( MAX_INPUT_CHANNELS, MAX_OUTPUT_CHANNELS, generalAllocator, cardObject )
-    , m_numInputs( 0 )
-    , m_numOutputs( 0 )
 {
     memset( m_driverInCfg, 0, sizeof( m_driverInCfg ) );
     memset( m_driverOutCfg, 0, sizeof( m_driverOutCfg ) );
@@ -246,7 +244,7 @@ bool Dio30::start( Cpl::Itc::PostApi & chassisMbox, uint64_t currentElapsedTimeU
     if ( Common_::start( currentElapsedTimeUsec ) )
     {
         // Start the low-level driver
-        if ( !Driver::DIO::InOut::start( m_numInputs, m_driverInCfg, m_numOutputs, m_driverOutCfg ) )
+        if ( !Driver::DIO::InOut::start( (uint8_t) m_numInputs, m_driverInCfg, (uint8_t) m_numOutputs, m_driverOutCfg ) )
         {
             m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::DRIVER_ERROR );
             m_error.logIt( "%s. Start failure", getTypeName() );

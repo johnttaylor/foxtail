@@ -44,6 +44,8 @@ namespace Component {
     @param OUTPUT_REFRENCE_BAD_TYPE         Output Point Reference is the wrong type
     @param MISMATCHED_INPUTS_OUTPUTS        The number of inputs and number of output is not a supported a combination/permutation (e.g. number of inputs does not equal the number of outputs)
     @parem MISSING_REQUIRED_FIELD           Missing one or more required key/value pair(s)
+    @param INCORRECT_NUM_INPUT_REFS         Too many or too few input references
+    @param INCORRECT_NUM_OUTPUT_REFS        Too many or too few output references
  */
 BETTER_ENUM( Err_T, uint8_t
              , SUCCESS = 0
@@ -60,6 +62,8 @@ BETTER_ENUM( Err_T, uint8_t
              , OUTPUT_REFRENCE_BAD_TYPE
              , MISMATCHED_INPUTS_OUTPUTS
              , MISSING_REQUIRED_FIELD
+             , INCORRECT_NUM_INPUT_REFS
+             , INCORRECT_NUM_OUTPUT_REFS
 );
 
 /** This concrete class defines the Error Category for the Component namespace.
