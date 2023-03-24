@@ -20,7 +20,7 @@ using namespace Fxt::Component;
 
 
 //////////////////////////////////////////////////
-Common_::Common_( )
+Common_::Common_()
     : m_lastExeCycleTimeUsec( 0 )
     , m_error( Fxt::Type::Error::SUCCESS() )
     , m_started( false )
@@ -70,16 +70,14 @@ Fxt::Type::Error Common_::getErrorCode() const noexcept
 bool Common_::parsePointReferences( size_t              dstReferences[],
                                     unsigned            maxNumReferences,
                                     JsonArray&          arrayObj,
-                                    Fxt::Type::Error    errTooMany,
-                                    Fxt::Type::Error    errBadRef,
                                     unsigned&           numRefsFound )
 {
     // Validate supported number of input signals
     numRefsFound = arrayObj.size();
     if ( numRefsFound > maxNumReferences )
     {
-        m_error      = errTooMany;
-        m_error.logIt();
+        m_error      = fullErr( Fxt::Component::Err_T::TOO_MANY_INPUT_REFS );
+        m_error.logIt( getTypeGuid() );
         numRefsFound = 0;
         return false;
     }
@@ -87,16 +85,68 @@ bool Common_::parsePointReferences( size_t              dstReferences[],
     // Extract the Point references
     for ( unsigned i=0; i < numRefsFound; i++ )
     {
-        uint32_t pointRef = arrayObj[i]["idRef"] | Fxt::Point::Api::INVALID_ID;
-        if ( pointRef == Fxt::Point::Api::INVALID_ID )
+        JsonObject elem = arrayObj[i];
+        if ( !parsePointReference( dstReferences, i, elem ) )
         {
-            m_error = errBadRef;
-            m_error.logIt();
             return false;
         }
-        dstReferences[i] = pointRef;
     }
 
+    return true;
+}
+
+bool Common_::parsePointReference( size_t           dstReferences[],
+                                   unsigned         referenceIndex,
+                                   JsonObject&      objInstance )
+{
+    uint32_t pointRef = objInstance["idRef"] | Fxt::Point::Api::INVALID_ID;
+    if ( pointRef == Fxt::Point::Api::INVALID_ID )
+    {
+        m_error = fullErr( Fxt::Component::Err_T::BAD_INPUT_REFERENCE );
+        m_error.logIt( getTypeGuid() );
+        return false;
+    }
+
+    dstReferences[referenceIndex] = pointRef;
+    return true;
+}
+
+bool Common_::findAndparsePointReference( size_t            dstReferences[],
+                                          const char*       keyName,
+                                          const char*       jsonValue,
+                                          unsigned          referenceIndex,
+                                          size_t            startElemIndex,
+                                          size_t            numElems,
+                                          JsonArray&        arrayObj,
+                                          bool              required,
+                                          size_t&           jsonFoundIdx )
+{
+    jsonFoundIdx = (size_t)-1;
+
+    // Validate supported number of input signals
+    size_t nInputs = arrayObj.size();
+
+    // Search for the element
+    for ( ; startElemIndex <= numElems; startElemIndex++ )
+    {
+        JsonObject elem = arrayObj[startElemIndex];
+        const char* val = elem[keyName];
+        if ( val != nullptr && strcmp(val,jsonValue) == 0 )
+        {
+            jsonFoundIdx = startElemIndex;
+            return parsePointReference( dstReferences, referenceIndex, elem );
+        }
+    }
+
+    // Throw an error if required KV pair is missing
+    if ( jsonFoundIdx == ((size_t) -1) && required )
+    {
+        m_error = fullErr( Err_T::MISSING_REQUIRED_FIELD );
+        m_error.logIt( "%s. Missing %s", getTypeGuid(), keyName );
+        return false;
+    }
+
+    // I only get here if an OPTIONAL KV pair was NOT found. I return true because m_error was NOT set
     return true;
 }
 

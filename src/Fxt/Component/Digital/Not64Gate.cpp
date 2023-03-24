@@ -77,8 +77,6 @@ bool Not64Gate::parseConfiguration( Cpl::Memory::ContiguousAllocator& generalAll
         if ( !parsePointReferences( (size_t*) m_inputRefs,  // Start by storing the point ID
                                     MAX_INPUTS,
                                     inputs,
-                                    fullErr( Err_T::TOO_MANY_INPUT_REFS ),
-                                    fullErr( Err_T::BAD_INPUT_REFERENCE ),
                                     numInputsFoundNotUsed ) )
         {
             return false;
@@ -113,8 +111,6 @@ bool Not64Gate::parseConfiguration( Cpl::Memory::ContiguousAllocator& generalAll
         if ( !parsePointReferences( (size_t*) m_outputRefs, // Start by storing the point ID
                                     MAX_OUTPUTS,
                                     outputs,
-                                    fullErr( Err_T::TOO_MANY_INPUT_REFS ),
-                                    fullErr( Err_T::BAD_INPUT_REFERENCE ),
                                     numOutputsFoundNotUsed ) )
         {
             return false;

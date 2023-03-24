@@ -54,9 +54,23 @@ protected:
     bool parsePointReferences( size_t           dstReferences[],
                                unsigned         maxNumReferences,
                                JsonArray&       arrayObj,
-                               Fxt::Type::Error errTooMany,
-                               Fxt::Type::Error errBadRef,
                                unsigned&        numRefsFound );
+
+    /// Helper method to extract a SINGLE Point reference
+    bool parsePointReference( size_t           dstReferences[],
+                              unsigned         referenceIndex,
+                              JsonObject&      objInstance );
+
+    /// Helper method to extract a SINGLE Point reference - but search the list of inputs for a specific KV pair
+    bool findAndparsePointReference( size_t            dstReferences[],
+                                     const char*       keyName,
+                                     const char*       jsonValue,
+                                     unsigned          referenceIndex,
+                                     size_t            startElemIndex,
+                                     size_t            numElems,
+                                     JsonArray&        arrayObj,
+                                     bool              required,
+                                     size_t&           jsonFoundIdx);   // Set to -1 if NOT found
 
     /// Helper Resolve Point References
     bool resolveReferences( Fxt::Point::DatabaseApi& pointDb,

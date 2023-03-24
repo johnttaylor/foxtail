@@ -41,36 +41,37 @@ namespace Digital {
     JSON Definition
     --------------------
     {
-       "name": "AND Gate#1"                                 // Text label for the component
+       "name": "AND Gate#1"                                 // *Text label for the component
        "type": "e62e395c-d27a-4821-bba9-aa1e6de42a05",      // Identifies the card type.  Value comes from the Supported/Available-card-list
-       "typeName": "Fxt::Component::Digital::And64Gate"     // OPTIONAL: Human readable type name
+       "typeName": "Fxt::Component::Digital::And64Gate"     // *OPTIONAL: Human readable type name
        "inputs": [                                          // Array of Point references that supply the Component's input values.  Number of elements: 1-16
           {
-            "name": "Signal A",                             // human readable name for the input value
+            "name": "Signal A",                             // *human readable name for the input value
             "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0", // REQUIRED Type for the input signal
-            "typeName": "Fxt::Point::Bool",                 // OPTIONAL: Human readable Type name for the input signal
+            "typeName": "Fxt::Point::Bool",                 // *OPTIONAL: Human readable Type name for the input signal
             "idRef": 4294967295                             // Point ID Reference to the point to read the input value from
           },
           ...
        ],
        "outputs": [                                         // Array of Point reference where the Component's writes it output values to.  Number of elements: 1-2
           {
-            "name":"Product"                                // Human readable name for the output signal
+            "name":"Product"                                // *Human readable name for the output signal
             "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0", // REQUIRED Type for the output signal
-            "typeName": "Fxt::Point::Bool",                 // OPTIONAL: Human readable Type name for the output signal
+            "typeName": "Fxt::Point::Bool",                 // *OPTIONAL: Human readable Type name for the output signal
             "idRef":4294967295,                             // Point ID reference to the point that is updated with the output value
             "negate":false                                  // Optional: (defaults to false) When set to false - the output is result of ANDing the input signals.  When set to true the output is logical complement of ANDing result
           },
           {
-            "name":"/Product"                               // Human readable name for the output signal
+            "name":"/Product"                               // *Human readable name for the output signal
             "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0", // REQUIRED Type for the output signal
-            "typeName": "Fxt::Point::Bool",                 // OPTIONAL: Human readable Type name for the output signal
+            "typeName": "Fxt::Point::Bool",                 // *OPTIONAL: Human readable Type name for the output signal
             "idRef":4294967295,                             // Point ID reference to the point that is updated with the output value
             "negate":true                                   // Optional: (defaults to false) When set to false - the output is result of ANDing the input signals.  When set to true the output is logical complement of ANDing result
           }
        ]
     }
 
+    *The field is NOT parsed/used by the firmware
 
     \endcode
  */

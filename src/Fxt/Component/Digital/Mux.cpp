@@ -106,8 +106,6 @@ bool Mux::parseConfiguration( Cpl::Memory::ContiguousAllocator& generalAllocator
         if ( !parsePointReferences( (size_t*) m_outputRefs, // Start by storing the point ID
                                     MAX_OUTPUTS,
                                     outputs,
-                                    fullErr( Fxt::Component::Err_T::TOO_MANY_OUTPUT_REFS ),
-                                    fullErr( Fxt::Component::Err_T::BAD_OUTPUT_REFERENCE ),
                                     numOutputsFoundNotUsed ) )
         {
             return false;
@@ -169,8 +167,6 @@ bool Mux::parseConfiguration( Cpl::Memory::ContiguousAllocator& generalAllocator
         if ( !parsePointReferences( (size_t*) m_inputRefs,  // Start by storing the point ID
                                     MAX_INPUTS,
                                     inputs,
-                                    fullErr( Fxt::Component::Err_T::TOO_MANY_INPUT_REFS ),
-                                    fullErr( Fxt::Component::Err_T::BAD_INPUT_REFERENCE ),
                                     numInputsFoundNotUsed ) )
         {
             return false;

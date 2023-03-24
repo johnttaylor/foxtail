@@ -66,8 +66,6 @@ bool SimpleScaler8::parseConfiguration( JsonVariant & obj ) noexcept
         if ( !parsePointReferences( (size_t*) m_inputRefs,  // Start by storing the point ID
                                     MAX_INPUTS,
                                     inputs,
-                                    fullErr( Err_T::TOO_MANY_INPUT_REFS ),
-                                    fullErr( Err_T::BAD_INPUT_REFERENCE ),
                                     numInputsFound ) )
         {
             return false;
@@ -90,8 +88,6 @@ bool SimpleScaler8::parseConfiguration( JsonVariant & obj ) noexcept
         if ( !parsePointReferences( (size_t*) m_outputRefs, // Start by storing the point ID
                                     MAX_INPUTS,
                                     outputs,
-                                    fullErr( Err_T::TOO_MANY_INPUT_REFS ),
-                                    fullErr( Err_T::BAD_INPUT_REFERENCE ),
                                     numOutputsFound ) )
         {
             return false;
