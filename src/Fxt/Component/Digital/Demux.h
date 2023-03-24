@@ -18,6 +18,7 @@
 #include "Fxt/Point/Uint8.h"
 #include "Fxt/Point/Bool.h"
 #include "Fxt/Point/BankApi.h"
+#include "Fxt/Point/NumericHandlers.h"
 
 
 ///
@@ -45,9 +46,9 @@ namespace Digital {
     JSON Definition
     --------------------
     {
-       "name": "Byte Demux #1"                           // *Text label for the component
+       "name": "Byte Demux #1"                              // *Text label for the component
        "type": "8c55aa52-3bc8-4b8a-ad73-c434a0bbd4b4",      // Identifies the card type.  Value comes from the Supported/Available-card-list
-       "typeName": "Fxt::Component::Digital::Demux"  // *OPTIONAL: Human readable type name
+       "typeName": "Fxt::Component::Digital::Demux"         // *OPTIONAL: Human readable type name
        "inputs": [                                          // Array of Point references that supply the Component's input values.  Number of elements: 1-16
           {
             "name": "input word",                           // human readable name for the input value
@@ -147,8 +148,8 @@ protected:
     /// List of Bit offset for the output points
     uint8_t*            m_bitOffsets;
 
-    /// Type specific function to read the input value
-    ReadFunc_T          m_readFunc;
+    /// Attributes for reading the input value
+    const Fxt::Point::NumericHandlers::IntegerAttributes_T*  m_inAttributesPtr;
 
     /// Number of Input points
     uint8_t             m_numInputs;

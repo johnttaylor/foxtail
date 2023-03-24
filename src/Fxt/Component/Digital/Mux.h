@@ -18,6 +18,7 @@
 #include "Fxt/Point/Api.h"
 #include "Fxt/Point/Bool.h"
 #include "Fxt/Point/BankApi.h"
+#include "Fxt/Point/NumericHandlers.h"
 
 
 ///
@@ -120,30 +121,26 @@ protected:
     bool parseConfiguration( Cpl::Memory::ContiguousAllocator& generalAllocator, JsonVariant& obj ) noexcept;
 
 protected:
-    /// Function signature for updating the output value
-    typedef void (*WriteFunc_T)(Fxt::Point::Api* genericPt, uint64_t value);
-
-protected:
     /// List of Input Points.  Note: Initially the point IDs are stored instead of pointers
-    Fxt::Point::Bool**  m_inputRefs;
+    Fxt::Point::Bool**                      m_inputRefs;
 
     /// List of Output Points. Note: Initially the point IDs are stored instead of pointers
-    Fxt::Point::Api**   m_outputRefs;
+    Fxt::Point::Api**                       m_outputRefs;
 
     /// List of Negate qualifier for the input points
-    bool*               m_inputNegated;
+    bool*                                   m_inputNegated;
 
     /// List of Bit offset for the input points
-    uint8_t*            m_bitOffsets;
+    uint8_t*                                m_bitOffsets;
 
-    /// Type specific function that performs the update to the output value
-    WriteFunc_T         m_writeFunc;
+    /// Attributes for writing the output value
+    const Fxt::Point::NumericHandlers::IntegerAttributes_T*  m_outAttributesPtr;
 
     /// Number of Input points
-    uint8_t             m_numInputs;
+    uint8_t                                 m_numInputs;
 
     /// Number of Output points
-    uint8_t             m_numOutputs;
+    uint8_t                                 m_numOutputs;
 };
 
 

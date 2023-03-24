@@ -15,29 +15,11 @@
 #include "Error.h"
 #include "Fxt/Component/Error.h"
 #include "Cpl/System/Assert.h"
-#include "Fxt/Point/Int8.h"
-#include "Fxt/Point/Uint8.h"
-#include "Fxt/Point/Int16.h"
-#include "Fxt/Point/Uint16.h"
-#include "Fxt/Point/Int32.h"
-#include "Fxt/Point/Uint32.h"
-#include "Fxt/Point/Int64.h"
-#include "Fxt/Point/Uint64.h"
 
 #include <stdint.h>
 
 ///
 using namespace Fxt::Component::Digital;
-
-
-static void writeInt8( Fxt::Point::Api* genericPt, uint64_t value );
-static void writeUint8( Fxt::Point::Api* genericPt, uint64_t value );
-static void writeInt16( Fxt::Point::Api* genericPt, uint64_t value );
-static void writeUint16( Fxt::Point::Api* genericPt, uint64_t value );
-static void writeInt32( Fxt::Point::Api* genericPt, uint64_t value );
-static void writeUint32( Fxt::Point::Api* genericPt, uint64_t value );
-static void writeInt64( Fxt::Point::Api* genericPt, uint64_t value );
-static void writeUint64( Fxt::Point::Api* genericPt, uint64_t value );
 
 ///////////////////////////////////////////////////////////////////////////////
 Mux::Mux( JsonVariant&                       componentObject,
@@ -80,7 +62,7 @@ Fxt::Type::Error Mux::execute( int64_t currentTickUsec ) noexcept
     }
 
     // Update the output value
-    m_writeFunc( m_outputRefs[0], outValue );
+    (m_outAttributesPtr->writeFunc)( m_outputRefs[0], outValue );
     return Fxt::Type::Error::SUCCESS();
 }
 
@@ -98,7 +80,6 @@ const char* Mux::getTypeName() const noexcept
 bool Mux::parseConfiguration( Cpl::Memory::ContiguousAllocator& generalAllocator, JsonVariant & obj ) noexcept
 {
     // Parse Output Point references
-    uint8_t numOutputBits = 0;
     JsonArray outputs = obj["outputs"];
     if ( !outputs.isNull() )
     {
@@ -142,48 +123,8 @@ bool Mux::parseConfiguration( Cpl::Memory::ContiguousAllocator& generalAllocator
         }
 
         // Validate Output size
-        m_writeFunc = nullptr;
-        if ( strcmp( guid, Fxt::Point::Uint64::GUID_STRING ) == 0 )
-        {
-            numOutputBits = 64;
-            m_writeFunc   = writeUint64;
-        }
-        else if ( strcmp( guid, Fxt::Point::Int64::GUID_STRING ) == 0 )
-        {
-            numOutputBits = 64;
-            m_writeFunc   = writeInt64;
-        }
-        else if ( strcmp( guid, Fxt::Point::Uint32::GUID_STRING ) == 0 )
-        {
-            numOutputBits = 32;
-            m_writeFunc   = writeUint32;
-        }
-        else if ( strcmp( guid, Fxt::Point::Int32::GUID_STRING ) == 0 )
-        {
-            numOutputBits = 32;
-            m_writeFunc   = writeInt32;
-        }
-        else if ( strcmp( guid, Fxt::Point::Uint16::GUID_STRING ) == 0 )
-        {
-            numOutputBits = 16;
-            m_writeFunc   = writeUint16;
-        }
-        else if ( strcmp( guid, Fxt::Point::Int16::GUID_STRING ) == 0 )
-        {
-            numOutputBits = 16;
-            m_writeFunc   = writeInt16;
-        }
-        else if ( strcmp( guid, Fxt::Point::Uint8::GUID_STRING ) == 0 )
-        {
-            numOutputBits = 8;
-            m_writeFunc   = writeUint8;
-        }
-        else if ( strcmp( guid, Fxt::Point::Int8::GUID_STRING ) == 0 )
-        {
-            numOutputBits = 8;
-            m_writeFunc   = writeInt8;
-        }
-        else
+        m_outAttributesPtr = Fxt::Point::NumericHandlers::getIntegerPointAttributes( guid );
+        if ( m_outAttributesPtr == nullptr )
         {
             m_error = fullErr( Err_T::MUX_INVALID_OUTPUT_TYPE );
             m_error.logIt( getTypeName() );
@@ -191,7 +132,7 @@ bool Mux::parseConfiguration( Cpl::Memory::ContiguousAllocator& generalAllocator
         }
 
         // Validate that the input bits do NOT exceed the output bits
-        if ( m_numInputs > numOutputBits )
+        if ( m_numInputs > m_outAttributesPtr->numBits )
         {
             m_error = fullErr( Err_T::MUX_INPUT_BITS_EXCEED_OUTPUT );
             m_error.logIt( getTypeName() );
@@ -240,8 +181,8 @@ bool Mux::parseConfiguration( Cpl::Memory::ContiguousAllocator& generalAllocator
     for ( unsigned i=0; i < m_numInputs; i++ )
     {
         m_inputNegated[i] = inputs[i]["negate"] | false;
-        m_bitOffsets[i]   = inputs[i]["bit"] | (numOutputBits);
-        if ( m_bitOffsets[i] >= numOutputBits )
+        m_bitOffsets[i]   = inputs[i]["bit"] | (m_outAttributesPtr->numBits);
+        if ( m_bitOffsets[i] >= m_outAttributesPtr->numBits )
         {
             m_error = fullErr( Err_T::MUX_INVALID_BIT_OFFSET );
             m_error.logIt();
@@ -287,50 +228,5 @@ Fxt::Type::Error Mux::resolveReferences( Fxt::Point::DatabaseApi& pointDb )  noe
 
     m_error = fullErr( Err_T::SUCCESS );   // Set my state to 'ready-to-start'
     return m_error;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-void writeUint8( Fxt::Point::Api* genericPt, uint64_t value )
-{
-    Fxt::Point::Uint8* pt = (Fxt::Point::Uint8*) genericPt;
-    pt->write( (uint8_t) value );
-}
-void writeInt8( Fxt::Point::Api* genericPt, uint64_t value )
-{
-    Fxt::Point::Int8* pt = (Fxt::Point::Int8*) genericPt;
-    pt->write( (int8_t) value );
-}
-
-void writeUint16( Fxt::Point::Api* genericPt, uint64_t value )
-{
-    Fxt::Point::Uint16* pt = (Fxt::Point::Uint16*) genericPt;
-    pt->write( (uint16_t) value );
-}
-void writeInt16( Fxt::Point::Api* genericPt, uint64_t value )
-{
-    Fxt::Point::Int16* pt = (Fxt::Point::Int16*) genericPt;
-    pt->write( (int16_t) value );
-}
-
-void writeUint32( Fxt::Point::Api* genericPt, uint64_t value )
-{
-    Fxt::Point::Uint32* pt = (Fxt::Point::Uint32*) genericPt;
-    pt->write( (uint32_t) value );
-}
-void writeInt32( Fxt::Point::Api* genericPt, uint64_t value )
-{
-    Fxt::Point::Int32* pt = (Fxt::Point::Int32*) genericPt;
-    pt->write( (int32_t) value );
-}
-
-void writeUint64( Fxt::Point::Api* genericPt, uint64_t value )
-{
-    Fxt::Point::Uint64* pt = (Fxt::Point::Uint64*) genericPt;
-    pt->write( value );
-}
-void writeInt64( Fxt::Point::Api* genericPt, uint64_t value )
-{
-    Fxt::Point::Int64* pt = (Fxt::Point::Int64*) genericPt;
-    pt->write( (int64_t) value );
 }
 

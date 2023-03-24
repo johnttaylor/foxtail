@@ -14,28 +14,10 @@
 #include "Demux.h"
 #include "Error.h"
 #include "Cpl/System/Assert.h"
-#include "Fxt/Point/Int8.h"
-#include "Fxt/Point/Uint8.h"
-#include "Fxt/Point/Int16.h"
-#include "Fxt/Point/Uint16.h"
-#include "Fxt/Point/Int32.h"
-#include "Fxt/Point/Uint32.h"
-#include "Fxt/Point/Int64.h"
-#include "Fxt/Point/Uint64.h"
 #include <stdint.h>
 
 ///
 using namespace Fxt::Component::Digital;
-
-
-static bool readInt8( Fxt::Point::Api* genericPt, uint64_t& dstValue );
-static bool readUint8( Fxt::Point::Api* genericPt, uint64_t& dstValue );
-static bool readInt16( Fxt::Point::Api* genericPt, uint64_t& dstValue );
-static bool readUint16( Fxt::Point::Api* genericPt, uint64_t& dstValue );
-static bool readInt32( Fxt::Point::Api* genericPt, uint64_t& dstValue );
-static bool readUint32( Fxt::Point::Api* genericPt, uint64_t& dstValue );
-static bool readInt64( Fxt::Point::Api* genericPt, uint64_t& dstValue );
-static bool readUint64( Fxt::Point::Api* genericPt, uint64_t& dstValue );
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -62,7 +44,7 @@ Fxt::Type::Error Demux::execute( int64_t currentTickUsec ) noexcept
 
     // Get my input
     uint64_t inValue;
-    if ( !m_readFunc( m_inputRefs[0], inValue ) )
+    if ( !(m_inAttributesPtr->readFunc)( m_inputRefs[0], inValue ) )
     {
         // Set the outputs to invalid if at least one input is invalid
         for ( int i=0; i < m_numOutputs; i++ )
@@ -98,7 +80,6 @@ const char* Demux::getTypeName() const noexcept
 bool Demux::parseConfiguration( Cpl::Memory::ContiguousAllocator& generalAllocator, JsonVariant & obj ) noexcept
 {
     // Parse Input Point references
-    uint8_t   numInputBits = 0;
     JsonArray inputs = obj["inputs"];
     if ( !inputs.isNull() )
     {
@@ -142,48 +123,8 @@ bool Demux::parseConfiguration( Cpl::Memory::ContiguousAllocator& generalAllocat
         }
 
         // Validate Input size
-        m_readFunc = nullptr;
-        if ( strcmp( guid, Fxt::Point::Uint64::GUID_STRING ) == 0 )
-        {
-            numInputBits = 64;
-            m_readFunc   = readUint64;
-        }
-        else if ( strcmp( guid, Fxt::Point::Int64::GUID_STRING ) == 0 )
-        {
-            numInputBits = 64;
-            m_readFunc   = readInt64;
-        }
-        else if ( strcmp( guid, Fxt::Point::Uint32::GUID_STRING ) == 0 )
-        {
-            numInputBits = 32;
-            m_readFunc   = readUint32;
-        }
-        else if ( strcmp( guid, Fxt::Point::Int32::GUID_STRING ) == 0 )
-        {
-            numInputBits = 32;
-            m_readFunc   = readInt32;
-        }
-        else if ( strcmp( guid, Fxt::Point::Uint16::GUID_STRING ) == 0 )
-        {
-            numInputBits = 16;
-            m_readFunc   = readUint16;
-        }
-        else if ( strcmp( guid, Fxt::Point::Int16::GUID_STRING ) == 0 )
-        {
-            numInputBits = 16;
-            m_readFunc   = readInt16;
-        }
-        else if ( strcmp( guid, Fxt::Point::Uint8::GUID_STRING ) == 0 )
-        {
-            numInputBits = 8;
-            m_readFunc   = readUint8;
-        }
-        else if ( strcmp( guid, Fxt::Point::Int8::GUID_STRING ) == 0 )
-        {
-            numInputBits = 8;
-            m_readFunc   = readInt8;
-        }
-        else
+        m_inAttributesPtr = Fxt::Point::NumericHandlers::getIntegerPointAttributes( guid );
+        if ( m_inAttributesPtr == nullptr )
         {
             m_error = fullErr( Err_T::DEMUX_INVALID_INPUT_TYPE );
             m_error.logIt( getTypeName() );
@@ -228,7 +169,7 @@ bool Demux::parseConfiguration( Cpl::Memory::ContiguousAllocator& generalAllocat
         }
 
         // Validate that the outputs bits do NOT exceed the inputs bits
-        if ( m_numOutputs > numInputBits )
+        if ( m_numOutputs > m_inAttributesPtr->numBits )
         {
             m_error = fullErr( Err_T::DEMUX_OUTPUT_BITS_EXCEED_INPUT );
             m_error.logIt( getTypeName() );
@@ -240,8 +181,8 @@ bool Demux::parseConfiguration( Cpl::Memory::ContiguousAllocator& generalAllocat
     for ( unsigned i=0; i < m_numOutputs; i++ )
     {
         m_outputNegated[i] = outputs[i]["negate"] | false;
-        m_bitOffsets[i]    = outputs[i]["bit"] | numInputBits;
-        if ( m_bitOffsets[i] >= numInputBits )
+        m_bitOffsets[i]    = outputs[i]["bit"] | m_inAttributesPtr->numBits;
+        if ( m_bitOffsets[i] >= m_inAttributesPtr->numBits )
         {
             m_error = fullErr( Err_T::DEMUX_INVALID_BIT_OFFSET );
             m_error.logIt();
@@ -286,78 +227,4 @@ Fxt::Type::Error Demux::resolveReferences( Fxt::Point::DatabaseApi& pointDb )  n
     m_error = fullErr( Err_T::SUCCESS );   // Set my state to 'ready-to-start'
     return m_error;
 }
-
-///////////////////////////////////////////////////////////////////////////////
-bool readUint8( Fxt::Point::Api* genericPt, uint64_t& dstValue )
-{
-    Fxt::Point::Uint8* pt = (Fxt::Point::Uint8*) genericPt;
-    uint8_t value;
-    bool valid = pt->read( value );
-    dstValue    = (uint64_t) value;
-    return valid;
-}
-
-bool readInt8( Fxt::Point::Api* genericPt, uint64_t& dstValue )
-{
-    Fxt::Point::Int8* pt = (Fxt::Point::Int8*) genericPt;
-    int8_t value;
-    bool valid = pt->read( value );
-    dstValue    = (uint64_t) value;
-    return valid;
-}
-
-bool readUint16( Fxt::Point::Api* genericPt, uint64_t& dstValue )
-{
-    Fxt::Point::Uint16* pt = (Fxt::Point::Uint16*) genericPt;
-    uint16_t value;
-    bool valid = pt->read( value );
-    dstValue    = (uint64_t) value;
-    return valid;
-
-}
-bool readInt16( Fxt::Point::Api* genericPt, uint64_t& dstValue )
-{
-    Fxt::Point::Int16* pt = (Fxt::Point::Int16*) genericPt;
-    int16_t value;
-    bool valid = pt->read( value );
-    dstValue    = (uint64_t) value;
-    return valid;
-}
-
-bool readUint32( Fxt::Point::Api* genericPt, uint64_t& dstValue )
-{
-    Fxt::Point::Uint32* pt = (Fxt::Point::Uint32*) genericPt;
-    uint32_t value;
-    bool valid = pt->read( value );
-    dstValue    = (uint64_t) value;
-    return valid;
-}
-bool readInt32( Fxt::Point::Api* genericPt, uint64_t& dstValue )
-{
-    Fxt::Point::Int32* pt = (Fxt::Point::Int32*) genericPt;
-    int32_t value;
-    bool valid = pt->read( value );
-    dstValue    = (uint64_t) value;
-    return valid;
-}
-
-bool readUint64( Fxt::Point::Api* genericPt, uint64_t& dstValue )
-{
-    Fxt::Point::Uint64* pt = (Fxt::Point::Uint64*) genericPt;
-    uint64_t value;
-    bool valid = pt->read( value );
-    dstValue    = (uint64_t) value;
-    return valid;
-
-}
-bool readInt64( Fxt::Point::Api* genericPt, uint64_t& dstValue )
-{
-    Fxt::Point::Int64* pt = (Fxt::Point::Int64*) genericPt;
-    int64_t value;
-    bool valid = pt->read( value );
-    dstValue    = (uint64_t) value;
-    return valid;
-
-}
-
 
