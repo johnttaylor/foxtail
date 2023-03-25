@@ -19,7 +19,7 @@ src/Fxt/Card
 src/Fxt/LogicChain
 src/Fxt/Component
 src/Fxt/Component/Digital
-src/Fxt/Component/Analog
+src/Fxt/Component/Math
 
 # Colony Core infrastructure
 src/Cpl/Logging

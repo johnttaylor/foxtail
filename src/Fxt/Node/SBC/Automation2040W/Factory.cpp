@@ -21,7 +21,7 @@
 // Supported Point types and Components
 #include "Fxt/Point/PopulateFactoryDb.h"
 #include "Fxt/Component/Digital/PopulateFactoryDb.h"
-#include "Fxt/Component/Analog/PopulateFactoryDb.h"
+#include "Fxt/Component/Math/PopulateFactoryDb.h"
 
 // Supported Cards
 #include "Fxt/Card/Composite/RP2040/Automation2040Factory.h"

@@ -21,8 +21,7 @@ using namespace Fxt::Component;
 
 //////////////////////////////////////////////////
 Common_::Common_()
-    : m_lastExeCycleTimeUsec( 0 )
-    , m_error( Fxt::Type::Error::SUCCESS() )
+    : m_error( Fxt::Type::Error::SUCCESS() )
     , m_started( false )
 {
 }
@@ -120,9 +119,6 @@ bool Common_::findAndparsePointReference( size_t            dstReferences[],
                                           size_t&           jsonFoundIdx )
 {
     jsonFoundIdx = (size_t)-1;
-
-    // Validate supported number of input signals
-    size_t nInputs = arrayObj.size();
 
     // Search for the element
     for ( ; startElemIndex <= numElems; startElemIndex++ )

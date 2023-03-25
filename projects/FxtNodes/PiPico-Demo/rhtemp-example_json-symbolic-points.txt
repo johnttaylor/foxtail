@@ -95,7 +95,7 @@
               "components": [
                 {
                   "name": "Byte Demux #1",
-                  "typeName": "Fxt::Component::Digital::Demux",
+                  "typeName": "Fxt::Component::Digital::Demux8Uint8",
                   "inputs": [
                     {
                       "typeName": "Fxt::Point::Uint8",
@@ -118,7 +118,7 @@
               "components": [
                 {
                   "name": "scaler",
-                  "typeName": "Fxt::Component::Analog::SimpleScaler8",
+                  "typeName": "Fxt::Component::Math::Scaler64Float",
                   "inputs": [
                     {
                       "m": 1,

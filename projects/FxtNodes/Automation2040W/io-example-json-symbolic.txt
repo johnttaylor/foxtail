@@ -323,7 +323,7 @@
               "components": [
                 {
                   "name": "scaler",
-                  "typeName": "Fxt::Component::Analog::SimpleScaler8",
+                  "typeName": "Fxt::Component::Math::Scaler64Float",
                   "inputs": [
                     {
                       "m": 1,
@@ -406,7 +406,7 @@
               "components": [
                 {
                   "name": "Byte Mux #1. Digital Inputs",
-                  "typeName": "Fxt::Component::Digital::Mux",
+                  "typeName": "Fxt::Component::Digital::Mux8Uint8",
                   "inputs": [
                     {
                       "bit": 0,
@@ -438,7 +438,7 @@
                 },
                 {
                   "name": "Byte Mux #2. Digital Outputs",
-                  "typeName": "Fxt::Component::Digital::Mux",
+                  "typeName": "Fxt::Component::Digital::Mux8Uint8",
                   "inputs": [
                     {
                       "bit": 0,
@@ -485,7 +485,7 @@
                 },
                 {
                   "name": "Byte Demux #1. Set Digital Outputs",
-                  "typeName": "Fxt::Component::Digital::Demux",
+                  "typeName": "Fxt::Component::Digital::Demux8Uint8",
                   "outputs": [
                     {
                       "bit": 0,

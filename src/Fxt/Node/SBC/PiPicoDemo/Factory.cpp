@@ -21,13 +21,15 @@
 // Supported Point types and Components
 #include "Fxt/Point/PopulateFactoryDb.h"
 #include "Fxt/Component/Digital/PopulateFactoryDb.h"
-#include "Fxt/Component/Analog/PopulateFactoryDb.h"
+#include "Fxt/Component/Math/PopulateFactoryDb.h"
 
 // Supported Cards
 #include "Fxt/Card/Gpio/RP2040/Dio30Factory.h"
 static Fxt::Card::Gpio::RP2040::Dio30Factory            dio30Factory_( FXT_MY_APP_CARD_FACTORY_DB );
+
 #include "Fxt/Card/Sensor/I2C/RHTemperatureFactory.h"
 static Fxt::Card::Sensor::I2C::RHTemperatureFactory     rhtempFactory_( FXT_MY_APP_CARD_FACTORY_DB, g_driverThreadMailboxPtr );
+
 #include "Fxt/Card/Mock/PopulateFactoryDb.h"
 
 

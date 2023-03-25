@@ -1,5 +1,5 @@
-#ifndef Fxt_Component_Digital_PopulateFactoryDb_h_
-#define Fxt_Component_Digital_PopulateFactoryDb_h_
+#ifndef Fxt_Component_Math_PopulateFactoryDb_h_
+#define Fxt_Component_Math_PopulateFactoryDb_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -19,15 +19,9 @@
 */
 
 
-#include "Fxt/Component/Digital/And8GateFactory.h"
-#include "Fxt/Component/Digital/Not64GateFactory.h"
-#include "Fxt/Component/Digital/Demux8Uint8Factory.h"
-#include "Fxt/Component/Digital/Mux8Uint8Factory.h"
+#include "Fxt/Component/Math/Scaler64FloatFactory.h"
 
-static Fxt::Component::Digital::And8GateFactory             and8GateFactory_( FXT_MY_APP_COMPONENT_FACTORY_DB );
-static Fxt::Component::Digital::Not64GateFactory            not64GateFactory_( FXT_MY_APP_COMPONENT_FACTORY_DB );
-static Fxt::Component::Digital::Demux8Uint8Factory          demux8Uint8Factory_( FXT_MY_APP_COMPONENT_FACTORY_DB );
-static Fxt::Component::Digital::Mux8Uint8Factory            mux8Uint8Factory_( FXT_MY_APP_COMPONENT_FACTORY_DB );
+static Fxt::Component::Math::Scaler64FloatFactory         scaler64FloatFactory_( FXT_MY_APP_COMPONENT_FACTORY_DB );
 
 
 #endif  // end header latch
