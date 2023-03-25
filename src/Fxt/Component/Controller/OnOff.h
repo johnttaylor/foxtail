@@ -178,6 +178,9 @@ public:
 
 public:
     /// See Fxt::Component::Api
+    Fxt::Type::Error start( uint64_t currentElapsedTimeUsec ) noexcept;
+
+    /// See Fxt::Component::Api
     Fxt::Type::Error resolveReferences( Fxt::Point::DatabaseApi& pointDb )  noexcept;
 
     /// See Fxt::Component::Api

@@ -36,11 +36,9 @@ Common_::~Common_()
 //////////////////////////////////////////////////
 Fxt::Type::Error Common_::start( uint64_t currentElapsedTimeUsec ) noexcept
 {
-    // Use an invalid time marker to indicate the not-started state
     if ( !m_started && m_error == Fxt::Type::Error::SUCCESS() )
     {
-        m_started              = true;
-        m_lastExeCycleTimeUsec = currentElapsedTimeUsec;
+        m_started = true;
         return Fxt::Type::Error::SUCCESS();
     }
     m_error = fullErr( Err_T::FAILED_START );

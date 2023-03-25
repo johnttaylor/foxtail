@@ -80,9 +80,6 @@ protected:
 
 
 protected:
-    /// Time marker (in microseconds) of last execution cycle
-    uint64_t         m_lastExeCycleTimeUsec;
-
     /// Error state. A value of 0 indicates NO error
     Fxt::Type::Error m_error;
 

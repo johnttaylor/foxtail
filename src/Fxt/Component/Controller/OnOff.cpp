@@ -66,14 +66,9 @@ OnOff::~OnOff()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-const char* OnOff::getTypeGuid() const noexcept
+Fxt::Type::Error OnOff::start( uint64_t currentElapsedTimeUsec ) noexcept
 {
-    return GUID_STRING;
-}
 
-const char* OnOff::getTypeName() const noexcept
-{
-    return TYPE_NAME;
 }
 
 Fxt::Type::Error OnOff::execute( int64_t currentTickUsec ) noexcept
@@ -109,6 +104,17 @@ Fxt::Type::Error OnOff::execute( int64_t currentTickUsec ) noexcept
     }
 
     return Fxt::Type::Error::SUCCESS();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+const char* OnOff::getTypeGuid() const noexcept
+{
+    return GUID_STRING;
+}
+
+const char* OnOff::getTypeName() const noexcept
+{
+    return TYPE_NAME;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -280,6 +286,21 @@ bool OnOff::parseConfiguration( Cpl::Memory::ContiguousAllocator& haStatefulData
         return false;
     }
 
+    //
+    // Create internal stateful data/points
+    //
+    m_statefulPoints[STATE_IDX_STATE]       = (Fxt::Point::Bool*) haStatefulDataAllocator.allocate( sizeof( Fxt::Point::Bool ) );
+    m_statefulPoints[STATE_IDX_PREV_RESET]  = (Fxt::Point::Bool*) haStatefulDataAllocator.allocate( sizeof( Fxt::Point::Bool ) );
+    m_statefulPoints[STATE_IDX_TIME_MARKER] = (Fxt::Point::Bool*) haStatefulDataAllocator.allocate( sizeof( Fxt::Point::Uint64 ) );
+    if ( m_statefulPoints[STATE_IDX_STATE] == nullptr || 
+         m_statefulPoints[STATE_IDX_PREV_RESET] == nullptr || 
+         m_statefulPoints[STATE_IDX_TIME_MARKER] == nullptr )
+    {
+        m_error = fullErr( Err_T::OUT_OF_MEMORY );
+        m_error.logIt( "%s. Stateful Allocator", getTypeName() );
+        return false;
+    }
+
     return true;
 }
 
@@ -325,6 +346,17 @@ Fxt::Type::Error OnOff::resolveReferences( Fxt::Point::DatabaseApi& pointDb )  n
         m_error = fullErr( Err_T::INPUT_REFRENCE_BAD_TYPE );
         m_error.logIt( getTypeName() );
         return m_error;
+    }
+
+    // Validate that the input type IS a numeric type
+    if ( !Fxt::Point::NumericHandlers::getIntegerPointAttributes( numericGuid ) )
+    {
+        if ( !Fxt::Point::NumericHandlers::getFloatPointAttributes( numericGuid ) )
+        {
+            m_error = fullErr( Err_T::INPUT_REFRENCE_BAD_TYPE );
+            m_error.logIt( "%s. Not a numeric type", getTypeName() );
+            return m_error;
+        }
     }
 
     // Validate OUTPUT Point types

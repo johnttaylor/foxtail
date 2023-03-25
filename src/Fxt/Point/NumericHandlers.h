@@ -55,7 +55,7 @@ public:
     {
         WriteRealFunc_T  writeFunc;      //!< Generic write function
         ReadRealFunc_T   readFunc;       //!< Generic read function
-        uint8_t          numBits;        //!< Number of bits in the floating poitn value
+        uint8_t          numBits;        //!< Number of bits in the floating point value
     };
 
 public:

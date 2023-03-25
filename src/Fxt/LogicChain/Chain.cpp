@@ -106,7 +106,24 @@ Fxt::Type::Error Chain::start( uint64_t currentElapsedTimeUsec ) noexcept
     // Do nothing if already started
     if ( !m_started && m_error == Fxt::Type::Error::SUCCESS() )
     {
-        // Star the individual components (and additional error checking)
+        // More error checking for Auto Points
+        for ( uint16_t i=0; i < m_numAutoPoints; i++ )
+        {
+            if ( m_autoPoints[i] == nullptr )
+            {
+                m_error = fullErr( Err_T::MISSING_AUTO_POINTS );
+                m_error.logIt();
+                return m_error;
+            }
+        }
+
+        // Initialize the Auto points
+        for ( uint16_t i=0; i < m_numAutoPoints; i++ )
+        {
+            m_autoPoints[i]->updateFromSetter();
+        }
+
+        // Start the individual components (and additional error checking)
         for ( uint16_t i=0; i < m_numComponents; i++ )
         {
             // NOTE: The resolveReferences() method has already validated that
@@ -114,17 +131,6 @@ Fxt::Type::Error Chain::start( uint64_t currentElapsedTimeUsec ) noexcept
             if ( m_components[i]->start( currentElapsedTimeUsec ) != Fxt::Type::Error::SUCCESS() )
             {
                 m_error = fullErr( Err_T::FAILED_START );
-                m_error.logIt();
-                return m_error;
-            }
-        }
-
-        // More error checking for Auto Points
-        for ( uint16_t i=0; i < m_numAutoPoints; i++ )
-        {
-            if ( m_autoPoints[i] == nullptr )
-            {
-                m_error = fullErr( Err_T::MISSING_AUTO_POINTS );
                 m_error.logIt();
                 return m_error;
             }
