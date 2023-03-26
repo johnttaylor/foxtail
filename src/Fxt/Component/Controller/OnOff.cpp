@@ -360,7 +360,7 @@ Fxt::Type::Error OnOff::resolveReferences( Fxt::Point::DatabaseApi& pointDb )  n
     }
 
     // Validate OUTPUT Point types
-    if ( Fxt::Point::Api::validatePointTypes( (Fxt::Point::Api **) m_outputRefs, m_numOutputs, Fxt::Point::Bool::GUID_STRING ) == false )
+    if ( Fxt::Point::Api::validatePointTypes( m_outputRefs, m_numOutputs, Fxt::Point::Bool::GUID_STRING ) == false )
     {
         m_error = fullErr( Err_T::OUTPUT_REFRENCE_BAD_TYPE );
         m_error.logIt( getTypeName() );

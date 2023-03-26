@@ -102,7 +102,12 @@ public:
 
 protected:
     /// Helper method to parse the card's JSON config
-    bool parseConfiguration( Cpl::Memory::ContiguousAllocator& generalAllocator, JsonVariant& obj ) noexcept;
+    bool parseConfiguration( Cpl::Memory::ContiguousAllocator& generalAllocator,
+                             JsonVariant&                      obj,
+                             unsigned                          minInputs,
+                             unsigned                          maxInputs,
+                             unsigned                          minOutputs,
+                             unsigned                          maxOutputs ) noexcept;
 
     /// Helper method that allocates memory for the type specific constants
     virtual bool allocateKonstants( Cpl::Memory::ContiguousAllocator& generalAllocator, unsigned numPoints ) noexcept = 0;
@@ -121,14 +126,6 @@ protected:
 
 
 protected:
-    /// List of Input Points.  Note: Initially the point IDs are stored instead of pointers
-    Fxt::Point::Api**   m_inputRefs;
-
-    /// List of Output Points. Note: Initially the point IDs are stored instead of pointers
-    Fxt::Point::Api**   m_outputRefs;
-
-    /// Number of Input/Output point pairs
-    uint8_t             m_numInputOuputPairs;
 };
 
 

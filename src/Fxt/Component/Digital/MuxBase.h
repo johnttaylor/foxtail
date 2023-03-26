@@ -96,8 +96,13 @@ public:
 
 
 protected:
-    /// Helper method to parse the card's JSON config
-    bool parseConfiguration( Cpl::Memory::ContiguousAllocator& generalAllocator, JsonVariant& obj, unsigned numInputs ) noexcept;
+    /// Helper method to parse the card'sJSON config
+    bool parseConfiguration( Cpl::Memory::ContiguousAllocator& generalAllocator,
+                             JsonVariant&                      obj,
+                             unsigned                          minInputs,
+                             unsigned                          maxInputs,
+                             unsigned                          minOutputs,
+                             unsigned                          maxOutputs ) noexcept;
 
     /// Returns (via 'dstBitValue' the specified input's bit value.  Return false if the input bit is invalid
     bool getInputBit( unsigned refIdx, bool& dstBitValue );
@@ -114,7 +119,7 @@ protected:
 
         // Walk all of my inputs
         WORD_TYPE outValue = 0;
-        for ( int i=0; i < m_numInputs; i++ )
+        for ( unsigned i=0; i < m_numInputs; i++ )
         {
             bool bitValue;
             if ( !getInputBit( i, bitValue ) )
@@ -134,23 +139,11 @@ protected:
     }
 
 protected:
-    /// List of Input Points.  Note: Initially the point IDs are stored instead of pointers
-    Fxt::Point::Bool**                      m_inputRefs;
-
-    /// List of Output Points. Note: Initially the point IDs are stored instead of pointers
-    Fxt::Point::Api**                       m_outputRefs;
-
     /// List of Negate qualifier for the input points
     bool*                                   m_inputNegated;
 
     /// List of Bit offset for the input points
     uint8_t*                                m_bitOffsets;
-
-    /// Number of Input points
-    uint8_t                                 m_numInputs;
-
-    /// Number of Output points
-    uint8_t                                 m_numOutputs;
 };
 
 

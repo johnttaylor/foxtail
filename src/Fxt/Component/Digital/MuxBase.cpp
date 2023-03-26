@@ -23,8 +23,7 @@ using namespace Fxt::Component::Digital;
 
 ///////////////////////////////////////////////////////////////////////////////
 MuxBase::MuxBase()
-    : m_numInputs( 0 )
-    , m_numOutputs( 0 )
+    : Common_()
 {
     // All of the work is done in the child class
 }
@@ -39,7 +38,8 @@ bool MuxBase::getInputBit( unsigned refIdx, bool& dstBitValue )
 {
     // Get the input bit
     bool inBitValue;
-    if ( !m_inputRefs[refIdx]->read( inBitValue ) )
+    Fxt::Point::Bool* pt = (Fxt::Point::Bool*) m_inputRefs[refIdx];
+    if ( !pt->read( inBitValue ) )
     {
         // Set the output to invalid if any input is invalid
         m_outputRefs[0]->setInvalid();
@@ -52,94 +52,32 @@ bool MuxBase::getInputBit( unsigned refIdx, bool& dstBitValue )
 
 
 ///////////////////////////////////////////////////////////////////////////////
-bool MuxBase::parseConfiguration( Cpl::Memory::ContiguousAllocator& generalAllocator, JsonVariant & obj, unsigned maxInputs ) noexcept
+bool MuxBase::parseConfiguration( Cpl::Memory::ContiguousAllocator& generalAllocator,
+                                  JsonVariant&                      obj,
+                                  unsigned                          minInputs,
+                                  unsigned                          maxInputs,
+                                  unsigned                          minOutputs,
+                                  unsigned                          maxOutputs ) noexcept
 {
-    // Parse Output Point references
-    JsonArray outputs = obj["outputs"];
-    if ( !outputs.isNull() )
+    // Parse references
+    if ( !parseInputReferences( generalAllocator, obj, minInputs, maxInputs ) ||
+         !parseOutputReferences( generalAllocator, obj, minOutputs, maxOutputs ) )
     {
-        // Validate number of points
-        size_t nOutputs = outputs.size();
-        if ( nOutputs == 0 || nOutputs > MAX_OUTPUTS )
-        {
-            m_error = fullErr( Fxt::Component::Err_T::INCORRECT_NUM_OUTPUT_REFS );
-            m_error.logIt( getTypeName() );
-            return false;
-        }
-        m_numOutputs = (uint8_t) nOutputs;
-
-        // Allocate memory for managing input references
-        m_outputRefs = (Fxt::Point::Api**) generalAllocator.allocate( sizeof( Fxt::Point::Bool* ) * m_numOutputs );
-        if ( m_outputRefs == nullptr )
-        {
-            m_error = fullErr( Fxt::Component::Err_T::OUT_OF_MEMORY );
-            m_error.logIt( getTypeName() );
-            return false;
-        }
-
-        unsigned numOutputsFoundNotUsed;
-        if ( !parsePointReferences( (size_t*) m_outputRefs, // Start by storing the point ID
-                                    MAX_OUTPUTS,
-                                    outputs,
-                                    numOutputsFoundNotUsed ) )
-        {
-            return false;
-        }
-
-        // Get output type
-        const char* guid = outputs[0]["type"];
-        if ( guid == nullptr )
-        {
-            m_error = fullErr( Fxt::Component::Err_T::OUTPUT_REFRENCE_BAD_TYPE );
-            m_error.logIt( getTypeName() );
-            return false;
-        }
-
-        // Validate that the input bits do NOT exceed the output bits
-        if ( m_numInputs > maxInputs )
-        {
-            m_error = fullErr( Err_T::MUX_INPUT_BITS_EXCEED_OUTPUT );
-            m_error.logIt( getTypeName() );
-            return false;
-        }
+        return false;
     }
 
-    // Parse Input Point references
-    JsonArray inputs = obj["inputs"];
-    if ( !inputs.isNull() )
+    // Allocate memory for internal lists
+    m_bitOffsets   = (uint8_t*) generalAllocator.allocate( sizeof( uint8_t ) * m_numInputs );
+    m_inputNegated = (bool*) generalAllocator.allocate( sizeof( bool ) * m_numInputs );
+    if ( m_bitOffsets == nullptr || m_inputNegated == nullptr )
     {
-        // Validate number of points
-        size_t nInputs = inputs.size();
-        if ( nInputs == 0 || nInputs > maxInputs )
-        {
-            m_error = fullErr( Fxt::Component::Err_T::INCORRECT_NUM_INPUT_REFS );
-            m_error.logIt( getTypeName() );
-            return false;
-        }
-        m_numInputs = (uint8_t)nInputs;
-
-        // Allocate memory for managing input references
-        m_inputRefs    = (Fxt::Point::Bool**) generalAllocator.allocate( sizeof( Fxt::Point::Bool* ) * m_numInputs );
-        m_bitOffsets   = (uint8_t*) generalAllocator.allocate( sizeof( uint8_t ) * m_numInputs );
-        m_inputNegated = (bool*) generalAllocator.allocate( sizeof( bool ) * m_numInputs );
-        if ( m_inputRefs == nullptr || m_bitOffsets == nullptr || m_inputNegated == nullptr )
-        {
-            m_error = fullErr( Fxt::Component::Err_T::OUT_OF_MEMORY );
-            m_error.logIt( getTypeName() );
-            return false;
-        }
-
-        unsigned numInputsFoundNotUsed;
-        if ( !parsePointReferences( (size_t*) m_inputRefs,  // Start by storing the point ID
-                                    maxInputs,
-                                    inputs,
-                                    numInputsFoundNotUsed ) )
-        {
-            return false;
-        }
+        m_error = fullErr( Fxt::Component::Err_T::OUT_OF_MEMORY );
+        m_error.logIt( getTypeName() );
+        return false;
     }
 
     // Parse input bit offsets and negate qualifiers
+    JsonArray inputs = obj["inputs"];
     for ( unsigned i=0; i < m_numInputs; i++ )
     {
         m_inputNegated[i] = inputs[i]["negate"] | false;
@@ -159,28 +97,14 @@ bool MuxBase::parseConfiguration( Cpl::Memory::ContiguousAllocator& generalAlloc
 ///////////////////////////////////////////////////////////////////////////////
 Fxt::Type::Error MuxBase::resolveReferences( Fxt::Point::DatabaseApi& pointDb )  noexcept
 {
-    // Resolve INPUT references
-    if ( !Common_::resolveReferences( pointDb,
-                                      (Fxt::Point::Api **) m_inputRefs,    // Pass as array of generic Point pointers
-                                      m_numInputs ) )
+    // Resolve references
+    if ( resolveInputOutputReferences( pointDb ) )
     {
-        m_error = fullErr( Fxt::Component::Err_T::UNRESOLVED_INPUT_REFRENCE );
-        m_error.logIt( getTypeName() );
-        return m_error;
-    }
-
-    // Resolve OUTPUT references
-    if ( !Common_::resolveReferences( pointDb,
-                                      (Fxt::Point::Api **) m_outputRefs,    // Pass as array of generic Point pointers
-                                      m_numOutputs ) )
-    {
-        m_error = fullErr( Fxt::Component::Err_T::UNRESOLVED_OUTPUT_REFRENCE );
-        m_error.logIt( getTypeName() );
         return m_error;
     }
 
     // Validate INPUT Point types 
-    if ( Fxt::Point::Api::validatePointTypes( (Fxt::Point::Api **) m_inputRefs, m_numInputs, Fxt::Point::Bool::GUID_STRING ) == false )
+    if ( Fxt::Point::Api::validatePointTypes( m_inputRefs, m_numInputs, Fxt::Point::Bool::GUID_STRING ) == false )
     {
         m_error = fullErr( Fxt::Component::Err_T::INPUT_REFRENCE_BAD_TYPE );
         m_error.logIt( getTypeName() );

@@ -49,39 +49,82 @@ public:
     /// See Fxt::Component::Api
     Fxt::Type::Error getErrorCode() const noexcept;
 
+
+protected:
+    /// Struct used to parsed named input/output references
+    struct NamedRef_T
+    {
+        const char* keyName;    //!< JSON Key name
+        const char* keyValue;   //!< JSON Key value, i.e. the label of the named reference
+        bool        required;   //!< When set to true, the KV pair is required point
+    };
+
+protected:
+    /// Parse non-named inputs, i.e. order doesn't matter or order is defined
+    bool parseInputReferences( Cpl::Memory::ContiguousAllocator& generalAllocator,
+                               JsonVariant&                      obj,
+                               unsigned                          minPoints,
+                               unsigned                          maxPoints ) noexcept;
+
+    /// Parse named inputs.  'maxPoints' is used to allocate m_inputRef array. names[] must have at least 'maxPoints' entries 
+    bool parseInputReferences( Cpl::Memory::ContiguousAllocator& generalAllocator,
+                               JsonVariant&                      obj,
+                               const NamedRef_T                  names[],
+                               unsigned                          minPoints,
+                               unsigned                          maxPoints ) noexcept;
+
+
+    /// Parse non-named outputs, i.e. order doesn't matter or order is defined
+    bool parseOutputReferences( Cpl::Memory::ContiguousAllocator& generalAllocator,
+                                JsonVariant&                      obj,
+                                unsigned                          minPoints,
+                                unsigned                          maxPoints ) noexcept;
+
+    /// Parse named outputs.  'maxPoints' is used to allocate m_outputRef array. names[] must have at least 'maxPoints' entries 
+    bool parseOutputReferences( Cpl::Memory::ContiguousAllocator& generalAllocator,
+                                JsonVariant&                      obj,
+                                const NamedRef_T                  names[],
+                                unsigned                          minPoints,
+                                unsigned                          maxPoints ) noexcept;
+
 protected:
     /// Helper method to extract Point references
     bool parsePointReferences( size_t           dstReferences[],
-                               unsigned         maxNumReferences,
-                               JsonArray&       arrayObj,
-                               unsigned&        numRefsFound );
+                               unsigned         numPoints,
+                               JsonArray&       arrayObj );
 
     /// Helper method to extract a SINGLE Point reference
     bool parsePointReference( size_t           dstReferences[],
                               unsigned         referenceIndex,
                               JsonObject&      objInstance );
 
-    /// Helper method to extract a SINGLE Point reference - but search the list of inputs for a specific KV pair
-    bool findAndparsePointReference( size_t            dstReferences[],
-                                     const char*       keyName,
-                                     const char*       jsonValue,
-                                     unsigned          referenceIndex,
-                                     size_t            startElemIndex,
-                                     size_t            numElems,
-                                     JsonArray&        arrayObj,
-                                     bool              required,
-                                     size_t&           jsonFoundIdx);   // Set to -1 if NOT found
+
+    /// Helper that resolve Inputs and Outputs references
+    bool resolveInputOutputReferences( Fxt::Point::DatabaseApi& pointDb )  noexcept;
 
     /// Helper Resolve Point References
-    bool resolveReferences( Fxt::Point::DatabaseApi& pointDb,
-                            Fxt::Point::Api*         srcIdsAndDstPointers[],
-                            unsigned                 numElements );
+    bool resolveReferencesToPoint( Fxt::Point::DatabaseApi& pointDb,
+                                   Fxt::Point::Api*         srcIdsAndDstPointers[],
+                                   unsigned                 numElements );
+
 
 
 
 protected:
+    /// List of Input Points.  Note: Initially the point IDs are stored instead of pointers
+    Fxt::Point::Api**                       m_inputRefs;
+
+    /// List of Output Points. Note: Initially the point IDs are stored instead of pointers
+    Fxt::Point::Api**                       m_outputRefs;
+
     /// Error state. A value of 0 indicates NO error
-    Fxt::Type::Error m_error;
+    Fxt::Type::Error                        m_error;
+
+    /// Number of Input points
+    unsigned                                m_numInputs;
+
+    /// Number of Output points
+    unsigned                                m_numOutputs;
 
     /// My started state
     bool             m_started;

@@ -22,6 +22,8 @@ using namespace Fxt::Component;
 //////////////////////////////////////////////////
 Common_::Common_()
     : m_error( Fxt::Type::Error::SUCCESS() )
+    , m_numInputs( 0 )
+    , m_numOutputs( 0 )
     , m_started( false )
 {
 }
@@ -64,23 +66,100 @@ Fxt::Type::Error Common_::getErrorCode() const noexcept
 }
 
 /////////////////////////////////////////////
-bool Common_::parsePointReferences( size_t              dstReferences[],
-                                    unsigned            maxNumReferences,
-                                    JsonArray&          arrayObj,
-                                    unsigned&           numRefsFound )
+bool Common_::parseInputReferences( Cpl::Memory::ContiguousAllocator& generalAllocator,
+                                    JsonVariant&                      obj,
+                                    unsigned                          minPoints,
+                                    unsigned                          maxPoints ) noexcept
 {
-    // Validate supported number of input signals
-    numRefsFound = arrayObj.size();
-    if ( numRefsFound > maxNumReferences )
+    // Parse Point inputs
+    JsonArray inputs = obj["inputs"];
+    if ( !inputs.isNull() )
     {
-        m_error      = fullErr( Fxt::Component::Err_T::TOO_MANY_INPUT_REFS );
-        m_error.logIt( getTypeGuid() );
-        numRefsFound = 0;
+        // Validate number of points
+        size_t nRefs = inputs.size();
+        if ( nRefs < minPoints || nRefs > maxPoints )
+        {
+            m_error = fullErr( Err_T::INCORRECT_NUM_INPUT_REFS );
+            m_error.logIt( getTypeName() );
+            return false;
+        }
+        m_numInputs = (unsigned) nRefs;
+
+        // Allocate memory for managing inputs
+        m_inputRefs = (Fxt::Point::Api**) generalAllocator.allocate( sizeof( Fxt::Point::Api* ) * m_numInputs );
+        if ( m_inputRefs == nullptr )
+        {
+            m_error = fullErr( Fxt::Component::Err_T::OUT_OF_MEMORY );
+            m_error.logIt( getTypeName() );
+            return false;
+        }
+
+        if ( !parsePointReferences( (size_t*) m_inputRefs,  // Start by storing the point ID
+                                    m_numInputs,
+                                    inputs ) )
+        {
+            return false;
+        }
+    }
+
+    else if ( minPoints > 0 )
+    {
         return false;
     }
 
-    // Extract the Point references
-    for ( unsigned i=0; i < numRefsFound; i++ )
+    return true;
+}
+
+bool Common_::parseOutputReferences( Cpl::Memory::ContiguousAllocator& generalAllocator,
+                                     JsonVariant&                      obj,
+                                     unsigned                          minPoints,
+                                     unsigned                          maxPoints ) noexcept
+{
+    // Parse Point outputs
+    JsonArray outputs = obj["outputs"];
+    if ( !outputs.isNull() )
+    {
+        // Validate number of points
+        size_t nRefs = outputs.size();
+        if ( nRefs < minPoints || nRefs > maxPoints )
+        {
+            m_error = fullErr( Err_T::INCORRECT_NUM_OUTPUT_REFS );
+            m_error.logIt( getTypeName() );
+            return false;
+        }
+        m_numOutputs = (unsigned) nRefs;
+
+        // Allocate memory for managing outputs
+        m_outputRefs = (Fxt::Point::Api**) generalAllocator.allocate( sizeof( Fxt::Point::Api* ) * m_numOutputs );
+        if ( m_outputRefs == nullptr )
+        {
+            m_error = fullErr( Fxt::Component::Err_T::OUT_OF_MEMORY );
+            m_error.logIt( getTypeName() );
+            return false;
+        }
+
+        if ( !parsePointReferences( (size_t*) m_outputRefs,  // Start by storing the point ID
+                                    m_numOutputs,
+                                    outputs ) )
+        {
+            return false;
+        }
+    }
+
+    else if ( minPoints > 0 )
+    {
+        return false;
+    }
+
+    return true;
+}
+
+bool Common_::parsePointReferences( size_t              dstReferences[],
+                                    unsigned            numPoints,
+                                    JsonArray&          arrayObj )
+{
+    // Extract the Point inputs
+    for ( unsigned i=0; i < numPoints; i++ )
     {
         JsonObject elem = arrayObj[i];
         if ( !parsePointReference( dstReferences, i, elem ) )
@@ -108,47 +187,175 @@ bool Common_::parsePointReference( size_t           dstReferences[],
     return true;
 }
 
-bool Common_::findAndparsePointReference( size_t            dstReferences[],
-                                          const char*       keyName,
-                                          const char*       jsonValue,
-                                          unsigned          referenceIndex,
-                                          size_t            startElemIndex,
-                                          size_t            numElems,
-                                          JsonArray&        arrayObj,
-                                          bool              required,
-                                          size_t&           jsonFoundIdx )
+bool Common_::parseInputReferences( Cpl::Memory::ContiguousAllocator& generalAllocator,
+                                    JsonVariant&                      obj,
+                                    const NamedRef_T                  names[],
+                                    unsigned                          minPoints,
+                                    unsigned                          maxPoints ) noexcept
 {
-    jsonFoundIdx = (size_t)-1;
-
-    // Search for the element
-    for ( ; startElemIndex <= numElems; startElemIndex++ )
+    // Parse Point inputs
+    JsonArray inputs = obj["inputs"];
+    if ( !inputs.isNull() )
     {
-        JsonObject elem = arrayObj[startElemIndex];
-        const char* val = elem[keyName];
-        if ( val != nullptr && strcmp(val,jsonValue) == 0 )
+        // Validate number of points
+        size_t nRefs = inputs.size();
+        if ( nRefs < minPoints || nRefs > maxPoints )
         {
-            jsonFoundIdx = startElemIndex;
-            return parsePointReference( dstReferences, referenceIndex, elem );
+            m_error = fullErr( Err_T::INCORRECT_NUM_INPUT_REFS );
+            m_error.logIt( getTypeName() );
+            return false;
         }
+        m_numInputs = (unsigned) nRefs;
+
+        // Allocate memory for managing inputs (ALWAYS allocate max number of inputs)
+        m_inputRefs = (Fxt::Point::Api**) generalAllocator.allocate( sizeof( Fxt::Point::Api* ) * maxPoints );
+        if ( m_inputRefs == nullptr )
+        {
+            m_error = fullErr( Fxt::Component::Err_T::OUT_OF_MEMORY );
+            m_error.logIt( getTypeName() );
+            return false;
+        }
+
+        // Set the array entries to all ones.  This is so 'missing optional points' are indicated by a -1
+        memset( m_inputRefs, 0xFF, sizeof( sizeof( Fxt::Point::Api* ) * maxPoints ) );
+
+        // Search for the named elements
+        for ( unsigned i=0; i <= m_numInputs; i++ )
+        {
+            JsonObject elem = inputs[i];
+
+            // Look-up expected names
+            for ( unsigned j=0; j < maxPoints; j++ )
+            {
+                const char* keyVal = names[j].keyName;
+
+                // Match found -->parse the reference
+                if ( keyVal != nullptr && strcmp( keyVal, names[j].keyValue ) == 0 )
+                {
+                    parsePointReference( (size_t*) m_inputRefs, j, elem );
+                }
+            }
+        }
+
+        // Determine if there are missing required references
+        for ( unsigned j=0; j < maxPoints; j++ )
+        {
+            // Throw an error if required KV pair is missing
+            if ( m_inputRefs[j] == nullptr && names[j].required == true )
+            {
+                m_error = fullErr( Err_T::MISSING_REQUIRED_FIELD );
+                m_error.logIt( "%s. Missing %s", getTypeGuid(), names[j].keyValue );
+                return false;
+            }
+        }
+
+        // If get here everything is GOOD
+        return true;
     }
 
-    // Throw an error if required KV pair is missing
-    if ( jsonFoundIdx == ((size_t) -1) && required )
+    return false;
+}
+
+bool Common_::parseOutputReferences( Cpl::Memory::ContiguousAllocator& generalAllocator,
+                                     JsonVariant&                      obj,
+                                     const NamedRef_T                  names[],
+                                     unsigned                          minPoints,
+                                     unsigned                          maxPoints ) noexcept
+{
+    // Parse Point outputs
+    JsonArray outputs = obj["outputs"];
+    if ( !outputs.isNull() )
     {
-        m_error = fullErr( Err_T::MISSING_REQUIRED_FIELD );
-        m_error.logIt( "%s. Missing %s", getTypeGuid(), keyName );
+        // Validate number of points
+        size_t nRefs = outputs.size();
+        if ( nRefs < minPoints || nRefs > maxPoints )
+        {
+            m_error = fullErr( Err_T::INCORRECT_NUM_OUTPUT_REFS );
+            m_error.logIt( getTypeName() );
+            return false;
+        }
+        m_numOutputs = (unsigned) nRefs;
+
+        // Allocate memory for managing inputs (ALWAYS allocate max number of outputs)
+        m_outputRefs = (Fxt::Point::Api**) generalAllocator.allocate( sizeof( Fxt::Point::Api* ) * maxPoints );
+        if ( m_outputRefs == nullptr )
+        {
+            m_error = fullErr( Fxt::Component::Err_T::OUT_OF_MEMORY );
+            m_error.logIt( getTypeName() );
+            return false;
+        }
+
+        // Set the array entries to all ones.  This is so 'missing optional points' are indicated by a -1
+        memset( m_outputRefs, 0xFF, sizeof( sizeof( Fxt::Point::Api* ) * maxPoints ) );
+
+        // Search for the named elements
+        for ( unsigned i=0; i <= m_numOutputs; i++ )
+        {
+            JsonObject elem = outputs[i];
+
+            // Look-up expected names
+            for ( unsigned j=0; j < maxPoints; j++ )
+            {
+                const char* keyVal = names[j].keyName;
+
+                // Match found -->parse the reference
+                if ( keyVal != nullptr && strcmp( keyVal, names[j].keyValue ) == 0 )
+                {
+                    parsePointReference( (size_t*) m_outputRefs, j, elem );
+                }
+            }
+        }
+
+        // Determine if there are missing required references
+        for ( unsigned j=0; j < maxPoints; j++ )
+        {
+            // Throw an error if required KV pair is missing
+            if ( m_outputRefs[j] == nullptr && names[j].required == true )
+            {
+                m_error = fullErr( Err_T::MISSING_REQUIRED_FIELD );
+                m_error.logIt( "%s. Missing %s", getTypeGuid(), names[j].keyValue );
+                return false;
+            }
+        }
+
+        // If get here everything is GOOD
+        return true;
+    }
+
+    return false;
+}
+
+/////////////////////////////////////////////////
+bool Common_::resolveInputOutputReferences( Fxt::Point::DatabaseApi& pointDb )  noexcept
+{
+    // Resolve INPUT references
+    if ( !resolveReferencesToPoint( pointDb,
+                                    (Fxt::Point::Api **) m_inputRefs,    // Pass as array of generic Point pointers
+                                    m_numInputs ) )
+    {
+        m_error = fullErr( Fxt::Component::Err_T::UNRESOLVED_INPUT_REFRENCE );
+        m_error.logIt( getTypeName() );
         return false;
     }
 
-    // I only get here if an OPTIONAL KV pair was NOT found. I return true because m_error was NOT set
+    // Resolve OUTPUT references
+    if ( !resolveReferencesToPoint( pointDb,
+                                    (Fxt::Point::Api **) m_outputRefs,    // Pass as array of generic Point pointers
+                                    m_numOutputs ) )
+    {
+        m_error = fullErr( Fxt::Component::Err_T::UNRESOLVED_OUTPUT_REFRENCE );
+        m_error.logIt( getTypeName() );
+        return false;
+    }
+
     return true;
 }
 
-bool Common_::resolveReferences( Fxt::Point::DatabaseApi& pointDb,
-                                 Fxt::Point::Api*         srcIdsAndDstPointers[],
-                                 unsigned                 numElements )
+bool Common_::resolveReferencesToPoint( Fxt::Point::DatabaseApi&   pointDb,
+                                        Fxt::Point::Api*           srcIdsAndDstPointers[],
+                                        unsigned                   numElements )
 {
-    // Fail if the component HAS started (i.e. resolving references has to be done BEFORE starting the components)
+    // Fail if the component HAS started (i.e. resolving inputs has to be done BEFORE starting the components)
     if ( m_started || m_error != Fxt::Type::Error::SUCCESS() )
     {
         return false;
@@ -157,12 +364,24 @@ bool Common_::resolveReferences( Fxt::Point::DatabaseApi& pointDb,
     for ( unsigned i=0; i < numElements; i++ )
     {
         uint32_t pointId = (size_t) (srcIdsAndDstPointers[i]);
-        Fxt::Point::Api* pointPtr = pointDb.lookupById( pointId );
-        if ( pointPtr == nullptr )
+
+        // Skip optional/missing entries (only occurs with 'named' references)
+        if ( pointId == ((uint32_t) -1) )
         {
-            return false;
+            srcIdsAndDstPointers[i] = nullptr;
         }
-        srcIdsAndDstPointers[i] = pointPtr;
+
+        // Look-up the point pointer for the referenced Point ID
+        else
+        {
+            Fxt::Point::Api* pointPtr = pointDb.lookupById( pointId );
+            if ( pointPtr == nullptr )
+            {
+                return false;
+            }
+
+            srcIdsAndDstPointers[i] = pointPtr;
+        }
     }
 
     return true;

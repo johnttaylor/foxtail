@@ -47,7 +47,7 @@ namespace Digital {
        "name": "Byte DemuxBase #1"                              // *Text label for the component
        "type": "8c55aa52-3bc8-4b8a-ad73-c434a0bbd4b4",      // Identifies the card type.  Value comes from the Supported/Available-card-list
        "typeName": "Fxt::Component::Digital::Demux8u"       // *OPTIONAL: Human readable type name
-       "inputs": [                                          // Array of Point references that supply the Component's input values.  
+       "inputs": [                                          // Array of Point references that supply the Component's input values.
           {
             "name": "input word",                           // human readable name for the input value
             "type": "918cff9e-8007-4666-99ac-384b9624329c", // *REQUIRED Type for the input signal. The type is CHILD class specific!
@@ -56,7 +56,7 @@ namespace Digital {
           },
           ...
        ],
-       "outputs": [                                         // Array of Point reference where the Component's writes it output values to.  Number of output is CHILD class specific! 
+       "outputs": [                                         // Array of Point reference where the Component's writes it output values to.  Number of output is CHILD class specific!
           {
             "bit: 0                                         // The bit offset (zero based, bit=LSb)
             "name":"Bit0"                                   // Human readable name for the output signal
@@ -104,7 +104,12 @@ public:
 
 protected:
     /// Helper method to parse the card's JSON config
-    bool parseConfiguration( Cpl::Memory::ContiguousAllocator& generalAllocator, JsonVariant& obj, unsigned maxOutputs ) noexcept;
+    bool parseConfiguration( Cpl::Memory::ContiguousAllocator& generalAllocator,
+                             JsonVariant&                      obj,
+                             unsigned                          minInputs,
+                             unsigned                          maxInputs,
+                             unsigned                          minOutputs,
+                             unsigned                          maxOutputs ) noexcept;
 
     /// Helper method to validate point types
     virtual bool validateInputType() noexcept = 0;
@@ -130,35 +135,24 @@ protected:
         }
 
         // Derive my outputs
-        for ( int i=0; i < m_numOutputs; i++ )
+        for ( unsigned i=0; i < m_numOutputs; i++ )
         {
             WORD_TYPE bitMask   = ((WORD_TYPE) 1) << m_bitOffsets[i];
             bool      outputVal = bitMask & inValue;
             bool      finalOut  = m_outputNegated[i] ? !outputVal : outputVal;
-            m_outputRefs[i]->write( finalOut );
+            Fxt::Point::Bool* pt = (Fxt::Point::Bool*) m_outputRefs[i];
+            pt->write( finalOut );
         }
 
         return Fxt::Type::Error::SUCCESS();
     }
 
 protected:
-    /// List of Input Points.  Note: Initially the point IDs are stored instead of pointers
-    Fxt::Point::Api**   m_inputRefs;
-
-    /// List of Output Points. Note: Initially the point IDs are stored instead of pointers
-    Fxt::Point::Bool**  m_outputRefs;
-
     /// List of Negate qualifier for the output points
     bool*               m_outputNegated;
 
     /// List of Bit offset for the output points
     uint8_t*            m_bitOffsets;
-
-    /// Number of Input points
-    uint8_t             m_numInputs;
-
-    /// Number of Output points
-    uint8_t             m_numOutputs;
 };
 
 

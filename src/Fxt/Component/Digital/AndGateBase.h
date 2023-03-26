@@ -104,23 +104,16 @@ public:
 
 protected:
     /// Helper method to parse the card's JSON config
-    bool parseConfiguration( Cpl::Memory::ContiguousAllocator& generalAllocator, JsonVariant& obj, unsigned maxInputs ) noexcept;
+    bool parseConfiguration( Cpl::Memory::ContiguousAllocator& generalAllocator,
+                             JsonVariant&                      obj,
+                             unsigned                          minInputs,
+                             unsigned                          maxInputs,
+                             unsigned                          minOutputs,
+                             unsigned                          maxOutputs ) noexcept;
 
 protected:
-    /// List of Input Points Pointers.  Note: Initially the point IDs are stored instead of pointers
-    Fxt::Point::Bool**  m_inputRefs;
-
-    /// List of Output Points Pointers. Note: Initially the point IDs are stored instead of pointers
-    Fxt::Point::Bool**  m_outputRefs;
-
     /// List of Negate qualifier for the output points
     bool*               m_outputNegated;
-
-    /// Number of Input points
-    uint8_t             m_numInputs;
-
-    /// Number of Output points
-    uint8_t             m_numOutputs;
 };
 
 

@@ -38,8 +38,6 @@ namespace Digital {
     @param SUCCESS                          NO ERROR
     @param DEMUX_INVALID_BIT_OFFSET         An invalid/out-of-range bit offset was specified for Demux component
     @param MUX_INVALID_BIT_OFFSET           An invalid/out-of-range bit offset was specified for Mux component
-    @param MUX_INPUT_BITS_EXCEED_OUTPUT     The number of input bits exceeds the number of bits in the output type
-    @param DEMUX_OUTPUT_BITS_EXCEED_INPUT   The number of output bits exceeds the number of bits in the input type
     @param MUX_INVALID_OUTPUT_TYPE          An invalid output type was specified
     @param DEMUX_INVALID_INPUT_TYPE         An invalid input type was specified
  */
@@ -47,8 +45,6 @@ BETTER_ENUM( Err_T, uint8_t
              , SUCCESS = 0
              , DEMUX_INVALID_BIT_OFFSET
              , MUX_INVALID_BIT_OFFSET
-             , MUX_INPUT_BITS_EXCEED_OUTPUT
-             , DEMUX_OUTPUT_BITS_EXCEED_INPUT
              , MUX_INVALID_OUTPUT_TYPE
              , DEMUX_INVALID_INPUT_TYPE
 );

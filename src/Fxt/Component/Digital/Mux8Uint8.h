@@ -49,7 +49,7 @@ public:
                Fxt::Point::DatabaseApi&           dbForPoints )
         :MuxBase()
     {
-        parseConfiguration( generalAllocator, componentObject, MAX_INPUTS );
+        parseConfiguration( generalAllocator, componentObject, 1, MAX_INPUTS, 1, MAX_OUTPUTS );
     }
 
 public:

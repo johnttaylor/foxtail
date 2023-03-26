@@ -49,7 +49,7 @@ public:
                    Fxt::Point::DatabaseApi&           dbForPoints )
         :Scaler64Base()
     {
-        parseConfiguration( generalAllocator, componentObject );
+        parseConfiguration( generalAllocator, componentObject, 1, MAX_INPUTS, 1, MAX_OUTPUTS );
     }
 
 public:
@@ -89,13 +89,13 @@ protected:
     /// See Fxt::Component::Math::ScalerBase
     bool validateInputTypes() noexcept
     {
-        return Fxt::Point::Api::validatePointTypes( (Fxt::Point::Api **) m_inputRefs, m_numInputOuputPairs, Fxt::Point::Float::GUID_STRING );
+        return Fxt::Point::Api::validatePointTypes(m_inputRefs, m_numInputs, Fxt::Point::Float::GUID_STRING );
     }
 
     /// See Fxt::Component::Math::ScalerBase
     bool validateOututTypes() noexcept
     {
-        return Fxt::Point::Api::validatePointTypes( (Fxt::Point::Api **) m_outputRefs, m_numInputOuputPairs, Fxt::Point::Float::GUID_STRING );
+        return Fxt::Point::Api::validatePointTypes( m_outputRefs, m_numOutputs, Fxt::Point::Float::GUID_STRING );
     }
 
     /// See Fxt::Component::Math::ScalerBase

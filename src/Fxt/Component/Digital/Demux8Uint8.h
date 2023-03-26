@@ -45,13 +45,13 @@ public:
 public:
     /// Constructor
     Demux8Uint8( JsonVariant&                       componentObject,
-             Cpl::Memory::ContiguousAllocator&  generalAllocator,
-             Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
-             Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
-             Fxt::Point::DatabaseApi&           dbForPoints )
+                 Cpl::Memory::ContiguousAllocator&  generalAllocator,
+                 Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
+                 Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
+                 Fxt::Point::DatabaseApi&           dbForPoints )
         : DemuxBase()
     {
-        parseConfiguration( generalAllocator, componentObject, MAX_OUTPUTS );
+        parseConfiguration( generalAllocator, componentObject, 1, MAX_INPUTS, 1, MAX_OUTPUTS );
     }
 
 
