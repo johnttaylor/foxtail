@@ -34,7 +34,7 @@ from nqbplib.my_globals import NQBP_PRE_PROCESS_SCRIPT
 #---------------------------------------------------
 
 # Set the name for the final output item (with NO file extension)
-FINAL_OUTPUT_NAME = 'kestrel'
+FINAL_OUTPUT_NAME = 'pipico-demo'
 
 # This is used for running the PIO Assembler in a given driver directory (e.g drivers\st7789)
 NQBP_PRE_PROCESS_SCRIPT( "nqbp-preprocess.py" )
@@ -64,7 +64,7 @@ pimoroni_inc      = f' -I{pimoroni_src_path}' + \
 
 # Set project specific 'base' (i.e always used) options
 base_release = BuildValues()        # Do NOT comment out this line
-common_flags           = ' -DPICO_HEAP_SIZE=32768 -DPICO_STACK_SIZE=2048 -DPICO_COPY_TO_RAM=0 -DPICO_CXX_ENABLE_EXCEPTIONS=0 -DPICO_NO_FLASH=0 -DPICO_NO_HARDWARE=0 -DPICO_ON_DEVICE=1 -DPICO_USE_BLOCKED_RAM=0 '
+common_flags           = ' -DPICO_HEAP_SIZE=65536 -DPICO_STACK_SIZE=3072 -DPICO_COPY_TO_RAM=0 -DPICO_CXX_ENABLE_EXCEPTIONS=0 -DPICO_NO_FLASH=0 -DPICO_NO_HARDWARE=0 -DPICO_ON_DEVICE=1 -DPICO_USE_BLOCKED_RAM=0 '
 base_release.cflags    = f' -Wall -Werror {common_flags}'
 base_release.cppflags  = ' -std=gnu++17'
 base_release.asmflags  = f' {common_flags}'
