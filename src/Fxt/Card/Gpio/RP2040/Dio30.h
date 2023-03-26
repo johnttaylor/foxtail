@@ -30,7 +30,7 @@ namespace RP2040 {
 
 
 /** This concrete class implements an IO card that supports 30 digital inputs and
-    30 digital outputs.  
+    30 digital outputs.
 
     Note: The IO operations (aka the low level driver) for the card execute
           in the chassis thread.
@@ -96,11 +96,18 @@ public:
     /// Type name for the card
     static constexpr const char*    TYPE_NAME   = "Fxt::Card::Gpio::RP2040::Dio30";
 
+    /// Maximum number of Input channels
+    static constexpr const size_t   MAX_INPUT_CHANNELS  = 30;
+
+    /// Maximum number of Output channels
+    static constexpr const size_t   MAX_OUTPUT_CHANNELS = 30;
+
     /// Size (in bytes) of Stateful data that will be allocated on the Card Heap
-    static constexpr const size_t   CARD_STATEFUL_HEAP_SIZE = (3 * 30 * sizeof( Fxt::Point::Bool::StateBlock_T ));
+    static constexpr const size_t   CARD_STATEFUL_HEAP_SIZE = (3 * MAX_INPUT_CHANNELS * sizeof( Fxt::Point::Bool::StateBlock_T ));
 
     /// Size (in bytes) of Stateful data that will be allocated on the HA Heap
-    static constexpr const size_t   HA_STATEFUL_HEAP_SIZE = (30 * sizeof( Fxt::Point::Bool::StateBlock_T ));
+    static constexpr const size_t   HA_STATEFUL_HEAP_SIZE = (MAX_OUTPUT_CHANNELS * sizeof( Fxt::Point::Bool::StateBlock_T ));
+
 
 public:
     /// Constructor

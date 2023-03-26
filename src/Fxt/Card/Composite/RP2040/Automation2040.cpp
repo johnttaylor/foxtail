@@ -19,15 +19,15 @@
 using namespace Fxt::Card::Composite::RP2040;
 
 
-#define MAX_INPUT_CHANNELS          Automation2040::MAX_INPUT_CHANNELS
-#define STARTING_INPUT_CHANNEL_NUM  1
-#define ENDING_INPUT_CHANNEL_NUM    31
+#define MAX_INPUT_CHANNELS              Automation2040::MAX_INPUT_CHANNELS
+#define STARTING_INPUT_CHANNEL_NUM      1
+#define ENDING_INPUT_CHANNEL_NUM        31
 
-#define MAX_OUTPUT_CHANNELS         Automation2040::MAX_OUTPUT_CHANNELS
-#define STARTING_OUTPUT_CHANNEL_NUM 1
-#define ENDING_OUTPUT_CHANNEL_NUM   31
+#define MAX_OUTPUT_CHANNELS             Automation2040::MAX_OUTPUT_CHANNELS
+#define STARTING_OUTPUT_CHANNEL_NUM     1
+#define ENDING_OUTPUT_CHANNEL_NUM       31
 
-static const char* inputGuidForChannelNum( JsonObject channelObj );
+static const char* inputGuidFromChannelNum( unsigned channelNum );
 
 static void readDriverDigitalInput( Fxt::Point::Api* dstPt, int inIdentifier );
 static void readDriverAnalogInput( Fxt::Point::Api* dstPt, int inIdentifier );
@@ -68,199 +68,94 @@ void Automation2040::parseConfiguration( Cpl::Memory::ContiguousAllocator&  gene
                                          Fxt::Point::DatabaseApi&           dbForPoints,
                                          JsonVariant&                       cardObject ) noexcept
 {
-    // Parse channels
-    if ( !cardObject["points"].isNull() )
+    // Parse/Create Virtual & IO Register points
+    if ( !parseInputOutputPoints( generalAllocator,
+                                  cardStatefulDataAllocator,
+                                  haStatefulDataAllocator,
+                                  pointFactoryDb,
+                                  dbForPoints,
+                                  cardObject,
+                                  false,
+                                  0, 0 ) )
     {
-        // INPUTS
-        JsonArray inputs = cardObject["points"]["inputs"];
-        if ( !inputs.isNull() )
+        return;
+    }
+
+    // INPUTS: Build channel to driver mapping (also validates the channel number)
+    JsonArray inputs = cardObject["points"]["inputs"];
+    for ( unsigned idx=0; idx < m_numInputs; idx++ )
+    {
+        JsonObject elem       = inputs[idx];
+        uint16_t   channelNum = getChannelNumber( elem, STARTING_INPUT_CHANNEL_NUM, ENDING_INPUT_CHANNEL_NUM );  // Note: '0' is invalid channel #
+        if ( !updateInputMap( idx, channelNum ) )
         {
-            // Validate supported number of signals
-            size_t nInputs = inputs.size();
-            if ( nInputs > MAX_INPUT_CHANNELS )
-            {
-                m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::TOO_MANY_INPUT_POINTS );
-                m_error.logIt( getTypeName() );
-                return;
-            }
-            m_numInputs = (uint16_t) nInputs;
-
-            // Create Virtual Points
-            for ( size_t idx=0; idx < m_numInputs; idx++ )
-            {
-                uint16_t   channelNum_notUsed;
-                JsonObject channelObj      = inputs[idx].as<JsonObject>();
-                const char* expectTypeGuid = inputGuidForChannelNum( channelObj );
-
-                createPointForChannel( pointFactoryDb,
-                                       m_virtualInputs,
-                                       expectTypeGuid,
-                                       false,
-                                       channelObj,
-                                       m_error,
-                                       STARTING_INPUT_CHANNEL_NUM,
-                                       ENDING_INPUT_CHANNEL_NUM,
-                                       channelNum_notUsed,
-                                       generalAllocator,
-                                       cardStatefulDataAllocator,
-                                       dbForPoints );
-
-                // Stop processing if/when an error occurred
-                if ( m_error != Fxt::Type::Error::SUCCESS() )
-                {
-                    return;
-                }
-            }
-
-            // Create IO Register Points and Driver Configuration:Inputs
-            for ( size_t idx=0; idx < m_numInputs; idx++ )
-            {
-                uint16_t   channelNum;
-                JsonObject channelObj      = inputs[idx].as<JsonObject>();
-                const char* expectTypeGuid = inputGuidForChannelNum( channelObj );
-                Fxt::Point::Api* pt        = createPointForChannel( pointFactoryDb,
-                                                                    m_ioRegisterInputs,
-                                                                    expectTypeGuid,
-                                                                    true,
-                                                                    channelObj,
-                                                                    m_error,
-                                                                    STARTING_INPUT_CHANNEL_NUM,
-                                                                    ENDING_INPUT_CHANNEL_NUM,
-                                                                    channelNum,
-                                                                    generalAllocator,
-                                                                    cardStatefulDataAllocator,
-                                                                    dbForPoints );
-
-                // Stop processing if/when an error occurred
-                if ( m_error != Fxt::Type::Error::SUCCESS() )
-                {
-                    return;
-                }
-
-                // Cache the IO Register PT.  
-                m_inputIoRegisterPoints[idx] = pt;
-
-                // Build channel to driver mapping (also validates the channel number)
-                if ( !updateInputMap( idx, channelNum ) )
-                {
-                    m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::BAD_CHANNEL_ASSIGNMENTS );
-                    m_error.logIt( "Card: %s, in ch=%u", getTypeName(), channelNum );
-                    return;
-                }
-            }
-
-            // Check for duplicate Channels
-            for ( size_t idx=0; idx < m_numInputs; idx++ )
-            {
-                int driverId  = m_inputMap[idx].inputId;
-                for ( size_t j=idx + 1; j < m_numInputs; j++ )
-                {
-                    if ( m_inputMap[j].inputId == driverId )
-                    {
-                        m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::BAD_CHANNEL_ASSIGNMENTS );
-                        m_error.logIt( "Card: %s, Inputs. Duplicate. idx %u == idx %u ", getTypeName(), idx, j );
-                        return;
-                    }
-                }
-            }
+            m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::BAD_CHANNEL_ASSIGNMENTS );
+            m_error.logIt( "Card: %s, in ch=%u", getTypeName(), channelNum );
+            return;
         }
 
-        // OUTPUTS
-        JsonArray outputs = cardObject["points"]["outputs"];
-        if ( !outputs.isNull() )
+        // Validate input type
+        const char* guid = inputGuidFromChannelNum( channelNum );
+        if ( !Fxt::Point::Api::validatePointTypes( m_inputIoRegisterPoints+idx, 1, guid ) )
         {
-            // Validate supported number of signals
-            size_t nOutputs = outputs.size();
-            if ( nOutputs > MAX_OUTPUT_CHANNELS )
+            return;
+        }
+    }
+
+    // INPUTS: Check for duplicate Channels
+    for ( unsigned idx=0; idx < m_numInputs; idx++ )
+    {
+        int driverId  = m_inputMap[idx].inputId;
+        for ( size_t j=idx + 1; j < m_numInputs; j++ )
+        {
+            if ( m_inputMap[j].inputId == driverId )
             {
-                m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::TOO_MANY_OUTPUT_POINTS );
-                m_error.logIt( getTypeName() );
+                m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::BAD_CHANNEL_ASSIGNMENTS );
+                m_error.logIt( "Card: %s, Inputs. Duplicate. idx %u == idx %u ", getTypeName(), idx, j );
                 return;
             }
-            m_numOutputs = (uint16_t) nOutputs;
+        }
+    }
 
-            // Create Virtual Points
-            for ( size_t idx=0; idx < m_numOutputs; idx++ )
+    // OUTPUS: Build channel to driver mapping (also validates the channel number)
+    JsonArray outputs = cardObject["points"]["outputs"];
+    for ( unsigned idx=0; idx < m_numOutputs; idx++ )
+    {
+        JsonObject elem       = outputs[idx];
+        uint16_t   channelNum = getChannelNumber( elem, STARTING_OUTPUT_CHANNEL_NUM, ENDING_OUTPUT_CHANNEL_NUM );  // Note: '0' is invalid channel #
+        if ( !updateOutputMap( idx, channelNum ) )
+        {
+            m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::BAD_CHANNEL_ASSIGNMENTS );
+            m_error.logIt( "Card: %s, out ch=%u", getTypeName(), channelNum );
+            return;
+        }
+
+        // Validate the output types
+        if ( !Fxt::Point::Api::validatePointTypes( m_outputIoRegisterPoints+idx, 1, Fxt::Point::Bool::GUID_STRING ) )
+        {
+            return;
+        }
+    }
+
+    // OUTPUTS: Check for duplicate Channels
+    for ( unsigned idx=0; idx < m_numOutputs; idx++ )
+    {
+        int driverId  = m_outputMap[idx].outputId;
+        for ( size_t j=idx + 1; j < m_numOutputs; j++ )
+        {
+            if ( m_outputMap[j].outputId == driverId )
             {
-                uint16_t   channelNum_notUsed;
-                JsonObject channelObj = outputs[idx].as<JsonObject>();
-                createPointForChannel( pointFactoryDb,
-                                       m_virtualOutputs,
-                                       Fxt::Point::Bool::GUID_STRING,
-                                       false,
-                                       channelObj,
-                                       m_error,
-                                       STARTING_OUTPUT_CHANNEL_NUM,
-                                       ENDING_OUTPUT_CHANNEL_NUM,
-                                       channelNum_notUsed,
-                                       generalAllocator,
-                                       haStatefulDataAllocator,     // All Output Virtual Points are part of the HA Data set
-                                       dbForPoints );
-
-                if ( m_error != Fxt::Type::Error::SUCCESS() )
-                {
-                    return;
-                }
-            }
-
-            // Create IO Register Points
-            for ( size_t idx=0; idx < m_numOutputs; idx++ )
-            {
-                uint16_t   channelNum;
-                JsonObject channelObj = outputs[idx].as<JsonObject>();
-                Fxt::Point::Api* pt   = createPointForChannel( pointFactoryDb,
-                                                               m_ioRegisterOutputs,
-                                                               Fxt::Point::Bool::GUID_STRING,
-                                                               true,
-                                                               channelObj,
-                                                               m_error,
-                                                               STARTING_OUTPUT_CHANNEL_NUM,
-                                                               ENDING_OUTPUT_CHANNEL_NUM,
-                                                               channelNum,
-                                                               generalAllocator,
-                                                               cardStatefulDataAllocator,
-                                                               dbForPoints );
-
-                if ( m_error != Fxt::Type::Error::SUCCESS() )
-                {
-                    return;
-                }
-
-                // Cache the IO Register PT.  
-                m_outputIoRegisterPoints[idx] = pt;
-
-                // Build channel to driver mapping (also validates the channel number)
-                if ( !updateOutputMap( idx, channelNum ) )
-                {
-                    m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::BAD_CHANNEL_ASSIGNMENTS );
-                    m_error.logIt( "Card: %s, out ch=%u", getTypeName(), channelNum );
-                    return;
-                }
-
-            }
-
-            // Check for duplicate Channels
-            for ( size_t idx=0; idx < m_numOutputs; idx++ )
-            {
-                int driverId  = m_outputMap[idx].outputId;
-                for ( size_t j=idx + 1; j < nOutputs; j++ )
-                {
-                    if ( m_outputMap[j].outputId == driverId )
-                    {
-                        m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::BAD_CHANNEL_ASSIGNMENTS );
-                        m_error.logIt( "Card: %s, Outputs. Duplicate. idx %u == idx %u ", getTypeName(), idx, j );
-                        return;
-                    }
-                }
+                m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::BAD_CHANNEL_ASSIGNMENTS );
+                m_error.logIt( "Card: %s, Outputs. Duplicate. idx %u == idx %u ", getTypeName(), idx, j );
+                return;
             }
         }
     }
 }
 
 
-static const char* inputGuidForChannelNum( JsonObject channelObj )
+static const char* inputGuidFromChannelNum( unsigned channelNum )
 {
-    uint8_t channelNum = channelObj["channel"] | 0;
     if ( (channelNum >= 11 && channelNum <= 13) ||
          channelNum == 31 )
     {
@@ -299,7 +194,7 @@ bool Automation2040::updateInputMap( size_t ioRegisterIdx, uint16_t channelNum )
         break;
 
         // On-board temperature
-    case 31: // Intentional fall through
+    case 31: 
         m_inputMap[ioRegisterIdx].func    = readDriverOnboareTempInput;
         m_inputMap[ioRegisterIdx].inputId = 0; // Not used
         break;
@@ -339,7 +234,7 @@ bool Automation2040::updateOutputMap( size_t ioRegisterIdx, uint16_t channelNum 
         break;
 
         // Connected LED
-    case 31: // Intentional fall through
+    case 31: 
         m_outputMap[ioRegisterIdx].func     = writeDriverConnectedLEDOutput;
         m_outputMap[ioRegisterIdx].outputId = 0; // Not used
         break;

@@ -80,6 +80,26 @@ void RHTemperature::parseConfiguration( Cpl::Memory::ContiguousAllocator&  gener
                                         Fxt::Point::DatabaseApi&           dbForPoints,
                                         JsonVariant&                       cardObject ) noexcept
 {
+    // Parse/Create Virtual & IO Register points
+    if ( !parseInputOutputPoints( generalAllocator,
+                                  cardStatefulDataAllocator,
+                                  haStatefulDataAllocator,
+                                  pointFactoryDb,
+                                  dbForPoints,
+                                  cardObject,
+                                  false,
+                                  1, 0 ) )
+    {
+        return;
+    }
+
+    // Validate the input/output types
+    if ( !Fxt::Point::Api::validatePointTypes( m_inputIoRegisterPoints, m_numInputs, Fxt::Point::Float::GUID_STRING ) ||
+         !Fxt::Point::Api::validatePointTypes( m_outputIoRegisterPoints, m_numOutputs, Fxt::Point::Bool::GUID_STRING ) )
+    {
+        return;
+    }
+
     // Parse background sampling time
     m_delayMs = cardObject["driverInterval"] | 0;
     if ( m_delayMs < OPTION_FXT_CARD_SENSOR_I2C_MIN_DRIVER_SAMPLE_TIME_MS )
@@ -89,169 +109,47 @@ void RHTemperature::parseConfiguration( Cpl::Memory::ContiguousAllocator&  gener
         return;
     }
 
-    // Parse channels
-    if ( !cardObject["points"].isNull() )
+    // INPUTS: Map channel number to RH/Temp
+    JsonArray inputs = cardObject["points"]["inputs"];
+    for ( size_t idx=0; idx < m_numInputs; idx++ )
     {
-        // INPUTS
-        JsonArray inputs = cardObject["points"]["inputs"];
-        if ( !inputs.isNull() )
+        JsonObject elem       = inputs[idx];
+        uint16_t   channelNum = getChannelNumber( elem, STARTING_INPUT_CHANNEL_NUM, ENDING_INPUT_CHANNEL_NUM ); 
+
+        // Capture IO Point index for the RH Channel
+        if ( channelNum == 1 )
         {
-            // Validate supported number of signals
-            size_t nInputs = inputs.size();
-            if ( nInputs > MAX_INPUT_CHANNELS )
+            if ( m_rhIndex != INVALID_INDEX )
             {
-                m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::TOO_MANY_INPUT_POINTS );
-                m_error.logIt( getTypeName() );
-                return;
-            }
-            m_numInputs = (uint16_t) nInputs;
-
-            // Create Virtual Points
-            for ( size_t idx=0; idx < m_numInputs; idx++ )
-            {
-                uint16_t   channelNumNotUsed;
-                JsonObject channelObj = inputs[idx].as<JsonObject>();
-                createPointForChannel( pointFactoryDb,
-                                       m_virtualInputs,
-                                       Fxt::Point::Float::GUID_STRING,
-                                       false,
-                                       channelObj,
-                                       m_error,
-                                       STARTING_INPUT_CHANNEL_NUM,
-                                       ENDING_INPUT_CHANNEL_NUM,
-                                       channelNumNotUsed,
-                                       generalAllocator,
-                                       cardStatefulDataAllocator,
-                                       dbForPoints );
-
-                // Stop processing if/when an error occurred
-                if ( m_error != Fxt::Type::Error::SUCCESS() )
                 {
+                    m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::BAD_CHANNEL_ASSIGNMENTS );
+                    m_error.logIt( getTypeName() );
                     return;
                 }
             }
-
-            // Create IO Register Points
-            for ( size_t idx=0; idx < m_numInputs; idx++ )
-            {
-                // Stop processing if/when an error occurred
-                if ( m_error != Fxt::Type::Error::SUCCESS() )
-                {
-                    return;
-                }
-
-                uint16_t   channelNum;
-                JsonObject channelObj = inputs[idx].as<JsonObject>();
-                Fxt::Point::Api* pt   = createPointForChannel( pointFactoryDb,
-                                                               m_ioRegisterInputs,
-                                                               Fxt::Point::Float::GUID_STRING,
-                                                               true,
-                                                               channelObj,
-                                                               m_error,
-                                                               STARTING_INPUT_CHANNEL_NUM,
-                                                               ENDING_INPUT_CHANNEL_NUM,
-                                                               channelNum,
-                                                               generalAllocator,
-                                                               cardStatefulDataAllocator,
-                                                               dbForPoints );
-
-                // Cache the IO Register PT. 
-                m_inputIoRegisterPoints[idx] = pt;
-
-                // Capture IO Point index for the RH Channel
-                if ( channelNum == 1 )
-                {
-                    if ( m_rhIndex != INVALID_INDEX )
-                    {
-                        {
-                            m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::BAD_CHANNEL_ASSIGNMENTS );
-                            m_error.logIt( getTypeName() );
-                            return;
-                        }
-                    }
-                    m_rhIndex = (uint16_t) idx;
-                }
-
-                // Capture IO Point index for the TEMP Channel
-                if ( channelNum == 2 )
-                {
-                    if ( m_tempIndex != INVALID_INDEX )
-                    {
-                        {
-                            m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::BAD_CHANNEL_ASSIGNMENTS );
-                            m_error.logIt( getTypeName() );
-                            return;
-                        }
-                    }
-                    m_tempIndex =  (uint16_t) idx;
-                }
-            }
+            m_rhIndex = (uint16_t) idx;
         }
 
-        // OUTPUTS
-        JsonArray outputs = cardObject["points"]["outputs"];
-        if ( !outputs.isNull() )
+        // Capture IO Point index for the TEMP Channel
+        else if ( channelNum == 2 )
         {
-            // Validate supported number of signals
-            size_t nOutputs = outputs.size();
-            if ( nOutputs > MAX_OUTPUT_CHANNELS )
+            if ( m_tempIndex != INVALID_INDEX )
             {
-                m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::TOO_MANY_OUTPUT_POINTS );
-                m_error.logIt();
-                return;
-            }
-            m_numOutputs = (uint16_t) nOutputs;
-
-            // Create Virtual Points
-            for ( size_t idx=0; idx < m_numOutputs; idx++ )
-            {
-                uint16_t   channelNumNotUsed;
-                JsonObject channelObj = outputs[idx].as<JsonObject>();
-                createPointForChannel( pointFactoryDb,
-                                       m_virtualOutputs,
-                                       Fxt::Point::Bool::GUID_STRING,
-                                       false,
-                                       channelObj,
-                                       m_error,
-                                       STARTING_OUTPUT_CHANNEL_NUM,
-                                       ENDING_OUTPUT_CHANNEL_NUM,
-                                       channelNumNotUsed,
-                                       generalAllocator,
-                                       haStatefulDataAllocator,     // All Output Virtual Points are part of the HA Data set
-                                       dbForPoints );
-
-                if ( m_error != Fxt::Type::Error::SUCCESS() )
                 {
+                    m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::BAD_CHANNEL_ASSIGNMENTS );
+                    m_error.logIt( getTypeName() );
                     return;
                 }
             }
+            m_tempIndex =  (uint16_t) idx;
+        }
 
-            // Create IO Register Points
-            for ( size_t idx=0; idx < m_numOutputs; idx++ )
-            {
-                uint16_t   channelNum_notUsed;
-                JsonObject channelObj = outputs[idx].as<JsonObject>();
-                Fxt::Point::Api* pt   =  createPointForChannel( pointFactoryDb,
-                                                                m_ioRegisterOutputs,
-                                                                Fxt::Point::Bool::GUID_STRING,
-                                                                true,
-                                                                channelObj,
-                                                                m_error,
-                                                                STARTING_OUTPUT_CHANNEL_NUM,
-                                                                ENDING_OUTPUT_CHANNEL_NUM,
-                                                                channelNum_notUsed,
-                                                                generalAllocator,
-                                                                cardStatefulDataAllocator,
-                                                                dbForPoints );
-
-                if ( m_error != Fxt::Type::Error::SUCCESS() )
-                {
-                    return;
-                }
-
-                // Cache the IO Register PT. 
-                m_outputIoRegisterPoints[idx] = pt;
-            }
+        // Bad channel Number
+        else
+        {
+            m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::BAD_CHANNEL_ASSIGNMENTS );
+            m_error.logIt( getTypeName() );
+            return;
         }
     }
 }

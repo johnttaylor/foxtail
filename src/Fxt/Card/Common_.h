@@ -65,19 +65,29 @@ public:
     Fxt::Type::Error getErrorCode() const noexcept;
 
 protected:
-    /** Helper method to create the points for a single channel.  Returns a pointer
-        to the created 'IO Register' Point if all points were successfully created;
-        else nullptr is returned.
+    /** Helper method that does an initial parsing of the input and output
+        points.  Creates the Virtual and IO Register Points and populates
+        the m_inputIoRegisterPoints, m_outputIoRegisterPoints array.  The
+        point references are stored either by 'channelNum - 1' or by
+        JSON array index (i.e. order of the JSON elements)
+     */
+    bool parseInputOutputPoints( Cpl::Memory::ContiguousAllocator&  generalAllocator,
+                                 Cpl::Memory::ContiguousAllocator&  cardStatefulDataAllocator,
+                                 Cpl::Memory::ContiguousAllocator&  haStatefulDataAllocator,
+                                 Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
+                                 Fxt::Point::DatabaseApi&           dbForPoints,
+                                 JsonVariant&                       cardObject,
+                                 bool                               storeByChannelNum,
+                                 unsigned                           minInputs,
+                                 unsigned                           minOutputs ) noexcept;
+
+    /** Helper method to create the points for a single channel.  Returns a nullptr
+        (and sets m_error) when there is an error.
      */
     Fxt::Point::Api* createPointForChannel( Fxt::Point::FactoryDatabaseApi&    pointFactoryDb,
                                             Fxt::Point::Bank&                  pointBank,
-                                            const char*                        expectedGUID,
                                             bool                               isIoRegPt,
                                             JsonObject&                        channelObject,
-                                            Fxt::Type::Error&                  cardErrorCode,
-                                            uint16_t                           minChannelNumber,
-                                            uint16_t                           maxChannelNumber,
-                                            uint16_t&                          channelNum,
                                             Cpl::Memory::ContiguousAllocator&  generalAllocator,
                                             Cpl::Memory::ContiguousAllocator&  statefulDataAllocator,
                                             Fxt::Point::DatabaseApi&           dbForPoints ) noexcept;
@@ -94,6 +104,9 @@ protected:
         Return false if an error occurred
      */
     bool setInitialPointValues() noexcept;
+
+    /// Returns the channel for an point element.  Returns 0 if invalid channel# and sets m_error
+    uint16_t getChannelNumber( JsonObject& channelObject, uint16_t minChannelNum, uint16_t maxChannelNum ) noexcept;
 
 protected:
     /// Bank for the Card's Input IO Register Points
@@ -118,11 +131,17 @@ protected:
     Fxt::Type::Error                    m_error;
 
     /// Number of input channels
-    uint16_t                            m_numInputs;
+    unsigned                            m_numInputs;
 
     /// Number of output channels
-    uint16_t                            m_numOutputs;
+    unsigned                            m_numOutputs;
 
+    /// Maximum Number allowed input channels
+    unsigned                            m_maxInputs;
+
+    /// Maximum Number allowed output channels
+    unsigned                            m_maxOutputs;
+    
     /// My slot number
     uint8_t                             m_slotNum;
 

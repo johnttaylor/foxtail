@@ -18,11 +18,11 @@
 ///
 using namespace Fxt::Card::Mock;
 
-#define MAX_INPUT_CHANNELS          8 
-#define MAX_OUTPUT_CHANNELS         0
+#define MAX_INPUT_CHANNELS              8 
+#define MAX_OUTPUT_CHANNELS             0
 
-#define STARTING_INPUT_CHANNEL_NUM  1
-#define ENDING_INPUT_CHANNEL_NUM    MAX_INPUT_CHANNELS
+#define STARTING_INPUT_CHANNEL_NUM      1
+#define ENDING_INPUT_CHANNEL_NUM        MAX_INPUT_CHANNELS
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -51,75 +51,23 @@ void AnalogIn8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAl
                                     Fxt::Point::DatabaseApi&           dbForPoints,
                                     JsonVariant&                       cardObject ) noexcept
 {
-    // Parse channels
-    if ( !cardObject["points"].isNull() )
+    // Parse/Create Virtual & IO Register points
+    if ( !parseInputOutputPoints( generalAllocator,
+                                  cardStatefulDataAllocator,
+                                  haStatefulDataAllocator,
+                                  pointFactoryDb,
+                                  dbForPoints,
+                                  cardObject,
+                                  true,
+                                  1, 0 ) )
     {
-        // INPUTS
-        JsonArray inputs = cardObject["points"]["inputs"];
-        if ( !inputs.isNull() )
-        {
-            // Validate supported number of signals
-            size_t nInputs = inputs.size();
-            if ( nInputs > MAX_INPUT_CHANNELS )
-            {
-                m_error = fullErr( Err_T::TOO_MANY_INPUT_POINTS );
-                m_error.logIt( getTypeName() );
-                return;
-            }
-            m_numInputs = (uint16_t) nInputs;
+        return;
+    }
 
-            // Create Virtual Points
-            for ( size_t idx=0; idx < m_numInputs && m_error == Fxt::Type::Error::SUCCESS(); idx++ )
-            {
-                uint16_t   channelNum_notUsed;
-                JsonObject channelObj = inputs[idx].as<JsonObject>();
-                createPointForChannel( pointFactoryDb,
-                                       m_virtualInputs,
-                                       Fxt::Point::Float::GUID_STRING,
-                                       false,
-                                       channelObj,
-                                       m_error,
-                                       STARTING_INPUT_CHANNEL_NUM,
-                                       ENDING_INPUT_CHANNEL_NUM,
-                                       channelNum_notUsed,
-                                       generalAllocator,
-                                       cardStatefulDataAllocator,
-                                       dbForPoints );
-
-                if ( m_error != Fxt::Type::Error::SUCCESS() )
-                {
-                    return;
-                }
-
-            }
-
-            // Create IO Register Points
-            for ( size_t idx=0; idx < m_numInputs; idx++ )
-            {
-                uint16_t   channelNum;
-                JsonObject channelObj = inputs[idx].as<JsonObject>();
-                Fxt::Point::Api* pt = createPointForChannel( pointFactoryDb,
-                                                             m_ioRegisterInputs,
-                                                             Fxt::Point::Float::GUID_STRING,
-                                                             true,
-                                                             channelObj,
-                                                             m_error,
-                                                             STARTING_INPUT_CHANNEL_NUM,
-                                                             ENDING_INPUT_CHANNEL_NUM,
-                                                             channelNum,
-                                                             generalAllocator,
-                                                             cardStatefulDataAllocator,
-                                                             dbForPoints );
-
-                if ( m_error != Fxt::Type::Error::SUCCESS() )
-                {
-                    return;
-                }
-
-                // Cache the IO Register PT.  NOTE: The IO Register index is function of the channel number!
-                m_inputIoRegisterPoints[channelNum - 1] = pt;
-            }
-        }
+    // Validate the input types
+    if ( !Fxt::Point::Api::validatePointTypes( m_inputIoRegisterPoints, m_numInputs, Fxt::Point::Float::GUID_STRING )  )
+    {
+        return;
     }
 }
 

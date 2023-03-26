@@ -37,6 +37,9 @@ namespace Card {
     @param POINT_MISSING_ID                 Configuration does NOT contain a valid ID value for one of it Points
     @param TOO_MANY_INPUT_POINTS            Configuration contains TOO many input Points
     @param TOO_MANY_OUTPUT_POINTS           Configuration contains TOO many output Points
+    @param TOO_FEW_INPUT_POINTS             Configuration does NOT contain the minimum number of input Points
+    @param TOO_FEW_OUTPUT_POINTS            Configuration does NOT contain the minimum number of output Points
+    @param NO_POINTS                        Configuration does NOT Contain ANY points
     @param BAD_CHANNEL_ASSIGNMENTS          Configuration contains duplicate or our-of-range Channel IDs
     @param BAD_JSON                         Invalid JSON object syntax for a Channel Object
     @param MISSING_SLOT                     Configuration does NOT contain a slot number
@@ -54,6 +57,9 @@ BETTER_ENUM( Err_T, uint8_t
              , POINT_MISSING_ID          
              , TOO_MANY_INPUT_POINTS     
              , TOO_MANY_OUTPUT_POINTS    
+             , TOO_FEW_INPUT_POINTS
+             , TOO_FEW_OUTPUT_POINTS
+             , NO_POINTS
              , BAD_CHANNEL_ASSIGNMENTS   
              , BAD_JSON
              , MISSING_SLOT

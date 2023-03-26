@@ -18,15 +18,6 @@
 ///
 using namespace Fxt::Card::Gpio::RP2040;
 
-#define MAX_INPUT_CHANNELS          30
-#define STARTING_INPUT_CHANNEL_NUM  1
-#define ENDING_INPUT_CHANNEL_NUM    MAX_INPUT_CHANNELS
-
-#define MAX_OUTPUT_CHANNELS         30
-#define STARTING_OUTPUT_CHANNEL_NUM 1
-#define ENDING_OUTPUT_CHANNEL_NUM   MAX_OUTPUT_CHANNELS
-
-
 
 ///////////////////////////////////////////////////////////////////////////////
 Dio30::Dio30( Cpl::Memory::ContiguousAllocator&  generalAllocator,
@@ -58,162 +49,69 @@ void Dio30::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAlloca
                                 Fxt::Point::DatabaseApi&           dbForPoints,
                                 JsonVariant&                       cardObject ) noexcept
 {
-    // Parse channels
-    if ( !cardObject["points"].isNull() )
+    // Parse/Create Virtual & IO Register points
+    if ( !parseInputOutputPoints( generalAllocator,
+                                  cardStatefulDataAllocator,
+                                  haStatefulDataAllocator,
+                                  pointFactoryDb,
+                                  dbForPoints,
+                                  cardObject,
+                                  false,
+                                  0, 0 ) )
     {
-        // INPUTS
-        JsonArray inputs = cardObject["points"]["inputs"];
-        if ( !inputs.isNull() )
+        return;
+    }
+
+    // Validate the input/output types
+    if ( !Fxt::Point::Api::validatePointTypes( m_inputIoRegisterPoints, m_numInputs, Fxt::Point::Bool::GUID_STRING ) ||
+         !Fxt::Point::Api::validatePointTypes( m_outputIoRegisterPoints, m_numOutputs, Fxt::Point::Bool::GUID_STRING ) )
+    {
+        return;
+    }
+
+    // Parse INPUT Pull resistor option
+    JsonArray inputs = cardObject["points"]["inputs"];
+    for ( unsigned idx=0; idx < m_numInputs; idx++ )
+    {
+        // Get the channel number
+        JsonObject elem       = inputs[idx];
+        uint16_t   channelNum = getChannelNumber( elem, 1, MAX_INPUT_CHANNELS );  // Note: '0' is invalid channel #
+        if ( channelNum == 0 )
         {
-            // Validate supported number of signals
-            size_t nInputs = inputs.size();
-            if ( nInputs > MAX_INPUT_CHANNELS )
-            {
-                m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::TOO_MANY_INPUT_POINTS );
-                m_error.logIt( getTypeName() );
-                return;
-            }
-            m_numInputs = (uint8_t) nInputs;
-
-            // Create Virtual Points
-            for ( size_t idx=0; idx < m_numInputs; idx++ )
-            {
-                uint16_t   channelNum_notUsed;
-                JsonObject channelObj = inputs[idx].as<JsonObject>();
-                createPointForChannel( pointFactoryDb,
-                                       m_virtualInputs,
-                                       Fxt::Point::Bool::GUID_STRING,
-                                       false,
-                                       channelObj,
-                                       m_error,
-                                       STARTING_INPUT_CHANNEL_NUM,
-                                       ENDING_INPUT_CHANNEL_NUM,
-                                       channelNum_notUsed,
-                                       generalAllocator,
-                                       cardStatefulDataAllocator,
-                                       dbForPoints );
-
-                // Stop processing if/when an error occurred
-                if ( m_error != Fxt::Type::Error::SUCCESS() )
-                {
-                    return;
-                }
-
-            }
-
-            // Create IO Register Points and Driver Configuration:Inputs
-            for ( size_t idx=0; idx < m_numInputs; idx++ )
-            {
-                uint16_t   channelNum;
-                JsonObject channelObj = inputs[idx].as<JsonObject>();
-                Fxt::Point::Api* pt = createPointForChannel( pointFactoryDb,
-                                                             m_ioRegisterInputs,
-                                                             Fxt::Point::Bool::GUID_STRING,
-                                                             true,
-                                                             channelObj,
-                                                             m_error,
-                                                             STARTING_INPUT_CHANNEL_NUM,
-                                                             ENDING_INPUT_CHANNEL_NUM,
-                                                             channelNum,
-                                                             generalAllocator,
-                                                             cardStatefulDataAllocator,
-                                                             dbForPoints );
-
-                // Stop processing if/when an error occurred
-                if ( m_error != Fxt::Type::Error::SUCCESS() )
-                {
-                    return;
-                }
-
-                // Parse Pull resistor option
-                parseDriverConfig( channelObj, m_driverInCfg, idx, channelNum );
-
-                // Cache the IO Register PT
-                m_inputIoRegisterPoints[idx] = pt;
-            }
+            return;
         }
 
-        // OUTPUTS
-        JsonArray outputs = cardObject["points"]["outputs"];
-        if ( !outputs.isNull() )
+        // Parse Pull resistor option
+        parseDriverConfig( elem, m_driverInCfg, idx, channelNum );
+    }
+
+    // Parse OUTPUT Pull resistor option
+    JsonArray outputs = cardObject["points"]["outputs"];
+    for ( unsigned idx=0; idx < m_numOutputs; idx++ )
+    {
+        // Get the channel number
+        JsonObject elem       = outputs[idx];
+        uint16_t   channelNum = getChannelNumber( elem, 1, MAX_OUTPUT_CHANNELS );  // Note: '0' is invalid channel #
+        if ( channelNum == 0 )
         {
-            // Validate supported number of signals
-            size_t nOutputs = outputs.size();
-            if ( nOutputs > MAX_OUTPUT_CHANNELS )
-            {
-                m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::TOO_MANY_OUTPUT_POINTS );
-                m_error.logIt( getTypeName() );
-                return;
-            }
-            m_numOutputs = (uint8_t) nOutputs;
-
-            // Create Virtual Points
-            for ( size_t idx=0; idx < m_numOutputs; idx++ )
-            {
-                uint16_t   channelNum_notUsed;
-                JsonObject channelObj = outputs[idx].as<JsonObject>();
-                createPointForChannel( pointFactoryDb,
-                                       m_virtualOutputs,
-                                       Fxt::Point::Bool::GUID_STRING,
-                                       false,
-                                       channelObj,
-                                       m_error,
-                                       STARTING_OUTPUT_CHANNEL_NUM,
-                                       ENDING_OUTPUT_CHANNEL_NUM,
-                                       channelNum_notUsed,
-                                       generalAllocator,
-                                       haStatefulDataAllocator,     // All Output Virtual Points are part of the HA Data set
-                                       dbForPoints );
-
-                if ( m_error != Fxt::Type::Error::SUCCESS() )
-                {
-                    return;
-                }
-            }
-
-            // Create IO Register Points
-            for ( size_t idx=0; idx < m_numOutputs; idx++ )
-            {
-                uint16_t   channelNum;
-                JsonObject channelObj = outputs[idx].as<JsonObject>();
-                Fxt::Point::Api* pt = createPointForChannel( pointFactoryDb,
-                                                             m_ioRegisterOutputs,
-                                                             Fxt::Point::Bool::GUID_STRING,
-                                                             true,
-                                                             channelObj,
-                                                             m_error,
-                                                             STARTING_OUTPUT_CHANNEL_NUM,
-                                                             ENDING_OUTPUT_CHANNEL_NUM,
-                                                             channelNum,
-                                                             generalAllocator,
-                                                             cardStatefulDataAllocator,
-                                                             dbForPoints );
-
-                if ( m_error != Fxt::Type::Error::SUCCESS() )
-                {
-                    return;
-                }
-
-                // Parse Pull resistor option
-                parseDriverConfig( channelObj, m_driverOutCfg, idx, channelNum );
-
-                // Cache the IO Register PT
-                m_outputIoRegisterPoints[idx] = pt;
-            }
+            return;
         }
 
-        // Make sure that no IO pin has been 'doubled-up'
-        for ( int idx = 0; idx < m_numInputs; idx++ )
+        // Parse Pull resistor option
+        parseDriverConfig( elem, m_driverOutCfg, idx, channelNum );
+    }
+
+    // Make sure that no IO pin has been 'doubled-up'
+    for ( unsigned idx = 0; idx < m_numInputs; idx++ )
+    {
+        size_t pinId = m_driverInCfg[idx].pin;
+        for ( int idx=0; idx < m_numOutputs; idx++ )
         {
-            size_t pinId = m_driverInCfg[idx].pin;
-            for ( int idx=0; idx < m_numOutputs; idx++ )
+            if ( m_driverOutCfg[idx].pin == pinId )
             {
-                if ( m_driverOutCfg[idx].pin == pinId )
-                {
-                    m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::BAD_CHANNEL_ASSIGNMENTS );
-                    m_error.logIt( "%s. duplicate pin=%u", getTypeName(), pinId );
-                    return;
-                }
+                m_error = Fxt::Card::fullErr( Fxt::Card::Err_T::BAD_CHANNEL_ASSIGNMENTS );
+                m_error.logIt( "%s. duplicate pin=%u", getTypeName(), pinId );
+                return;
             }
         }
     }
