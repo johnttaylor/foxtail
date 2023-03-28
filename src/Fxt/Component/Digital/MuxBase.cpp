@@ -85,7 +85,7 @@ bool MuxBase::parseConfiguration( Cpl::Memory::ContiguousAllocator& generalAlloc
         if ( m_bitOffsets[i] >= maxInputs )
         {
             m_error = fullErr( Err_T::MUX_INVALID_BIT_OFFSET );
-            m_error.logIt();
+            m_error.logIt( getTypeName() );
             return false;
         }
     }
@@ -111,7 +111,7 @@ Fxt::Type::Error MuxBase::resolveReferences( Fxt::Point::DatabaseApi& pointDb ) 
         return m_error;
     }
 
-    if ( !validateOutputType() )
+    if ( !Fxt::Point::Api::validatePointTypes( m_outputRefs, 1, getOutputPointTypeGuid() ) )
     {
         m_error = fullErr( Fxt::Component::Err_T::OUTPUT_REFRENCE_BAD_TYPE );
         m_error.logIt( getTypeName() );

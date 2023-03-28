@@ -207,38 +207,67 @@
                 "outputs": [
                   {
                     "channel": 1,
-                    "id": "EchoDinByte",
-                    "typeName": "Fxt::Point::Uint8",
-                    "initial": {
-                      "val": 0
-                    }
+                    "id": "Echo: DIN#1",
+                    "typeName": "Fxt::Point::Bool"
+                  },
+                  {
+                    "channel": 2,
+                    "id": "Echo: DIN#2",
+                    "typeName": "Fxt::Point::Bool"
+                  },
+                  {
+                    "channel": 3,
+                    "id": "Echo: DIN#3",
+                    "typeName": "Fxt::Point::Bool"
+                  },
+                  {
+                    "channel": 4,
+                    "id": "Echo: DIN#4",
+                    "typeName": "Fxt::Point::Bool"
                   }
                 ]
               }
             },
             {
-              "name": "Mock Digital8 Card - Set and Echo Digital Outputs",
+              "name": "Mock Digital8 Card - Set Digital Outputs",
               "typeName": "Fxt::Card::Mock::Digital8",
               "slot": 3,
               "points": {
                 "inputs": [
                   {
                     "channel": 1,
-                    "id": "SetDoutByte",
-                    "typeName": "Fxt::Point::Uint8",
-                    "initial": {
-                      "val": 0
-                    }
-                  }
-                ],
-                "outputs": [
+                    "typeName": "Fxt::Point::Bool",
+                    "id": "Set-Dout#1"
+                  },
                   {
-                    "channel": 1,
-                    "id": "EchoDoutByte",
-                    "typeName": "Fxt::Point::Uint8",
-                    "initial": {
-                      "val": 0
-                    }
+                    "channel": 2,
+                    "typeName": "Fxt::Point::Bool",
+                    "id": "Set-Dout#2"
+                  },
+                  {
+                    "channel": 3,
+                    "typeName": "Fxt::Point::Bool",
+                    "id": "Set-Dout#3"
+                  },
+                  {
+                    "channel": 4,
+                    "typeName": "Fxt::Point::Bool",
+                    "id": "Set-RelayOut#1"
+                  },
+                  {
+                    "channel": 5,
+                    "typeName": "Fxt::Point::Bool",
+                    "id": "Set-RelayOut#2"
+                  },
+                  {
+                    "channel": 6,
+                    "typeName": "Fxt::Point::Bool",
+                    "id": "Set-RelayOut#3"
+                  },
+                  {
+                    "channel": 7,
+                    "typeName": "Fxt::Point::Bool",
+                    "id": "Set-ConnectedLED"
                   }
                 ]
               }
@@ -307,12 +336,12 @@
                     {
                       "typeName": "Fxt::Point::Bool",
                       "idRef": "ButtonLED-A",
-					  "negate": true
+                      "negate": true
                     },
                     {
                       "typeName": "Fxt::Point::Bool",
                       "idRef": "ButtonLED-B",
-					  "negate": true
+                      "negate": true
                     }
                   ]
                 }
@@ -402,131 +431,76 @@
               ]
             },
             {
-              "name": "Pass-through Digital Inputs & Ouptuts to the mocked DIO8 cards' output",
+              "name": "Pass-through Mocked Digital outputs to SET the board's digital outputs",
               "components": [
                 {
-                  "name": "Byte Mux #1. Digital Inputs",
-                  "typeName": "Fxt::Component::Digital::Mux8Uint8",
+                  "name": "dout passthrough",
+                  "typeName": "Fxt::Component::Digital::Not64Gate",
                   "inputs": [
                     {
-                      "bit": 0,
                       "typeName": "Fxt::Point::Bool",
-                      "idRef": "Din#1"
+                      "idRef": "Set-Dout#1"
                     },
                     {
-                      "bit": 1,
                       "typeName": "Fxt::Point::Bool",
-                      "idRef": "Din#2"
+                      "idRef": "Set-Dout#2"
                     },
                     {
-                      "bit": 2,
                       "typeName": "Fxt::Point::Bool",
-                      "idRef": "Din#3"
+                      "idRef": "Set-Dout#3"
                     },
                     {
-                      "bit": 3,
                       "typeName": "Fxt::Point::Bool",
-                      "idRef": "Din#4"
+                      "idRef": "Set-RelayOut#1"
+                    },
+                    {
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": "Set-RelayOut#2"
+                    },
+                    {
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": "Set-RelayOut#3"
+                    },
+                    {
+                      "typeName": "Fxt::Point::Float",
+                      "idRef": "Set-ConnectedLED"
                     }
                   ],
                   "outputs": [
                     {
-                      "typeName": "Fxt::Point::Uint8",
-                      "idRef": "EchoDinByte"
-                    }
-                  ]
-                },
-                {
-                  "name": "Byte Mux #2. Digital Outputs",
-                  "typeName": "Fxt::Component::Digital::Mux8Uint8",
-                  "inputs": [
-                    {
-                      "bit": 0,
                       "typeName": "Fxt::Point::Bool",
-                      "idRef": "Dout#1"
+                      "idRef": "Dout#1",
+                      "negate": true
                     },
                     {
-                      "bit": 1,
                       "typeName": "Fxt::Point::Bool",
-                      "idRef": "Dout#2"
+                      "idRef": "Dout#2",
+                      "negate": true
                     },
                     {
-                      "bit": 2,
                       "typeName": "Fxt::Point::Bool",
-                      "idRef": "Dout#3"
+                      "idRef": "Dout#3",
+                      "negate": true
                     },
                     {
-                      "bit": 3,
                       "typeName": "Fxt::Point::Bool",
-                      "idRef": "RelayOut#1"
+                      "idRef": "RelayOut#1",
+                      "negate": true
                     },
                     {
-                      "bit": 4,
                       "typeName": "Fxt::Point::Bool",
-                      "idRef": "RelayOut#2"
+                      "idRef": "RelayOut#2",
+                      "negate": true
                     },
                     {
-                      "bit": 5,
                       "typeName": "Fxt::Point::Bool",
-                      "idRef": "RelayOut#3"
+                      "idRef": "RelayOut#3",
+                      "negate": true
                     },
                     {
-                      "bit": 6,
                       "typeName": "Fxt::Point::Bool",
-                      "idRef": "ConnectedLED"
-                    }
-                  ],
-                  "outputs": [
-                    {
-                      "typeName": "Fxt::Point::Uint8",
-                      "idRef": "EchoDoutByte"
-                    }
-                  ]
-                },
-                {
-                  "name": "Byte Demux #1. Set Digital Outputs",
-                  "typeName": "Fxt::Component::Digital::Demux8Uint8",
-                  "outputs": [
-                    {
-                      "bit": 0,
-                      "typeName": "Fxt::Point::Bool",
-                      "idRef": "Dout#1"
-                    },
-                    {
-                      "bit": 1,
-                      "typeName": "Fxt::Point::Bool",
-                      "idRef": "Dout#2"
-                    },
-                    {
-                      "bit": 2,
-                      "typeName": "Fxt::Point::Bool",
-                      "idRef": "Dout#3"
-                    },
-                    {
-                      "bit": 3,
-                      "typeName": "Fxt::Point::Bool",
-                      "idRef": "RelayOut#1"
-                    },
-                    {
-                      "bit": 4,
-                      "typeName": "Fxt::Point::Bool",
-                      "idRef": "RelayOut#2"
-                    },
-                    {
-                      "bit": 5,
-                      "typeName": "Fxt::Point::Bool",
-                      "idRef": "RelayOut#3"
-                    },
-                    {
-                      "bit": 6,
-                      "typeName": "Fxt::Point::Bool",
-                      "idRef": "ConnectedLED"
-                    }
-                  ],
-                  "inputs": [
-                    {
-                      "typeName": "Fxt::Point::Uint8",
-                      "idRef": "SetDoutByte"
+                      "idRef": "ConnectedLED",
+                      "negate": true
                     }
                   ]
                 }

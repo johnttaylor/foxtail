@@ -75,7 +75,7 @@ bool DemuxBase::parseConfiguration( Cpl::Memory::ContiguousAllocator& generalAll
         if ( m_bitOffsets[i] >= maxOutputs / 2 )
         {
             m_error = fullErr( Err_T::DEMUX_INVALID_BIT_OFFSET );
-            m_error.logIt();
+            m_error.logIt( getTypeName() );
             return false;
         }
     }
@@ -101,7 +101,7 @@ Fxt::Type::Error DemuxBase::resolveReferences( Fxt::Point::DatabaseApi& pointDb 
     }
 
     // Validate Input type
-    if ( !validateInputType() )
+    if ( Fxt::Point::Api::validatePointTypes( m_inputRefs, 1, getInputPointTypeGuid() ) )
     {
         m_error = fullErr( Fxt::Component::Err_T::INPUT_REFRENCE_BAD_TYPE );
         m_error.logIt( getTypeName() );

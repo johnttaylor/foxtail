@@ -107,8 +107,8 @@ protected:
     /// Returns (via 'dstBitValue' the specified input's bit value.  Return false if the input bit is invalid
     bool getInputBit( unsigned refIdx, bool& dstBitValue );
 
-    /// Helper method to validate point types
-    virtual bool validateOutputType() noexcept = 0;
+    /// Helper method that returns the Output point type's GUID
+    virtual const char* getOutputPointTypeGuid() const noexcept = 0;
 
 protected:
     /// Helper method that is type specific for the execute() calls

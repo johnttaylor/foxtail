@@ -46,6 +46,10 @@ protected:
     /// Destructor
     ~Common_();
 
+    /** Helper method that initialize the instance (Base constructor does not work - because I need to call child virtual functions
+     */
+    bool initialize( size_t sizeCardStatefulHeap ) noexcept;
+
 public:
     /// See Fxt::Node::Api
     bool start( uint64_t currentElapsedTimeUsec ) noexcept;

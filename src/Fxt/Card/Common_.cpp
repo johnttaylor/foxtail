@@ -24,10 +24,8 @@
 using namespace Fxt::Card;
 
 //////////////////////////////////////////////////
-Common_::Common_( uint16_t                           maxInputChannels,
-                  uint16_t                           maxOutputChannels,
-                  Cpl::Memory::ContiguousAllocator&  generalAllocator,
-                  JsonVariant&                       cardObject )
+Common_::Common_( uint16_t maxInputChannels,
+                  uint16_t maxOutputChannels )
     : m_inputIoRegisterPoints( nullptr )
     , m_outputIoRegisterPoints( nullptr )
     , m_error( Fxt::Type::Error::SUCCESS() )
@@ -38,6 +36,12 @@ Common_::Common_( uint16_t                           maxInputChannels,
     , m_slotNum( 0xFF )
     , m_started( false )
 {
+    // All of the work is done in the child class
+}
+
+bool Common_::initialize( Cpl::Memory::ContiguousAllocator&  generalAllocator,
+                          JsonVariant&                       cardObject ) noexcept
+{
     // Create the arrays of IO Register point pointers
     if ( m_maxInputs > 0 )
     {
@@ -45,7 +49,8 @@ Common_::Common_( uint16_t                           maxInputChannels,
         if ( !m_inputIoRegisterPoints )
         {
             m_error = fullErr( Err_T::MEMORY_CARD );
-            m_error.logIt();
+            m_error.logIt( getTypeName() );
+            return false;
         }
         memset( m_inputIoRegisterPoints, 0, sizeof( Fxt::Point::Api* ) * m_maxInputs );
     }
@@ -55,7 +60,8 @@ Common_::Common_( uint16_t                           maxInputChannels,
         if ( !m_outputIoRegisterPoints )
         {
             m_error = fullErr( Err_T::MEMORY_CARD );
-            m_error.logIt();
+            m_error.logIt( getTypeName() );
+            return false;
         }
         memset( m_outputIoRegisterPoints, 0, sizeof( Fxt::Point::Api* ) * m_maxOutputs );
     }
@@ -65,12 +71,15 @@ Common_::Common_( uint16_t                           maxInputChannels,
     if ( cardObject["slot"].is<uint8_t>() == false )
     {
         m_error = fullErr( Err_T::MISSING_SLOT );
-        m_error.logIt();
+        m_error.logIt( getTypeName() );
+        return false;
     }
     else
     {
         m_slotNum = cardObject["slot"];
     }
+
+    return true;
 }
 
 Common_::~Common_()
@@ -135,7 +144,7 @@ bool Common_::parseInputOutputPoints( Cpl::Memory::ContiguousAllocator&  general
                                       JsonVariant&                       cardObject,
                                       bool                               storeByChannelNum,
                                       unsigned                           minInputs,
-                                      unsigned                           minOutputs) noexcept
+                                      unsigned                           minOutputs ) noexcept
 {
     // Parse channels
     if ( !cardObject["points"].isNull() )
@@ -192,7 +201,7 @@ bool Common_::parseInputOutputPoints( Cpl::Memory::ContiguousAllocator&  general
                 if ( storeByChannelNum )
                 {
                     JsonObject elem       = inputs[idx];
-                    uint16_t   channelNum = getChannelNumber( elem, 1,  m_maxInputs );  // Note: '0' is invalid channel #
+                    uint16_t   channelNum = getChannelNumber( elem, 1, m_maxInputs );  // Note: '0' is invalid channel #
                     if ( channelNum == 0 )
                     {
                         return false;
@@ -260,7 +269,7 @@ bool Common_::parseInputOutputPoints( Cpl::Memory::ContiguousAllocator&  general
             {
                 JsonObject elem       = outputs[idx];
                 uint16_t   channelNum = getChannelNumber( elem, 1, m_maxOutputs );  // Note: '0' is invalid channel #
-                if ( channelNum == 0  )
+                if ( channelNum == 0 )
                 {
                     return false;
                 }

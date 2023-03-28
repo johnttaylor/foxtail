@@ -48,9 +48,9 @@ Automation2040::Automation2040( Cpl::Memory::ContiguousAllocator&  generalAlloca
                                 JsonVariant&                       cardObject,
                                 Cpl::Dm::MailboxServer*            cardMboxNotUsed,
                                 void*                              extraArgsNotUsed )
-    : Fxt::Card::Common_( MAX_INPUT_CHANNELS, MAX_OUTPUT_CHANNELS, generalAllocator, cardObject )
+    : Fxt::Card::Common_( MAX_INPUT_CHANNELS, MAX_OUTPUT_CHANNELS )
 {
-    if ( m_error == Fxt::Type::Error::SUCCESS() )
+    if ( initialize( generalAllocator, cardObject ) )
     {
         memset( m_inputMap, 0, sizeof( m_inputMap ) );
         memset( m_outputMap, 0, sizeof( m_outputMap ) );
@@ -98,6 +98,8 @@ void Automation2040::parseConfiguration( Cpl::Memory::ContiguousAllocator&  gene
         const char* guid = inputGuidFromChannelNum( channelNum );
         if ( !Fxt::Point::Api::validatePointTypes( m_inputIoRegisterPoints+idx, 1, guid ) )
         {
+            m_error = fullErr( Err_T::POINT_WRONG_TYPE );
+            m_error.logIt( getTypeName() );
             return;
         }
     }
@@ -133,6 +135,8 @@ void Automation2040::parseConfiguration( Cpl::Memory::ContiguousAllocator&  gene
         // Validate the output types
         if ( !Fxt::Point::Api::validatePointTypes( m_outputIoRegisterPoints+idx, 1, Fxt::Point::Bool::GUID_STRING ) )
         {
+            m_error = fullErr( Err_T::POINT_WRONG_TYPE );
+            m_error.logIt( getTypeName() );
             return;
         }
     }

@@ -93,7 +93,7 @@ bool Scaler64Base::parseConfiguration( Cpl::Memory::ContiguousAllocator& general
              !parseJsonKonstants( i, elem ) )
         {
             m_error = fullErr( Err_T::MISSING_REQUIRED_FIELD );
-            m_error.logIt();
+            m_error.logIt( getTypeName() );
             return false;
         }
     }

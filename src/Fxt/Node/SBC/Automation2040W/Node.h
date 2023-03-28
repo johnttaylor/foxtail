@@ -87,6 +87,7 @@ public:
         : Common_( MAX_ALLOWED_CHASSIS, pointDb, sizeGeneralHeap, sizeCardStatefulHeap, sizeHaStatefulHeap )
         , m_eventHandler( eventHandler )
     {
+        initialize( sizeCardStatefulHeap );
     }
 
 

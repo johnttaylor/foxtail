@@ -161,14 +161,8 @@ Cpl::TShell::Command::Result_T Dio8::execute( Cpl::TShell::Context_& context, ch
             return Command::eERROR_INVALID_ARGS;
         }
 
-        if ( bitValue == 1 )
-        {
-            m_curCard->setInputBit( bitOffset );
-        }
-        else
-        {
-            m_curCard->clearInputBit( bitOffset );
-        }
+        // Write the input value
+        m_curCard->writeInput( bitOffset, bitValue );
 
         uint8_t newValue = 0;
         m_curCard->getInputs( newValue );

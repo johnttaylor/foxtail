@@ -46,20 +46,17 @@
                 "inputs": [
                   {
                     "channel": 1,
-                    "id": "InputByte",
-                    "typeName": "Fxt::Point::Uint8",
-                    "initial": {
-                      "val": 0
-                    }
+                    "id": "User-Bit0",
+                    "typeName": "Fxt::Point::Bool"
                   }
                 ],
                 "outputs": [
                   {
-                    "channel": 1,
-                    "id": "OutputByte",
-                    "typeName": "Fxt::Point::Uint8",
+                    "channel": 2,
+                    "id": "EchoLED",
+                    "typeName": "Fxt::Point::Bool",
                     "initial": {
-                      "val": 0
+                      "val": false
                     }
                   }
                 ]
@@ -78,23 +75,6 @@
               "id": 1,
               "components": [
                 {
-                  "name": "Byte Demux #1",
-                  "typeName": "Fxt::Component::Digital::Demux8Uint8",
-                  "inputs": [
-                    {
-                      "typeName": "Fxt::Point::Uint8",
-                      "idRef": "InputByte"
-                    }
-                  ],
-                  "outputs": [
-                    {
-                      "bit": 0,
-                      "typeName": "Fxt::Point::Bool",
-                      "idRef": "user: bit0"
-                    }
-                  ]
-                },
-                {
                   "name": "AND Gate#1",
                   "typeName": "Fxt::Component::Digital::And8Gate",
                   "inputs": [
@@ -106,7 +86,7 @@
                     {
                       "name": "Signal#2",
                       "typeName": "Fxt::Point::Bool",
-                      "idRef": "user: bit0"
+                      "idRef": "User-Bit0"
                     }
                   ],
                   "outputs": [
@@ -118,27 +98,21 @@
                   ]
                 },
                 {
-                  "name": "Byte Mux #1",
-                  "typeName": "Fxt::Component::Digital::Mux8Uint8",
+                  "name": "Tee output",
+                  "typeName": "Fxt::Component::Digital::Not64Gate",
                   "inputs": [
                     {
-                      "bit": 0,
                       "typeName": "Fxt::Point::Bool",
                       "idRef": "GPIO25/LED"
                     }
                   ],
                   "outputs": [
                     {
-                      "typeName": "Fxt::Point::Uint8",
-                      "idRef": "OutputByte"
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": "EchoLED",
+                      "negate": true
                     }
                   ]
-                }
-              ],
-              "connectionPts": [
-                {
-                  "id": "user: bit0",
-                  "typeName": "Fxt::Point::Bool"
                 }
               ]
             }

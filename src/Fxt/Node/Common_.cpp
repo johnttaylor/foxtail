@@ -55,34 +55,43 @@ Common_::Common_( uint8_t                  numChassis,
     // Clear the Point database
     m_pointDb.clearPoints();
 
+    // The bulk of the work is done the child class
+}
+
+bool Common_::initialize( size_t sizeCardStatefulHeap ) noexcept
+{
     // Check if heap allocations worked
     size_t dummy;
     if ( m_generalAllocator.getMemoryStart( dummy ) == nullptr ||
          (sizeCardStatefulHeap > 0 && m_cardStatefulAllocator.getMemoryStart( dummy ) == nullptr) ||
          m_haStatefulAllocator.getMemoryStart( dummy ) == nullptr )
     {
-        m_error      = fullErr( Err_T::FAILED_HEAP_ALLOCATIONS );
-        m_error.logIt();
+        m_error  = fullErr( Err_T::FAILED_HEAP_ALLOCATIONS );
+        m_error.logIt( getTypeName() );
         m_numChassis = 0;
+        return false;
     }
 
     // Heaps are valid -->continue construction...
     else
     {
         // Allocate my array of Chassis
-        m_chassis = (Chassis_T*) m_generalAllocator.allocate( sizeof( Chassis_T ) * numChassis );
+        m_chassis = (Chassis_T*) m_generalAllocator.allocate( sizeof( Chassis_T ) * m_numChassis );
         if ( m_chassis == nullptr )
         {
             m_numChassis = 0;
             m_error      = fullErr( Err_T::NO_MEMORY_CHASSIS_LIST );
-            m_error.logIt();
+            m_error.logIt( getTypeName() );
+            return false;
         }
         else
         {
             // Zero the array so we can tell if there are chassis
-            memset( m_chassis, 0, sizeof( Chassis_T ) * numChassis );
+            memset( m_chassis, 0, sizeof( Chassis_T ) * m_numChassis );
         }
     }
+
+    return true;
 }
 
 Common_::~Common_()

@@ -89,13 +89,25 @@ protected:
     /// See Fxt::Component::Math::ScalerBase
     bool validateInputTypes() noexcept
     {
-        return Fxt::Point::Api::validatePointTypes(m_inputRefs, m_numInputs, Fxt::Point::Float::GUID_STRING );
+        bool result = Fxt::Point::Api::validatePointTypes(m_inputRefs, m_numInputs, Fxt::Point::Float::GUID_STRING );
+        if ( !result )
+        {
+            m_error = fullErr( Err_T::INPUT_REFRENCE_BAD_TYPE );
+            m_error.logIt( getTypeName() );
+        }
+        return result;
     }
 
     /// See Fxt::Component::Math::ScalerBase
     bool validateOututTypes() noexcept
     {
-        return Fxt::Point::Api::validatePointTypes( m_outputRefs, m_numOutputs, Fxt::Point::Float::GUID_STRING );
+        bool result =  Fxt::Point::Api::validatePointTypes( m_outputRefs, m_numOutputs, Fxt::Point::Float::GUID_STRING );
+        if ( !result )
+        {
+            m_error = fullErr( Err_T::OUTPUT_REFRENCE_BAD_TYPE );
+            m_error.logIt( getTypeName() );
+        }
+        return result;
     }
 
     /// See Fxt::Component::Math::ScalerBase

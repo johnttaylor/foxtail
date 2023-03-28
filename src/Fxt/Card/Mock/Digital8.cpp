@@ -18,8 +18,6 @@
 ///
 using namespace Fxt::Card::Mock;
 
-#define MAX_INPUT_CHANNELS          1
-#define MAX_OUTPUT_CHANNELS         1
 
 ///////////////////////////////////////////////////////////////////////////////
 Digital8::Digital8( Cpl::Memory::ContiguousAllocator&  generalAllocator,
@@ -30,9 +28,9 @@ Digital8::Digital8( Cpl::Memory::ContiguousAllocator&  generalAllocator,
                     JsonVariant&                       cardObject,
                     Cpl::Dm::MailboxServer*            cardMboxNotUsed,
                     void*                              extraArgsNotUsed )
-    : Fxt::Card::Common_( MAX_INPUT_CHANNELS, MAX_OUTPUT_CHANNELS, generalAllocator, cardObject )
+    : Fxt::Card::Common_( MAX_INPUTS, MAX_OUTPUTS )
 {
-    if ( m_error == Fxt::Type::Error::SUCCESS() )
+    if ( initialize( generalAllocator, cardObject ) )
     {
         parseConfiguration( generalAllocator, cardStatefulDataAllocator, haStatefulDataAllocator, pointFactoryDb, dbForPoints, cardObject );
     }
@@ -62,12 +60,14 @@ void Digital8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAll
     }
 
     // Validate the input/output types
-    if ( !Fxt::Point::Api::validatePointTypes( m_inputIoRegisterPoints, m_numInputs, Fxt::Point::Uint8::GUID_STRING ) ||
-         !Fxt::Point::Api::validatePointTypes( m_outputIoRegisterPoints, m_numOutputs, Fxt::Point::Uint8::GUID_STRING) )
+    if ( !Fxt::Point::Api::validatePointTypes( m_inputIoRegisterPoints, m_numInputs, Fxt::Point::Bool::GUID_STRING ) ||
+         !Fxt::Point::Api::validatePointTypes( m_outputIoRegisterPoints, m_numOutputs, Fxt::Point::Bool::GUID_STRING ) )
     {
+        m_error = fullErr( Err_T::POINT_WRONG_TYPE );
+        m_error.logIt( getTypeName() );
         return;
     }
-    
+
 }
 
 
@@ -111,53 +111,133 @@ const char* Digital8::getTypeName() const noexcept
 
 
 ///////////////////////////////////////////////////////////////////////////////
-void Digital8::writeInputs( uint8_t byteTowrite )
+void Digital8::writeInputs( uint8_t bitsToWrite )
 {
     Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
 
     if ( m_numInputs > 0 )
     {
-        // Update the IO Register
-        Fxt::Point::Uint8* pt = (Fxt::Point::Uint8*) m_inputIoRegisterPoints[0];
-        pt->write( byteTowrite );
+        // Set the IO Registers - LSb first
+        for ( uint8_t idx=0, mask=1; idx < MAX_INPUTS; idx++, mask <<= 1 )
+        {
+            bool newBitVal = (bitsToWrite & mask) == mask ? true : false;
+            writeInput( idx, newBitVal );
+        }
     }
 }
 
-void Digital8::orInputs( uint8_t bitMaskToOR )
+void Digital8::writeInput( uint8_t bitPosition, bool newValue )
 {
     Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
 
     if ( m_numInputs > 0 )
     {
-        // Update the IO Register
-        Fxt::Point::Uint8* pt = (Fxt::Point::Uint8*) m_inputIoRegisterPoints[0];
-        pt->maskOr( bitMaskToOR );
+        Fxt::Point::Bool* pt = (Fxt::Point::Bool*) m_inputIoRegisterPoints[bitPosition];
+        if ( pt )
+        {
+            pt->write( newValue );
+        }
     }
 }
 
-void Digital8::clearInputs( uint8_t bitMaskToAND )
+void Digital8::setInputs( uint8_t bitMaskToSet )
 {
     Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
 
     if ( m_numInputs > 0 )
     {
-        // Update the IO Register
-        Fxt::Point::Uint8* pt = (Fxt::Point::Uint8*) m_inputIoRegisterPoints[0];
-        pt->maskAnd( bitMaskToAND );
+        // OR the IO Registers - LSb first
+        for ( uint8_t idx=0, mask=1; idx < MAX_INPUTS; idx++, mask <<= 1 )
+        {
+            bool setBit = (bitMaskToSet & mask) == mask ? true : false;
+            if ( setBit )
+            {
+                setInputBit( idx );
+            }
+        }
     }
 }
 
-void Digital8::toggleInputs( uint8_t bitMaskToXOR )
+void Digital8::setInputBit( uint8_t bitPosition )
 {
     Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
 
     if ( m_numInputs > 0 )
     {
-        // Update the IO Register
-        Fxt::Point::Uint8* pt = (Fxt::Point::Uint8*) m_inputIoRegisterPoints[0];
-        pt->maskXor( bitMaskToXOR );
+        Fxt::Point::Bool* pt = (Fxt::Point::Bool*) m_inputIoRegisterPoints[bitPosition];
+        if ( pt )
+        {
+            pt->write( true );
+        }
     }
 }
+
+void Digital8::clearInputs( uint8_t bitMaskToClear )
+{
+    Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
+
+    if ( m_numInputs > 0 )
+    {
+        // Clear the IO Registers - LSb first
+        for ( uint8_t idx=0, mask=1; idx < MAX_INPUTS; idx++, mask <<= 1 )
+        {
+            bool clearBit = (bitMaskToClear & mask) == mask ? true : false;
+            if ( clearBit )
+            {
+                clearInputBit( idx );
+            }
+        }
+    }
+}
+
+void Digital8::clearInputBit( uint8_t bitPosition )
+{
+    Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
+
+    if ( m_numInputs > 0 )
+    {
+        Fxt::Point::Bool* pt = (Fxt::Point::Bool*) m_inputIoRegisterPoints[bitPosition];
+        if ( pt )
+        {
+            pt->write( false );
+        }
+    }
+}
+
+void Digital8::toggleInputs( uint8_t bitMaskToToggle )
+{
+    Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
+
+    if ( m_numInputs > 0 )
+    {
+        // Toggle the IO Registers - LSb first
+        for ( uint8_t idx=0, mask=1; idx < MAX_INPUTS; idx++, mask <<= 1 )
+        {
+            bool toggleBit = (bitMaskToToggle & mask) == mask ? true : false;
+            if ( toggleBit )
+            {
+                toggleInputBit( idx );
+            }
+        }
+    }
+}
+
+void Digital8::toggleInputBit( uint8_t bitPosition )
+{
+    Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
+
+    if ( m_numInputs > 0 )
+    {
+        Fxt::Point::Bool* pt = (Fxt::Point::Bool*) m_inputIoRegisterPoints[bitPosition];
+        if ( pt )
+        {
+            bool curVal = false;
+            pt->read( curVal );
+            pt->write( !curVal );
+        }
+    }
+}
+
 
 bool Digital8::getInputs( uint8_t& dstInputVal )
 {
@@ -165,49 +245,150 @@ bool Digital8::getInputs( uint8_t& dstInputVal )
 
     if ( m_numInputs > 0 )
     {
-        // Read the IO Register
-        Fxt::Point::Uint8* pt = (Fxt::Point::Uint8*) m_inputIoRegisterPoints[0];
-        return pt->read( dstInputVal );
+        // Read all of the IO Registers - LSb first
+        dstInputVal = 0;
+        for ( uint8_t idx=0, mask=1; idx < MAX_INPUTS; idx++, mask <<= 1 )
+        {
+            bool inBit = false;
+            if ( !getInput( idx, inBit ) )
+            {
+                return false;
+            }
+            if ( inBit )
+            {
+                dstInputVal |= mask;
+            }
+        }
+
+        return true;
     }
 
     return false;
 }
 
-void Digital8::setInputsInvalid()
+bool Digital8::getInput( uint8_t bitPosition, bool& dstInputVal )
 {
     Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
 
     if ( m_numInputs > 0 )
     {
-        // Invalidate the IO Register
-        Fxt::Point::Uint8* pt = (Fxt::Point::Uint8*) m_inputIoRegisterPoints[0];
-        return pt->setInvalid();
+        Fxt::Point::Bool* pt = (Fxt::Point::Bool*) m_inputIoRegisterPoints[bitPosition];
+        if ( pt )
+        {
+            return pt->read( dstInputVal );
+        }
+    }
+
+    return true;
+}
+
+void Digital8::setInputsInvalid( uint8_t bitMaskToInvalidate )
+{
+    Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
+
+    if ( m_numInputs > 0 )
+    {
+        // Toggle the IO Registers - LSb first
+        for ( uint8_t idx=0, mask=1; idx < MAX_INPUTS; idx++, mask <<= 1 )
+        {
+            bool invalidate = (bitMaskToInvalidate & mask) == mask ? true : false;
+            if ( invalidate )
+            {
+                setInputInvalid( idx );
+            }
+        }
+    }
+}
+
+void Digital8::setInputInvalid( uint8_t bitPosition )
+{
+    Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
+
+    if ( m_numInputs > 0 )
+    {
+        Fxt::Point::Bool* pt = (Fxt::Point::Bool*) m_inputIoRegisterPoints[bitPosition];
+        if ( pt )
+        {
+            return pt->setInvalid();
+        }
     }
 }
 
 
+//////////////////////////////////////////////////////////////////
 bool Digital8::getOutputs( uint8_t& dstOutputVal )
 {
     Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
 
     if ( m_numOutputs > 0 )
     {
-        // Read the IO Register
-        Fxt::Point::Uint8* pt = (Fxt::Point::Uint8*) m_outputIoRegisterPoints[0];
-        return pt->read( dstOutputVal );
+        // Read all of the IO Registers - LSb first
+        dstOutputVal = 0;
+        for ( uint8_t idx=0, mask=1; idx < MAX_OUTPUTS; idx++, mask <<= 1 )
+        {
+            bool outBit = false;
+            if ( !getOutput( idx, outBit ) )
+            {
+                return false;
+            }
+            if ( outBit )
+            {
+                dstOutputVal |= mask;
+            }
+        }
+
+        return true;
     }
 
     return false;
 }
 
-void Digital8::setOutputsInvalid()
+
+bool Digital8::getOutput( uint8_t bitPosition, bool& dstOutputVal )
 {
     Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
 
     if ( m_numOutputs > 0 )
     {
-        // Invalidate the IO Register
-        Fxt::Point::Uint8* pt = (Fxt::Point::Uint8*) m_outputIoRegisterPoints[0];
-        return pt->setInvalid();
+        Fxt::Point::Bool* pt = (Fxt::Point::Bool*) m_outputIoRegisterPoints[bitPosition];
+        if ( pt )
+        {
+            return pt->read( dstOutputVal );
+        }
+    }
+
+    return true;
+}
+
+void Digital8::setOutputsInvalid( uint8_t bitMaskToInvalidate )
+{
+    Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
+
+    if ( m_numOutputs > 0 )
+    {
+        // Toggle the IO Registers - LSb first
+        for ( uint8_t idx=0, mask=1; idx < MAX_OUTPUTS; idx++, mask <<= 1 )
+        {
+            bool invalidate = (bitMaskToInvalidate & mask) == mask ? true : false;
+            if ( invalidate )
+            {
+                setOutputInvalid( idx );
+            }
+        }
     }
 }
+
+void Digital8::setOutputInvalid( uint8_t bitPosition )
+{
+    Cpl::System::Mutex::ScopeBlock criticalSection( m_lock );
+
+    if ( m_numOutputs > 0 )
+    {
+        Fxt::Point::Bool* pt = (Fxt::Point::Bool*) m_outputIoRegisterPoints[bitPosition];
+        if ( pt )
+        {
+            return pt->setInvalid();
+        }
+    }
+}
+

@@ -77,9 +77,9 @@ public:
 
 protected:
     /// See Fxt::Component::Digital::DemuxBase
-    bool validateInputType() noexcept
+    const char* getInputPointTypeGuid() const noexcept
     {
-        return Fxt::Point::Api::validatePointTypes( m_inputRefs, 1, Fxt::Point::Uint8::GUID_STRING );
+        return Fxt::Point::Uint8::GUID_STRING;
     }
 };
 

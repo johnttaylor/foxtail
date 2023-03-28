@@ -28,12 +28,12 @@ Dio30::Dio30( Cpl::Memory::ContiguousAllocator&  generalAllocator,
               JsonVariant&                       cardObject,
               Cpl::Dm::MailboxServer*            cardMboxNotUsed,
               void*                              extraArgsNotUsed )
-    : Fxt::Card::Common_( MAX_INPUT_CHANNELS, MAX_OUTPUT_CHANNELS, generalAllocator, cardObject )
+    : Fxt::Card::Common_( MAX_INPUT_CHANNELS, MAX_OUTPUT_CHANNELS )
 {
     memset( m_driverInCfg, 0, sizeof( m_driverInCfg ) );
     memset( m_driverOutCfg, 0, sizeof( m_driverOutCfg ) );
 
-    if ( m_error == Fxt::Type::Error::SUCCESS() )
+    if ( initialize( generalAllocator, cardObject ) )
     {
         parseConfiguration( generalAllocator, cardStatefulDataAllocator, haStatefulDataAllocator, pointFactoryDb, dbForPoints, cardObject );
     }
@@ -66,6 +66,8 @@ void Dio30::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAlloca
     if ( !Fxt::Point::Api::validatePointTypes( m_inputIoRegisterPoints, m_numInputs, Fxt::Point::Bool::GUID_STRING ) ||
          !Fxt::Point::Api::validatePointTypes( m_outputIoRegisterPoints, m_numOutputs, Fxt::Point::Bool::GUID_STRING ) )
     {
+        m_error = fullErr( Err_T::POINT_WRONG_TYPE );
+        m_error.logIt( getTypeName() );
         return;
     }
 
@@ -105,7 +107,7 @@ void Dio30::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAlloca
     for ( unsigned idx = 0; idx < m_numInputs; idx++ )
     {
         size_t pinId = m_driverInCfg[idx].pin;
-        for ( int idx=0; idx < m_numOutputs; idx++ )
+        for ( unsigned idx=0; idx < m_numOutputs; idx++ )
         {
             if ( m_driverOutCfg[idx].pin == pinId )
             {

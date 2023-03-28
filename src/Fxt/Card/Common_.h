@@ -34,13 +34,17 @@ class Common_ : public Api
 {
 public:
     /// Constructor
-    Common_( uint16_t                           maxInputChannels,
-             uint16_t                           maxOutputChannels,
-             Cpl::Memory::ContiguousAllocator&  generalAllocator,
-             JsonVariant&                       cardObject );
+    Common_( uint16_t maxInputChannels,
+             uint16_t maxOutputChannels );
 
     /// Destructor
     ~Common_();
+
+protected:
+    /** Helper method that initialize the instance (Base constructor does not work - because I need to call child virtual functions
+     */
+    bool initialize( Cpl::Memory::ContiguousAllocator&  generalAllocator,
+                     JsonVariant&                       cardObject ) noexcept;
 
 public:
     /// See Fxt::Card::Api
@@ -107,6 +111,7 @@ protected:
 
     /// Returns the channel for an point element.  Returns 0 if invalid channel# and sets m_error
     uint16_t getChannelNumber( JsonObject& channelObject, uint16_t minChannelNum, uint16_t maxChannelNum ) noexcept;
+
 
 protected:
     /// Bank for the Card's Input IO Register Points

@@ -73,9 +73,9 @@ public:
 
 protected:
     /// See Fxt::Component::Digital::MuxBase
-    bool validateOutputType() noexcept
+    const char* getOutputPointTypeGuid() const noexcept
     {
-        return Fxt::Point::Api::validatePointTypes( m_outputRefs, 1, Fxt::Point::Uint8::GUID_STRING );
+        return Fxt::Point::Uint8::GUID_STRING;
     }
 
 

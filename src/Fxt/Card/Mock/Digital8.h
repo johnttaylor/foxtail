@@ -13,9 +13,8 @@
 /** @file */
 
 
-#include "Fxt/Point/Uint8.h"
+#include "Fxt/Point/Bool.h"
 #include "Fxt/Card/Common_.h"
-#include "Cpl/Json/Arduino.h"
 #include "Cpl/System/Mutex.h"
 #include "Cpl/Dm/MailboxServer.h"
 
@@ -53,35 +52,37 @@ namespace Mock {
       "typeName": "Fxt::Card::Mock::Digital8",              // *Human readable type name
       "slot": 0,                                            // Physical identifier, e.g. its the card position in the Node's physical chassis
       "points": {
-        "inputs": [                                         // OPTIONA: Inputs. The card supports 8 input points that is exposed a single Byte
+        "inputs": [                                         // OPTIONA: Inputs.
           {
-            "channel": 1                                    // Always set to 1
+            "channel": 1                                    // Channel. Range: 1-8. For Application accesses. LSb (bit0) = channel 1, MSb (bit7) = channel 8
             "id": 0,                                        // ID assigned to the Virtual Point that represents the input value
             "ioRegId": 0,                                   // The ID of the Point's IO register.
             "name": "My input name"                         // *Text label for the 8 input signals
-            "type": "918cff9e-8007-4666-99ac-384b9624329c", // REQUIRED Type for the input signal
-            "typeName": "Fxt::Point::Uint8",                // *OPTIONAL: Human readable Type name for the input signal
+            "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0", // REQUIRED Type for the input signal
+            "typeName": "Fxt::Point::Bool",                 // *OPTIONAL: Human readable Type name for the input signal
             "initial": {                                    // OPTIONAL initial value
               "valid": true|false                           // Initial valid state for the IO Register point
-              "val": <integer>                              // Initial value for the input point. Only required when 'valid' is true
+              "val": true|false                             // Initial value for the input point. Only required when 'valid' is true
               "id": 0                                       // The ID of the internal point that is used store the initial value in binary form
             }
-          }
+          },
+          {...}
         ],
-        "outputs": [                                        // OPTIONAL: Outputs. The card supports 8 output points that is exposed a single Byte
+        "outputs": [                                        // OPTIONAL: Outputs.
           {
-            "channel": 1                                    // Always set to 1
+            "channel": 1                                    // Channel. Range: 1-8. For Application accesses. LSb (bit0) = channel 1, MSb (bit7) = channel 8
             "id": 0,                                        // ID assigned to the Virtual Point that represents the output value
             "ioRegId": 0,                                   // The ID of the Point's IO register.
             "name": "My output name"                        // *Text label for the 8 output signals
-            "type": "918cff9e-8007-4666-99ac-384b9624329c", // REQUIRED Type for the output signal
-            "typeName": "Fxt::Point::Uint8",                // *OPTIONAL: Human readable Type name for the output signal
+            "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0", // REQUIRED Type for the output signal
+            "typeName": "Fxt::Point::Bool",                 // *OPTIONAL: Human readable Type name for the output signal
             "initial": {                                    // OPTIONAL initial value
               "valid": true|false                           // Initial valid state for the IO Register point
               "val": <integer>                              // Initial value for the input point. Only required when 'valid' is true
               "id": 0                                       // The ID of the internal point that is used store the initial value in binary form
             }
-          }
+          },
+          {...}
         ]
       }
     }
@@ -99,11 +100,18 @@ public:
     /// Type name for the card
     static constexpr const char*    TYPE_NAME   = "Fxt::Card::Mock::Digital8";
 
+    /// Maximum number of inputs
+    static constexpr const size_t   MAX_INPUTS = 8;
+
+    /// Maximum number of outputs
+    static constexpr const size_t   MAX_OUTPUTS = MAX_INPUTS;
+
     /// Size (in bytes) of Stateful data that will be allocated on the Card Heap
-    static constexpr const size_t   CARD_STATEFUL_HEAP_SIZE = (1 * 3 * sizeof( Fxt::Point::Uint8::StateBlock_T ));
+    static constexpr const size_t   CARD_STATEFUL_HEAP_SIZE = (MAX_INPUTS * 3 * sizeof( Fxt::Point::Bool::StateBlock_T ));
 
     /// Size (in bytes) of Stateful data that will be allocated on the HA Heap
-    static constexpr const size_t   HA_STATEFUL_HEAP_SIZE = (1 * sizeof( Fxt::Point::Uint8::StateBlock_T ));
+    static constexpr const size_t   HA_STATEFUL_HEAP_SIZE = (MAX_OUTPUTS * sizeof( Fxt::Point::Bool::StateBlock_T ));
+
 
 public:
     /// Constructor
@@ -128,7 +136,7 @@ public:
 
     /// See Fxt::Card::Api
     bool flushOutputs( uint64_t currentElapsedTimeUsec ) noexcept;
-    
+
     /// See Fxt::Card::Api
     const char* getTypeGuid() const noexcept;
 
@@ -136,43 +144,58 @@ public:
     const char* getTypeName() const noexcept;
 
 public:
-    /// Provide the Application the ability to set the inputs. This method is thread safe
-    void writeInputs( uint8_t byteTowrite );
+    /// Provide the Application the ability to set ALL inputs. This method is thread safe
+    void writeInputs( uint8_t bitsToWrite );
 
-    /// Provide the Application the ability to clear the inputs. This method is thread safe
-    void clearInputs( uint8_t bitMaskToAND = 0xFF );
+    /// Provide the Application the ability to set a single input. This method is thread safe
+    void writeInput( uint8_t bitPosition, bool newValue );
 
-    /// Provide the Application the ability to OR the inputs. This method is thread safe
-    void orInputs( uint8_t bitMaskToOR );
+    /// Provide the Application the ability to clear multiple inputs. This method is thread safe
+    void clearInputs( uint8_t bitMaskToCelar = 0xFF );
 
-    /// Provide the Application the ability to toggle the inputs. This method is thread safe
-    void toggleInputs( uint8_t bitMaskToXOR );
+    /// Provide the Application the ability to set multiple inputs. This method is thread safe
+    void setInputs( uint8_t bitMaskToSet );
 
-    /// Set input by bit position (zero based bit position)
-    inline void setInputBit( uint8_t bitPosition ) { orInputs( ((uint8_t) 1) << bitPosition ); }
+    /// Provide the Application the ability to toggle multiple inputs. This method is thread safe
+    void toggleInputs( uint8_t bitMaskToToggle );
 
-    /// Clear input by bit position (zero based bit position)
-    inline void clearInputBit( uint8_t bitPosition ) { clearInputs( ~(((uint8_t) 1) << bitPosition) ); }
+    /// Set input by bit position (zero based bit position, i.e. bit0 = channel 1)
+    void setInputBit( uint8_t bitPosition );
 
-    /// Toggle input by bit position (zero based bit position)
-    inline void toggleInputBit( uint8_t bitPosition ) { toggleInputs( ((uint8_t) 1) << bitPosition ); }
+    /// Clear input by bit position (zero based bit position, i.e. bit0 = channel 1)
+    void clearInputBit( uint8_t bitPosition );
 
-    /// Provide the Application the ability to read the inputs. Returns false if one or more of the inputs is INVALID; else true is returned
+    /// Toggle input by bit position (zero based bit position, i.e. bit0 = channel 1)
+    void toggleInputBit( uint8_t bitPosition );
+
+    /// Provide the Application the ability to read ALL of the inputs. Returns false if one or more of the inputs is INVALID; else true is returned
     bool getInputs( uint8_t& dstInputVal );
 
-    /// Provide the Application the ability to read the outputs. Returns false if one or more of the outputs is INVALID; else true is returned
+    /// Provide the Application the ability to read a single input. Returns false if the input is INVALID; else true is returned
+    bool getInput( uint8_t bitPosition, bool& dstInputVal );
+
+    /// Provide the Application the ability to read ALL of the outputs. Returns false if one or more of the outputs is INVALID; else true is returned
     bool getOutputs( uint8_t& dstOutputVal );
+
+    /// Provide the Application the ability to read a single output. Returns false if the output is INVALID; else true is returned
+    bool getOutput( uint8_t bitPosition, bool& dstOutputVal );
 
 public:
     /** Provide the Application the ability to invalidate the inputs. This
         method is thread safe
      */
-    void setInputsInvalid();
+    void setInputsInvalid( uint8_t bitMaskToInvalidate = 0xFF );
+
+    /// Sets a single input to be invalid
+    void setInputInvalid( uint8_t bitPosition );
 
     /** Provide the Application the ability to invalidate the outputs. This
         method is thread safe
      */
-    void setOutputsInvalid();
+    void setOutputsInvalid( uint8_t bitMaskToInvalidate = 0xFF );
+
+    /// Sets a single output to be invalid
+    void setOutputInvalid( uint8_t bitPosition );
 
 
 

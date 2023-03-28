@@ -34,9 +34,10 @@ AnalogIn8::AnalogIn8( Cpl::Memory::ContiguousAllocator&  generalAllocator,
                       JsonVariant&                       cardObject,
                       Cpl::Dm::MailboxServer*            cardMboxNotUsed,
                       void*                              extraArgsNotUsed )
-    : Fxt::Card::Common_( MAX_INPUT_CHANNELS, MAX_OUTPUT_CHANNELS, generalAllocator, cardObject )
+    : Fxt::Card::Common_( MAX_INPUT_CHANNELS, MAX_OUTPUT_CHANNELS )
 {
-    if ( m_error == Fxt::Type::Error::SUCCESS() )
+    
+    if ( initialize( generalAllocator, cardObject ) )
     {
         parseConfiguration( generalAllocator, cardStatefulDataAllocator, haStatefulDataAllocator, pointFactoryDb, dbForPoints, cardObject );
     }
@@ -67,6 +68,8 @@ void AnalogIn8::parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAl
     // Validate the input types
     if ( !Fxt::Point::Api::validatePointTypes( m_inputIoRegisterPoints, m_numInputs, Fxt::Point::Float::GUID_STRING )  )
     {
+        m_error = fullErr( Err_T::POINT_WRONG_TYPE );
+        m_error.logIt( getTypeName() );
         return;
     }
 }

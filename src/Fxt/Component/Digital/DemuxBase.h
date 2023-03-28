@@ -111,8 +111,8 @@ protected:
                              unsigned                          minOutputs,
                              unsigned                          maxOutputs ) noexcept;
 
-    /// Helper method to validate point types
-    virtual bool validateInputType() noexcept = 0;
+    /// Helper method that returns the Input point type's GUID
+    virtual const char* getInputPointTypeGuid() const noexcept = 0;
 
     /// Helper method that invalidates ALL outputs
     void invalidateAllOutputs() noexcept;

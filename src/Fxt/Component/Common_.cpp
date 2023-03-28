@@ -43,7 +43,7 @@ Fxt::Type::Error Common_::start( uint64_t currentElapsedTimeUsec ) noexcept
         return Fxt::Type::Error::SUCCESS();
     }
     m_error = fullErr( Err_T::FAILED_START );
-    m_error.logIt();
+    m_error.logIt( getTypeName() );
     return m_error;
 }
 
@@ -179,7 +179,7 @@ bool Common_::parsePointReference( size_t           dstReferences[],
     if ( pointRef == Fxt::Point::Api::INVALID_ID )
     {
         m_error = fullErr( Fxt::Component::Err_T::BAD_INPUT_REFERENCE );
-        m_error.logIt( getTypeGuid() );
+        m_error.logIt( "%s. %s", getTypeName(),  getTypeGuid() );
         return false;
     }
 
@@ -244,7 +244,7 @@ bool Common_::parseInputReferences( Cpl::Memory::ContiguousAllocator& generalAll
             if ( m_inputRefs[j] == nullptr && names[j].required == true )
             {
                 m_error = fullErr( Err_T::MISSING_REQUIRED_FIELD );
-                m_error.logIt( "%s. Missing %s", getTypeGuid(), names[j].keyValue );
+                m_error.logIt( "%s. Missing %s", getTypeName(), names[j].keyValue );
                 return false;
             }
         }
@@ -313,7 +313,7 @@ bool Common_::parseOutputReferences( Cpl::Memory::ContiguousAllocator& generalAl
             if ( m_outputRefs[j] == nullptr && names[j].required == true )
             {
                 m_error = fullErr( Err_T::MISSING_REQUIRED_FIELD );
-                m_error.logIt( "%s. Missing %s", getTypeGuid(), names[j].keyValue );
+                m_error.logIt( "%s. Missing %s", getTypeName(), names[j].keyValue );
                 return false;
             }
         }

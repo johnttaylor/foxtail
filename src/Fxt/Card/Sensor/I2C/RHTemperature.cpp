@@ -42,7 +42,7 @@ RHTemperature::RHTemperature( Cpl::Memory::ContiguousAllocator&  generalAllocato
                               JsonVariant&                       cardObject,
                               Cpl::Dm::MailboxServer*            cardMbox,
                               void*                              extraArgsNotUsed )
-    : Fxt::Card::Common_( MAX_INPUT_CHANNELS, MAX_OUTPUT_CHANNELS, generalAllocator, cardObject )
+    : Fxt::Card::Common_( MAX_INPUT_CHANNELS, MAX_OUTPUT_CHANNELS )
     , StartStopAsync( *cardMbox )
     , Timer( *cardMbox )
     , m_driver( nullptr )
@@ -54,7 +54,7 @@ RHTemperature::RHTemperature( Cpl::Memory::ContiguousAllocator&  generalAllocato
     , m_forceHeaterUpdate( false )
     , m_lastHeaterEnable( false )
 {
-    if ( m_error == Fxt::Type::Error::SUCCESS() )
+    if ( initialize( generalAllocator, cardObject ) )
     {
         // Get the driver instance
         m_driver = RHTemperatureDriver::get( m_slotNum );
@@ -97,6 +97,8 @@ void RHTemperature::parseConfiguration( Cpl::Memory::ContiguousAllocator&  gener
     if ( !Fxt::Point::Api::validatePointTypes( m_inputIoRegisterPoints, m_numInputs, Fxt::Point::Float::GUID_STRING ) ||
          !Fxt::Point::Api::validatePointTypes( m_outputIoRegisterPoints, m_numOutputs, Fxt::Point::Bool::GUID_STRING ) )
     {
+        m_error = fullErr( Err_T::POINT_WRONG_TYPE );
+        m_error.logIt( getTypeGuid() );
         return;
     }
 

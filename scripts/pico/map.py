@@ -42,7 +42,9 @@ def fix_split_lines( fname ):
     with open( fname ) as inf:
         for line in inf:
             l = line.strip()
-            if ( issplit ):
+            if (len(l) == 0 ):
+                continue
+           if ( issplit ):
                 l = label + ' ' + l
                 issplit = False
             else:
