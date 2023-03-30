@@ -21,6 +21,7 @@
 // Supported Point types and Components
 #include "Fxt/Point/PopulateFactoryDb.h"
 #include "Fxt/Component/Digital/PopulateFactoryDb.h"
+#include "Fxt/Component/Basic/PopulateFactoryDb.h"
 #include "Fxt/Component/Math/PopulateFactoryDb.h"
 
 // Supported Cards

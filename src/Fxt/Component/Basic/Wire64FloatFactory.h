@@ -1,5 +1,5 @@
-#ifndef Fxt_Component_Math_SimpleScaler8Factory_h_
-#define Fxt_Component_Math_SimpleScaler8Factory_h_
+#ifndef Fxt_Component_Basic_Wire64FloatFactory_h_
+#define Fxt_Component_Basic_Wire64FloatFactory_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -13,18 +13,18 @@
 /** @file */
 
 #include "Fxt/Component/FactoryCommon_.h"
-#include "Fxt/Component/Math/Scaler64Float.h"
+#include "Fxt/Component/Basic/Wire64Float.h"
 
 ///
 namespace Fxt {
 ///
 namespace Component {
 ///
-namespace Math {
+namespace Basic {
 
 
 /// Define factory type
-typedef Factory<Scaler64Float> Scaler64FloatFactory;
+typedef Factory<Wire64Float> Wire64FloatFactory;
 
 
 

@@ -11,7 +11,7 @@
 
 #include "Catch/catch.hpp"
 #include "Cpl/System/_testsupport/Shutdown_TS.h"
-#include "Fxt/Component/Math/Scaler64Float.h"
+#include "Fxt/Component/Basic/Wire64Bool.h"
 #include "Fxt/Point/Database.h"
 #include "Fxt/Point/FactoryDatabase.h"
 #include "Cpl/Memory/LeanHeap.h"
@@ -21,43 +21,39 @@
 #define SECT_   "_0test"
 
 /// 
-using namespace Fxt::Component::Math;
+using namespace Fxt::Component::Basic;
 
 static const char* COMP_DEFINTION = R"literalString(
 {
   "components": [
     {
-      "name": "mx+b Scaler",
-      "type": "0eb51702-677f-4022-91ab-bc84efcc4ed1",
-      "typeName": "Fxt::Component::Math::Scaler64Float",
+      "name": "test",
+      "type": "d2253d23-c1cd-428c-817e-32748f96c45a",
+      "typeName": "Fxt::Component::Basic::Wire64Bool",
       "inputs": [
         {
           "name": "Signal A",
-          "type": "708745fa-cef6-4364-abad-063a40f35cbc",
-          "typeName": "Fxt::Point::Float",
-          "m": 100,
-          "b": -5,
+          "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0",
+          "typeName": "Fxt::Point::Bool",
           "idRef": 0
         },
         {
           "name": "Signal B",
-          "type": "708745fa-cef6-4364-abad-063a40f35cbc",
-          "typeName": "Fxt::Point::Float",
-          "m": 3.1415,
-          "b": 10,
+          "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0",
+          "typeName": "Fxt::Point::Bool",
           "idRef": 1
         }
       ],
       "outputs": [
         {
-          "name": "Scaled Signal A",
-          "type": "708745fa-cef6-4364-abad-063a40f35cbc",
+          "name": "Signal AA",
+          "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0",
           "typeName": "Fxt::Point::Bool",
           "idRef": 2
         },
         {
-          "name": "Scaled Signal B",
-          "type": "708745fa-cef6-4364-abad-063a40f35cbc",
+          "name": "Signal BB",
+          "type": "f574ca64-b5f2-41ae-bdbf-d7cb7d52aeb0",
           "typeName": "Fxt::Point::Bool",
           "idRef": 3
         }
@@ -82,7 +78,7 @@ static size_t statefulHeap_[10000];
 
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE( "And16Gate" )
+TEST_CASE( "Wire64Bool" )
 {
     Cpl::System::Shutdown_TS::clearAndUseCounter();
     Cpl::Memory::LeanHeap generalAllocator( generalHeap_, sizeof( generalHeap_ ) );
@@ -98,7 +94,7 @@ TEST_CASE( "And16Gate" )
         REQUIRE( err == DeserializationError::Ok );
 
         JsonVariant componentObj = doc["components"][0];
-        Scaler64Float uut( componentObj,
+        Wire64Bool uut( componentObj,
                            generalAllocator,
                            statefulAllocator,
                            pointFactoryDb,
@@ -106,8 +102,8 @@ TEST_CASE( "And16Gate" )
 
         REQUIRE( uut.getErrorCode() == Fxt::Type::Error::SUCCESS() );
 
-        REQUIRE( strcmp( uut.getTypeGuid(), Scaler64Float::GUID_STRING ) == 0 );
-        REQUIRE( strcmp( uut.getTypeName(), Scaler64Float::TYPE_NAME ) == 0 );
+        REQUIRE( strcmp( uut.getTypeGuid(), Wire64Bool::GUID_STRING ) == 0 );
+        REQUIRE( strcmp( uut.getTypeName(), Wire64Bool::TYPE_NAME ) == 0 );
 
         REQUIRE( uut.isStarted() == false );
     }
@@ -119,7 +115,7 @@ TEST_CASE( "And16Gate" )
         REQUIRE( err == DeserializationError::Ok );
 
         JsonVariant componentObj = doc["components"][0];
-        Scaler64Float uut( componentObj,
+        Wire64Bool uut( componentObj,
                            generalAllocator,
                            statefulAllocator,
                            pointFactoryDb,
@@ -135,13 +131,13 @@ TEST_CASE( "And16Gate" )
 
     SECTION( "execute component - happy path" )
     {
-        float value1, value2;
+        bool value1, value2;
         StaticJsonDocument<10240> doc;
         DeserializationError err = deserializeJson( doc, COMP_DEFINTION );
         REQUIRE( err == DeserializationError::Ok );
 
         JsonVariant componentObj = doc["components"][0];
-        Scaler64Float uut( componentObj,
+        Wire64Bool uut( componentObj,
                            generalAllocator,
                            statefulAllocator,
                            pointFactoryDb,
@@ -149,10 +145,10 @@ TEST_CASE( "And16Gate" )
 
         REQUIRE( uut.getErrorCode() == Fxt::Type::Error::SUCCESS() );
 
-        Fxt::Point::Float* ptIn1  = new(std::nothrow) Fxt::Point::Float( pointDb, POINT_ID__IN_SIGNAL_1, statefulAllocator );
-        Fxt::Point::Float* ptIn2  = new(std::nothrow) Fxt::Point::Float( pointDb, POINT_ID__IN_SIGNAL_2, statefulAllocator );
-        Fxt::Point::Float* ptOut1 = new(std::nothrow) Fxt::Point::Float( pointDb, POINT_ID__OUT_SIGNAL_1, statefulAllocator );
-        Fxt::Point::Float* ptOut2 = new(std::nothrow) Fxt::Point::Float( pointDb, POINT_ID__OUT_SIGNAL_2, statefulAllocator );
+        Fxt::Point::Bool* ptIn1  = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_1, statefulAllocator );
+        Fxt::Point::Bool* ptIn2  = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__IN_SIGNAL_2, statefulAllocator );
+        Fxt::Point::Bool* ptOut1 = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__OUT_SIGNAL_1, statefulAllocator );
+        Fxt::Point::Bool* ptOut2 = new(std::nothrow) Fxt::Point::Bool( pointDb, POINT_ID__OUT_SIGNAL_2, statefulAllocator );
 
         Fxt::Type::Error errCode = uut.resolveReferences( pointDb );
         CPL_SYSTEM_TRACE_MSG( SECT_, ("error Code=%s", Fxt::Type::Error::toText( errCode, buf )) );
@@ -166,27 +162,27 @@ TEST_CASE( "And16Gate" )
         REQUIRE( ptOut1->isNotValid() );
         REQUIRE( ptOut2->isNotValid() );
 
-        ptIn1->write( 0 );
+        ptIn1->write( false );
         REQUIRE( uut.execute( nowUsec ) == Fxt::Type::Error::SUCCESS() );
         REQUIRE( ptOut1->read( value1 ) );
-        REQUIRE( Cpl::Math::areFloatsEqual( value1, -5.0F ) );
+        REQUIRE( value1 == false );
         REQUIRE( ptOut2->isNotValid() );
 
-        ptIn1->write( 1 );
-        ptIn2->write( 1 );
+        ptIn1->write( true );
+        ptIn2->write( false );
         REQUIRE( uut.execute( nowUsec ) == Fxt::Type::Error::SUCCESS() );
         REQUIRE( ptOut1->read( value1 ) );
-        REQUIRE( Cpl::Math::areFloatsEqual( value1, 100 - 5.0 ) );
+        REQUIRE( value1 == true );
         REQUIRE( ptOut2->read( value2 ) );
-        REQUIRE( Cpl::Math::areFloatsEqual( value2, 13.1415F) );
+        REQUIRE( value2 == false );
 
 
         ptIn1->setInvalid();
-        ptIn2->write( -1 );
+        ptIn2->write( true );
         REQUIRE( uut.execute( nowUsec ) == Fxt::Type::Error::SUCCESS() );
         REQUIRE( ptOut1->isNotValid() );
         REQUIRE( ptOut2->read( value2 ) );
-        REQUIRE( Cpl::Math::areFloatsEqual( value2, 6.8585F ) );
+        REQUIRE( value2 == true );
 
         ptIn2->setInvalid();
         REQUIRE( uut.execute( nowUsec ) == Fxt::Type::Error::SUCCESS() );

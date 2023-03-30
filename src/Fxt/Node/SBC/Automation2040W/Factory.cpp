@@ -22,6 +22,7 @@
 #include "Fxt/Point/PopulateFactoryDb.h"
 #include "Fxt/Component/Digital/PopulateFactoryDb.h"
 #include "Fxt/Component/Math/PopulateFactoryDb.h"
+#include "Fxt/Component/Basic/PopulateFactoryDb.h"
 
 // Supported Cards
 #include "Fxt/Card/Composite/RP2040/Automation2040Factory.h"

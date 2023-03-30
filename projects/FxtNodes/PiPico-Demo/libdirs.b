@@ -20,6 +20,7 @@ src/Fxt/LogicChain
 src/Fxt/Component
 src/Fxt/Component/Digital
 src/Fxt/Component/Math
+src/Fxt/Component/Basic
 
 # Colony Core infrastructure
 src/Cpl/Logging

@@ -99,7 +99,7 @@
                 },
                 {
                   "name": "Tee output",
-                  "typeName": "Fxt::Component::Digital::Not64Gate",
+                  "typeName": "Fxt::Component::Basic::Wire64Bool",
                   "inputs": [
                     {
                       "typeName": "Fxt::Point::Bool",
@@ -109,8 +109,7 @@
                   "outputs": [
                     {
                       "typeName": "Fxt::Point::Bool",
-                      "idRef": "EchoLED",
-                      "negate": true
+                      "idRef": "EchoLED"
                     }
                   ]
                 }

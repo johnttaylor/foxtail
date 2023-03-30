@@ -6,6 +6,8 @@ _types_dict = {
     "Fxt::Card::Mock::AnalogOut8": "dcec26d7-8dea-4e1b-946d-4a0313677173",
     "Fxt::Card::Mock::Digital8": "59d33888-62c7-45b2-a4d4-9dbc55914ed3",
     "Fxt::Card::Sensor::I2C::RHTemperature": "9fd17cc7-88c1-46bc-8a8c-6f76ab4e6eee",
+    "Fxt::Component::Basic::Wire64Bool": "d2253d23-c1cd-428c-817e-32748f96c45a",
+    "Fxt::Component::Basic::Wire64Float": "e6759a22-06c1-4aad-8190-67bf36425903",
     "Fxt::Component::Controller::OnOff": "fec7f73f-982b-4adb-a6c7-837a457b2822",
     "Fxt::Component::Digital::And8Gate": "e62e395c-d27a-4821-bba9-aa1e6de42a05",
     "Fxt::Component::Digital::Demux8Uint8": "8c55aa52-3bc8-4b8a-ad73-c434a0bbd4b4",

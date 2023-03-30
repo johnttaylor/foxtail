@@ -195,6 +195,11 @@
                     "channel": 7,
                     "id": "Echo: Onboard Temp 'C",
                     "typeName": "Fxt::Point::Float"
+                  },
+                  {
+                    "channel": 8,
+                    "id": "Echo: Onboard Temp 'F",
+                    "typeName": "Fxt::Point::Float"
                   }
                 ]
               }
@@ -321,7 +326,7 @@
               "components": [
                 {
                   "name": "use button pressed state (false) to drive its LED",
-                  "typeName": "Fxt::Component::Digital::Not64Gate",
+                  "typeName": "Fxt::Component::Basic::Wire64Bool",
                   "inputs": [
                     {
                       "typeName": "Fxt::Point::Bool",
@@ -335,37 +340,23 @@
                   "outputs": [
                     {
                       "typeName": "Fxt::Point::Bool",
-                      "idRef": "ButtonLED-A",
-                      "negate": true
+                      "idRef": "ButtonLED-A"
                     },
                     {
                       "typeName": "Fxt::Point::Bool",
-                      "idRef": "ButtonLED-B",
-                      "negate": true
+                      "idRef": "ButtonLED-B"
                     }
                   ]
                 }
               ]
             },
             {
-              "name": "Pass-through Analog Inputs to the mocked AOUT card",
+              "name": "Temperature conversion",
               "components": [
                 {
                   "name": "scaler",
                   "typeName": "Fxt::Component::Math::Scaler64Float",
                   "inputs": [
-                    {
-                      "m": 1,
-                      "b": 0,
-                      "typeName": "Fxt::Point::Float",
-                      "idRef": "RH Input Value"
-                    },
-                    {
-                      "m": 1,
-                      "b": 0,
-                      "typeName": "Fxt::Point::Float",
-                      "idRef": "Temperature 'C Input"
-                    },
                     {
                       "m": 1.8,
                       "b": 32,
@@ -373,26 +364,48 @@
                       "idRef": "Temperature 'C Input"
                     },
                     {
-                      "m": 1,
-                      "b": 0,
+                      "m": 1.8,
+                      "b": 32,
+                      "typeName": "Fxt::Point::Float",
+                      "idRef": "OnboardTemp"
+                    }
+                  ],
+                  "outputs": [
+                    {
+                      "typeName": "Fxt::Point::Float",
+                      "idRef": "Temperature 'F Out"
+                    },
+                    {
+                      "typeName": "Fxt::Point::Float",
+                      "idRef": "Echo: Onboard Temp 'F"
+                    }
+                  ]
+                },
+                {
+                  "name": "Pass-through analog value Mock Analog Output",
+                  "typeName": "Fxt::Component::Basic::Wire64Float",
+                  "inputs": [
+                    {
+                      "typeName": "Fxt::Point::Float",
+                      "idRef": "RH Input Value"
+                    },
+                    {
+                      "typeName": "Fxt::Point::Float",
+                      "idRef": "Temperature 'C Input"
+                    },
+                    {
                       "typeName": "Fxt::Point::Float",
                       "idRef": "Ain#1"
                     },
                     {
-                      "m": 1,
-                      "b": 0,
                       "typeName": "Fxt::Point::Float",
                       "idRef": "Ain#2"
                     },
                     {
-                      "m": 1,
-                      "b": 0,
                       "typeName": "Fxt::Point::Float",
                       "idRef": "Ain#3"
                     },
                     {
-                      "m": 1,
-                      "b": 0,
                       "typeName": "Fxt::Point::Float",
                       "idRef": "OnboardTemp"
                     }
@@ -405,10 +418,6 @@
                     {
                       "typeName": "Fxt::Point::Float",
                       "idRef": "Temperature 'C Out"
-                    },
-                    {
-                      "typeName": "Fxt::Point::Float",
-                      "idRef": "Temperature 'F Out"
                     },
                     {
                       "typeName": "Fxt::Point::Float",
@@ -431,11 +440,11 @@
               ]
             },
             {
-              "name": "Pass-through Mocked Digital outputs to SET the board's digital outputs",
+              "name": "Pass-through Mocked Digital outputs (slot3) to SET the board's digital outputs",
               "components": [
                 {
                   "name": "dout passthrough",
-                  "typeName": "Fxt::Component::Digital::Not64Gate",
+                  "typeName": "Fxt::Component::Basic::Wire64Bool",
                   "inputs": [
                     {
                       "typeName": "Fxt::Point::Bool",
@@ -469,38 +478,76 @@
                   "outputs": [
                     {
                       "typeName": "Fxt::Point::Bool",
-                      "idRef": "Dout#1",
-                      "negate": true
+                      "idRef": "Dout#1"
                     },
                     {
                       "typeName": "Fxt::Point::Bool",
-                      "idRef": "Dout#2",
-                      "negate": true
+                      "idRef": "Dout#2"
                     },
                     {
                       "typeName": "Fxt::Point::Bool",
-                      "idRef": "Dout#3",
-                      "negate": true
+                      "idRef": "Dout#3"
                     },
                     {
                       "typeName": "Fxt::Point::Bool",
-                      "idRef": "RelayOut#1",
-                      "negate": true
+                      "idRef": "RelayOut#1"
                     },
                     {
                       "typeName": "Fxt::Point::Bool",
-                      "idRef": "RelayOut#2",
-                      "negate": true
+                      "idRef": "RelayOut#2"
                     },
                     {
                       "typeName": "Fxt::Point::Bool",
-                      "idRef": "RelayOut#3",
-                      "negate": true
+                      "idRef": "RelayOut#3"
                     },
                     {
                       "typeName": "Fxt::Point::Bool",
-                      "idRef": "ConnectedLED",
-                      "negate": true
+                      "idRef": "ConnectedLED"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Pass-through the board's digital inputs to the Mocked Digital output (slot 2)",
+              "components": [
+                {
+                  "name": "dout passthrough",
+                  "typeName": "Fxt::Component::Basic::Wire64Bool",
+                  "inputs": [
+                    {
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": "Din#1"
+                    },
+                    {
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": "Din#2"
+                    },
+                    {
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": "Din#3"
+                    },
+                    {
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": "Din#4"
+                    }
+                  ],
+                  "outputs": [
+                    {
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": "Echo: DIN#1"
+                    },
+                    {
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": "Echo: DIN#2"
+                    },
+                    {
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": "Echo: DIN#3"
+                    },
+                    {
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": "Echo: DIN#4"
                     }
                   ]
                 }

@@ -43,9 +43,9 @@
                   {
                     "channel": 1,
                     "id": "Heater Enable Input",
-                    "typeName": "Fxt::Point::Uint8",
+                    "typeName": "Fxt::Point::Bool",
                     "initial": {
-                      "val": 0
+                      "val": false
                     }
                   }
                 ]
@@ -113,28 +113,18 @@
               ]
             },
             {
-              "name": "Pass-through the RH/Sensor value to the mocked AOUT card",
+              "name": "Pass-through the RH/Sensor values to the mocked AOUT card",
               "id": 1,
               "components": [
                 {
                   "name": "scaler",
-                  "typeName": "Fxt::Component::Math::Scaler64Float",
+                  "typeName": "Fxt::Component::Basic::Wire64Float",
                   "inputs": [
                     {
-                      "m": 1,
-                      "b": 0,
                       "typeName": "Fxt::Point::Float",
                       "idRef": "RH Input Value"
                     },
                     {
-                      "m": 1,
-                      "b": 0,
-                      "typeName": "Fxt::Point::Float",
-                      "idRef": "Temperature 'C Input"
-                    },
-					{
-                      "m": 1.8,
-                      "b": 32,
                       "typeName": "Fxt::Point::Float",
                       "idRef": "Temperature 'C Input"
                     }
@@ -147,7 +137,27 @@
                     {
                       "typeName": "Fxt::Point::Float",
                       "idRef": "Temperature 'C Out"
-                    },
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Convert Temperature and SET to the mocked AOUT card",
+              "id": 1,
+              "components": [
+                {
+                  "name": "scaler",
+                  "typeName": "Fxt::Component::Math::Scaler64Float",
+                  "inputs": [
+                    {
+                      "m": 1.8,
+                      "b": 32,
+                      "typeName": "Fxt::Point::Float",
+                      "idRef": "Temperature 'C Input"
+                    }
+                  ],
+                  "outputs": [
                     {
                       "typeName": "Fxt::Point::Float",
                       "idRef": "Temperature 'F Out"

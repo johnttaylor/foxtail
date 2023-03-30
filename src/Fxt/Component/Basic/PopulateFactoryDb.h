@@ -1,5 +1,5 @@
-#ifndef Fxt_Component_Math_PopulateFactoryDb_h_
-#define Fxt_Component_Math_PopulateFactoryDb_h_
+#ifndef Fxt_Component_Basic_PopulateFactoryDb_h_
+#define Fxt_Component_Basic_PopulateFactoryDb_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -19,9 +19,11 @@
 */
 
 
-#include "Fxt/Component/Math/Scaler64FloatFactory.h"
+#include "Fxt/Component/Basic/Wire64FloatFactory.h"
+#include "Fxt/Component/Basic/Wire64BoolFactory.h"
 
-static Fxt::Component::Math::Scaler64FloatFactory         scaler64FloatFactory_( FXT_MY_APP_COMPONENT_FACTORY_DB );
+static Fxt::Component::Basic::Wire64FloatFactory         wire64FloatFactory_( FXT_MY_APP_COMPONENT_FACTORY_DB );
+static Fxt::Component::Basic::Wire64BoolFactory          wire64BoolFactory_( FXT_MY_APP_COMPONENT_FACTORY_DB );
 
 
 #endif  // end header latch
