@@ -63,7 +63,7 @@ Api* FactoryCommon_::create( JsonObject&                        pointObject,
         if ( valid.isNull() == false && valid.as<bool>() == false )
         {
             // Setter/initial value is the 'invalid-state'
-            setter->setInvalid( Api::eLOCK );
+            setter->setInvalid();
         }
 
         // Parse the Setter point's value
@@ -71,7 +71,7 @@ Api* FactoryCommon_::create( JsonObject&                        pointObject,
         {
             Cpl::Text::FString<128> errMsg;
             JsonVariant val = setterJson["val"];
-            if ( !setter->fromJSON_( val, Api::eLOCK, &errMsg ) )
+            if ( !setter->fromJSON_( val, Api::eUNLOCK, &errMsg ) )
             {
                 CPL_SYSTEM_TRACE_MSG( SECT_, ("Failed to parse 'val' object for the Setter point.id=%lu err=%s", setter->getId(), errMsg.getString()) );
                 pointErrorCode = fullErr( Err_T::BAD_SETTER_VALUE );

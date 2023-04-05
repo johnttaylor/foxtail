@@ -67,6 +67,14 @@ public:
     ///  See Fxt::Point::Api
     void updateFromSetter() noexcept { if ( m_setter ) { write( *((String*) m_setter) ); } }
 
+    ///  See Fxt::Point::Api
+    void updateFromSetter( const Api&    srcPt,
+                           LockRequest_T lockRequest = eNO_REQUEST,
+                           bool          beSafe      = true ) noexcept
+    {
+        if ( !beSafe || isSameType( srcPt ) ) { write( *((String*) &srcPt), lockRequest ); }
+    }
+
     /// Returns the maximum size WITHOUT the null terminator of the string storage
     size_t getMaxLength() const noexcept;
 

@@ -64,6 +64,15 @@ public:
     ///  See Fxt::Point::Api
     void updateFromSetter() noexcept { if ( m_setter ) { write( *((Double*) m_setter) ); } }
 
+    ///  See Fxt::Point::Api
+    void updateFromSetter( const Api&    srcPt,
+                           LockRequest_T lockRequest = eNO_REQUEST,
+                           bool          beSafe      = true ) noexcept
+    {
+        if ( !beSafe || isSameType( srcPt ) ) { write( *((Double*) &srcPt), lockRequest ); }
+    }
+
+
 public:
     ///  See Fxt::Point::Api
     const char* getTypeGuid() const noexcept { return GUID_STRING; }

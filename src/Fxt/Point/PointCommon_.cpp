@@ -29,7 +29,7 @@ PointCommon_::PointCommon_( DatabaseApi&                        db,
                             Api*                                setterPoint )
     : m_id( pointId )
     , m_state( allocatorForPointStatefulData.allocate( stateSize ) )
-    , m_stateSize( allocatorForPointStatefulData.allocatedSizeForNBytes(stateSize) )
+    , m_stateSize( allocatorForPointStatefulData.allocatedSizeForNBytes( stateSize ) )
     , m_setter( setterPoint )
 {
     if ( m_state )
@@ -136,11 +136,14 @@ void PointCommon_::writeData( const void* srcData, size_t srcSize, LockRequest_T
     }
 }
 
-void PointCommon_::updateFrom_( const void* srcData, size_t srcSize, bool srcIsNotValid, Fxt::Point::Api::LockRequest_T lockRequest ) noexcept
+void PointCommon_::updateFrom_( const void*                    srcData,
+                                size_t                         srcSize,
+                                bool                           srcNotValid,
+                                Fxt::Point::Api::LockRequest_T lockRequest ) noexcept
 {
-    if ( srcIsNotValid )
+    if ( srcNotValid )
     {
-        setInvalid();
+        setInvalid( lockRequest );
     }
     else
     {

@@ -74,6 +74,14 @@ public:
     ///  See Fxt::Point::Api
     void updateFromSetter() noexcept { if ( m_setter ) { write( *((Bool*) m_setter) ); } }
         
+    ///  See Fxt::Point::Api
+    void updateFromSetter( const Api&    srcPt,
+                           LockRequest_T lockRequest = eNO_REQUEST,
+                           bool          beSafe      = true ) noexcept  
+    { 
+        if ( !beSafe || isSameType( srcPt ) ) { write( *((Bool*) &srcPt), lockRequest ); } 
+    }
+
 
 public:
     ///  See Fxt::Point::Api

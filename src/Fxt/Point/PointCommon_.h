@@ -74,7 +74,10 @@ public:
     void* getStartOfStatefulMemory_() const noexcept;
 
     /// See Fxt::Point::Api
-    void updateFrom_( const void* srcData, size_t srcSize, bool isNotValid, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept;
+    void updateFrom_( const void*                    srcData,
+                      size_t                         srcSize,
+                      bool                           srcNotValid,
+                      Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept;
 
 protected:
     /// See Fxt::Point::Api
@@ -97,7 +100,6 @@ protected:
            the Point is left in the unlocked state.
      */
     virtual bool testAndUpdateLock( LockRequest_T lockRequest ) noexcept;
-
 
 public:
     /// Structure for meta-data

@@ -69,6 +69,14 @@ public:
     ///  See Fxt::Point::Api
     void updateFromSetter() noexcept { if ( PointCommon_::m_setter ) { write( *((Enum_<BETTERENUM_TYPE>*) PointCommon_::m_setter) ); } }
 
+    ///  See Fxt::Point::Api
+    void updateFromSetter( const Api&    srcPt,
+                           LockRequest_T lockRequest = eNO_REQUEST,
+                           bool          beSafe      = true ) noexcept
+    {
+        if ( !beSafe || isSameType( srcPt ) ) { write( *((Enum_<BETTERENUM_TYPE>*) &srcPt), lockRequest ); }
+    }
+
 
 public:
     /// See Fxt::Dm::Point.  

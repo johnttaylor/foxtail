@@ -18,6 +18,8 @@
 #include "Cpl/Container/DictItem.h"
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
+
 
 /// Helper macro for a concrete point's factory/create method
 
@@ -85,6 +87,14 @@ public:
      */
     virtual size_t getStatefulMemorySize() const noexcept = 0;
 
+    /** This method returns true if the specified point is the same type as the
+        instance.
+     */
+    inline bool isSameType( const Api& otherPt ) const noexcept
+    {
+        return strcmp( getTypeGuid(), otherPt.getTypeGuid() ) == 0;
+    }
+
 public:
     /// This method returns true if the Point has a valid 'Setter'
     virtual bool hasSetter() const noexcept = 0;
@@ -93,6 +103,20 @@ public:
         point does not have a 'Setter' then this operation does nothing.
      */
     virtual void updateFromSetter() noexcept = 0;
+
+    /** This is a variant of the above updateFromSetter(), where an external Point 
+        is provided as the source of the update.  If the 'beSafe' argument is
+        set to true the method will validate that both points have same
+        type guid.  In this scenario if the two points are not the same type
+        not update occurs.  If 'beSafe' is false - the update is always performed.
+
+        NOTE: The option to NOT 'beSafe' is provided to make the method as execute
+              as possible with the assumption that application did CHECK that
+              the two points have the same type!
+     */
+    virtual void updateFromSetter( const Api&    srcPt, 
+                                   LockRequest_T lockRequest = eNO_REQUEST, 
+                                   bool          beSafe      = true ) noexcept = 0;
 
 public:
     /** This method sets the Point to the invalid state.
@@ -251,13 +275,19 @@ public:
     virtual void* getStartOfStatefulMemory_() const noexcept = 0;
 
     /** This method has PACKAGE Scope, i.e. it is intended to be ONLY accessible
-       by other classes in the Fxt::Point namespace.  The Application should
-       NEVER call this method.
+        by other classes in the Fxt::Point namespace.  The Application should
+        NEVER call this method.
 
-       This method updates the model point valid state and data value from an
-       'source'.  Typically the 'source' is another Model Point
-    */   
-    virtual void updateFrom_( const void* srcData, size_t srcSize, bool isNotValid, Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept = 0;;
+        This method updates the model point valid state and data value from a 
+        'source'.  Typically the 'source' is another Model Point.  
+        
+        The 'lockRequest' argument has the same semantics as all of the
+        other write operations
+     */   
+    virtual void updateFrom_( const void*                    srcData, 
+                              size_t                         srcSize, 
+                              bool                           srcNotValid,
+                              Fxt::Point::Api::LockRequest_T lockRequest = Fxt::Point::Api::eNO_REQUEST ) noexcept = 0;;
 
     /** This method has PACKAGE Scope, i.e. it is intended to be ONLY accessible
         by other classes in the Fxt::Point namespace.  The Application should
