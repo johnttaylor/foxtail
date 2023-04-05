@@ -110,6 +110,24 @@ TEST_CASE( "Int8" )
         REQUIRE( apple->isNotValid() );
     }
 
+    SECTION( "setter" )
+    {
+        orange->write( ORANGE_INIT_VAL, Api::eLOCK );
+        apple->setInvalid( Api::eUNLOCK );
+        orange->updateFromSetter( *apple );
+        REQUIRE( orange->isNotValid() == false );
+        REQUIRE( orange->isLocked() == true );
+
+        orange->updateFromSetter( *apple, Api::eUNLOCK );
+        REQUIRE( orange->isNotValid() );
+        REQUIRE( orange->isLocked() == false );
+
+        apple->write( ORANGE_INIT_VAL );
+        orange->updateFromSetter( *apple );
+        REQUIRE( orange->isNotValid() == false );
+        REQUIRE( orange->isLocked() == false );
+    }
+
     SECTION( "bitOpertions" )
     {
         apple->setInvalid();
