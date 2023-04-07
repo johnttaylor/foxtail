@@ -18,6 +18,7 @@
 #include "Fxt/Card/Common_.h"
 #include "Cpl/Json/Arduino.h"
 #include "Fxt/Card/StartStopAsync.h"
+#include "Fxt/Card/IoFlushAsync.h"
 #include "Cpl/System/Timer.h"
 #include "Driver/RHTemp/Api.h"
 #include "Cpl/System/Mutex.h"
@@ -117,7 +118,11 @@ namespace I2C {
 
     \endcode
  */
-class RHTemperature : public Fxt::Card::Common_, public Fxt::Card::StartStopAsync, public Cpl::System::Timer
+class RHTemperature : 
+    public Fxt::Card::Common_, 
+    public Fxt::Card::StartStopAsync,
+    public Fxt::Card::IoFlushAsync,
+    public Cpl::System::Timer
 {
 public:
     /// Type ID for the card
@@ -177,6 +182,14 @@ public:
     /// ITC Stop response (runs in the chassis thread)
     void response( StopRspMsg& msg );
 
+public:
+    /// ITC Flush request (runs in the driver thread)
+    void request( IoFlushReqMsg& msg );
+
+    /// ITC Flush response (runs in the chassis thread)
+    void response( IoFlushRspMsg& msg );
+
+
 protected:
     /// Helper method to parse the card's JSON config
     void parseConfiguration( Cpl::Memory::ContiguousAllocator&  generalAllocator,
@@ -190,39 +203,57 @@ protected:
     /// Background polling timer expired
     void expired( void ) noexcept;
 
+    /// Transfer the cached output data to the output transfer buffer
+    void populateOutputTransferBuffer() noexcept;
+
 protected:
+    /// Handle the Chassis thread's mailbox
+    Cpl::Itc::PostApi*     m_chassisMbox;
+
     /// Mutex need exchange data between the Chassis and Driver threads
     Cpl::System::Mutex      m_lock;
 
     /// Driver instance
     Driver::RHTemp::Api*    m_driver;
 
-    /// Polling delay, in milliseconds. SHARED between threads - but is constant value - so no critical section is needed
+    /// Polling delay, in milliseconds. 
     unsigned long           m_delayMs;
 
-    /// Last sampled RH & Temperature values. SHARED between threads
+    /// Last sampled RH & Temperature values. 
     float                   m_samples[2];
 
-    /// Point Index for the RH input. SHARED between threads - but is constant value - so no critical section is needed
+    /// Point Index for the RH input. 
     uint16_t                m_rhIndex;
 
-    /// Point Index for the Temperature input. SHARED between threads - but is constant value - so no critical section is needed
+    /// Point Index for the Temperature input. 
     uint16_t                m_tempIndex;
 
-    /// Flag that indicates I have valid sampled values. SHARED between threads
+    /// Chassis sequence number for Input transfers
+    uint16_t                m_chassisInputSeqNum;
+
+    /// Chassis sequence number for Output transfers
+    uint16_t                m_chassisOutputSeqNum;
+
+    /// Buffer to cache the latest Output IoRegister values.
+    bool                    m_outputChassisBuffer[1];
+
+    /// Buffer used to transfer the cached Output values to the driver. 
+    bool                    m_outputTransferBuffer[1];
+
+    /// Flag that indicates I have valid sampled values. 
     bool                    m_validSamples;
 
-    /// Pending Heater output value. SHARED between threads
-    bool                    m_heaterEnable;
-
-    /// State of my underlying driver (this member is not used/accessed in the DRIVER Thread)
+    /// TODO: DELETE ME State of my underlying driver (this member is not used/accessed in the DRIVER Thread)
     bool                    m_driverStarted;
 
-    /// Flag to force the heater state to update on start-up. Pseudo Shared - technically shared - but only during start-up so no critical section is needed
-    bool                    m_forceHeaterUpdate;
+    /// Flag to force the heater state to update on start-up. 
+    bool                    m_drvForceHeaterUpdate;
 
-    /// Last heater enabled value sent to the driver.  This variable only accessed in the Driver thread
-    bool                    m_lastHeaterEnable;
+    /// Driver: Output value for heater
+    bool                    m_drvHeaterEnable;
+
+    /// Driver: Last heater enabled value sent to the driver.  
+    bool                    m_drvLastHeaterEnable;
 };
 
 

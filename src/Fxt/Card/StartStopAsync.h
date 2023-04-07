@@ -22,7 +22,7 @@ namespace Fxt {
 ///
 namespace Card {
 
-/** This partially concrete class provide boiler plate code for ITC Start/Stop 
+/** This partially concrete class provides boiler plate code for ITC Start/Stop 
     calls.  The child class (aka the 'server') is responsible
     for provide the actual request( xxx msg ) methods.
  */
@@ -49,6 +49,7 @@ protected:
         {
             StartRequest::StartPayload* payload = new(m_memoryStartPayload.m_byteMem) StartRequest::StartPayload( currentElapsedTimeUsec, optionalArgs );
             StartResponse::StartRspMsg* msg     = new(m_memoryStartRspMsg.m_byteMem) StartResponse::StartRspMsg( *this, chassisMbox, *this, *payload );
+            m_startInProgress                   = true;
             m_driverbox.post( msg->getRequestMsg() );
             return true;
         }
@@ -71,6 +72,7 @@ protected:
             // See comments above about the placement 'new' operations
             StopRequest::StopPayload* payload = new(m_memoryStartPayload.m_byteMem) StopRequest::StopPayload( optionalArgs );
             StopResponse::StopRspMsg* msg     = new(m_memoryStartRspMsg.m_byteMem) StopResponse::StopRspMsg( *this, chassisMbox, *this, *payload );
+            m_stopInProgress                  = true;
             m_driverbox.post( msg->getRequestMsg() );
             return true;
         }
