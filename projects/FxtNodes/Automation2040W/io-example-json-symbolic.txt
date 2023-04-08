@@ -273,6 +273,11 @@
                     "channel": 7,
                     "typeName": "Fxt::Point::Bool",
                     "id": "Set-ConnectedLED"
+                  },
+                  {
+                    "channel": 8,
+                    "typeName": "Fxt::Point::Bool",
+                    "id": "Set-HeaterEnable"
                   }
                 ]
               }
@@ -471,8 +476,12 @@
                       "idRef": "Set-RelayOut#3"
                     },
                     {
-                      "typeName": "Fxt::Point::Float",
+                      "typeName": "Fxt::Point::Bool",
                       "idRef": "Set-ConnectedLED"
+                    },
+                    {
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": "Set-HeaterEnable"
                     }
                   ],
                   "outputs": [
@@ -503,6 +512,10 @@
                     {
                       "typeName": "Fxt::Point::Bool",
                       "idRef": "ConnectedLED"
+                    },
+                    {
+                      "typeName": "Fxt::Point::Bool",
+                      "idRef": "Heater Enable"
                     }
                   ]
                 }

@@ -62,7 +62,7 @@ Cpl::TShell::Command::Result_T Aout8::execute( Cpl::TShell::Context_& context, c
             {
                 if ( valid )
                 {
-                    outtext.format( "Channel #%02u: %f", channelNum, value );
+                    outtext.format( "Channel #%02u: %g", channelNum, value );
                 }
                 else
                 {

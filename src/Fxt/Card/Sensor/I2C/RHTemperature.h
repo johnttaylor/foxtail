@@ -19,9 +19,9 @@
 #include "Cpl/Json/Arduino.h"
 #include "Fxt/Card/StartStopAsync.h"
 #include "Fxt/Card/IoFlushAsync.h"
+#include "Fxt/Card/IoScanAsync.h"
 #include "Cpl/System/Timer.h"
 #include "Driver/RHTemp/Api.h"
-#include "Cpl/System/Mutex.h"
 
 /// Minimum driver-background sampling time in milliseconds
 #ifndef OPTION_FXT_CARD_SENSOR_I2C_MIN_DRIVER_SAMPLE_TIME_MS
@@ -49,6 +49,10 @@ namespace I2C {
     scanInputs() and flushOutputs().  This is so that the sensor can be scanned
     in the background so a 'current' value is available when scanInputs() is
     called.
+
+    CARD OUTPUTS/INVALID-STATE:
+        The card sets its outputs (i.e. heater-enabled) to false/off when the
+        Output IO Register is in the invalid state.
 
     NOTES: 
         - The Factory class is responsible for providing the Mailbox
@@ -122,6 +126,7 @@ class RHTemperature :
     public Fxt::Card::Common_, 
     public Fxt::Card::StartStopAsync,
     public Fxt::Card::IoFlushAsync,
+    public Fxt::Card::IoScanAsync,
     public Cpl::System::Timer
 {
 public:
@@ -172,23 +177,15 @@ public:
     /// ITC Start request (runs in the driver thread)
     void request( StartReqMsg& msg );
 
-    /// ITC Stop request (runs in the driver thread)
-    void request( StopReqMsg& msg );
-
-public:
     /// ITC Start response (runs in the chassis thread)
     void response( StartRspMsg& msg );
 
+public:
+    /// ITC Stop request (runs in the driver thread)
+    void request( StopReqMsg& msg );
+
     /// ITC Stop response (runs in the chassis thread)
     void response( StopRspMsg& msg );
-
-public:
-    /// ITC Flush request (runs in the driver thread)
-    void request( IoFlushReqMsg& msg );
-
-    /// ITC Flush response (runs in the chassis thread)
-    void response( IoFlushRspMsg& msg );
-
 
 protected:
     /// Helper method to parse the card's JSON config
@@ -200,27 +197,43 @@ protected:
                              JsonVariant&                       cardObject ) noexcept;
 
 protected:
+    /// Data structure used to transfer INPUT data between the chassis and driver threads
+    struct InputData_T
+    {
+        float values[2];    //!< Contains RH and Temp values.  The order of the parameter are the SAME order as IO Register indexes
+        bool  isValid[2];   //!< Valid state of the incoming values.  Order is the same as 'dataValues'
+    };
+
+    /// See Fxt::Card::IoFlushAsync
+    void populateInputsTransferBuffer() noexcept;
+
+    /// See Fxt::Card::IoFlushAsync
+    void extractInputsTransferBuffer() noexcept;
+
+
+protected:
+    /// Data structure used to transfer OUTPUT data between the chassis and driver threads
+    struct OutputData_T
+    {
+        bool values[1];    //!< Contains Heater enable value.
+    };
+
+    /// See Fxt::Card::IoFlushAsync
+    void popuplateOutputsTransferBuffer() noexcept;
+
+    /// See Fxt::Card::IoFlushAsync
+    void extractOutputsTransferBuffer() noexcept;
+
+protected:
     /// Background polling timer expired
     void expired( void ) noexcept;
 
-    /// Transfer the cached output data to the output transfer buffer
-    void populateOutputTransferBuffer() noexcept;
-
 protected:
-    /// Handle the Chassis thread's mailbox
-    Cpl::Itc::PostApi*     m_chassisMbox;
-
-    /// Mutex need exchange data between the Chassis and Driver threads
-    Cpl::System::Mutex      m_lock;
-
     /// Driver instance
     Driver::RHTemp::Api*    m_driver;
 
     /// Polling delay, in milliseconds. 
     unsigned long           m_delayMs;
-
-    /// Last sampled RH & Temperature values. 
-    float                   m_samples[2];
 
     /// Point Index for the RH input. 
     uint16_t                m_rhIndex;
@@ -228,29 +241,23 @@ protected:
     /// Point Index for the Temperature input. 
     uint16_t                m_tempIndex;
 
-    /// Chassis sequence number for Input transfers
-    uint16_t                m_chassisInputSeqNum;
 
-    /// Chassis sequence number for Output transfers
-    uint16_t                m_chassisOutputSeqNum;
+    /// Buffer used to transfer the cached Input values to the card/chassis. 
+    InputData_T             m_transferInputsBuffer;
 
-    /// Buffer to cache the latest Output IoRegister values.
-    bool                    m_outputChassisBuffer[1];
+    /// Driver: latest input values
+    InputData_T             m_drvReceivedValues;
+
 
     /// Buffer used to transfer the cached Output values to the driver. 
-    bool                    m_outputTransferBuffer[1];
-
-    /// Flag that indicates I have valid sampled values. 
-    bool                    m_validSamples;
-
-    /// TODO: DELETE ME State of my underlying driver (this member is not used/accessed in the DRIVER Thread)
-    bool                    m_driverStarted;
-
-    /// Flag to force the heater state to update on start-up. 
-    bool                    m_drvForceHeaterUpdate;
+    OutputData_T            m_transferOutputsBuffer;
 
     /// Driver: Output value for heater
-    bool                    m_drvHeaterEnable;
+    OutputData_T            m_drvCommandedValues;
+
+    
+    /// Flag to force the heater state to update on start-up. 
+    bool                    m_drvForceHeaterUpdate;
 
     /// Driver: Last heater enabled value sent to the driver.  
     bool                    m_drvLastHeaterEnable;

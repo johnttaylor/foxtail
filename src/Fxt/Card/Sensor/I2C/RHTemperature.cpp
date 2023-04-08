@@ -45,15 +45,12 @@ RHTemperature::RHTemperature( Cpl::Memory::ContiguousAllocator&  generalAllocato
     : Fxt::Card::Common_( MAX_INPUT_CHANNELS, MAX_OUTPUT_CHANNELS )
     , StartStopAsync( *cardMbox )
     , IoFlushAsync( *cardMbox )
+    , IoScanAsync( *cardMbox )
     , Timer( *cardMbox )
-    , m_chassisMbox( nullptr )
     , m_driver( nullptr )
     , m_rhIndex( INVALID_INDEX )
     , m_tempIndex( INVALID_INDEX )
-    , m_validSamples( false )
-    , m_driverStarted( false )      // TODO: DELETE ME!
     , m_drvForceHeaterUpdate( false )
-    , m_drvHeaterEnable( false )
     , m_drvLastHeaterEnable( false )
 {
     if ( initialize( generalAllocator, cardObject ) )
@@ -118,7 +115,7 @@ void RHTemperature::parseConfiguration( Cpl::Memory::ContiguousAllocator&  gener
     for ( size_t idx=0; idx < m_numInputs; idx++ )
     {
         JsonObject elem       = inputs[idx];
-        uint16_t   channelNum = getChannelNumber( elem, STARTING_INPUT_CHANNEL_NUM, ENDING_INPUT_CHANNEL_NUM ); 
+        uint16_t   channelNum = getChannelNumber( elem, STARTING_INPUT_CHANNEL_NUM, ENDING_INPUT_CHANNEL_NUM );
 
         // Capture IO Point index for the RH Channel
         if ( channelNum == 1 )
@@ -174,15 +171,13 @@ bool RHTemperature::start( Cpl::Itc::PostApi& chassisMbox, uint64_t currentElaps
     }
 
     // Housekeeping
-    m_validSamples        = false;
-    m_chassisMbox         = &chassisMbox;
-    m_chassisOutputSeqNum = 1;  // Start at '1' to ensure it is different/larger the driver sequence number
-    m_driverOutputSeqNum  = 0;
+    IoFlushAsync::start( chassisMbox );
+    IoScanAsync::start( chassisMbox );
 
     // Update the physical outputs (aka the heater)
-    Fxt::Point::Bool* pt = (Fxt::Point::Bool*) m_outputIoRegisterPoints[0];
-    m_drvHeaterEnable    = false;   // Note: It is okay access the 'driver' data since the driver is NOT currently running
-    pt->read( m_drvHeaterEnable );
+    Fxt::Point::Bool* pt           = (Fxt::Point::Bool*) m_outputIoRegisterPoints[0];
+    m_drvCommandedValues.values[0] = false;   // Note: It is okay access the 'driver' data since the driver is NOT currently running
+    pt->read( m_drvCommandedValues.values[0] );
 
     // Request to start the driver (which executes in the driver thread)
     // NOTE: The method only fails if there is pending ITC start transaction.
@@ -224,6 +219,7 @@ void RHTemperature::response( StartRspMsg& msg )
     startTransactionCompleted();
 }
 
+///////////////////////////////////////////////////////////////////////////////
 // Executes in a Client thread (which will NEVER be the chassis thread)
 void RHTemperature::stop( Cpl::Itc::PostApi& chassisMbox ) noexcept
 {
@@ -252,7 +248,7 @@ void RHTemperature::response( StopRspMsg& msg )
 {
     // Call my parent's stop
     Common_::stop();
-    
+
     stopTransactionCompleted();
 }
 
@@ -273,12 +269,13 @@ const char* RHTemperature::getTypeName() const noexcept
 void RHTemperature::expired() noexcept
 {
     // Update output
-    if ( m_drvForceHeaterUpdate || m_drvHeaterEnable != m_drvLastHeaterEnable )
+    bool heaterEnabled = m_drvCommandedValues.values[0];
+    if ( m_drvForceHeaterUpdate || heaterEnabled != m_drvLastHeaterEnable )
     {
-        CPL_SYSTEM_TRACE_MSG( SECT_, ("Updating heater enabled: %d", m_drvHeaterEnable) );
-        m_drvLastHeaterEnable  = m_drvHeaterEnable;
+        CPL_SYSTEM_TRACE_MSG( SECT_, ("Updating heater enabled: %d", heaterEnabled) );
+        m_drvLastHeaterEnable  = heaterEnabled;
         m_drvForceHeaterUpdate = false;
-        m_driver->setHeaterState( m_drvHeaterEnable );
+        m_driver->setHeaterState( heaterEnabled );
     }
 
     // Start the first sample
@@ -291,7 +288,6 @@ void RHTemperature::expired() noexcept
     // Trap sampling errors
     else if ( state == Driver::RHTemp::Api::eERROR )
     {
-        m_validSamples = false;
         m_driver->startSample();
     }
 
@@ -299,14 +295,25 @@ void RHTemperature::expired() noexcept
     else if ( state == Driver::RHTemp::Api::eSAMPLE_READY )
     {
         float rh, temp;
-        m_driver->getSample( rh, temp );
+        if ( m_driver->getSample( rh, temp ) == Driver::RHTemp::Api::eSAMPLE_READY )
+        {
+            CPL_SYSTEM_TRACE_MSG( SECT_, ("RHTemperature: driver input: rh=%g, temp=%g", rh, temp) );
+            m_drvReceivedValues.values[m_rhIndex]     = rh;
+            m_drvReceivedValues.values[m_tempIndex]   = temp;
+            m_drvReceivedValues.isValid[m_rhIndex]    = true;
+            m_drvReceivedValues.isValid[m_tempIndex]  = true;
+        }
+        else
+        {
+            CPL_SYSTEM_TRACE_MSG( SECT_, ("RHTemperature: driver input: INVALID") );
+            m_drvReceivedValues.isValid[m_rhIndex]    = false;
+            m_drvReceivedValues.isValid[m_tempIndex]  = false;
+        }
 
-        m_lock.lock();
-        m_samples[m_rhIndex]   = rh;
-        m_samples[m_tempIndex] = temp;
-        m_validSamples         = true;
-        m_lock.unlock();
+        // Transfer the data to the card/chassis thread
+        issueAsyncIoScanRequest();
 
+        // Start the next sample
         m_driver->startSample();
     }
 
@@ -314,48 +321,57 @@ void RHTemperature::expired() noexcept
     Timer::start( m_delayMs );
 }
 
+// NOTE: executes in the driver thread
+void RHTemperature::extractOutputsTransferBuffer() noexcept
+{
+    memcpy( &m_drvCommandedValues, &m_transferOutputsBuffer, sizeof( m_drvCommandedValues ) );
+}
+
+// NOTE: executes in the driver thread
+void RHTemperature::populateInputsTransferBuffer() noexcept
+{
+    memcpy( &m_transferInputsBuffer, &m_drvReceivedValues, sizeof( m_transferInputsBuffer) );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 // Note: This method executes in the 'Chassis thread'
 bool RHTemperature::scanInputs( uint64_t currentElapsedTimeUsec ) noexcept
 {
-    // Skip/wait till the driver has been started
-    if ( m_driverStarted )
-    {
-        // Get local cache of the driver data (so I lock/unlock the mutex ONLY once per scan cycle)
-        m_lock.lock();
-        bool  validSample = m_validSamples;
-        float samples[2];
-        memcpy( samples, m_samples, sizeof( samples ) );
-        m_lock.unlock();
-
-        // Copy the background driver samples to the Input IO Registers
-        for ( unsigned i=0; i < MAX_INPUT_CHANNELS; i++ )
-        {
-            if ( m_inputIoRegisterPoints[i] != nullptr )
-            {
-                // Update the corresponding IO Register
-                Fxt::Point::Float* pt = (Fxt::Point::Float*) m_inputIoRegisterPoints[i];
-                if ( validSample )
-                {
-                    pt->write( samples[i] );
-                }
-                else
-                {
-                    pt->setInvalid();
-                }
-            }
-        }
-    }
-
     // Call parent class to manage the transfer between IO Registers and Virtual Points
     bool result = Common_::scanInputs( currentElapsedTimeUsec );
 
-    // Check for failures (include the async failures in starting the driver)
+    // Check for failures (including the async failures in starting the driver)
     if ( !result || m_error != Fxt::Type::Error::SUCCESS() )
     {
         return false;
     }
     return true;
 }
+
+/// See Fxt::Card::IoFlushAsync
+void RHTemperature::extractInputsTransferBuffer() noexcept
+{
+    // Copy the transferred data (from the data) to the Input IO Registers
+    for ( unsigned i=0; i < MAX_INPUT_CHANNELS; i++ )
+    {
+        if ( m_inputIoRegisterPoints[i] != nullptr )
+        {
+            // Update the corresponding IO Register
+            Fxt::Point::Float* pt         = (Fxt::Point::Float*) m_inputIoRegisterPoints[i];
+            bool               validInput = m_transferInputsBuffer.isValid[i];
+            if ( validInput )
+            {
+                pt->write( m_transferInputsBuffer.values[i] );
+            }
+            else
+            {
+                pt->setInvalid();
+            }
+        }
+    }
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // NOTE: executes in the Chassis thread
@@ -370,18 +386,12 @@ bool RHTemperature::flushOutputs( uint64_t currentElapsedTimeUsec ) noexcept
         // NOTE: At most there will be ONE output (aka the Heater enable)
         if ( m_outputIoRegisterPoints[0] != nullptr )
         {
-            // Get current value (and force the 'off state' if the Point is invalid)
-            Fxt::Point::Bool* pt = (Fxt::Point::Bool*) m_outputIoRegisterPoints[0];
-            m_outputChassisBuffer[0] = false;
-            pt->read( m_outputChassisBuffer[0] );
-
             // Initiate the transfer of the data to the driver thread
-            m_chassisOutputSeqNum++;
-            issueAsyncIoFlushRequest( *m_chassisMbox, m_chassisOutputSeqNum );
+            issueAsyncIoFlushRequest();
         }
     }
 
-    // Check for failures (include the async failures in starting the driver)
+    // Check for failures (including the async failures in starting the driver)
     if ( !result || m_error != Fxt::Type::Error::SUCCESS() )
     {
         return false;
@@ -390,25 +400,11 @@ bool RHTemperature::flushOutputs( uint64_t currentElapsedTimeUsec ) noexcept
 }
 
 // NOTE: executes in the Chassis thread
-void RHTemperature::populateOutputTransferBuffer() noexcept
+void RHTemperature::popuplateOutputsTransferBuffer() noexcept
 {
-    m_outputTransferBuffer[0] = m_outputChassisBuffer[0];
+    // Get the current value (and force the 'off state' if the Point is invalid)
+    Fxt::Point::Bool* pt              = (Fxt::Point::Bool*) m_outputIoRegisterPoints[0];
+    m_transferOutputsBuffer.values[0] = false;
+    pt->read( m_transferOutputsBuffer.values[0] );
 }
 
-// NOTE: executes in the driver thread
-void RHTemperature::request( IoFlushReqMsg& msg )
-{
-    IoFlushRequest::IoFlushPayload& payload = msg.getPayload();
-
-    // Update the driver data
-    m_drvHeaterEnable = m_outputTransferBuffer[0];
-
-    // Complete the ITC transaction
-    msg.returnToSender();
-}
-
-// NOTE: executes in the Chassis thread
-void RHTemperature::response( IoFlushRspMsg& msg )
-{
-    flushTransactionCompleted( *m_chassisMbox, m_chassisOutputSeqNum );
-}

@@ -373,6 +373,7 @@ bool Common_::setInitialPointValues() noexcept
     {
         if ( m_inputIoRegisterPoints[i] )
         {
+            m_inputIoRegisterPoints[i]->setInvalid(); // Ensure the Point is invalid when there is NO setter
             m_inputIoRegisterPoints[i]->updateFromSetter();
         }
     }
@@ -388,6 +389,7 @@ bool Common_::setInitialPointValues() noexcept
     {
         if ( m_outputIoRegisterPoints[i] )
         {
+            m_outputIoRegisterPoints[i]->setInvalid(); // Ensure the Point is invalid when there is NO setter
             m_outputIoRegisterPoints[i]->updateFromSetter();
         }
     }

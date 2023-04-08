@@ -1,5 +1,5 @@
-#ifndef Fxt_Card_IoFlushRequests_h_
-#define Fxt_Card_IoFlushRequests_h_
+#ifndef Fxt_Card_IoScanRequests_h_
+#define Fxt_Card_IoScanRequests_h_
 /*-----------------------------------------------------------------------------
 * This file is part of the Colony.Core Project.  The Colony.Core Project is an
 * open source project with a BSD type of licensing agreement.  See the license
@@ -33,33 +33,35 @@ namespace Card {
     ITC services. The request() method(s) are to be implemented by the
     'server'
  */
-class IoFlushRequest
+class IoScanRequest
 {
 public:
     /// SAP for this API
-    typedef Cpl::Itc::SAP<IoFlushRequest> SAP;
+    typedef Cpl::Itc::SAP<IoScanRequest> SAP;
 
 public:
-    /// Payload for Message: IoFlush
-    class IoFlushPayload
+    /// Payload for Message: IoScan
+    class IoScanPayload
     {
     public:
         /// Constructor
-        IoFlushPayload(){}
+        IoScanPayload()
+        {
+        }
     };
 
 
-    /// Message Type: IoFlush
-    typedef Cpl::Itc::RequestMessage<IoFlushRequest, IoFlushPayload> IoFlushReqMsg;
+    /// Message Type: IoScan
+    typedef Cpl::Itc::RequestMessage<IoScanRequest, IoScanPayload> IoScanReqMsg;
 
 
 public:
-    /// Request: IoFlush
-    virtual void request( IoFlushReqMsg& msg ) = 0;
+    /// Request: IoScan
+    virtual void request( IoScanReqMsg& msg ) = 0;
 
 public:
     ///
-    virtual ~IoFlushRequest() {}
+    virtual ~IoScanRequest() {}
 };
 
 
@@ -68,23 +70,23 @@ public:
 
     NOTE: See note above - about always using asynchronous semantics
  */
-class IoFlushResponse
+class IoScanResponse
 {
 public:
-    /// Response Message Type: IoFlush
-    typedef Cpl::Itc::ResponseMessage<IoFlushResponse,
-        IoFlushRequest,
-        IoFlushRequest::IoFlushPayload> IoFlushRspMsg;
+    /// Response Message Type: IoScan
+    typedef Cpl::Itc::ResponseMessage<IoScanResponse,
+        IoScanRequest,
+        IoScanRequest::IoScanPayload> IoScanRspMsg;
 
 
 public:
-    /// Response: IoFlush
-    virtual void response( IoFlushRspMsg& msg ) = 0;
+    /// Response: IoScan
+    virtual void response( IoScanRspMsg& msg ) = 0;
 
 
 public:
     /// Virtual destructor
-    virtual ~IoFlushResponse() {}
+    virtual ~IoScanResponse() {}
 };
 
 };      // end namespaces

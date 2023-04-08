@@ -16,7 +16,7 @@
 #include "Cpl/System/Trace.h"
 #include <math.h>
 
-#define SECT_                           "_0test"
+#define SECT_                           "Driver::Automation2040::RP2040"
 
 #define MAX_PWM                         65535
 #define OFF_PWM                         0
@@ -239,11 +239,10 @@ void Driver::Automation2040::Api::setAdcLEDBehavior( AInputId_T adc, bool reflec
 float Driver::Automation2040::Api::getBoardTemperature()
 {
     // 12-bit conversion, assume max value == ADC_VREF == 3.3 V
-    const float conversion_factor = 3.3f / (1 << 12);
-
     adc_select_input( ONBOARD_TEMP_SENSOR_ADC_CHANNEL );
-    uint16_t result = adc_read();
-    return VOLTS_TO_CENTRIGRADE( result * conversion_factor );
+    uint16_t adcBits = adc_read();
+    float    volts   =  CLAMP_POSITIVE( (adcBits * ADC_REF_VOLTAGE) / (1 << 12) );
+    return VOLTS_TO_CENTRIGRADE( volts );
 }
 
 //////////////////////////////
