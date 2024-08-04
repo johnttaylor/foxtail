@@ -27,3 +27,5 @@ make.log
 *.sln
 
 *.user
+Debug
+x64                                                                                                                                                                                                                    Release
