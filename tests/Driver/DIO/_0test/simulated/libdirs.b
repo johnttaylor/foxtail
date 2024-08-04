@@ -1,7 +1,10 @@
-# UUT
-src/Driver/DIO/Simulated < InOut.cpp InOutModelPoints.cpp
+# Unit under test
+src/Driver/DIO/Simulated > InOut.cpp
 
-# framework
-src/Cpl/Dm/Mp
-src/Cpl/Dm/TShell
+# tests
+src/Driver/DIO/_0test/_simulated 
+
+# Infrastructure
+src/Cpl/Io/Stdio/_ansi
+
 

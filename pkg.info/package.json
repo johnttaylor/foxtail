@@ -53,32 +53,15 @@
         "pkgname": "colony.core",
         "pkgtype": "overlay",
         "virtualAdoption": false,
-        "adoptedDate": "Sun Feb 19 15:05:52 2023",
+        "adoptedDate": "Sun Aug  4 14:17:45 2024",
         "parentDir": null,
         "version": {
-          "semanticVersion": "4.3.3",
+          "semanticVersion": "4.4.3",
           "branch": null,
-          "tag": "OUTCAST2-main-4.3.3"
+          "tag": "OUTCAST2-main-4.4.2"
         },
         "repo": {
           "name": "colony.core",
-          "type": "git",
-          "origin": "https://github.com/johnttaylor"
-        }
-      },
-      {
-        "pkgname": "nqbp2",
-        "pkgtype": "readonly",
-        "virtualAdoption": false,
-        "adoptedDate": "Sun Aug  4 14:15:47 2024",
-        "parentDir": "xsrc",
-        "version": {
-          "semanticVersion": "0.1.8",
-          "branch": null,
-          "tag": "OUTCAST2-main-0.1.8"
-        },
-        "repo": {
-          "name": "nqbp2",
           "type": "git",
           "origin": "https://github.com/johnttaylor"
         }
@@ -164,6 +147,23 @@
         },
         "repo": {
           "name": "colony.apps",
+          "type": "git",
+          "origin": "https://github.com/johnttaylor"
+        }
+      },
+      {
+        "pkgname": "nqbp2",
+        "pkgtype": "readonly",
+        "virtualAdoption": false,
+        "adoptedDate": "Sun Aug  4 14:15:47 2024",
+        "parentDir": "xsrc",
+        "version": {
+          "semanticVersion": "0.1.8",
+          "branch": null,
+          "tag": "OUTCAST2-main-0.1.8"
+        },
+        "repo": {
+          "name": "nqbp2",
           "type": "git",
           "origin": "https://github.com/johnttaylor"
         }
