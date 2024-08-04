@@ -70,12 +70,12 @@
         "pkgname": "nqbp2",
         "pkgtype": "readonly",
         "virtualAdoption": false,
-        "adoptedDate": "Sun Feb 26 22:00:59 2023",
+        "adoptedDate": "Sun Aug  4 14:15:47 2024",
         "parentDir": "xsrc",
         "version": {
-          "semanticVersion": "0.1.1",
+          "semanticVersion": "0.1.8",
           "branch": null,
-          "tag": "OUTCAST2-main-0.1.2"
+          "tag": "OUTCAST2-main-0.1.8"
         },
         "repo": {
           "name": "nqbp2",
@@ -97,22 +97,6 @@
         },
         "repo": {
           "name": "catch",
-          "type": "git",
-          "origin": "https://github.com/johnttaylor"
-        }
-      },
-      {
-        "pkgname": "nqbp",
-        "pkgtype": "foreign",
-        "adoptedDate": "Sun Nov  6 23:28:22 2022",
-        "parentDir": "xsrc",
-        "version": {
-          "semanticVersion": "3.0.1",
-          "branch": null,
-          "tag": "OUTCAST2-main-3.0.1"
-        },
-        "repo": {
-          "name": "nqbp",
           "type": "git",
           "origin": "https://github.com/johnttaylor"
         }
